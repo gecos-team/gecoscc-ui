@@ -14,6 +14,7 @@ requires = [
     'colander==1.0b1',
     'Babel==1.3',
     'lingua==1.5',
+    'pymongo==2.6.3',
 ]
 
 setup(name='gecoscc',
