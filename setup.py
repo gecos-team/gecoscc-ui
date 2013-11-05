@@ -16,6 +16,8 @@ requires = [
     'lingua==1.5',
     'pymongo==2.6.3',
     'py-bcrypt==0.4',
+    'eventlet==0.14.0',
+    'gunicorn==18.0',
 ]
 
 setup(name='gecoscc',
