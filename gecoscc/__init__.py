@@ -5,6 +5,7 @@ from pyramid.exceptions import ConfigurationError
 
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
+from gecoscc.userdb import get_userdb
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -31,7 +32,8 @@ def database_config(config):
 
     settings['mongo_uri'] = mongo_uri
 
-    mongo_replicaset = read_setting_from_env(settings, 'mongo_replicaset', None)
+    mongo_replicaset = read_setting_from_env(settings, 'mongo_replicaset',
+                                             None)
     settings['mongo_replicaset'] = mongo_replicaset
 
     if mongo_replicaset is not None:
@@ -40,9 +42,21 @@ def database_config(config):
     else:
         mongodb = MongoDB(settings['mongo_uri'])
     config.registry.settings['mongodb'] = mongodb
-    config.registry.settings['db_conn'] = mongodb.get_connection
+    config.registry.settings['db_conn'] = mongodb.get_connection()
 
     config.set_request_property(get_db, 'db', reify=True)
+
+
+def userdb_config(config):
+    # TODO
+    # * Support LDAP Users
+    # * Organization Users
+    # * Mixed users
+    from .userdb import MongoUserDB
+
+    userdb = MongoUserDB(config.registry.settings['mongodb'], 'adminusers')
+    config.registry.settings['userdb'] = userdb
+    config.set_request_property(get_userdb, 'userdb', reify=True)
 
 
 def jinja2_settings(settings):
@@ -71,6 +85,7 @@ def main(global_config, **settings):
     jinja2_settings(settings)
 
     database_config(config)
+    userdb_config(config)
     route_config(config)
 
     return config.make_wsgi_app()

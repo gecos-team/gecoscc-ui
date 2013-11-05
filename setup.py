@@ -15,6 +15,7 @@ requires = [
     'Babel==1.3',
     'lingua==1.5',
     'pymongo==2.6.3',
+    'scrypt==0.6.1',
 ]
 
 setup(name='gecoscc',
