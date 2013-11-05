@@ -1,4 +1,3 @@
-from pyramid.i18n import get_localizer
 from pyramid.security import remember, forget
 from pyramid.httpexceptions import HTTPFound
 
@@ -6,6 +5,7 @@ from pyramid.view import view_config
 
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.i18n import _
+from gecoscc.views import BaseView
 
 
 @view_config(route_name='home', renderer='templates/home.jinja2')
@@ -14,12 +14,7 @@ def home(context, request):
     }
 
 
-class LoginViews(object):
-
-    def __init__(self, context, request):
-        self.context = context
-        self.request = request
-        self.translate = get_localizer(self.request).translate
+class LoginViews(BaseView):
 
     @view_config(route_name='login', renderer='templates/login.jinja2')
     def login(self):
@@ -31,7 +26,8 @@ class LoginViews(object):
             except UserDoesNotExist:
                 return {
                     'username': username,
-                    'message': self.translate(_("The requested username doesn't exists")),
+                    'message': self.translate(
+                        _("The requested username doesn't exists")),
                 }
 
             if user is False:

@@ -32,5 +32,169 @@
 
 {% block content %}
 <div id="content">
-<h1>Gecos Test</h1>
+<h1>Test Sock.js</h1>
+
+<form>
+    <label>Message to send:</label></br>
+    <textarea rows="6" cols="80"></textarea> <button id="lipsum">Lipsumnate!</button></br>
+    <button type="submit" id="socket">Send through socket</button>
+    <button type="submit" id="ajax">Send through ajax post</button>
+</form>
+
+<div id="messages" class="log"></div>
+<div id="debug" class="log"></div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="{{request.application_url}}/static/jquery.cookie.js"></script>
+<script src="//cdn.sockjs.org/sockjs-0.3.4.js"></script>
+<script src="{{request.application_url}}/static/lipsum.min.js"></script>
+<script>
+$(document).ready(function () {
+    var host = "//" + location.host,
+        session = $.cookie("session"),
+        activeSock,
+        connect,
+        getMessage,
+        getRandomInt,
+        randomizeWords,
+        log;
+
+    log = function (message, debug) {
+        var $div = $("#messages"),
+            html;
+
+        if (debug) {
+            $div = $("#debug");
+        }
+        html = $div.html() + "<p>" + message + "</p>";
+        $div.html(html);
+        $div.animate({scrollTop: 999999999});
+    };
+
+    log("session: " + session, true);
+
+    connect = function () {
+        var sock = new SockJS(host + "/sockjs");
+
+        sock.onopen = function () {
+            log('open conn using ' + this.protocol, true);
+        };
+
+        sock.onmessage = function (e) {
+            log('message -> ' + e.data);
+        };
+
+        sock.onclose = function () {
+            log('close conn', true);
+            setTimeout(function () {
+                log("reconnecting", true);
+                activeSock = connect();
+            }, 500);
+        };
+
+        return sock;
+    };
+
+    activeSock = connect();
+
+    // Returns a random integer between min and max
+    // Using Math.round() will give you a non-uniform distribution!
+    getRandomInt = function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    randomizeWords = function (lipsum) {
+        var foundOne = false,
+            idx = getRandomInt(0, lipsum.length),
+            words = [],
+            w = "",
+            c;
+
+        for (idx; words.length < 8 && idx < lipsum.length; idx += 1) {
+            c = lipsum[idx];
+            if (c === ' ') {
+                if (foundOne) {
+                    words.push(w);
+                }
+                foundOne = true;
+                w = "";
+            } else {
+                w += c;
+            }
+        }
+        return words.join(' ').trim();
+    };
+
+    $("#lipsum").click(function (evt) {
+        evt.preventDefault();
+        var $el = $(this),
+            $ta = $el.siblings("textarea"),
+            $aux = $el.parent().append("<p id='lipsumaux' style='display: none;'></p>").find("#lipsumaux"),
+            result = "",
+            lipsum;
+
+        $aux.lipsum({ type: 'words', number: '100' });
+        lipsum = $aux.text();
+
+        while (result.length === 0) {
+            result = randomizeWords(lipsum);
+        }
+
+        $ta.val(result);
+        $aux.remove();
+    });
+
+    getMessage = function (context) {
+        var $ta = $(context).siblings("textarea"),
+            msg = $ta.val();
+
+        $ta.val("");
+        if (msg.length === 0) {
+            log("can't send empty message", true);
+            throw "empty message";
+        }
+
+        return msg;
+    };
+
+    $("#socket").click(function (evt) {
+        evt.preventDefault();
+        var msg;
+
+        try {
+            msg = getMessage(this);
+        } catch (excp) {
+            return;
+        }
+
+        activeSock.send("socket: " + msg);
+    });
+
+    $("#ajax").click(function (evt) {
+        evt.preventDefault();
+        var msg;
+
+        try {
+            msg = getMessage(this);
+        } catch (excp) {
+            return;
+        }
+
+        $.ajax(host + "/message", {
+            type: "POST",
+            data: {
+                message: "ajax: " + msg
+            },
+            success: function () {
+                log("ajax success", debug);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                log("ajax failed: " + errorThrown, debug);
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

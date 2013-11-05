@@ -8,6 +8,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
+from gecoscc.eventsmanager import EventsManager
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -23,6 +24,11 @@ def route_config(config):
     config.add_route('home', '/')
     config.add_route('login', '/login/')
     config.add_route('logout', '/logout/')
+    config.add_route('message', '/message/')
+    config.add_sockjs_route('sockjs', prefix='/sockjs',
+                            session=EventsManager,
+                            per_user=True,
+                            cookie_needed=True)
 
 
 def database_config(config):
@@ -98,15 +104,16 @@ def main(global_config, **settings):
     database_config(config)
     userdb_config(config)
     auth_config(config)
-    route_config(config)
 
     config.add_translation_dirs('locale/')
 
     jinja2_config(config)
 
     config.include('pyramid_jinja2')
-
     config.include('pyramid_beaker')
+    config.include('pyramid_sockjs')
+
+    route_config(config)
 
     config.scan('gecoscc.views')
 
