@@ -2,10 +2,12 @@ import os
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
+from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authorization import ACLAuthorizationPolicy
 
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
-from gecoscc.userdb import get_userdb
+from gecoscc.userdb import get_userdb, get_groups, get_user
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -18,9 +20,9 @@ def read_setting_from_env(settings, key, default=None):
 
 def route_config(config):
     config.add_static_view('static', 'static')
-    config.add_view('gecoscc.views.my_view',
-                    context='gecoscc.models.MyModel',
-                    renderer="mytemplate.jinja2")
+    config.add_route('home', '/')
+    config.add_route('login', '/login/')
+    config.add_route('logout', '/logout/')
 
 
 def database_config(config):
@@ -57,9 +59,22 @@ def userdb_config(config):
     userdb = MongoUserDB(config.registry.settings['mongodb'], 'adminusers')
     config.registry.settings['userdb'] = userdb
     config.set_request_property(get_userdb, 'userdb', reify=True)
+    config.add_request_method(get_user, 'user', reify=True)
 
 
-def jinja2_settings(settings):
+def auth_config(config):
+    settings = config.registry.settings
+    secret = read_setting_from_env(settings, 'session.secret', None)
+
+    authn_policy = AuthTktAuthenticationPolicy(
+        secret, callback=get_groups, hashalg='sha512')
+    authz_policy = ACLAuthorizationPolicy()
+    config.set_authentication_policy(authn_policy)
+    config.set_authorization_policy(authz_policy)
+
+
+def jinja2_config(config):
+    settings = config.registry.settings
     settings.setdefault('jinja2.i18n.domain', 'gecoscc')
     settings.setdefault('jinja2.newstyle', True)
 
@@ -79,13 +94,20 @@ def main(global_config, **settings):
     settings = dict(settings)
 
     config = Configurator(root_factory=get_root, settings=settings)
-    config.add_translation_dirs('locale/')
-    config.include('pyramid_jinja2')
-
-    jinja2_settings(settings)
 
     database_config(config)
     userdb_config(config)
+    auth_config(config)
     route_config(config)
+
+    config.add_translation_dirs('locale/')
+
+    jinja2_config(config)
+
+    config.include('pyramid_jinja2')
+
+    config.include('pyramid_beaker')
+
+    config.scan('gecoscc.views')
 
     return config.make_wsgi_app()

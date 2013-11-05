@@ -1,4 +1,4 @@
-import scrypt
+import bcrypt
 from uuid import uuid4
 
 from pyramid.security import authenticated_userid
@@ -9,31 +9,24 @@ from pyramid.security import authenticated_userid
 #   'username': 'user1',
 #   'email': 'user1@example.com',
 #   'apikey': ['123123123123'],
-#   'password': {
-#       'hash':'scrypt-hash',
-#       'salt':'scrypt-salt'
-#   }
+#   'password': 'password-bcrypt-hash',
 #  }
 #  ...
 #
 
 def generate_apikey():
-    return uuid4()
+    return uuid4().hex
 
 
 def create_password(password):
-    salt = uuid4().hex
-    hash = scrypt.hash(password, salt)
-
-    return {
-        'hash': hash,
-        'salt': salt
-    }
+    hash = bcrypt.hashpw(password, bcrypt.gensalt())
+    return hash
 
 
-def validate_password(password_dict, password):
-    hash = scrypt.hash(password, password_dict['hash'])
-    return (hash == password_dict['hash'])
+def validate_password(password_hash, password):
+    hash = bcrypt.hashpw(password,
+                         password_hash)
+    return (hash == password_hash)
 
 
 class UserDoesNotExist(Exception):
@@ -62,25 +55,28 @@ class MongoUserDB(object):
             raise UserDoesNotExist()
         return user
 
-    def check_password(self, username, password):
+    def login(self, username, password):
         user = self.get_user(username)
         password_dict = user.get('password', None)
         if password_dict is None:
             return False
-        return validate_password(password_dict, password)
+        if validate_password(password_dict, password):
+            return user
+        else:
+            return False
 
     def add_password(self, username, password):
         user = self.get_user(username)
-        password_dict = create_password(password)
+        password_hash = create_password(password)
         self.collection.update({
             '_id': user['_id']
         }, {
             '$set': {
-                'password': password_dict
+                'password': password_hash
             }
         })
 
-    def create_user(self, username, password, email, extradata):
+    def create_user(self, username, password, email, extradata={}):
         # Test if the username was not registered before
         user = self.collection.find_one({'username': username})
         if user is not None:
@@ -127,7 +123,7 @@ def get_userdb(request):
 def get_user(request):
     userid = authenticated_userid(request)
     if userid is not None:
-        user = request.userdb.get_user(userid)
+        return request.userdb.get_user(userid)
     else:
         if request.POST:
             apikey = request.POST.get('apikey')
@@ -135,6 +131,14 @@ def get_user(request):
             apikey = request.GET.get('apikey')
         else:
             return None
-        return request.userdb.get_user_by_apikey(apikey)
 
-    return user
+        if apikey:
+            return request.userdb.get_user_by_apikey(apikey)
+
+    return None
+
+
+def get_groups(userid, request):
+    ## TODO
+    # Not Implemented
+    return ['logged']

@@ -1,0 +1,15 @@
+{% extends "base.jinja2" %}
+
+{% block content %}
+
+{% if message is defined %}{{ message }}{% endif %}
+<form method='POST'>
+  <label for="username">Username:</label>
+  <input type="text" name="username" {% if username is defined %}value="username"{% endif %}>
+
+  <label for="password">password:</label>
+  <input type="text" name="password">
+
+  <button type='submit'>Login</button>
+</form>
+{% endblock %}

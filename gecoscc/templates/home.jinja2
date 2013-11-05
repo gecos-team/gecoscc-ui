@@ -1,0 +1,36 @@
+{% extends "base.jinja2" %}
+
+{% block extrastyle %}
+#content {
+    padding: 20px;
+}
+
+#content form {
+    margin-bottom: 20px;
+}
+
+#content .log {
+    padding: 10px;
+    margin: 10px 0;
+    height: 180px;
+    overflow-y: scroll;
+}
+
+#content #messages {
+    border: 1px solid black;
+}
+
+#content #debug {
+    border: 1px solid red;
+}
+
+#content .log p {
+    margin: 8px 0;
+    background-color: #F5F5F5;
+}
+{% endblock %}
+
+{% block content %}
+<div id="content">
+<h1>Gecos Test</h1>
+{% endblock %}
