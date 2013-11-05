@@ -37,7 +37,7 @@ class LoginViews(object):
             if user is False:
                 return {
                     'username': username,
-                    'message': self.translate(("The password doesn't match")),
+                    'message': self.translate(_("The password doesn't match")),
                 }
 
             headers = remember(self.request, username)
