@@ -47,6 +47,8 @@ setup(name='gecoscc',
       entry_points="""\
       [paste.app_factory]
       main = gecoscc:main
+      [console_scripts]
+      pmanage = gecoscc.management:main
       """,
       paster_plugins=['pyramid'],
       )

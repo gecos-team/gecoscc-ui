@@ -65,7 +65,7 @@ class MongoUserDB(object):
         else:
             return False
 
-    def add_password(self, username, password):
+    def change_password(self, username, password):
         user = self.get_user(username)
         password_hash = create_password(password)
         self.collection.update({
