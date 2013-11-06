@@ -141,9 +141,11 @@ def main(global_config, **settings):
     config.include('pyramid_beaker')
     config.include('pyramid_sockjs')
     config.include('pyramid_celery')
+    config.include('cornice')
 
     route_config(config)
 
     config.scan('gecoscc.views')
+    config.scan('gecoscc.api')
 
     return config.make_wsgi_app()

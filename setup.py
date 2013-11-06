@@ -22,6 +22,7 @@ requires = [
     'celery==3.0.24',
     'celery-with-mongodb==3.0',
     'pyramid_celery==1.3',
+    'cornice==0.15',
 ]
 
 setup(name='gecoscc',
