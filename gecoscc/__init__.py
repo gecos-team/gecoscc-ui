@@ -1,4 +1,5 @@
 import os
+import pymongo
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
@@ -94,6 +95,32 @@ def jinja2_config(config):
     """)
 
 
+def celery_config(config):
+    settings = config.registry.settings
+    settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
+    if not settings.get('BROKER_URL', ''):
+
+        parsed_uri = pymongo.uri_parser.parse_uri(settings['mongo_uri'])
+
+        settings['BROKER_URL'] = settings['mongo_uri']
+        settings['CELERY_RESULT_BACKEND'] = "mongodb"
+        settings['CELERY_MONGODB_BACKEND_SETTINGS'] = {
+            "host": parsed_uri.get('nodelist')[0][0],
+            "port": parsed_uri.get('nodelist')[0][1],
+            "database": parsed_uri.get('database'),
+            "taskmeta_collection": "celery_taskmeta",
+        }
+        if parsed_uri.get('username', ''):
+            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
+                "user": parsed_uri.get('username'),
+                "password": parsed_uri.get("password"),
+            })
+        if parsed_uri.get('options', ''):
+            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
+                "options": parsed_uri.get('options'),
+            })
+
+
 def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
@@ -104,6 +131,7 @@ def main(global_config, **settings):
     database_config(config)
     userdb_config(config)
     auth_config(config)
+    celery_config(config)
 
     config.add_translation_dirs('locale/')
 
@@ -112,6 +140,7 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('pyramid_beaker')
     config.include('pyramid_sockjs')
+    config.include('pyramid_celery')
 
     route_config(config)
 

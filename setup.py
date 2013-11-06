@@ -11,6 +11,7 @@ requires = [
     'pyramid_jinja2',
     'pyramid_debugtoolbar',
     'pyramid_beaker==0.7',
+    'pyramid_tm==0.7',
     'colander==1.0b1',
     'Babel==1.3',
     'lingua==1.5',
@@ -18,6 +19,9 @@ requires = [
     'py-bcrypt==0.4',
     'gunicorn==18.0',
     'pyramid_sockjs==0.3.9',
+    'celery==3.0.24',
+    'celery-with-mongodb==3.0',
+    'pyramid_celery==1.3',
 ]
 
 setup(name='gecoscc',
