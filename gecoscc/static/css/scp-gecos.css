@@ -1,0 +1,63 @@
+.mb10 {
+    margin-bottom: 10px;
+}
+
+.navbar-brand {
+    margin-left: 15px;
+}
+
+.page {
+    margin: 0 20px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding-right: 20px;
+    border-top: 1px solid #DDD;
+    background-color: #F5F5F5;
+}
+
+@media (min-width: 768px) {
+    #sidebar {
+        position: fixed;
+        padding-right: 30px;
+    }
+}
+
+#nav-tree {
+    height: 70%;
+    overflow-y: scroll;
+}
+
+#events {
+    height: 30%;
+}
+
+#viewport-main {
+    padding-bottom: 20px;
+}
+
+.dashboard a.thumbnail {
+    text-align: center;
+    color: white;
+    background-color: #666;
+    padding-top: 20px;
+}
+
+.dashboard a.thumbnail:hover {
+    text-decoration: none;
+    border-color: #666;
+    -moz-box-shadow: 0 0 2px 2px #666;
+    -webkit-box-shadow: 0 0 2px 2px #666;
+    box-shadow: 0 0 2px 2px #666;
+}
+
+.dashboard a.thumbnail span {
+    font-size: 130px;
+}
+
+.dashboard a.thumbnail p {
+    font-size: 25px;
+}
