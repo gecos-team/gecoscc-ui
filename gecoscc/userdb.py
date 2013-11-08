@@ -115,6 +115,12 @@ class MongoUserDB(object):
             }
         })
 
+    def list_users(self, filter={}):
+        if not filter:
+            return self.collection.find()
+        else:
+            return self.collection.find(filter)
+
 
 def get_userdb(request):
     return request.registry.settings['userdb']
