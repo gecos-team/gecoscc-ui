@@ -1,0 +1,55 @@
+{% extends "base_tree.jinja2" %}
+
+{% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Añadir nuevo</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <div class="row bootstrap-admin-light-padding-bottom">
+                <div class="col-md-6">
+                    <a href="/users.html" class="thumbnail">
+                        <span class="fa fa-user"></span>
+                        <p>Usuarios</p>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="/organizational_units.html" class="thumbnail">
+                        <span class="fa fa-group"></span>
+                        <p>Unidad Organizativa</p>
+                    </a>
+                </div>
+            </div>
+            <div class="row bootstrap-admin-light-padding-bottom">
+                <div class="col-md-6">
+                    <a href="/computers.html" class="thumbnail">
+                        <span class="fa fa-desktop"></span>
+                        <p>Puestos de Trabajo</p>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="#" class="thumbnail">
+                        <span class="fa fa-globe"></span>
+                        <p>Políticas</p>
+                    </a>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="/storages.html" class="thumbnail">
+                        <span class="fa fa-hdd-o"></span>
+                        <p>Almacenamiento</p>
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="/printers.html" class="thumbnail">
+                        <span class="fa fa-print"></span>
+                        <p>Impresoras</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
