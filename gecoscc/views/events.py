@@ -7,7 +7,7 @@ from gecoscc.views import BaseView
 
 class EventsViews(BaseView):
 
-    @view_config(route_name='message', renderer='json')
+    @view_config(route_name='sockjs_message', renderer='json')
     def message(self):
         message = self.request.POST.get('message')
         apikey = self.request.POST.get('apikey')
