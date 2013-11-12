@@ -1,0 +1,78 @@
+{% extends "base_tree.jinja2" %}
+
+{% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Puesto de Trabajo</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <form role="form">
+                <div class="row">
+                    <div class="col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label for="name">Nombre</label>
+                            <input id="name" type="text" class="form-control" placeholder="Ej: Portátil de Patricio">
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label for="identifier">Identificador</label>
+                            <input id="identifier" type="text" class="form-control" placeholder="Ej: patrick-laptop">
+                        </div>
+                    </div>
+                </div><div class="row">
+                    <div class="col-md-9 col-sm-8 col-xs-12">
+                        <div class="form-group">
+                            <label for="serial">Nº de Serie</label>
+                            <input id="serial" type="text" class="form-control" placeholder="Ej: SN1234567890ABC">
+                        </div>
+                        <div class="form-group">
+                            <label for="registry">Nº de Registro</label>
+                            <input id="registry" type="text" class="form-control" placeholder="Ej: JDA123DEP03">
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="form-group">
+                            <label for="type">Tipo</label>
+                            <div class="radio">
+                                <label>
+                                    <input type="radio" name="type" id="type1" value="DESKTOP" checked>
+                                    Sobremesa
+                                </label>
+                            </div><div class="radio">
+                                <label>
+                                    <input type="radio" name="type" id="type1" value="LAPTOP">
+                                    Portátil
+                                </label>
+                            </div><div class="radio">
+                                <label>
+                                    <input type="radio" name="type" id="type1" value="NETBOOK">
+                                    Netbook
+                                </label>
+                            </div><div class="radio">
+                                <label>
+                                    <input type="radio" name="type" id="type1" value="TABLET">
+                                    Tableta
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label for="extra">Información extra</label>
+                            <textarea id="extra" class="form-control" rows="6"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row"><div class="col-sm-12">
+                    <a href="/" class="btn btn-default">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

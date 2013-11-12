@@ -1,0 +1,93 @@
+{% extends "base_tree.jinja2" %}
+
+{% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Almacenamiento</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <form role="form">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <input id="connect" type="text" class="form-control" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-9 col-xs-12">
+                        <div class="form-group">
+                            <label for="server">Servidor</label>
+                            <input id="server" type="text" class="form-control" placeholder="Ej: 192.168.12.078">
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-xs-12">
+                        <div class="form-group">
+                            <label for="port">Puerto</label>
+                            <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="Ej: 9100">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="form-group">
+                            <label for="type">Tipo de servidor</label>
+                            <select id="type" class="form-control">
+                                <option value="ftp">FTP</option>
+                                <option value="ssh">SSHFS</option>
+                                <option value="nfs">NFS</option>
+                                <option selected="" value="smb">SAMBA v3</option>
+                                <option value="smb">SAMBA v4</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-9 col-sm-8 col-xs-12">
+                        <div class="form-group">
+                            <label for="path">Ruta al directorio</label>
+                            <input id="path" type="text" class="form-control" placeholder="Ej: /ruta/al/directorio">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label for="user">Usuario</label>
+                            <input id="user" type="text" class="form-control" placeholder="Ej: patricio">
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xs-12">
+                        <div class="form-group">
+                            <label for="passwd">Contraseña</label>
+                            <input id="passwd" type="password" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="row"><div class="col-sm-12">
+                    <a href="/" class="btn btn-default">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block morejs %}
+<script>
+    $(document).ready(function () {
+        var updateConnect = function () {
+            var connect = $("#type").val() + "://";
+            connect += $("#user").val() + '@';
+            connect += $("#server").val() + ':';
+            connect += $("#port").val() + ':';
+            connect += $("#path").val();
+            $("#connect").val(connect);
+        };
+
+        $("form").on("keyup", updateConnect);
+        $("#type").on("change", updateConnect);
+        $("#port").on("change", updateConnect);
+    });
+</script>
+{% endblock %}

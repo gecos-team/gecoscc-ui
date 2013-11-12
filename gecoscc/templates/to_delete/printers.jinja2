@@ -1,0 +1,223 @@
+{% extends "base_tree.jinja2" %}
+
+{% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Impresora</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <form role="form">
+                <fieldset>
+                <legend>Impresora</legend>
+                <div class="row">
+                    <div class="col-md-4 col-sm-12 col-xs-12">
+                        <div class="form-group">
+                            <label for="name">Nombre</label>
+                            <input id="name" type="text" class="form-control" placeholder="Ej: HP LaserJet 3000">
+                        </div>
+                    </div><div class="col-md-4 col-sm-12 col-xs-12">
+                        <div class="form-group">
+                            <label for="description">Descripción</label>
+                            <input id="description" type="text" class="form-control" placeholder="Ej: La del departamento de cuentas">
+                        </div>
+                    </div><div class="col-md-4 col-sm-12 col-xs-12">
+                        <div class="form-group">
+                            <label for="location">Ubicación</label>
+                            <input id="location" type="text" class="form-control" placeholder="Ej: Dep002">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="form-group">
+                            <label>Tipo de conexión</label>
+                            <select id="network" class="form-control">
+                                <option>En red</option>
+                                <option>Local</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-9 col-sm-8 col-xs-12">
+                        <div class="form-group">
+                            <label for="path">Ruta a la impresora</label>
+                            <input id="path" type="text" class="form-control" placeholder="Ej: http://nombre_ordenador:631/ipp/puerto1">
+                        </div>
+                    </div>
+                </div>
+                <label>Controlador</label>
+                <div class="row">
+                    <div class="col-sm-12 col-xs-12">
+                        <div class="form-group" id="installation">
+                            <label class="radio-inline">
+                                <input name="driverinstallation" type="radio" value="auto" checked> Instalación automática
+                            </label>
+                            <label class="radio-inline">
+                                <input name="driverinstallation" id="nodriver" type="radio" value="manual"> Instalación manual
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" id="driver">
+                    <div class="col-md-4 col-sm-5 col-xs-12">
+                        <div class="form-group">
+                            <select id="printerBrand" class="form-control">
+                                <option value="Alps">Alps</option>
+                                <option value="Anitech">Anitech</option><option value="Apollo">Apollo</option><option value="Apple">Apple</option><option value="Brother">Brother</option><option value="Canon">Canon</option><option value="Citizen">Citizen</option><option value="CItoh">CItoh</option><option value="Compaq">Compaq</option><option value="DEC">DEC</option>
+                                <option value="Dell">Dell</option><option value="DNP">DNP</option><option value="Dymo">Dymo</option><option value="Epson">Epson</option><option value="Fujifilm">Fujifilm</option><option value="Fujitsu">Fujitsu</option><option value="Generic">Generic</option><option value="Genicom">Genicom</option><option value="Gestetner">Gestetner</option><option value="Heidelberg">Heidelberg</option><option value="Hitachi">Hitachi</option><option value="HP" selected="">HP</option><option value="IBM">IBM</option><option value="Imagen">Imagen</option>
+                                <option value="Imagistics">Imagistics</option><option value="InfoPrint">InfoPrint</option><option value="Infotec">Infotec</option><option value="Intellitech">Intellitech</option><option value="Kodak">Kodak</option><option value="KONICA MINOLTA">KONICA MINOLTA</option><option value="Kyocera">Kyocera</option><option value="Kyocera Mita">Kyocera Mita</option><option value="Lanier">Lanier</option><option value="Lexmark">Lexmark</option><option value="Minolta">Minolta</option><option value="Minolta QMS">Minolta QMS</option>
+                                <option value="Mitsubishi">Mitsubishi</option><option value="NEC">NEC</option><option value="NRG">NRG</option><option value="Oce">Oce</option><option value="Oki">Oki</option><option value="Olivetti">Olivetti</option><option value="Olympus">Olympus</option><option value="Panasonic">Panasonic</option><option value="PCPI">PCPI</option><option value="Postscript">Postscript</option><option value="QMS">QMS</option>
+                                <option value="Raven">Raven</option><option value="Raw">Raw</option><option value="Ricoh">Ricoh</option><option value="Samsung">Samsung</option><option value="Savin">Savin</option><option value="Seiko">Seiko</option><option value="Sharp">Sharp</option><option value="Shinko">Shinko</option><option value="SiPix">SiPix</option><option value="Sony">Sony</option>
+                                <option value="Star">Star</option><option value="Tally">Tally</option><option value="Tektronix">Tektronix</option><option value="Texas Instruments">Texas Instruments</option><option value="Toshiba">Toshiba</option><option value="TOSHIBA TEC Corp.">TOSHIBA TEC Corp.</option><option value="Xante">Xante</option><option value="Xerox">Xerox</option><option value="Zebra">Zebra</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8 col-sm-7 col-xs-12">
+                        <div class="form-group">
+                            <select id="printersA" class="form-control">
+                                <option value="manufacturer-PPDs/hplip/hp-color_laserjet_2600n-hpijs.ppd.gz" selected="">HP Color LaserJet 2600n hpijs, 3.12.11, requires proprietary plugin (en, en)</option><option value="manufacturer-PPDs/hplip/hp-color_laserjet_2600n.ppd.gz">HP Color LaserJet 2600n, hpcups 3.12.11, requires proprietary plugin (en, en)</option><option value="manufacturer-PPDs/hplip/hp-910-hpijs.ppd.gz">HP 910 hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-910.ppd.gz">HP 910, hpcups 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-915-hpijs.ppd.gz">HP 915 hpijs, 3.12.11 (en, en)</option>
+                                <option value="manufacturer-PPDs/hplip/hp-915.ppd.gz">HP 915, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2000C.pcl3.ppd.gz">HP 2000C Foomatic/pcl3 (en)</option><option value="manufacturer-PPDs/hplip/hp-2000c-hpijs.ppd.gz">HP 2000c hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-2000c.ppd.gz">HP 2000c, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2500C.pcl3.ppd.gz">HP 2500C Foomatic/pcl3 (en)</option>
+                                <option value="manufacturer-PPDs/hplip/hp-2500c-hpijs.ppd.gz">HP 2500c hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-2500c.ppd.gz">HP 2500c, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/postscript/HP-2500CM.Postscript.ppd.gz">HP 2500CM Foomatic/Postscript (recommended) (en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2563.lp2563.ppd.gz">HP 2563 Foomatic/lp2563 (recommended) (en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1000-hpijs.ppd.gz">HP Business Inkjet 1000 hpijs, 3.12.11 (en, en)</option>
+                                <option value="manufacturer-PPDs/hplip/hp-business_inkjet_1000.ppd.gz">HP Business Inkjet 1000, hpcups 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1100-hpijs.ppd.gz">HP Business Inkjet 1100 hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1100.ppd.gz">HP Business Inkjet 1100, hpcups 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1200-hpijs.ppd.gz">HP Business Inkjet 1200 hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1200.ppd.gz">HP Business Inkjet 1200, hpcups 3.12.11 (en, en)</option>
+                                <option value="gutenprint/5.2/C/stp-hp-bij_2200.5.2.ppd.gz">HP Business Inkjet 2200 - CUPS+Gutenprint v5.2.9 (en)</option><option value="gutenprint/5.2/C/stp-hp-bij_2200.5.2.sim.ppd.gz">HP Business Inkjet 2200 - CUPS+Gutenprint v5.2.9 Simplified (en)</option><option value="OpenPrintingPPDs/ghostscript/HP-Business_Inkjet_2200.chp2200.ppd.gz">HP Business Inkjet 2200 Foomatic/chp2200 (en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_2200-hpijs.ppd.gz">HP Business Inkjet 2200 hpijs, 3.12.11 (en, en)</option>
+                                <option value="manufacturer-PPDs/hplip/hp-business_inkjet_2200.ppd.gz">HP Business Inkjet 2200, hpcups 3.12.11 (en, en)</option><option value="gutenprint/5.2/C/stp-hp-bij_2230.5.2.ppd.gz">HP Business Inkjet 2230 - CUPS+Gutenprint v5.2.9 (en)</option><option value="gutenprint/5.2/C/stp-hp-bij_2230.5.2.sim.ppd.gz">HP Business Inkjet 2230 - CUPS+Gutenprint v5.2.9 Simplified (en)</option>
+                            </select>
+                            <select id="printersB" class="form-control" style="display: none;">
+                                <option value="gutenprint/5.2/C/stp-brother-dcp-1200.5.2.ppd.gz" selected="">Brother DCP-1200 - CUPS+Gutenprint v5.2.9 (en)</option><option value="gutenprint/5.2/C/stp-brother-dcp-1200.5.2.sim.ppd.gz">Brother DCP-1200 - CUPS+Gutenprint v5.2.9 Simplified (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-1200.hl1250.ppd.gz">Brother DCP-1200 Foomatic/hl1250 (recommended) (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-1200.ljet2p.ppd.gz">Brother DCP-1200 Foomatic/ljet2p (en)</option>
+                                <option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7010.hl1250.ppd.gz">Brother DCP-7010 Foomatic/hl1250 (recommended) (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7010.lj4dith.ppd.gz">Brother DCP-7010 Foomatic/lj4dith (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7010.ljet4.ppd.gz">Brother DCP-7010 Foomatic/ljet4 (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7010.ljet4d.ppd.gz">Brother DCP-7010 Foomatic/ljet4d (en)</option>
+                                <option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7020.hl1250.ppd.gz">Brother DCP-7020 Foomatic/hl1250 (recommended) (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7020.lj4dith.ppd.gz">Brother DCP-7020 Foomatic/lj4dith (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7020.ljet4.ppd.gz">Brother DCP-7020 Foomatic/ljet4 (en)</option><option value="OpenPrintingPPDs/ghostscript/Brother-DCP-7020.ljet4d.ppd.gz">Brother DCP-7020 Foomatic/ljet4d (en)</option>
+                                <option value="OpenPrintingPPDs/postscript/Brother-DCP-7025.Postscript-Brother.ppd.gz">Brother DCP-7025 BR-Script3 (en)</option><option value="manufacturer-PPDs/brother/BR7025_2_GPL.ppd.gz">Brother DCP-7025 BR-Script3 (en)</option><option value="OpenPrintingPPDs/postscript/Brother-DCP-7025.Postscript.ppd.gz">Brother DCP-7025 Foomatic/Postscript (en)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-7 col-md-8 col-sm-9 col-xs-12">
+                        <div class="form-group">
+                            <input type="file" id="ppdfile">
+                            <p class="help-block">También es posible subir un archivo PPD en vez de escoger un controlador</p>
+                        </div>
+                    </div>
+                    <div class="col-lg-5 col-md-4 col-sm-3 col-xs-12">
+                        <div class="form-group">
+                            <button id="cleanfile" title="Limpiar fichero seleccionado" class="btn btn-default">
+                                <span class="fa fa-times-circle"></span> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </fieldset><fieldset>
+                <legend>Preferencias predeterminadas</legend>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="pageSize">Tamaño de papel</label>
+                            <select id="pageSize" class="form-control">
+                                <option value="Letter">Carta</option><option value="Executive">Ejecutivo</option><option value="Legal">Legal</option><option value="w612h935">8.5x13</option><option selected="" value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option><option value="ISOB5">B5 (ISO)</option>
+                                <option value="B5">JIS B5</option><option value="ISOB6">B6 (ISO)</option><option value="w612h936">Ejecutivo (JIS)</option><option value="Postcard">Tarjeta postal (JIS)</option><option value="DoublePostcard">Tarjeta postal doble (JIS)</option><option value="w558h774">16K</option><option value="w553h765">16K (195x270 mm)</option>
+                                <option value="w522h737">16K (184x260 mm)</option><option value="Env10">Sobre Comm10</option><option value="EnvMonarch">Sobre Monarch</option><option value="EnvDL">Sobre DL</option><option value="EnvC5">Sobre C5</option><option value="EnvISOB5">Sobre ISO B5</option><option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="resolution">Calidad de impresión</label>
+                            <select id="resolution" class="form-control">
+                                <option value="low">Ahorro</option>
+                                <option selected="" value="medium">Media</option>
+                                <option value="high">Alta</option>
+                                <option value="ultra">Muy alta</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="paper">Bandeja de papel</label>
+                            <select id="paper" class="form-control">
+                                <option selected="" value="1">Bandeja 1</option>
+                                <option value="2">Bandeja 2</option>
+                                <option value="3">Bandeja 3</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                </fieldset><fieldset>
+                <legend>Inventario</fieldset>
+                <div class="row">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="type">Tipo</label>
+                            <select id="type" class="form-control">
+                                <option selected="" value="LASER">Láser</option>
+                                <option value="INK">Tinta</option>
+                                <option value="MATRIX">Matricial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="brand">Fabricante</label>
+                            <input id="brand" type="text" class="form-control" placeholder="Ej: HP">
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label for="model">Modelo</label>
+                            <input id="model" type="text" class="form-control" placeholder="Ej: Deskjet 123">
+                        </div>
+                    </div>
+                </div>
+                <div class="row"><div class="col-sm-12">
+                    <a href="/" class="btn btn-default">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block morejs %}
+<script>
+    $(document).ready(function () {
+        var printersActive = 'A';
+        $("#printerBrand").change(function () {
+            var newPrinters = printersActive === 'A' ? 'B' : 'A';
+            $("#printers" + printersActive).hide();
+            $("#printers" + newPrinters).show();
+            printersActive = newPrinters;
+        });
+
+        $("#ppdfile").change(function (evt) {
+            var $file = $(evt.target),
+                $container = $("#driver");
+
+            if ($file.val() !== "") {
+                $container.find("select").attr("disabled", true);
+            } else {
+                $container.find("select").attr("disabled", false);
+            }
+        });
+
+        $("#installation input[type=radio]").change(function (evt) {
+            var $radio = $("#nodriver"),
+                $container = $("#driver");
+
+            if ($radio.is(":checked")) {
+                $container.find("select").attr("disabled", true);
+                $("#ppdfile").attr("disabled", true);
+                $("#cleanfile").attr("disabled", true);
+            } else {
+                $container.find("select").attr("disabled", false);
+                $("#ppdfile").attr("disabled", false);
+                $("#cleanfile").attr("disabled", false);
+            }
+        });
+
+        $("#cleanfile").click(function (evt) {
+            evt.preventDefault();
+            $("#ppdfile").val("").trigger("change");
+        });
+    });
+</script>
+{% endblock %}

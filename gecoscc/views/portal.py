@@ -10,8 +10,39 @@ from gecoscc.views import BaseView
 
 @view_config(route_name='home', renderer='templates/home.jinja2')
 def home(context, request):
-    return {
-    }
+    return {}
+
+
+# TO DELETE
+@view_config(route_name='users', renderer='templates/to_delete/users.jinja2')
+def users(context, request):
+    return {}
+
+
+@view_config(route_name='ous', renderer='templates/to_delete/ous.jinja2')
+def ous(context, request):
+    return {}
+
+
+@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
+def computers(context, request):
+    return {}
+
+
+@view_config(route_name='policies', renderer='templates/to_delete/policies.jinja2')
+def policies(context, request):
+    return {}
+
+
+@view_config(route_name='storages', renderer='templates/to_delete/storages.jinja2')
+def storages(context, request):
+    return {}
+
+
+@view_config(route_name='printers', renderer='templates/to_delete/printers.jinja2')
+def printers(context, request):
+    return {}
+# END TO DELETE
 
 
 @view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2')

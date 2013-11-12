@@ -31,13 +31,21 @@ def route_config(config):
                             cookie_needed=True)
 
 
-def route_config_auxiliary(config):
-    config.add_route('sockjs_home', '/sjs/')
-    config.add_route('sockjs_message', '/sjs/message/')
+def route_config_auxiliary(config, route_prefix):
+    config.add_route('sockjs_home', route_prefix)
+    config.add_route('sockjs_message', '%smessage/' % route_prefix)
+
+
+def to_delete_route_config(config):
+    config.add_route('users', '/users/')
+    config.add_route('ous', '/ous/')
+    config.add_route('computers', '/computers/')
+    config.add_route('policies', '/policies/')
+    config.add_route('storages', '/storages/')
+    config.add_route('printers', '/printers/')
 
 
 def database_config(config):
-
     settings = config.registry.settings
     mongo_uri = read_setting_from_env(settings, 'mongo_uri', None)
     if not mongo_uri:
@@ -148,6 +156,7 @@ def main(global_config, **settings):
     config.include('cornice')
 
     route_config(config)
+    to_delete_route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')
 
     config.scan('gecoscc.views')

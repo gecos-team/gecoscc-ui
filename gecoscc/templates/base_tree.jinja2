@@ -3,6 +3,7 @@
 {% block extraheader %}
 <!-- Tree CSS -->
 <link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+{% block moreheader %}{% endblock %}
 {% endblock %}
 
 {% block content %}
@@ -55,7 +56,7 @@
     <script src="{{request.application_url}}/static/js/tree.js"></script>
 
     <script>
-        $(function() {
+        $(document).ready(function () {
             // Sidebar heights
             $('#sidebar').height($(window).height() - 131);
             $(window).on('resize', function () {
@@ -82,4 +83,5 @@
             });
         });
     </script>
+    {% block morejs %}{% endblock %}
 {% endblock %}
