@@ -3,20 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Gecos Control Center's documentation
-===============================================
-
-English Edition:
+Documentación de Gecos Control Center
+=====================================
 
 .. toctree::
    :maxdepth: 2
 
-   en/index
+   developersdeployment
 
-Edición en Español:
 
-.. toctree::
-   :maxdepth: 2
 
-   es/index
-
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
