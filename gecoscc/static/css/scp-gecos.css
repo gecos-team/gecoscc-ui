@@ -6,9 +6,24 @@
     margin-left: 15px;
 }
 
+body {
+    background-color: #FAFAFA;
+}
+
 .page {
     margin: 0 20px;
 }
+
+/* TABS */
+.nav.nav-tabs li.active a {
+    background-color: #FAFAFA;
+    border-bottom-color: #FAFAFA;
+}
+
+.tab-content .tab-pane {
+    padding-top: 10px;
+}
+/* END TABS */
 
 footer {
     position: fixed;

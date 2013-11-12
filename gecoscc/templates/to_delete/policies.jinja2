@@ -1,7 +1,18 @@
 {% extends "base_tree.jinja2" %}
 
+{% block breadcrumb %}
+<li><a href="/">Inicio</a></li>
+<li class="active">Políticas</li>
+{% endblock %}
+
 {% block main_content %}
-<div class="alert alert-warning">
-    <strong>TODO!</strong> Missing section.
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Políticas</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+        </div>
+    </div>
 </div>
 {% endblock %}
