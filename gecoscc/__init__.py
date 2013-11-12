@@ -23,14 +23,17 @@ def read_setting_from_env(settings, key, default=None):
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/')
-    config.add_route('sockjs_home', '/sjs/')
-    config.add_route('sockjs_login', '/sjs/login/')
-    config.add_route('sockjs_logout', 'sjs/logout/')
-    config.add_route('sockjs_message', '/sjs/message/')
+    config.add_route('login', '/login/')
+    config.add_route('logout', 'logout/')
     config.add_sockjs_route('sockjs', prefix='/sockjs',
                             session=EventsManager,
                             per_user=True,
                             cookie_needed=True)
+
+
+def route_config_auxiliary(config):
+    config.add_route('sockjs_home', '/sjs/')
+    config.add_route('sockjs_message', '/sjs/message/')
 
 
 def database_config(config):
@@ -145,6 +148,7 @@ def main(global_config, **settings):
     config.include('cornice')
 
     route_config(config)
+    route_config_auxiliary(config, route_prefix='/sjs/')
 
     config.scan('gecoscc.views')
     config.scan('gecoscc.api')

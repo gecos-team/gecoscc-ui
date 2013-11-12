@@ -22,7 +22,7 @@ def sockjs_home(context, request):
 
 class LoginViews(BaseView):
 
-    @view_config(route_name='sockjs_login', renderer='templates/sockjs/login.jinja2')
+    @view_config(route_name='login', renderer='templates/sockjs/login.jinja2')
     def login(self):
         if self.request.POST:
             username = self.request.POST.get('username')
@@ -52,7 +52,7 @@ class LoginViews(BaseView):
         else:
             return {}
 
-    @view_config(route_name='sockjs_logout', renderer='templates/sockjs/logout.jinja2')
+    @view_config(route_name='logout', renderer='templates/sockjs/logout.jinja2')
     def logout(self):
         headers = forget(self.request)
         return HTTPFound(location=self.request.route_path('home'),
