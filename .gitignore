@@ -10,3 +10,4 @@ sessions/
 nosetests.xml
 coverage.xml
 /development.ini
+docs/_build/
