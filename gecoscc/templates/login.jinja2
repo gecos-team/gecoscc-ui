@@ -14,11 +14,17 @@
 {% block content %}
 <div class="container">
     <div class="row">
-        <form method="post" class="bootstrap-admin-login-form">
+        <form method="post" action="/login/" class="bootstrap-admin-login-form">
+            {% if message is defined %}
+            <div class="alert alert-danger">
+                <a class="close" data-dismiss="alert" href="#">&times;</a>
+                {{ message }}
+            </div>
+            {% endif %}
             <h1>GECOS CC Login</h1>
             <h4 class="bootstrap-admin-light-padding-bottom">Consejería de Hacienda</h4>
             <div class="form-group">
-                <input class="form-control" type="text" name="email" placeholder="E-mail">
+                <input class="form-control" type="text" name="username" placeholder="Nombre de usuario">
             </div>
             <div class="form-group">
                 <input class="form-control" type="password" name="password" placeholder="Contraseña">
@@ -29,7 +35,7 @@
                     Recuérdame
                 </label>
             </div>
-            <a class="btn btn-lg btn-primary" href="/">Enviar</a>
+            <input type="submit" value="Enviar" class="btn btn-primary btn-lg">
         </form>
     </div>
 </div>
