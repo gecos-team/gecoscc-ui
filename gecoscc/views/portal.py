@@ -53,7 +53,7 @@ def sockjs_home(context, request):
 
 class LoginViews(BaseView):
 
-    @view_config(route_name='login', renderer='templates/sockjs/login.jinja2')
+    @view_config(route_name='login', renderer='templates/login.jinja2')
     def login(self):
         if self.request.POST:
             username = self.request.POST.get('username')
