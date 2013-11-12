@@ -83,8 +83,8 @@ class LoginViews(BaseView):
         else:
             return {}
 
-    @view_config(route_name='logout', renderer='templates/sockjs/logout.jinja2')
+    @view_config(route_name='logout')
     def logout(self):
         headers = forget(self.request)
-        return HTTPFound(location=self.request.route_path('home'),
+        return HTTPFound(location=self.request.route_path('login'),
                          headers=headers)
