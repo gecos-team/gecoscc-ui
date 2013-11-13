@@ -24,13 +24,13 @@ def ous(context, request):
     return {}
 
 
-@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
-def computers(context, request):
+@view_config(route_name='policies', renderer='templates/to_delete/policies.jinja2')
+def policies(context, request):
     return {}
 
 
-@view_config(route_name='policies', renderer='templates/to_delete/policies.jinja2')
-def policies(context, request):
+@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
+def computers(context, request):
     return {}
 
 
