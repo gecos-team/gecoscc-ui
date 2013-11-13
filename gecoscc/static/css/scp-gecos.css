@@ -50,6 +50,22 @@ footer {
     height: 30%;
 }
 
+#events.maximize {
+    height: auto;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1100;
+    border-radius: 0;
+}
+
+#events.maximize .panel-heading {
+    border-top-right-radius: 0;
+    border-top-left-radius: 0;
+}
+
 #viewport-main {
     padding-bottom: 20px;
 }
