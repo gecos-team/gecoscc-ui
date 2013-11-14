@@ -42,6 +42,13 @@ setup(name='gecoscc',
       packages=find_packages(),
       include_package_data=True,
       zip_safe=False,
+      package_data={
+          'gecoscc': [
+              'templates/*',
+              'locales/*',
+              'static/*'
+          ]
+      },
       install_requires=requires,
       tests_require=requires,
       test_suite="gecoscc",
