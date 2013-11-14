@@ -43,11 +43,9 @@ setup(name='gecoscc',
       include_package_data=True,
       zip_safe=False,
       package_data={
-          'gecoscc': [
-              'templates/*',
-              'locales/*',
-              'static/*'
-          ]
+          'templates': ['*.jinja2'],
+          'locale': ['*.pot', '*.po', '*.mo'],
+          'static': ['*.js', '*.css', '*.jpg', '*.png'],
       },
       install_requires=requires,
       tests_require=requires,

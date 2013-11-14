@@ -1,4 +1,4 @@
 include *.txt *.ini *.cfg *.rst *.pdf
 recursive-include gecoscc/locale  *.mo *.pot *.po
-recursive-include gecoscc/templates *.jinja2
-recursive-include gecoscc/static *.css *.js *.png *.jpg
+recursive-include gecoscc/templates *
+recursive-include gecoscc/static *
