@@ -12,7 +12,10 @@ Paquetes de sistema
 
 Se necesitan los siguientes paquetes de sistema:
 
- * python-setuptools python-devel autoconf make gcc gettext git
+
+  .. code-block:: none
+
+   python-setuptools python-devel autoconf make gcc gettext git
 
 
 Repositorios y paquetes extra
@@ -26,17 +29,19 @@ que desarrolla MongoDB, 10gen.
 
 1. Crear el fichero /etc/yum.repos.d/mongodb.repo con el siguiente contenido
 
-    .. code-block:: ini
+ .. code-block:: ini
 
-      [mongodb]
-      name=MongoDB Repository
-      baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
-      gpgcheck=0
-      enabled=1
+   [mongodb]
+   name=MongoDB Repository
+   baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
+   gpgcheck=0
+   enabled=1
 
 2. Instalar los siguientes paquetes
 
- * mongo-10gen mongo-10gen-server
+  .. code-block:: none
+
+    mongo-10gen mongo-10gen-server
 
 
 Creación del virtualenv
@@ -46,26 +51,26 @@ Para poder crear el entorno virtualenv, es necesario instalar primero el
 paquete virtualenv desde el repositorio de paquetes python pypi. Para realizar
 ello ejecutar la siguiente instrucción como root
 
-    .. code-block:: none
+.. code-block:: none
 
-      # easy_install virtualenv
+  # easy_install virtualenv
 
 
 Ahora creamos un virtualenv llamado gecoscc
 
 
-    .. code-block:: none
+.. code-block:: none
 
-       virtualenv gecoscc
+   virtualenv gecoscc
 
 
 Antes de continuar, necesitamos cargar el entorno del virtualenv, para ello
 ejecutamos:
 
-    .. code-block:: none
+.. code-block:: none
 
-       cd gecoscc
-       source bin/activate
+   cd gecoscc
+   source bin/activate
 
 
 Para verificar que el virtualenv se ha cargado correctamente, puede mirar el
@@ -77,18 +82,18 @@ Descarga y despliegue del proyecto
 
 Para descargar el proyecto usaremos git.
 
-    .. code-block:: none
+.. code-block:: none
 
-      git clone git@github.com:gecos-team/gecoscc-ui.git
+  git clone git@github.com:gecos-team/gecoscc-ui.git
 
 
 Ahora procedemos a instalar todas las dependencias del código así como a
 desplegar el propio paquete gecoscc-ui que acabamos de descargar.
 
-    .. code-block:: none
+.. code-block:: none
 
-      cd gecoscc-ui
-      python setup.py develop
+  cd gecoscc-ui
+  python setup.py develop
 
 
 
@@ -109,16 +114,16 @@ activado un firewall.
 
 Como root, se recomienda ejecutar los siguientes comandos:
 
-    .. code-block:: none
+.. code-block:: none
 
-      # Habilitamos el servicio mongod para arranque con el sistema
-      chkconfig mongod on
+  # Habilitamos el servicio mongod para arranque con el sistema
+  chkconfig mongod on
 
-      # Arrancamos el servicio mongod
-      service mongod start
+  # Arrancamos el servicio mongod
+  service mongod start
 
-      # abrimos el puerto para la aplicación web en modo desarrollo
-      lokkit -p 6543:tcp
+  # abrimos el puerto para la aplicación web en modo desarrollo
+  lokkit -p 6543:tcp
 
 
 Arranque de servicios de desarrollo
@@ -137,18 +142,18 @@ Arranque de Celery
 ------------------
 
 
-    .. code-block:: none
+.. code-block:: none
 
-      pceleryd config-templates/development.ini -E -B
+  pceleryd config-templates/development.ini -E -B
 
 
 Arranque de Aplicación web (pyramid)
 ------------------------------------
 
 
-    .. code-block:: none
+.. code-block:: none
 
-      pserve config-templates/development.ini
+  pserve config-templates/development.ini
 
 
 Acceso a la aplicación
@@ -158,9 +163,9 @@ Acceso a la aplicación
 Si está desplegando el servicio en su propio sistema, es decir, en local,
 introduzca la siguiente URL en su navegador.
 
-    .. code-block:: none
+.. code-block:: none
 
-      http://localhost:6543/
+  http://localhost:6543/
 
 
 Para acceder al panel de control necesitará crear un usuario administrador.
@@ -168,10 +173,10 @@ Con el entorno de virtualenv cargado y desde el directorio del virtualenv,
 ejecute el siguiente comando:
 
 
-    .. code-block:: none
+.. code-block:: none
 
-      pmanage gecoscc/config-templates/development.ini createsuperuser \
-            --username admin --email admin@example.com
+  pmanage gecoscc/config-templates/development.ini createsuperuser \
+        --username admin --email admin@example.com
 
 
 El comando le preguntará por un password para el usuario.
