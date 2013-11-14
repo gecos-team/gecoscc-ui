@@ -1,2 +1,2 @@
-include *.txt *.ini *.cfg *.rst
-recursive-include gecoscc *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.jinja2 *.js *.html *.xml
+include *.txt *.ini *.cfg *.rst *.pdf
+recursive-include gecoscc *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.jinja2 *.js *.html *.xml, *.mo, *.pot, *.po
