@@ -13,9 +13,9 @@ Paquetes de sistema
 Se necesitan los siguientes paquetes de sistema:
 
 
-  .. code-block:: none
+.. code-block:: none
 
-   python-setuptools python-devel autoconf make gcc gettext git
+ python-setuptools python-devel autoconf make gcc gettext git
 
 
 Repositorios y paquetes extra
@@ -29,19 +29,19 @@ que desarrolla MongoDB, 10gen.
 
 1. Crear el fichero /etc/yum.repos.d/mongodb.repo con el siguiente contenido
 
- .. code-block:: ini
+  .. code-block:: ini
 
-   [mongodb]
-   name=MongoDB Repository
-   baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
-   gpgcheck=0
-   enabled=1
+    [mongodb]
+    name=MongoDB Repository
+    baseurl=http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/
+    gpgcheck=0
+    enabled=1
 
 2. Instalar los siguientes paquetes
 
-  .. code-block:: none
+   .. code-block:: none
 
-    mongo-10gen mongo-10gen-server
+     mongo-10gen mongo-10gen-server
 
 
 Creación del virtualenv
