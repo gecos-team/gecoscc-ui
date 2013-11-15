@@ -53,7 +53,7 @@ footer {
 #events.maximize {
     height: auto;
     position: fixed;
-    top: 0;
+    top: 50px;
     right: 0;
     bottom: 0;
     left: 0;
@@ -66,9 +66,17 @@ footer {
     border-top-left-radius: 0;
 }
 
+#events .bootstrap-admin-panel-content {
+    overflow-y: auto;
+    height: -moz-calc(100% - 56px);
+    height: -webkit-calc(100% - 56px);
+    height: calc(100% - 56px);
+}
+
 #events .task {
     border-bottom: 1px solid #CCC;
     padding: 0 5px;
+    overflow: hidden;
 }
 
 #events .task:last-child {
