@@ -116,5 +116,24 @@ bootstrap de chef solo en el servidor.
   knife solo prepare root@server
 
 
-TODO, add the recipe to the runlist
+Ahora tenemos que añadir la receta al runlist del servidor. Para esto, editamos
+el fichero *nodes/root@server* Y para que se instale el panel de control web de
+Gecos debe tener un aspecto como el siguiente:
+
+.. code-block:: javascript
+
+  {
+    "run_list": [
+        "recipe[gecosccui::backend]"
+    ]
+  }
+
+
+Una vez tengamos preparada la run_list del equipo podemos ejecutar tal
+run_list. Para eso podemos ejecutar el siguiente comando:
+
+.. code-block:: bash
+
+  knife solo cook root@server
+
 
