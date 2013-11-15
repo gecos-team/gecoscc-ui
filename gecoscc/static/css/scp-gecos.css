@@ -66,6 +66,34 @@ footer {
     border-top-left-radius: 0;
 }
 
+#events .task {
+    border-bottom: 1px solid #CCC;
+    padding: 0 5px;
+}
+
+#events .task:last-child {
+    border-bottom: 0;
+}
+
+#events .task.success {
+    background-color: rgb(164, 240, 161);
+}
+
+#events .task.error {
+    background-color: rgb(255, 179, 179);
+}
+
+#events .task span.badge {
+    margin-left: 3px;
+    position: relative;
+    top: 1px;
+}
+
+#events .task span:last-child {
+    position: relative;
+    top: 3px;
+}
+
 #viewport-main {
     padding-bottom: 20px;
 }
