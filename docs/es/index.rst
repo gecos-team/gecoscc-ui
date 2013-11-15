@@ -9,6 +9,7 @@ Documentación de Gecos Control Center
 .. toctree::
    :maxdepth: 2
 
+   deployment
    developersdeployment
 
 
