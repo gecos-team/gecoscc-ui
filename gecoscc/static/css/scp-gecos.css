@@ -66,6 +66,14 @@ footer {
     border-top-left-radius: 0;
 }
 
+#events.maximize .task {
+    padding: 5px;
+}
+
+#events.maximize .task>span:first-child {
+    margin-right: 15px;
+}
+
 #events .bootstrap-admin-panel-content {
     overflow-y: auto;
     height: -moz-calc(100% - 56px);

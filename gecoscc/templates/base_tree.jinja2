@@ -79,13 +79,48 @@
                 <button class="btn btn-xs btn-default pull-right" title="Refrescar"><span class="fa fa-repeat"></span></button>
             </div>
             <div class="bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
+                <div class="long hide row mb10">
+                    <div class="col-xs-12 col-sm-8 col-md-6">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Filtra">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown">
+                                    <span class="fa fa-search"></span> <span class="caret"></span>
+                                </button>
+                                <ul class="dropdown-menu" role="menu">
+                                    <li><a href="#"><span class="fa fa-user"></span> Usuarios</a></li>
+                                    <li><a href="#"><span class="fa fa-groups"></span> Unidades organizativas</a></li>
+                                    <li><a href="#"><span class="fa fa-asterisk"></span> Cualquier cosa</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <ul class="list-unstyled">
-                    <li class="task">Cambio 10 - <span class="fa fa-desktop"></span> Sede Central... <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span></li>
-                    <li class="task">Cambio 11 - <span class="fa fa-group"></span> Sede Central... <span class="badge pull-right">3/4</span><span class="pull-right fa fa-clock-o" title="Aplicando"></span></li>
-                    <li class="task">Cambio 12 - <span class="fa fa-user"></span> Sede Central... <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span></li>
-                    <li class="task success">Cambio 13 - <span class="fa fa-group"></span> Sede Triana... <span class="badge pull-right">4/4</span><span class="pull-right fa fa-check" title="Finalizado"></span></li>
-                    <li class="task">Cambio 15 - <span class="fa fa-globe"></span> Sede Triana... <span class="badge pull-right">1/4</span><span class="pull-right fa fa-clock-o" title="Calculando"></span></li>
-                    <li class="task error">Cambio 16 - <span class="fa fa-globe"></span> Sede Central... <span class="badge pull-right">3/4</span><span class="pull-right fa fa-times" title="Error"></span></li>
+                    <li class="task">
+                        Cambio 10 - <span class="fa fa-desktop"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de un nuevo puesto de trabajo</span>
+                        <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span>
+                    </li>
+                    <li class="task">
+                        Cambio 11 - <span class="fa fa-group"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de una nueva unidad organizativa</span>
+                        <span class="badge pull-right">3/4</span><span class="pull-right fa fa-clock-o" title="Aplicando"></span>
+                    </li>
+                    <li class="task">
+                        Cambio 12 - <span class="fa fa-user"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, modificación de los datos de un empleado</span>
+                        <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span>
+                    </li>
+                    <li class="task success">
+                        Cambio 13 - <span class="fa fa-group"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, modificación de una unidad organizativa</span>
+                        <span class="badge pull-right">4/4</span><span class="pull-right fa fa-check" title="Finalizado"></span>
+                    </li>
+                    <li class="task">
+                        Cambio 15 - <span class="fa fa-globe"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, política, cambio del fondo de pantalla</span>
+                        <span class="badge pull-right">1/4</span><span class="pull-right fa fa-clock-o" title="Calculando"></span>
+                    </li>
+                    <li class="task error">
+                        Cambio 16 - <span class="fa fa-globe"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, política, cambio del tema de iconos</span>
+                        <span class="badge pull-right">3/4</span><span class="pull-right fa fa-times" title="Error"></span>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -142,6 +177,8 @@
                 $("#maximize").addClass("hide");
                 $("#minimize").removeClass("hide");
                 $(document.body).append(events);
+                events.find(".short").addClass("hide");
+                events.find(".long").removeClass("hide");
                 events.addClass("maximize");
             });
             $("#minimize").click(function (evt) {
@@ -149,6 +186,8 @@
                 $("#maximize").removeClass("hide");
                 $("#minimize").addClass("hide");
                 $("#sidebar").append(events);
+                events.find(".short").removeClass("hide");
+                events.find(".long").addClass("hide");
                 events.removeClass("maximize");
             });
         });
