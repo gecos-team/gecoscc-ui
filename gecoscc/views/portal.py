@@ -13,6 +13,11 @@ def home(context, request):
     return {}
 
 
+@view_config(route_name='applications', renderer='templates/applications.jinja2')
+def applications(context, request):
+    return {}
+
+
 # TO DELETE
 @view_config(route_name='users', renderer='templates/to_delete/users.jinja2')
 def users(context, request):

@@ -1,0 +1,67 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block inner_content %}
+<div class="container">
+    <form role="form">
+        <div class="row"><div class="col-sm-12">
+            <h1>Repositorios de software</h1>
+        </div></div>
+        <div id="template" class="row">
+            <div class="col-sm-4 col-md-2 form-group">
+                <label class="sr-only" for="protocol1">Protocolo</label>
+                <select class="form-control" id="protocol1">
+                    <option value="http">http</option>
+                    <option value="ftp">ftp</option>
+                </select>
+            </div>
+            <div class="col-sm-8 col-md-3 form-group">
+                <label class="sr-only" for="address1">Url del repositorio</label>
+                <input type="text" class="form-control" id="address1" placeholder="Url del repositorio. Ej: packages.gecos.com">
+            </div>
+            <div class="col-sm-4 col-md-2 form-group">
+                <label class="sr-only" for="distribution1">Distribución</label>
+                <select class="form-control" id="distribution1">
+                    <option value="v1">Version 1</option>
+                    <option value="v2">Version 2</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-md-3 form-group">
+                <label class="sr-only" for="sections1">Secciones</label>
+                <input type="text" class="form-control" id="sections1" placeholder="Secciones. Ej: contrib non-free">
+            </div>
+            <div class="col-sm-2 form-group">
+                <button class="pull-right btn btn-danger" disabled><span class="fa fa-times"></span> Eliminar</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 form-group">
+                <label class="sr-only" for="generated1">Url generada</label>
+                <input type="text" class="form-control" id="generated1" disabled>
+            </div>
+        </div>
+        <div class="row"><div class="col-sm-12">
+            <a href="/" class="btn btn-default">Volver</a>
+            <button id="add" class="btn btn-primary">Añadir</button>
+        </div></div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function () {
+        var counter = 1,
+            ids = ["protocol", "address", "distribution", "sections", "generated"];
+        $("#add").click(function (evt) {
+            evt.preventDefault();
+            var tpl = "<div class='row'>" + $("#template").html() + "</div>";
+            tpl += "<div class='row'>" + $("#template").next().html() + "</div>";
+            counter += 1;
+            $.each(ids, function (idx, id) {
+                tpl = tpl.replace(new RegExp(id + '1', 'g'), id + counter);
+            });
+            $("form .row").last().before(tpl);
+        });
+    });
+</script>
+{% endblock %}
