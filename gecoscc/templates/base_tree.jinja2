@@ -89,7 +89,7 @@
                                 </button>
                                 <ul class="dropdown-menu" role="menu">
                                     <li><a href="#"><span class="fa fa-user"></span> Usuarios</a></li>
-                                    <li><a href="#"><span class="fa fa-groups"></span> Unidades organizativas</a></li>
+                                    <li><a href="#"><span class="fa fa-group"></span> Unidades organizativas</a></li>
                                     <li><a href="#"><span class="fa fa-asterisk"></span> Cualquier cosa</a></li>
                                 </ul>
                             </div>
@@ -142,6 +142,10 @@
 
 {% block extrajs %}
     <script src="{{request.application_url}}/static/js/datasourceTree.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/underscore-1.5.2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone-1.1.0.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone.marionette-1.2.2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/app.js"></script>
     <script src="{{request.application_url}}/static/js/tree.js"></script>
 
     <script>
@@ -190,6 +194,8 @@
                 events.find(".long").addClass("hide");
                 events.removeClass("maximize");
             });
+
+//             App.start();
         });
     </script>
     {% block morejs %}{% endblock %}

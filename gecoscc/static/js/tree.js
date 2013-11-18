@@ -1,20 +1,21 @@
-/*jslint browser: true */
-/*global $ */
+/*jslint browser: true, nomen: true */
+/*global $, App */
 
 /*
 * Fuel UX Tree
 * https://github.com/ExactTarget/fuelux
 *
 * Copyright (c) 2012 ExactTarget
+* Copyright (c) 2013 Junta de Andalucia
 * Licensed under the MIT license.
 */
 
-(function () {
+App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     "use strict";
 
     // TREE CONSTRUCTOR AND PROTOTYPE
 
-    var Tree = function (element, options) {
+    var TreePlugin = function (element, options) {
         this.$element = $(element);
         this.options = $.extend({}, $.fn.tree.defaults, options);
 
@@ -24,8 +25,8 @@
         this.render();
     };
 
-    Tree.prototype = {
-        constructor: Tree,
+    TreePlugin.prototype = {
+        constructor: TreePlugin,
 
         render: function () {
             this.populate(this.$element);
@@ -220,7 +221,7 @@
             var data = $this.data('tree');
             var options = typeof option === 'object' && option;
 
-            if (!data) { $this.data('tree', (data = new Tree(this, options))); }
+            if (!data) { $this.data('tree', (data = new TreePlugin(this, options))); }
             if (typeof option === 'string') { methodReturn = data[option](value); }
         });
 
@@ -233,5 +234,36 @@
         cacheItems: true
     };
 
-    $.fn.tree.Constructor = Tree;
-}());
+    $.fn.tree.Constructor = TreePlugin;
+
+    App.addInitializer(function (options) {
+        var model = new Tree.Models.TreeData();
+        App.tree.show(new Tree.Views.NavigationTree({ model: model }));
+    });
+});
+
+App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
+    "use strict";
+
+    Models.TreeData = Backbone.Model.extend({
+        defaults: {
+            rawData: null,
+            parsedData: null
+        },
+
+        toJSON: function () {
+            return _.clone(this.get("parsedData"));
+        }
+    });
+});
+
+App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
+    "use strict";
+
+    Views.NavigationTree = Marionette.ItemView.extend({
+        tagName: "div",
+        template: "#tpl-nav-tree"
+
+//         events: {},
+    });
+});
