@@ -1,0 +1,34 @@
+{% extends "base_tree.jinja2" %}
+
+{% block breadcrumb %}
+<li><a href="/">Inicio</a></li>
+<li><a href="/ous/">Unidades Organizativas</a></li>
+<li class="active">Políticas</li>
+{% endblock %}
+
+{% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Política</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <form role="form">
+                <div class="row"><div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input id="name" type="text" class="form-control" placeholder="Ej: Fondo de pantalla corporativo 03 (Salamandra)">
+                    </div>
+                </div></div>
+                <div class="row"><div class="col-sm-12">
+                    <!-- TODO -->
+                </div></div>
+                <div class="row"><div class="col-sm-12">
+                    <a href="/ous/" class="btn btn-default">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Guardar</button>
+                </div></div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
