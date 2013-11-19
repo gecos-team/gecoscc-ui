@@ -1,5 +1,13 @@
 {% extends "base_tree.jinja2" %}
 
+{% block moreheader %}
+<style>
+    .info-icon {
+        margin-top: 25px;
+    }
+</style>
+{% endblock %}
+
 {% block breadcrumb %}
 <li><a href="/">Inicio</a></li>
 <li class="active">Puestos de Trabajo</li>
@@ -7,76 +15,150 @@
 
 {% block main_content %}
 <div class="row">
-    <div class="panel panel-default">
-        <div class="panel-heading">
-            <div class="text-muted bootstrap-admin-box-title">Puesto de Trabajo</div>
-        </div>
-        <div class="bootstrap-admin-panel-content dashboard">
-            <form role="form">
-                <div class="row">
-                    <div class="col-sm-6 col-xs-12">
-                        <div class="form-group">
-                            <label for="name">Nombre</label>
-                            <input id="name" type="text" class="form-control" placeholder="Ej: Portátil de Patricio">
-                        </div>
-                    </div>
-                    <div class="col-sm-6 col-xs-12">
-                        <div class="form-group">
-                            <label for="identifier">Identificador</label>
-                            <input id="identifier" type="text" class="form-control" placeholder="Ej: patrick-laptop">
-                        </div>
-                    </div>
-                </div><div class="row">
-                    <div class="col-md-9 col-sm-8 col-xs-12">
-                        <div class="form-group">
-                            <label for="serial">Nº de Serie</label>
-                            <input id="serial" type="text" class="form-control" placeholder="Ej: SN1234567890ABC">
-                        </div>
-                        <div class="form-group">
-                            <label for="registry">Nº de Registro</label>
-                            <input id="registry" type="text" class="form-control" placeholder="Ej: JDA123DEP03">
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-4 col-xs-12">
-                        <div class="form-group">
-                            <label for="type">Tipo</label>
-                            <div class="radio">
-                                <label>
-                                    <input type="radio" name="type" id="type1" value="DESKTOP" checked>
-                                    Sobremesa
-                                </label>
-                            </div><div class="radio">
-                                <label>
-                                    <input type="radio" name="type" id="type1" value="LAPTOP">
-                                    Portátil
-                                </label>
-                            </div><div class="radio">
-                                <label>
-                                    <input type="radio" name="type" id="type1" value="NETBOOK">
-                                    Netbook
-                                </label>
-                            </div><div class="radio">
-                                <label>
-                                    <input type="radio" name="type" id="type1" value="TABLET">
-                                    Tableta
-                                </label>
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
+        <li><a href="#ohai" data-toggle="tab">Características del puesto</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div class="tab-pane fade in active" id="info">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="text-muted bootstrap-admin-box-title">Puesto de Trabajo</div>
+                </div>
+                <div class="bootstrap-admin-panel-content dashboard">
+                    <form role="form">
+                        <div class="row"><div class="col-sm-12">
+                            <div class="well well-sm">
+                                <div class="row">
+                                    <div class="col-sm-2">
+                                        <span class="fa fa-info-circle fa-5x info-icon"></span>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <dl>
+                                            <dt>Usuarios que han entrado</dt>
+                                            <dd>juan, anabel</dd>
+                                            <dt>Uptime</dt>
+                                            <dd>7h 12m</dd>
+                                        </dl>
+                                    </div>
+                                    <div class="col-sm-5">
+                                        <dl>
+                                            <dt>Última ejecución</dt>
+                                            <dd><span class="text-warning">Hoy, 9:23:12</span></dd>
+                                            <dt>Marca y modelo</dt>
+                                            <dd>HP Pavilion 14-b100</dd>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+                        </div></div>
+                        <div class="row">
+                            <div class="col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label for="name">Nombre</label>
+                                    <input id="name" type="text" class="form-control" placeholder="Ej: Portátil de Juan">
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label for="identifier">Identificador</label>
+                                    <input id="identifier" type="text" class="form-control" placeholder="Ej: juan-laptop">
+                                </div>
+                            </div>
+                        </div><div class="row">
+                            <div class="col-md-9 col-sm-8 col-xs-12">
+                                <div class="form-group">
+                                    <label for="ip">IP</label>
+                                    <input id="ip" type="text" class="form-control" placeholder="Ej: 192.168.210.134">
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <div class="form-group">
+                                    <label for="type">Tipo</label>
+                                    <select id="type" class="form-control">
+                                        <option value="DESKTOP">Sobremesa</option>
+                                        <option value="LAPTOP">Portátil</option>
+                                        <option value="NETBOOK">Netbook</option>
+                                        <option value="TABLET">Tableta</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div><div class="row">
+                            <div class="col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label for="serial">Nº de Serie</label>
+                                    <input id="serial" type="text" class="form-control" placeholder="Ej: SN1234567890ABC">
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-xs-12">
+                                <div class="form-group">
+                                    <label for="registry">Nº de Registro</label>
+                                    <input id="registry" type="text" class="form-control" placeholder="Ej: JDA123DEP03">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-xs-12">
-                        <div class="form-group">
-                            <label for="extra">Información extra</label>
-                            <textarea id="extra" class="form-control" rows="6"></textarea>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group">
+                                    <label for="extra">Información extra</label>
+                                    <textarea id="extra" class="form-control" rows="6"></textarea>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                        <div class="row"><div class="col-sm-12">
+                            <a href="/" class="btn btn-default">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                        </div></div>
+                    </form>
                 </div>
-                <div class="row"><div class="col-sm-12">
-                    <a href="/" class="btn btn-default">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
-                </div></div>
-            </form>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="ohai">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="text-muted bootstrap-admin-box-title">Características del puesto (Ohai)</div>
+                </div>
+                <div class="bootstrap-admin-panel-content dashboard">
+                    <form role="form">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-4"><div class="form-group">
+                                <label>CPU</label>
+                                <p class="form-control-static">Intel i5 4200H (2 cores)</p>
+                            </div></div>
+                            <div class="col-xs-12 col-sm-4"><div class="form-group">
+                                <label>RAM</label>
+                                <p class="form-control-static">Kingston DDR3 1333 (4GB, 1 slot)</p>
+                            </div></div>
+                            <div class="col-xs-12 col-sm-4"><div class="form-group">
+                                <label>Tarjeta Gráfica</label>
+                                <p class="form-control-static">Intel HD 4600</p>
+                            </div></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
+                                <label>Disco Duro 1</label>
+                                <p class="form-control-static mb10">Samsung 840 (250GB)</p>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
+                                        <span>60% usado</span>
+                                    </div>
+                                </div>
+                            </div></div>
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
+                                <label>Disco Duro 2</label>
+                                <p class="form-control-static mb10">Seagate 7200 SATA3 (1TB)</p>
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar" aria-valuenow="23" aria-valuemin="0" aria-valuemax="100" style="width: 23%;">
+                                        <span>23% usado</span>
+                                    </div>
+                                </div>
+                            </div></div>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </div>

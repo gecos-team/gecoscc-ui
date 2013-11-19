@@ -13,8 +13,23 @@ def home(context, request):
     return {}
 
 
-@view_config(route_name='applications', renderer='templates/applications.jinja2')
-def applications(context, request):
+@view_config(route_name='status', renderer='templates/status.jinja2')
+def status(context, request):
+    return {}
+
+
+@view_config(route_name='admins', renderer='templates/admins.jinja2')
+def admins(context, request):
+    return {}
+
+
+@view_config(route_name='groups', renderer='templates/groups.jinja2')
+def groups(context, request):
+    return {}
+
+
+@view_config(route_name='reports', renderer='templates/reports.jinja2')
+def reports(context, request):
     return {}
 
 
