@@ -1,0 +1,39 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
+
+{% block extraheader %}
+<style>
+    dl {
+        font-size: 1.8em;
+    }
+
+    dl dt {
+        width: 240px !important;
+    }
+
+    dl dd {
+        margin-left: 260px !important;
+    }
+</style>
+{% endblock %}
+
+
+{% block inner_content %}
+<div class="container">
+    <div class="row"><div class="col-sm-12">
+        <h1>Estado de los servicios</h1>
+    </div></div>
+    <div class="row"><div class="col-sm-12">
+        <dl class="dl-horizontal">
+            <dt>Gecos UI</dt>
+            <dd><span class="label label-success"><span class="fa fa-check"></span> Corriendo</span></dd>
+            <dt>Chef Server</dt>
+            <dd><span class="label label-success"><span class="fa fa-check"></span> Corriendo</span></dd>
+            <dt>Active Directory</dt>
+            <dd><span class="label label-danger"><span class="fa fa-times"></span> No responde</span></dd>
+        </dl>
+    </div></div>
+</div>
+{% endblock %}

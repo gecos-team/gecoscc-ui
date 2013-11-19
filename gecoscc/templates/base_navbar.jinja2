@@ -20,11 +20,11 @@
             </div>
             <div class="collapse navbar-collapse main-navbar-collapse">
                 <ul class="nav navbar-nav pull-right">
-                    <li class="active"><a href="/">Inicio</a></li>
-                    <li><a href="/status/">Estado</a></li>
-                    <li><a href="/admins/">Administradores</a></li>
-                    <li><a href="/groups/">Grupos</a></li>
-                    <li><a href="/reports/">Informes</a></li>
+                    <li class="{% block nav_bar_home %}active{% endblock %}"><a href="/">Inicio</a></li>
+                    <li class="{% block nav_bar_status %}{% endblock %}"><a href="/status/">Estado</a></li>
+                    <li class="{% block nav_bar_admins %}{% endblock %}"><a href="/admins/">Administradores</a></li>
+                    <li class="{% block nav_bar_groups %}{% endblock %}"><a href="/groups/">Grupos</a></li>
+                    <li class="{% block nav_bar_reports %}{% endblock %}"><a href="/reports/">Informes</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">Juan Nadie <b class="caret"></b></a>
                         <ul class="dropdown-menu">
