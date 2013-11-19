@@ -57,7 +57,6 @@ footer {
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 1100;
     border-radius: 0;
 }
 
@@ -70,7 +69,7 @@ footer {
     padding: 5px;
 }
 
-#events.maximize .task>span:first-child {
+#events.maximize .task span.type-icon {
     margin-right: 15px;
 }
 
@@ -105,7 +104,7 @@ footer {
     top: 1px;
 }
 
-#events .task span:last-child {
+#events .task>span:last-child {
     position: relative;
     top: 3px;
 }

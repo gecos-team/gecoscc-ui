@@ -62,27 +62,27 @@
                 </div>
                 <ul class="list-unstyled">
                     <li class="task">
-                        Cambio 10 - <span class="fa fa-desktop"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de un nuevo puesto de trabajo</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 10 - <span class="fa fa-desktop type-icon"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de un nuevo puesto de trabajo</span>
                         <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span>
                     </li>
                     <li class="task">
-                        Cambio 11 - <span class="fa fa-group"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de una nueva unidad organizativa</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 11 - <span class="fa fa-group type-icon"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, alta de una nueva unidad organizativa</span>
                         <span class="badge pull-right">3/4</span><span class="pull-right fa fa-clock-o" title="Aplicando"></span>
                     </li>
                     <li class="task">
-                        Cambio 12 - <span class="fa fa-user"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, modificación de los datos de un empleado</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 12 - <span class="fa fa-user type-icon"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, modificación de los datos de un empleado</span>
                         <span class="badge pull-right">2/4</span><span class="pull-right fa fa-clock-o" title="Chef"></span>
                     </li>
                     <li class="task success">
-                        Cambio 13 - <span class="fa fa-group"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, modificación de una unidad organizativa</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 13 - <span class="fa fa-group type-icon"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, modificación de una unidad organizativa</span>
                         <span class="badge pull-right">4/4</span><span class="pull-right fa fa-check" title="Finalizado"></span>
                     </li>
                     <li class="task">
-                        Cambio 15 - <span class="fa fa-globe"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, política, cambio del fondo de pantalla</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 15 - <span class="fa fa-globe type-icon"></span> <span class="short">Sede Triana...</span><span class="long hide">Sede Central, política, cambio del fondo de pantalla</span>
                         <span class="badge pull-right">1/4</span><span class="pull-right fa fa-clock-o" title="Calculando"></span>
                     </li>
                     <li class="task error">
-                        Cambio 16 - <span class="fa fa-globe"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, política, cambio del tema de iconos</span>
+                        <button class="long hide btn-modal btn btn-info btn-xs"><span class="fa fa-info"></span> Info</button> Cambio 16 - <span class="fa fa-globe type-icon"></span> <span class="short">Sede Central...</span><span class="long hide">Sede Central, política, cambio del tema de iconos</span>
                         <span class="badge pull-right">3/4</span><span class="pull-right fa fa-times" title="Error"></span>
                     </li>
                 </ul>
@@ -102,6 +102,53 @@
         </div>
         {% block main_content %}{% endblock %}
     </div>
+
+    <div id="task-modal" class="modal fade">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Cambio 16 - Sede Central, política, cambio del tema de iconos</h4>
+                </div>
+                <div class="modal-body"><div class="row">
+                        <div class="col-sm-6">
+                        <label>Resumen</label>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing
+                        elit. Ut tempus cursus lacus, eleifend blandit nibh
+                        elementum sed. Donec sit amet mollis dolor. Proin elit
+                        augue, pulvinar eget aliquet sed, pellentesque rutrum
+                        augue.</p>
+                        <label>Equipos</label>
+                        <ol>
+                            <li>Portátil de Juan [juan-laptop]</li>
+                            <li>Portátil de Roberto [bob-laptop]</li>
+                            <li>Portátil de Anabel [anabel-laptop]</li>
+                            <li>Sobremesa del Departamento de Cuentas [cuentas-desktop]</li>
+                            <li>Portátil de Lola [lola-laptop]</li>
+                        </ol>
+                    </div>
+                    <div class="col-sm-6">
+                        <label>Logs</label>
+                        <ul class="list-unstyled">
+                            <li>09:12 Comenzado preparativos</li>
+                            <li>09:12 Copiando fichero en almacenamiento compartido</li>
+                            <li><span class="text-success">09:13 Terminados los preparativos</span></li>
+                            <li>09:13 Comenzando a aplicar cambios</li>
+                            <li><span class="text-success">09:14 Cambio aplicado en juan-laptop</span></li>
+                            <li><span class="text-success">09:14 Cambio aplicado en bob-laptop</span></li>
+                            <li><span class="text-danger">09:14 Error al aplicar cambio en anabel-laptop</span></li>
+                            <li><span class="text-danger">09:14 Error: file does not exist</span></li>
+                            <li><span class="text-danger">09:14 Abortando</span></li>
+                        </ul>
+                        <p>Progreso: <span class="label label-danger">3 de 5</span></p>
+                    </div>
+                </div></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 {% endblock %}
 
 {% block extrajs %}
@@ -157,6 +204,12 @@
                 events.find(".short").removeClass("hide");
                 events.find(".long").addClass("hide");
                 events.removeClass("maximize");
+            });
+
+            var modal = $("#task-modal").modal({ show: false });
+            $("button.btn-modal").click(function (evt) {
+                evt.preventDefault();
+                modal.modal("show");
             });
 
 //             App.start();
