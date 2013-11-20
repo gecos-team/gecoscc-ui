@@ -45,8 +45,8 @@ def to_delete_route_config(config):
     config.add_route('ous', '/ous/')
     config.add_route('policies_wallpaper', '/ous/policies-wallpaper/')
     config.add_route('policies_software', '/ous/policies-software/')
+    config.add_route('policies_storage', '/ous/policies-storage/')
     config.add_route('computers', '/computers/')
-    config.add_route('storages', '/storages/')
     config.add_route('printers', '/printers/')
 
 

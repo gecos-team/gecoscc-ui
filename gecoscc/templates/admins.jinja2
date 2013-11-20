@@ -12,12 +12,11 @@
         padding-bottom: 30px;
     }
 
-    #users {
-        max-height: 350px;
-        overflow-y: auto;
+    #tree > div {
+        padding: 15px 30px;
     }
 
-    #tree > .panel {
+    #tree > div > .panel {
         height: 350px;
         margin-bottom: 0;
     }
@@ -30,7 +29,8 @@
 
 {% block inner_content %}
 <div class="container">
-    <div class="row mb10" id="users">
+    <h1>Administradores</h1>
+    <div class="row mb10" id="users"><div class="col-sm-12">
         <div class="panel-group" id="accordion">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -81,6 +81,25 @@
                             </div></div>
                         </form>
                     </div>
+
+                    <div class="row fuelux" id="tree"><div class="col-sm-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <div class="text-muted bootstrap-admin-box-title">Permisos para Unidades Organizativas</div>
+                            </div>
+                            <!-- tree -->
+                            <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
+                                <div class="tree-folder" style="display:none;">
+                                    <div class="tree-folder-header">
+                                        <span class="fa fa-folder"></span>
+                                        <div class="tree-folder-name"></div>
+                                    </div>
+                                    <div class="tree-folder-content"></div>
+                                    <div class="tree-loader" style="display:none"></div>
+                                </div>
+                            </div><!-- /.tree -->
+                        </div>
+                    </div></div>
                 </div>
             </div>
             <div class="panel panel-default">
@@ -154,30 +173,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="row fuelux" id="tree">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="text-muted bootstrap-admin-box-title">Permisos para Unidades Organizativas</div>
-            </div>
-            <!-- tree -->
-            <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
-                <div class="tree-folder" style="display:none;">
-                    <div class="tree-folder-header">
-                        <span class="fa fa-folder"></span>
-                        <div class="tree-folder-name"></div>
-                    </div>
-                    <div class="tree-folder-content"></div>
-                    <div class="tree-loader" style="display:none"></div>
-                </div>
-                <div class="tree-item" style="display:none;">
-                    <span class="fa fa-user"></span>
-                    <div class="tree-item-name"></div>
-                </div>
-            </div><!-- /.tree -->
-        </div>
-    </div>
+    </div></div>
 </div>
 {% endblock %}
 
@@ -194,10 +190,9 @@
         // Navigation tree
         var dataSourceTree = new DataSourceTree({
             data: [
-                { name: 'Test Folder 1', type: 'folder', additionalParameters: { id: 'F1' } },
-                { name: 'Test Folder 2', type: 'folder', additionalParameters: { id: 'F2' } },
-                { name: 'Test Item 1', type: 'item', additionalParameters: { id: 'I1' } },
-                { name: 'Test Item 2', type: 'item', additionalParameters: { id: 'I2' } }
+                { name: 'OU 1', type: 'folder', additionalParameters: { id: 'F1' } },
+                { name: 'OU 2', type: 'folder', additionalParameters: { id: 'F2' } },
+                { name: 'OU 3', type: 'folder', additionalParameters: { id: 'F3' } }
             ],
             delay: 400
         });

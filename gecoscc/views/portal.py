@@ -56,13 +56,13 @@ def policies_software(context, request):
     return {}
 
 
-@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
-def computers(context, request):
+@view_config(route_name='policies_storage', renderer='templates/to_delete/policies-storage.jinja2')
+def policies_storage(context, request):
     return {}
 
 
-@view_config(route_name='storages', renderer='templates/to_delete/storages.jinja2')
-def storages(context, request):
+@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
+def computers(context, request):
     return {}
 
 
