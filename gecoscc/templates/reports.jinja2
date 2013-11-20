@@ -9,8 +9,7 @@
         margin-bottom: 25px;
     }
 
-    #failed ul li,
-    #pending ul li {
+    ul li {
         margin-bottom: 10px;
     }
 
@@ -79,7 +78,45 @@
                 </ul>
             </div>
 
-            <div class="tab-pane fade" id="users"></div>
+            <div class="tab-pane fade" id="users">
+                <div class="row mb10"><div class="col-xs-12 col-sm-9 col-md-6">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="user-filter" placeholder="Filtra">
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary" id="user-filter-btn" type="button"><span class="fa fa-search"></span></button>
+                        </span>
+                    </div>
+                </div></div>
+                <div class="row"><div class="col-xs-12 col-sm-12">
+                    <ul>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Juan Nadie (juannadie)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Aenean Hendrerit (hendrerit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Lorem Ipsum (ipsum)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Quisque Luctus (qluctus)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Maecenas Id (maecenasid)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Cras Convallis (convallis)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Etiam Sit (etiamsit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Vestibulum Ante (vestibulumante)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Donec Vehicula (dvehicula)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Aenean Hendrerit (hendrerit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Lorem Ipsum (ipsum)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Quisque Luctus (qluctus)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Maecenas Id (maecenasid)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Cras Convallis (convallis)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Etiam Sit (etiamsit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Vestibulum Ante (vestibulumante)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Donec Vehicula (dvehicula)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Aenean Hendrerit (hendrerit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Lorem Ipsum (ipsum)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Quisque Luctus (qluctus)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Maecenas Id (maecenasid)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Cras Convallis (convallis)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Etiam Sit (etiamsit)</a> - Sede Central</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Vestibulum Ante (vestibulumante)</a> - Sede Exterior</li>
+                        <li><a href="/users/"><span class="fa fa-user"></span> Donec Vehicula (dvehicula)</a> - Sede Exterior</li>
+                    </ul>
+                </div></div>
+            </div>
         </div>
     </div></div>
 
@@ -139,6 +176,28 @@
         $("button.btn-modal").click(function (evt) {
             evt.preventDefault();
             modal.modal("show");
+        });
+
+        var filter = function (filter, $elements) {
+            var filter = filter.toLowerCase();
+            $elements.removeClass("hide");
+            $elements.each(function (idx, el) {
+                var $el = $(el);
+                if ($el.text().toLowerCase().indexOf(filter) < 0) {
+                    $el.addClass("hide");
+                }
+            });
+        };
+        $("#user-filter").on("keyup", function (evt) {
+            var $input = $(evt.target),
+                $elements = $input.parents("#users").find("li");
+            filter($input.val(), $elements);
+        });
+        $("#user-filter-btn").click(function (evt) {
+            evt.preventDefault();
+            var $input = $(evt.target).parents("div.input-group").find("#user-filter"),
+                $elements = $input.parents("#users").find("li");
+            filter($input.val(), $elements);
         });
     });
 </script>
