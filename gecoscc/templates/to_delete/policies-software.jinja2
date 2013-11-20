@@ -1,5 +1,13 @@
 {% extends "base_tree.jinja2" %}
 
+{% block moreheader %}
+<style>
+    table td {
+        vertical-align: middle !important;
+    }
+</style>
+{% endblock %}
+
 {% block breadcrumb %}
 <li><a href="/">Inicio</a></li>
 <li><a href="/ous/">Unidades Organizativas</a></li>
@@ -17,11 +25,130 @@
                 <div class="row"><div class="col-sm-12">
                     <div class="form-group">
                         <label for="name">Nombre</label>
-                        <input id="name" type="text" class="form-control" placeholder="Ej: Fondo de pantalla corporativo 03 (Salamandra)">
+                        <input id="name" type="text" class="form-control" placeholder="Ej: Instalar suite Libre Office">
                     </div>
                 </div></div>
                 <div class="row"><div class="col-sm-12">
-                    <!-- TODO -->
+                    <label>Software</label>
+                    <table class="table table-striped table-bordered" id="software-table">
+                        <thead>
+                            <tr>
+                                <th>Instalar</th>
+                                <th>Nombre</th>
+                                <th>Captura</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Libre Office</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Libre Office" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>GNU Image Manipulation Program (GIMP)</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de GIMP" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Navegador Firefox</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Firefox" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Navegador Chrome</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Chrome" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Gestor de scanner SANE</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de SANE" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Gestor de bases de datos PostgreSQL</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de PostgreSQL" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Visor de documentos Evince</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Evince" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Gestor de fotografías FSpot</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de FSpot" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Manejador de ficheros comprimidos FileRoller</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de FileeRoller" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Programa de dibujo InkScape</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de InkScape" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="odd">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Maquetación de revistas con Scribe</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Scribe" class="img-thumbnail">
+                                </td>
+                            </tr>
+                            <tr class="even">
+                                <td>
+                                    <input type="checkbox" value="">
+                                </td>
+                                <td>Servidor web Apache</td>
+                                <td>
+                                    <img src="{{request.application_url}}/static/images/gecos-logo.png" alt="Captura de Apache" class="img-thumbnail">
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div></div>
                 <div class="row"><div class="col-sm-12">
                     <a href="/ous/" class="btn btn-default">Cancelar</a>
@@ -31,4 +158,43 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block morejs %}
+<script src="{{request.application_url}}/static/js/libs/jquery.dataTables-1.9.4.min.js"></script>
+<script src="{{request.application_url}}/static/js/libs/DT_bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        /* Table initialisation */
+        $('#software-table').dataTable({
+            "sDom": "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-8'i><'col-md-4'p>>",
+            "sPaginationType": "bootstrap",
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ registros por página",
+                "oAria": {
+                    "sSortAscending": ": activar para odernar ascendentemente la columna",
+                    "sSortDescending": ": activar para odernar descendentemente la columna"
+                },
+                "oPaginate": {
+                    "sFirst": "Primero",
+                    "sLast": "Último",
+                    "sPrevious": "Anterior",
+                    "sNext": "Siguiente"
+                },
+                "sEmptyTable": "No hay datos disponibles en la tabla",
+                "sInfo": "Mostrando de _START_ a _END_ de _TOTAL_ registros",
+                "sInfoEmpty": "Mostrando de 0 a 0 de 0 registros",
+                "sInfoFiltered": "(filtrados de un total de _MAX_ registros)",
+                // "sInfoPostFix": "All records shown are derived from real information.",
+                // "sInfoThousands": ",",
+                "sLoadingRecords": "Cargando...",
+                "sProcessing": "Procesando...",
+                "sSearch": "Buscar:",
+                // "sUrl": "http://www.sprymedia.co.uk/dataTables/lang.txt",
+                "sZeroRecords": "Ningún registro que encaje encontrado"
+            }
+        });
+    });
+</script>
 {% endblock %}

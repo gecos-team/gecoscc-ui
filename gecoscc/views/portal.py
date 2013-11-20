@@ -33,7 +33,9 @@ def reports(context, request):
     return {}
 
 
+#;;;;;;;;;;;
 # TO DELETE
+#;;;;;;;;;;;
 @view_config(route_name='users', renderer='templates/to_delete/users.jinja2')
 def users(context, request):
     return {}
@@ -44,8 +46,13 @@ def ous(context, request):
     return {}
 
 
-@view_config(route_name='policies', renderer='templates/to_delete/policies.jinja2')
-def policies(context, request):
+@view_config(route_name='policies_wallpaper', renderer='templates/to_delete/policies-wallpaper.jinja2')
+def policies_wallpaper(context, request):
+    return {}
+
+
+@view_config(route_name='policies_software', renderer='templates/to_delete/policies-software.jinja2')
+def policies_software(context, request):
     return {}
 
 
@@ -62,7 +69,9 @@ def storages(context, request):
 @view_config(route_name='printers', renderer='templates/to_delete/printers.jinja2')
 def printers(context, request):
     return {}
+#;;;;;;;;;;;;;;;
 # END TO DELETE
+#;;;;;;;;;;;;;;;
 
 
 @view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2')
