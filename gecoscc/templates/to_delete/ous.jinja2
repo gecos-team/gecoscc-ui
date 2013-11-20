@@ -2,16 +2,6 @@
 
 {% block moreheader %}
 <style>
-    ul.permissions {
-        margin: 0;
-        padding: 0;
-    }
-
-    ul.permissions li {
-        display: inline-block;
-        padding-right: 15px;
-    }
-
     tr td:last-child {
         width: 30%;
     }
@@ -72,111 +62,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row bootstrap-admin-light-padding-bottom">
-                            <div class="col-sm-4">
-                                <label>Permisos:</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="permission-filter" placeholder="Filtra">
-                                    <span class="input-group-btn">
-                                        <button class="btn btn-primary" id="permission-filter-btn" type="button"><span class="fa fa-search"></span></button>
-                                    </span>
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <div class="form-group">
+                                    <label for="extra">Información extra</label>
+                                    <textarea id="extra" class="form-control" rows="6"></textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="row"><div class="col-sm-12">
-                            <div class="well"><ul class="permissions">
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm0" value="option1"> Lorem
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm1" value="option1"> Ipsum
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm2" value="option1"> Dolor
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm3" value="option1"> Sit amet
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm4" value="option1"> Consectetur
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm5" value="option1"> Adipiscing
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm6" value="option1"> Elit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm7" value="option1"> Etiam
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm8" value="option1"> Hendrerit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm9" value="option1"> Scelerisque
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm10" value="option1"> Lorem
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm11" value="option1"> Ipsum
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm12" value="option1"> Dolor
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm13" value="option1"> Sit amet
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm14" value="option1"> Consectetur
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm15" value="option1"> Adipiscing
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm16" value="option1"> Elit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm17" value="option1"> Etiam
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm18" value="option1"> Hendrerit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm19" value="option1"> Scelerisque
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm20" value="option1"> Lorem
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm21" value="option1"> Ipsum
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm22" value="option1"> Dolor
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm23" value="option1"> Sit amet
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm24" value="option1"> Consectetur
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm25" value="option1"> Adipiscing
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm26" value="option1"> Elit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm27" value="option1"> Etiam
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm28" value="option1"> Hendrerit
-                                </label></li>
-                                <li><label class="permission checkbox-inline">
-                                    <input type="checkbox" id="perm29" value="option1"> Scelerisque
-                                </label></li>
-                            </ul></div>
-                        </div></div>
                         <div class="row"><div class="col-sm-12">
                             <a href="/" class="btn btn-default">Cancelar</a>
                             <button type="submit" class="btn btn-primary">Guardar</button>
@@ -419,26 +312,6 @@
         setTimeout(function () {
             $($(".tree-item-name")[1]).trigger("click");
         }, 1000);
-
-        var permissionFilter = function (filter) {
-            $("label.permission").each(function (index, label) {
-                var $label = $(label),
-                    filterReady = filter.trim().toLowerCase(),
-                    text = $label.text().trim().toLowerCase();
-                if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
-                    $label.parent().show();
-                } else {
-                    $label.parent().hide();
-                }
-            });
-        };
-
-        $("#permission-filter").on("keyup", function (evt) {
-            permissionFilter($(evt.target).val());
-        });
-        $("#permission-filter-btn").on("click", function (evt) {
-            permissionFilter($(evt.target).parents('div.input-group').find("input").val());
-        });
 
         /* Table initialisation */
         $('#policies-table').dataTable({
