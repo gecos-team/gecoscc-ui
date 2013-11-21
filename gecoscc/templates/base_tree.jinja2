@@ -3,6 +3,13 @@
 {% block extraheader %}
 <!-- Tree CSS -->
 <link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+
+<style>
+    ul.log {
+        padding-left: 25px;
+    }
+</style>
+
 {% block moreheader %}{% endblock %}
 {% endblock %}
 
@@ -129,9 +136,49 @@
                         <li>09:13 Comenzando a aplicar cambios</li>
                         <li><span class="text-success">09:14 Cambio aplicado en juan-laptop</span></li>
                         <li><span class="text-success">09:14 Cambio aplicado en bob-laptop</span></li>
-                        <li><span class="text-danger">09:14 Error al aplicar cambio en anabel-laptop</span></li>
-                        <li><span class="text-danger">09:14 Error: file does not exist</span></li>
-                        <li><span class="text-danger">09:14 Abortando</span></li>
+                        <li>
+                            <a href="#" class="expand-log"><span class="text-danger"><span class="fa fa-caret-right"></span> 09:14 Error al aplicar cambio en anabel-laptop</span></a>
+                            <ul class="log list-unstyled hide">
+                                <li>[  102.713692] ACPI Error: Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.STBR] (Node ffff880139e936f0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.713704] ACPI Error: Method parse/execution failed [\_SB_.PCI0.VGA_.LCDD._BCM] (Node ffff880139e8ace0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.713716] ACPI Error: Evaluating _BCM failed (20120913/video-364)</li>
+                                <li>[  102.715864] ACPI Exception: AE_AML_BUFFER_LIMIT, Index (0x0000000000000064) is beyond end of object (20120913/exoparg2-418)</li>
+                                <li>[  102.715875] ACPI Error: Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.STBR] (Node ffff880139e936f0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.715886] ACPI Error: Method parse/execution failed [\_SB_.PCI0.VGA_.LCDD._BCM] (Node ffff880139e8ace0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.715898] ACPI Error: Evaluating _BCM failed (20120913/video-364)</li>
+                                <li>[  102.717600] ACPI Exception: AE_AML_BUFFER_LIMIT, Index (0x0000000000000064) is beyond end of object (20120913/exoparg2-418)</li>
+                                <li>[  102.717610] ACPI Error: Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.STBR] (Node ffff880139e936f0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.717621] ACPI Error: Method parse/execution failed [\_SB_.PCI0.VGA_.LCDD._BCM] (Node ffff880139e8ace0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.717633] ACPI Error: Evaluating _BCM failed (20120913/video-364)</li>
+                                <li>[  102.894493] ACPI Exception: AE_AML_BUFFER_LIMIT, Index (0x0000000000000064) is beyond end of object (20120913/exoparg2-418)</li>
+                                <li>[  102.894506] ACPI Error: Method parse/execution failed [\_SB_.PCI0.SBRG.EC0_.STBR] (Node ffff880139e936f0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.894517] ACPI Error: Method parse/execution failed [\_SB_.PCI0.VGA_.LCDD._BCM] (Node ffff880139e8ace0), AE_AML_BUFFER_LIMIT (20120913/psparse-536)</li>
+                                <li>[  102.894529] ACPI Error: Evaluating _BCM failed (20120913/video-364)</li>
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" class="expand-log"><span class="text-danger"><span class="fa fa-caret-right"></span> 09:14 Error: file does not exist</span></a>
+                            <ul class="log list-unstyled hide">
+                                <li>[   17.318853] type=1400 audit(1385017506.642:2): apparmor="STATUS" operation="profile_load" name="/{usr/,}bin/ping" pid=566 comm="apparmor_parser"</li>
+                                <li>[   17.336115] type=1400 audit(1385017506.660:3): apparmor="STATUS" operation="profile_load" name="/sbin/klogd" pid=575 comm="apparmor_parser"</li>
+                                <li>[   17.345527] type=1400 audit(1385017506.669:4): apparmor="STATUS" operation="profile_load" name="/sbin/syslog-ng" pid=579 comm="apparmor_parser"</li>
+                                <li>[   17.355109] type=1400 audit(1385017506.679:5): apparmor="STATUS" operation="profile_load" name="/sbin/syslogd" pid=583 comm="apparmor_parser"</li>
+                                <li>[   17.369211] type=1400 audit(1385017506.693:6): apparmor="STATUS" operation="profile_load" name="/usr/lib/apache2/mpm-prefork/apache2" pid=588 comm="apparmor_parser"</li>
+                                <li>[   17.369787] type=1400 audit(1385017506.693:7): apparmor="STATUS" operation="profile_load" name="/usr/lib/apache2/mpm-prefork/apache2//DEFAULT_URI" pid=588 comm="apparmor_parser"</li>
+                                <li>[   17.370338] type=1400 audit(1385017506.694:8): apparmor="STATUS" operation="profile_load" name="/usr/lib/apache2/mpm-prefork/apache2//HANDLING_UNTRUSTED_INPUT" pid=588 comm="apparmor_parser"</li>
+                                <li>[   17.370827] type=1400 audit(1385017506.694:9): apparmor="STATUS" operation="profile_load" name="/usr/lib/apache2/mpm-prefork/apache2//phpsysinfo" pid=588 comm="apparmor_parser"</li>
+                                <li>[   17.380573] type=1400 audit(1385017506.704:10): apparmor="STATUS" operation="profile_load" name="/usr/lib/dovecot/deliver" pid=592 comm="apparmor_parser"</li>
+                                <li>[   17.390493] type=1400 audit(1385017506.714:11): apparmor="STATUS" operation="profile_load" name="/usr/lib/dovecot/dovecot-auth" pid=596 comm="apparmor_parser"</li>
+
+                            </ul>
+                        </li>
+                        <li>
+                            <a href="#" class="expand-log"><span class="text-danger"><span class="fa fa-caret-right"></span> 09:14 Abortando</span></a>
+                            <ul class="log list-unstyled hide">
+                                <li>[   32.575784] cgroup: libvirtd (837) created nested cgroup for controller "memory" which has incomplete hierarchy support. Nested cgroups may change behavior in the future.</li>
+                                <li>[   32.575790] cgroup: "memory" requires setting use_hierarchy to 1 on the root.</li>
+                            </ul>
+                        </li>
                     </ul>
                 </div>
                 <div class="modal-footer">
@@ -201,6 +248,17 @@
             $("button.btn-modal").click(function (evt) {
                 evt.preventDefault();
                 modal.modal("show");
+            });
+
+            $("#task-modal a.expand-log").click(function (evt) {
+                evt.preventDefault();
+                var $li = $(evt.target).parents("li"),
+                    hidden = $li.find("ul").is(".hide");
+
+                $li.find("span.fa")
+                    .removeClass(hidden ? "fa-caret-right" : "fa-caret-down")
+                    .addClass(hidden ? "fa-caret-down" : "fa-caret-right");
+                $li.find("ul").toggleClass("hide");
             });
 
 //             App.start();
