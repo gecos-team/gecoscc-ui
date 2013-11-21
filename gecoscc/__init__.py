@@ -23,7 +23,6 @@ def read_setting_from_env(settings, key, default=None):
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/')
-    config.add_route('status', '/status/')
     config.add_route('admins', '/admins/')
     config.add_route('groups', '/groups/')
     config.add_route('reports', '/reports/')

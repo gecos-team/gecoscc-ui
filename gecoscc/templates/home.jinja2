@@ -1,34 +1,107 @@
 {% extends "base_tree.jinja2" %}
 
+{% block moreheader %}
+<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
+<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
+
+<style>
+    dl {
+        font-size: 1.8em;
+    }
+
+    @media (min-width: 768px) {
+        dl dt {
+            width: 240px !important;
+        }
+
+        dl dd {
+            margin-left: 260px !important;
+        }
+    }
+
+    .dashboard a.thumbnail {
+        text-align: center;
+        color: white;
+        background-color: #666;
+        padding-top: 20px;
+    }
+
+    .dashboard a.thumbnail:hover {
+        text-decoration: none;
+        border-color: #666;
+        -moz-box-shadow: 0 0 2px 2px #666;
+        -webkit-box-shadow: 0 0 2px 2px #666;
+        box-shadow: 0 0 2px 2px #666;
+    }
+
+    .dashboard a.thumbnail span {
+        font-size: 3.5em;
+    }
+
+    .dashboard a.thumbnail p {
+        font-size: 1.3em;
+    }
+</style>
+{% endblock %}
+
 {% block main_content %}
+<div class="row">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <div class="text-muted bootstrap-admin-box-title">Estado de los servicios y tareas</div>
+        </div>
+        <div class="bootstrap-admin-panel-content dashboard">
+            <div class="row">
+                <div class="col-xs-12 col-sm-12 col-md-6">
+                    <dl class="dl-horizontal">
+                        <dt>Gecos UI</dt>
+                        <dd><span class="label label-success"><span class="fa fa-check"></span> Corriendo</span></dd>
+                        <dt>Chef Server</dt>
+                        <dd><span class="label label-success"><span class="fa fa-check"></span> Corriendo</span></dd>
+                        <dt>Active Directory</dt>
+                        <dd><span class="label label-danger"><span class="fa fa-times"></span> No responde</span></dd>
+                    </dl>
+                </div>
+
+                <div class="col-xs-6 col-sm-6 col-md-3">
+                    <div class="easyPieChart" data-percent="13" style="width: 110px; height: 110px; line-height: 110px;">13%<canvas width="110" height="110"></canvas></div>
+                    <div class="chart-bottom-heading">Tareas fallidas (26 de 200)</div>
+                </div>
+                <div class="col-xs-6 col-sm-6 col-md-3">
+                    <div class="easyPieChart" data-percent="83" style="width: 110px; height: 110px; line-height: 110px;">83%<canvas width="110" height="110"></canvas></div>
+                    <div class="chart-bottom-heading">Tareas completadas (166 de 200)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row">
     <div class="panel panel-default">
         <div class="panel-heading">
             <div class="text-muted bootstrap-admin-box-title">Añadir nuevo</div>
         </div>
         <div class="bootstrap-admin-panel-content dashboard">
-            <div class="row bootstrap-admin-light-padding-bottom">
-                <div class="col-xs-12 col-sm-6">
+            <div class="row">
+                <div class="col-xs-6 col-sm-3">
                     <a href="/users/" class="thumbnail">
                         <span class="fa fa-user"></span>
                         <p>Usuarios</p>
                     </a>
                 </div>
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-6 col-sm-3">
                     <a href="/ous/" class="thumbnail">
                         <span class="fa fa-group"></span>
                         <p>Unidad Organizativa</p>
                     </a>
                 </div>
-            </div>
-            <div class="row bootstrap-admin-light-padding-bottom">
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-6 col-sm-3">
                     <a href="/computers/" class="thumbnail">
                         <span class="fa fa-desktop"></span>
                         <p>Puestos de Trabajo</p>
                     </a>
                 </div>
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-6 col-sm-3">
                     <a href="/printers/" class="thumbnail">
                         <span class="fa fa-print"></span>
                         <p>Impresoras</p>
@@ -38,4 +111,14 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block morejs %}
+<script src="{{request.application_url}}/static/js/libs/jquery.easy-pie-chart-1.0.1.min.js"></script>
+<script>
+    $(document).ready(function () {
+        // Easy pie charts
+        $('.easyPieChart').easyPieChart({animate: 1000});
+    });
+</script>
 {% endblock %}

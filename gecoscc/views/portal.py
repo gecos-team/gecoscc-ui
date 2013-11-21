@@ -13,11 +13,6 @@ def home(context, request):
     return {}
 
 
-@view_config(route_name='status', renderer='templates/status.jinja2')
-def status(context, request):
-    return {}
-
-
 @view_config(route_name='admins', renderer='templates/admins.jinja2')
 def admins(context, request):
     return {}
