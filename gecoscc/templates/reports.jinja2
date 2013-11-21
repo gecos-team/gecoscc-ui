@@ -232,7 +232,7 @@
         $("#task-modal a.expand-log").click(function (evt) {
             evt.preventDefault();
             var $li = $(evt.target).parents("li"),
-                hidden = $li.find("ul").is(".hide");
+                hidden = $li.find("textarea").is(".hide");
 
             $li.find("span.fa")
                 .removeClass(hidden ? "fa-caret-right" : "fa-caret-down")
