@@ -3,6 +3,7 @@ import logging
 from cornice import Service
 
 from gecoscc.models import Nodes
+from gecoscc.permissions import api_login_requrired
 
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ node_filters = {
 }
 
 
-@nodes_service.get()
+@nodes_service.get(validators=(api_login_requrired,))
 def nodes_list(request):
     """ Returns the nodes tree structure
 

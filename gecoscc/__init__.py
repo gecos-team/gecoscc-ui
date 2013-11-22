@@ -10,6 +10,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import EventsManager
+from gecoscc.permissions import is_logged
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -162,6 +163,8 @@ def main(global_config, **settings):
     route_config(config)
     to_delete_route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')
+
+    config.set_request_property(is_logged, 'is_logged', reify=True)
 
     config.scan('gecoscc.views')
     config.scan('gecoscc.api')
