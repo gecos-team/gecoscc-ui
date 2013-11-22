@@ -50,7 +50,14 @@ class MongoDB(object):
                 self.parsed_uri.get("username", None),
                 self.parsed_uri.get("password", None)
             )
+        self.indexes(db)
         return db
+
+    def indexes(self, db):
+        db.nodes.ensure_index([
+            ('path', pymongo.DESCENDING),
+            ('type', pymongo.DESCENDING),
+        ])
 
 
 def get_db(request):
