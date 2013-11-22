@@ -43,6 +43,7 @@ class Node(colander.MappingSchema):
     type = colander.SchemaNode(colander.String())
     lock = colander.SchemaNode(colander.Boolean())
     source = colander.SchemaNode(colander.String())
+    name = colander.SchemaNode(colander.String())
 
 
 class Nodes(colander.SequenceSchema):
@@ -59,7 +60,6 @@ class Groups(colander.SequenceSchema):
 
 
 class User(Node):
-    username = colander.SchemaNode(colander.String())
     email = colander.SchemaNode(colander.String())
     groups = Groups()
 
@@ -75,5 +75,4 @@ class Policies(colander.SequenceSchema):
 
 
 class OrganisationalUnit(Node):
-    name = colander.SchemaNode(colander.String())
     pilicies = Policies()
