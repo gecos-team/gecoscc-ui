@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true */
-/*global $, App */
+/*global $, App, TreeModel */
 
 /*
 * Fuel UX Tree
@@ -246,13 +246,62 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.TreeData = Backbone.Model.extend({
+        parser: new TreeModel(),
+
         defaults: {
-            rawData: null,
-            parsedData: null
+            tree: null
+        },
+
+        parseTree: function (data) {
+            var preprocessed = {
+                id: "root",
+                children: []
+            };
+            _.each(data, function (node) {
+                var newnode = _.clone(node),
+                    path = node.path.split(','),
+                    aux;
+
+                newnode.id = newnode._id;
+                delete newnode._id;
+
+                aux = preprocessed.children;
+                _.each(path, function (step) {
+                    if (step === "root") { return; }
+                    var obj = _.find(aux, function (child) {
+                        return child.id === step;
+                    });
+                    if (!obj) {
+                        // This path step is not present, lets create the
+                        // container
+                        obj = {
+                            id: step,
+                            children: []
+                        };
+                        aux.push(obj);
+                    }
+                    aux = obj.children;
+                });
+
+                // We have arrived to the parent of the newnode (aux),
+                // newnode may be already present if it was created as a
+                // container
+                node = _.find(aux, function (obj) {
+                    return obj.id === newnode.id;
+                });
+                if (node) {
+                    _.defaults(node, newnode);
+                } else {
+                    newnode.children = [];
+                    aux.push(newnode);
+                }
+            });
+
+            this.set("tree", this.parser.parse(preprocessed));
         },
 
         toJSON: function () {
-            return _.clone(this.get("parsedData"));
+            return _.clone(this.get("tree"));
         }
     });
 });
