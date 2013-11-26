@@ -186,10 +186,6 @@
 {% block morejs %}
 <script>
     $(document).ready(function () {
-        setTimeout(function () {
-            $($(".tree-item-name")[1]).trigger("click");
-        }, 1000);
-
         var permissionFilter = function (filter) {
             $("label.permission").each(function (index, label) {
                 var $label = $(label),

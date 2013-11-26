@@ -212,7 +212,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     var treeContainerPre =
-            '<div class="tree-folder" style="display: block;">\n' +
+            '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
             '        <span class="fa fa-plus-square-o"></span> ' +
             '        <span class="fa fa-group"></span>\n' +
@@ -226,7 +226,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    </div>\n' +
             '</div>',
         treeItem =
-            '<div class="tree-item" style="display: block;">' +
+            '<div class="tree-item" style="display: block;" id="<%= id %>">' +
             '    <span class="fa fa-<%= icon %>"></span>' +
             '    <div class="tree-item-name"><%= name %></div>' +
             '</div>';
@@ -245,7 +245,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         events: {
-            "click .tree-folder-header": "selectContainer"
+            "click .tree-folder-header": "selectContainer",
+            "click .tree-item": "selectItem"
         },
 
         render: function () {
@@ -263,7 +264,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         recursiveRender: function (node) {
             var that = this,
-                json = _.pick(node, "name", "type"),
+                json = _.pick(node, "name", "type", "id"),
                 html;
 
             if (json.type === "ou") {
@@ -299,6 +300,20 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             $el.find(classToTarget).first()
                 .removeClass('fa-plus-square-o fa-minus-square-o')
                 .addClass(classToAdd);
+        },
+
+        selectItem: function (evt) {
+            var $el = $(evt.target).parents(".tree-item").first(),
+                id = $el.attr("id"),
+                item;
+
+            item = this.model.get("tree").first(function (node) {
+                return node.model.id === id;
+            });
+
+            if (item && item.model.type === "user") {
+                window.location = "/users/";
+            }
         }
     });
 });
