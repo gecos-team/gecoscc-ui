@@ -30,7 +30,7 @@
 
     App.addRegions({
         // sidebar
-        tree: "#nav-tree",
+        tree: "#ex-tree",
         events: "#events",
         // main
         main: "#viewport-main"

@@ -237,8 +237,16 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     $.fn.tree.Constructor = TreePlugin;
 
     App.addInitializer(function (options) {
-        var model = new Tree.Models.TreeData();
-        App.tree.show(new Tree.Views.NavigationTree({ model: model }));
+        App.root = new Tree.Models.TreeData();
+        $.ajax("/api/nodes/?maxdepth=4", {
+            success: function (response) {
+                App.root.parseTree(response);
+            }
+        });
+        var treeView = new Tree.Views.NavigationTree({ model: App.root });
+        App.root.on("change", function () {
+            App.tree.show(treeView);
+        });
     });
 });
 
@@ -301,7 +309,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         toJSON: function () {
-            return _.clone(this.get("tree"));
+            var tree = this.get("tree");
+            if (tree) {
+                return _.clone(tree.model.children[0]);
+            }
+            return {};
         }
     });
 });
@@ -309,10 +321,52 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.NavigationTree = Marionette.ItemView.extend({
-        tagName: "div",
-        template: "#tpl-nav-tree"
+    var treeContainerPre =
+            '<div class="tree-folder" style="display: block;">\n' +
+            '    <div class="tree-folder-header">\n' +
+            '        <span class="fa fa-folder"></span>\n' +
+            '        <div class="tree-folder-name"><%= name %></div>\n' +
+            '    </div>\n' +
+            '    <div class="tree-folder-content">\n',
+        treeContainerPost =
+            '    </div>\n' +
+            '    <div class="tree-loader" style="display: none;">\n' +
+            '        <div class="static-loader">Loading...</div>\n' +
+            '    </div>\n' +
+            '</div>';
 
-//         events: {},
+
+    Views.NavigationTree = Marionette.ItemView.extend({
+        templates: {
+            cpre: _.template(treeContainerPre),
+            cpost: _.template(treeContainerPost)
+        },
+
+        render: function () {
+            var tree = this.model.toJSON(),
+                html;
+
+            if (_.keys(tree).length > 0) {
+                html = this.recursiveRender(tree);
+            } else {
+                html = "<p><span class='fa fa-spinner fa-spin'></span> Loading...</p>";
+            }
+            this.$el.html(html);
+            return this;
+        },
+
+        recursiveRender: function (node) {
+            var that = this,
+                json = _.pick(node, "name", "type"),
+                html;
+
+            html = this.templates.cpre(json);
+            _.each(node.children, function (child) {
+                html += that.recursiveRender(child);
+            });
+            html += this.templates.cpost(json);
+
+            return html;
+        }
     });
 });

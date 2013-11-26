@@ -18,21 +18,7 @@
                     </span>
                 </div>
             </div>
-            <!-- tree -->
-            <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
-                <div class="tree-folder" style="display:none;">
-                    <div class="tree-folder-header">
-                        <span class="fa fa-folder"></span>
-                        <div class="tree-folder-name"></div>
-                    </div>
-                    <div class="tree-folder-content"></div>
-                    <div class="tree-loader" style="display:none"></div>
-                </div>
-                <div class="tree-item" style="display:none;">
-                    <span class="fa fa-user"></span>
-                    <div class="tree-item-name"></div>
-                </div>
-            </div><!-- /.tree -->
+            <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in"></div>
         </div>
 
         <div id="events" class="panel panel-default bootstrap-admin-no-table-panel">
@@ -199,24 +185,6 @@
                 $('#sidebar').height($(window).height() - 131);
             });
 
-            // Navigation tree
-            var dataSourceTree = new DataSourceTree({
-                data: [
-                    { name: 'Test Folder 1', type: 'folder', additionalParameters: { id: 'F1' } },
-                    { name: 'Test Folder 2', type: 'folder', additionalParameters: { id: 'F2' } },
-                    { name: 'Test Item 1', type: 'item', additionalParameters: { id: 'I1' } },
-                    { name: 'Test Item 2', type: 'item', additionalParameters: { id: 'I2' } }
-                ],
-                delay: 400
-            });
-
-            $('#ex-tree').tree({
-                dataSource: dataSourceTree,
-                loadingHTML: '<div class="static-loader">Loading...</div>',
-                multiSelect: true,
-                cacheItems: true
-            });
-
             var events = $("#events");
             $("#maximize").click(function (evt) {
                 evt.preventDefault();
@@ -254,7 +222,7 @@
                 $li.find("textarea").toggleClass("hide");
             });
 
-//             App.start();
+            App.start();
         });
     </script>
     {% block morejs %}{% endblock %}
