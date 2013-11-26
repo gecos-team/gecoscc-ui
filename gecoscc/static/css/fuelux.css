@@ -17,30 +17,6 @@
 
 }
 
-.fuelux .pull-right {
-  float: right;
-}
-
-.fuelux .pull-left {
-  float: left;
-}
-
-.fuelux .hide {
-  display: none;
-}
-
-.fuelux .show {
-  display: block;
-}
-
-.fuelux .invisible {
-  visibility: hidden;
-}
-
-.fuelux .affix {
-  position: fixed;
-}
-
 .fuelux .tree {
   position: relative;
   overflow-x: hidden;
@@ -68,13 +44,17 @@
 
 .fuelux .tree .tree-folder .tree-folder-header span {
   position: absolute;
-  top: 1px;
-  left: 5px;
+  top: 2px;
+  left: 20px;
   float: left;
 }
 
+.fuelux .tree .tree-folder .tree-folder-header span:first-child {
+  left: 5px;
+}
+
 .fuelux .tree .tree-folder .tree-folder-header .tree-folder-name {
-  padding-left: 29px;
+  padding-left: 40px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -111,12 +91,6 @@
   top: 1px;
   left: 6px;
   display: block;
-}
-
-.fuelux .tree .tree-item .fa-check {
-  position: absolute;
-  top: 1px;
-  left: 5px;
 }
 
 .fuelux .tree .tree-selected {
