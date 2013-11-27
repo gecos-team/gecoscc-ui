@@ -47,7 +47,16 @@ footer {
 
 #nav-tree {
     height: 70%;
-    overflow-y: scroll;
+    overflow-y: hidden;
+}
+
+#tree-container {
+    overflow: auto;
+    height: calc(100% - 55px);
+}
+
+#ex-tree {
+    width: auto;
 }
 
 #events {

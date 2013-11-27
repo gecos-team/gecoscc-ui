@@ -214,7 +214,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     var treeContainerPre =
             '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
-            '        <span class="fa fa-plus-square-o"></span> ' +
+            '        <span class="fa fa-minus-square-o"></span> ' +
             '        <span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %></div>\n' +
             '    </div>\n' +
@@ -287,13 +287,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 classToTarget,
                 classToAdd;
 
-            if ($el.find('.tree-folder-header').first().find('.fa-plus-square-o').length > 0) {
-                classToTarget = '.fa-plus-square-o';
-                classToAdd = 'fa-minus-square-o';
-                $treeFolderContent.hide();
-            } else {
+            if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
                 classToTarget = '.fa-minus-square-o';
                 classToAdd = 'fa-plus-square-o';
+                $treeFolderContent.hide();
+            } else {
+                classToTarget = '.fa-plus-square-o';
+                classToAdd = 'fa-minus-square-o';
                 $treeFolderContent.show();
             }
 

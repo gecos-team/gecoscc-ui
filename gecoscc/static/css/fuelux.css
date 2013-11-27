@@ -55,8 +55,6 @@
 
 .fuelux .tree .tree-folder .tree-folder-header .tree-folder-name {
   padding-left: 40px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -81,8 +79,6 @@
 
 .fuelux .tree .tree-item .tree-item-name {
   padding-left: 29px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
