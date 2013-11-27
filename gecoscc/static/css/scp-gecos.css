@@ -52,6 +52,8 @@ footer {
 
 #tree-container {
     overflow: auto;
+    height: -moz-calc(100% - 55px);
+    height: -webkit-calc(100% - 55px);
     height: calc(100% - 55px);
 }
 
@@ -88,9 +90,9 @@ footer {
 
 #events .bootstrap-admin-panel-content {
     overflow-y: auto;
-    height: -moz-calc(100% - 56px);
-    height: -webkit-calc(100% - 56px);
-    height: calc(100% - 56px);
+    height: -moz-calc(100% - 55px);
+    height: -webkit-calc(100% - 55px);
+    height: calc(100% - 55px);
 }
 
 #events .task {

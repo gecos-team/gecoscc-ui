@@ -2,6 +2,7 @@
 <html class="{% block htmlclass %}{% endblock %}">
     <head>
         <title>Control de Puestos - GECOS</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -33,7 +34,7 @@
 
         <!-- Include all compiled plugins (below), or include individual files as needed -->
         <script src="{{request.application_url}}/static/js/libs/bootstrap-3.0.2.min.js"></script>
-        <script async src="{{request.application_url}}/static/js/twitter-bootstrap-hover-dropdown.min.js"></script>
+        <script async src="{{request.application_url}}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
 
         {% block extrajs %}{% endblock %}
     </body>
