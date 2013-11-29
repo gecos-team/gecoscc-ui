@@ -10,124 +10,31 @@
 * Licensed under the MIT license.
 */
 
+// Copyright 2013 Junta de Andalucia
+//
+// Licensed under the EUPL, Version 1.1 or - as soon they
+// will be approved by the European Commission - subsequent
+// versions of the EUPL (the "Licence");
+// You may not use this work except in compliance with the
+// Licence.
+// You may obtain a copy of the Licence at:
+//
+// http://ec.europa.eu/idabc/eupl
+//
+// Unless required by applicable law or agreed to in
+// writing, software distributed under the Licence is
+// distributed on an "AS IS" basis,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+// express or implied.
+// See the Licence for the specific language governing
+// permissions and limitations under the Licence.
+
 App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    // TREE CONSTRUCTOR AND PROTOTYPE
-
-    var TreePlugin = function (element, options) {
-        this.$element.on('click', '.tree-item', $.proxy(function (ev) { this.selectItem(ev.currentTarget); }, this));
-    };
-
-    TreePlugin.prototype = {
-        constructor: TreePlugin,
-
-        selectItem: function (el) {
-            var $el = $(el);
-            var $all = this.$element.find('.tree-selected');
-            var data = [];
-
-            if (this.options.multiSelect) {
-                $.each($all, function(index, value) {
-                    var $val = $(value);
-                    if ($val[0] !== $el[0]) {
-                        data.push($(value).data());
-                    }
-                });
-            } else if ($all[0] !== $el[0]) {
-                $all.removeClass('tree-selected')
-                    .find('span').removeClass('fa-check').addClass('fa-user');
-                data.push($el.data());
-            }
-
-            var eventType = 'selected';
-            if ($el.hasClass('tree-selected')) {
-                eventType = 'unselected';
-                $el.removeClass('tree-selected');
-                $el.find('span').removeClass('fa-check').addClass('fa-user');
-            } else {
-                $el.addClass('tree-selected');
-                $el.find('span').removeClass('fa-user').addClass('fa-check');
-                if (this.options.multiSelect) {
-                    data.push($el.data());
-                }
-            }
-
-            if (data.length) {
-                this.$element.trigger('selected', {info: data});
-            }
-
-            // Return new list of selected items, the item
-            // clicked, and the type of event:
-            $el.trigger('updated', {
-                info: data,
-                item: $el,
-                eventType: eventType
-            });
-        },
-
-        selectedItems: function () {
-            var $sel = this.$element.find('.tree-selected');
-            var data = [];
-
-            $.each($sel, function (index, value) {
-                data.push($(value).data());
-            });
-            return data;
-        },
-
-        // collapses open folders
-        collapse: function () {
-            var cacheItems = this.options.cacheItems;
-
-            // find open folders
-            this.$element.find('.fa-folder-open').each(function () {
-                // update icon class
-                var $this = $(this)
-                    .removeClass('fa-folder fa-folder-open')
-                    .addClass('fa-folder');
-
-                // "close" or empty folder contents
-                var $parent = $this.parent().parent();
-                var $folder = $parent.children('.tree-folder-content');
-
-                $folder.hide();
-                if (!cacheItems) {
-                    $folder.empty();
-                }
-            });
-        }
-    };
-
-
-    // TREE PLUGIN DEFINITION
-
-    $.fn.tree = function (option, value) {
-        var methodReturn;
-
-        var $set = this.each(function () {
-            var $this = $(this);
-            var data = $this.data('tree');
-            var options = typeof option === 'object' && option;
-
-            if (!data) { $this.data('tree', (data = new TreePlugin(this, options))); }
-            if (typeof option === 'string') { methodReturn = data[option](value); }
-        });
-
-        return (methodReturn === undefined) ? $set : methodReturn;
-    };
-
-    $.fn.tree.defaults = {
-        multiSelect: false,
-        loadingHTML: '<div>Loading...</div>',
-        cacheItems: true
-    };
-
-    $.fn.tree.Constructor = TreePlugin;
-
     App.addInitializer(function (options) {
-        App.root = new Tree.Models.TreeData();
-        $.ajax("/api/nodes/?maxdepth=10", {
+        App.root = new Tree.Models.TreeData(); // TODO
+        $.ajax("/api/nodes/?maxdepth=1", {
             success: function (response) {
                 App.root.parseTree(response);
             }
@@ -162,6 +69,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
                 newnode.id = newnode._id;
                 delete newnode._id;
+                newnode.loaded = true;
 
                 aux = preprocessed.children;
                 _.each(path, function (step) {
@@ -174,6 +82,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         // container
                         obj = {
                             id: step,
+                            type: "ou",
+                            name: "unknown",
+                            loaded: false,
                             children: []
                         };
                         aux.push(obj);
@@ -214,7 +125,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     var treeContainerPre =
             '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
-            '        <span class="fa fa-minus-square-o"></span> ' +
+            '        <span class="fa fa-<%= controlIcon %>-square-o"></span> ' +
             '        <span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %></div>\n' +
             '    </div>\n' +
@@ -268,6 +179,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 html;
 
             if (json.type === "ou") {
+                json.controlIcon = "plus";
+                if (node.loaded && node.children.length > 0) {
+                    json.controlIcon = "minus";
+                }
                 html = this.templates.containerPre(json);
                 _.each(node.children, function (child) {
                     html += that.recursiveRender(child);

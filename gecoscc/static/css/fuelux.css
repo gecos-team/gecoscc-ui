@@ -60,6 +60,7 @@
 
 .fuelux .tree .tree-folder .tree-folder-content {
   margin-left: 23px;
+  border-left: solid 1px rgb(150, 150, 150);
 }
 
 .fuelux .tree .tree-item {
