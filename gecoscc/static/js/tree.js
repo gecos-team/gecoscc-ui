@@ -36,7 +36,7 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
         App.root = new Tree.Models.TreeData(); // TODO
         $.ajax("/api/nodes/?maxdepth=1", {
             success: function (response) {
-                App.root.parseTree(response);
+                App.root.initTree(response);
             }
         });
         var treeView = new Tree.Views.NavigationTree({ model: App.root });
@@ -57,11 +57,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             tree: null
         },
 
-        parseTree: function (data) {
+        initTree: function (data) {
             var preprocessed = {
-                id: "root",
+                path: "root",
                 children: []
             };
+            this.set("tree", this.parseTree(preprocessed, data));
+        },
+
+        parseTree: function (root, data) {
             _.each(data, function (node) {
                 var newnode = _.clone(node),
                     path = node.path.split(','),
@@ -71,9 +75,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 delete newnode._id;
                 newnode.loaded = true;
 
-                aux = preprocessed.children;
+                aux = root.children;
                 _.each(path, function (step) {
-                    if (step === "root") { return; }
+                    if (root.path.indexOf(step) >= 0) { return; }
                     var obj = _.find(aux, function (child) {
                         return child.id === step;
                     });
@@ -106,7 +110,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
             });
 
-            this.set("tree", this.parser.parse(preprocessed));
+            return this.parser.parse(root);
         },
 
         toJSON: function () {
@@ -115,6 +119,33 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 return _.clone(tree.model.children[0]);
             }
             return {};
+        },
+
+        loadFromNode: function (node, callback) {
+            var url = "/api/nodes/?maxdepth=1&path=",
+                that = this;
+            url += node.model.path + "," + node.model.id;
+            $.ajax(url, {
+                success: function (response) {
+                    var root = _.pick(node.parent.model, "id", "name", "type"),
+                        newnode;
+
+                    // Prepare the parsing operation, need to provide an
+                    // adecuate root where put the new nodes
+                    root.path = node.model.path;
+                    root.children = [];
+                    newnode = that.parseTree(root, response);
+                    // Look for our reference node
+                    newnode = newnode.first(function (n) {
+                        return n.model.id === node.model.id;
+                    });
+                    // Add the children to the tree, they are the new data
+                    _.each(newnode.children, function (n) {
+                        node.addChild(n);
+                    });
+                    that.trigger("change");
+                }
+            });
         }
     });
 });
@@ -167,9 +198,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (_.keys(tree).length > 0) {
                 html = this.recursiveRender(tree);
             } else {
-                html = "<p><span class='fa fa-spinner fa-spin'></span> Loading...</p>";
+                html = this.loader(2.5);
             }
+
             this.$el.html(html);
+            this.bindUIElements();
             return this;
         },
 
@@ -196,6 +229,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return html;
         },
 
+        loader: function (size) {
+            size = size || 1;
+            return "<p style='font-size: " + size + "em;'><span class='fa " +
+                "fa-spinner fa-spin'></span> Loading...</p>";
+        },
+
         selectContainer: function (evt) {
             var $el = $(evt.target).parents(".tree-folder").first(),
                 $treeFolderContent = $el.find('.tree-folder-content').first(),
@@ -209,12 +248,26 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 classToTarget = '.fa-plus-square-o';
                 classToAdd = 'fa-minus-square-o';
+                this.openContainer($el, $treeFolderContent);
                 $treeFolderContent.show();
             }
 
             $el.find(classToTarget).first()
                 .removeClass('fa-plus-square-o fa-minus-square-o')
                 .addClass(classToAdd);
+        },
+
+        openContainer: function ($el, $content) {
+            var node = this.model.get("tree"),
+                id = $el.attr("id"),
+                that = this;
+            node = node.first(function (obj) {
+                return obj.model.id === id;
+            });
+            if (!(node.model.loaded && node.children.length > 0)) {
+                $content.html(this.loader());
+                this.model.loadFromNode(node);
+            }
         },
 
         selectItem: function (evt) {
