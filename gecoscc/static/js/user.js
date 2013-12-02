@@ -1,5 +1,5 @@
-/*jslint browser: true */
-/*global App: true, Backbone */
+/*jslint browser: true, nomen: true */
+/*global $, App */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -20,28 +20,24 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-// This file creates the global App variable, it should be loaded as soon as
-// possible
-
-(function () {
+App.module("User", function (User, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    window.App = new Backbone.Marionette.Application();
-
-    // To store references to models root instances
-    App.instances = {};
-
-    App.addRegions({
-        // sidebar
-        tree: "#ex-tree",
-        events: "#events",
-        // main
-        main: "#viewport-main"
+    App.addInitializer(function (options) {
+        // TODO necessary?
     });
+});
 
-    App.on('initialize:after', function () {
-        if (Backbone.history) {
-            Backbone.history.start();
-        }
+App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
+    "use strict";
+
+    Models.UserModel = Backbone.Model.extend({});
+});
+
+App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
+    "use strict";
+
+    Views.UserForm = Marionette.ItemView.extend({
+        template: "#user-template"
     });
-}());
+});

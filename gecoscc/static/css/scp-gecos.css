@@ -127,3 +127,13 @@ footer {
 #viewport-main {
     padding-bottom: 20px;
 }
+
+#viewport-main ul.permissions {
+    margin: 0;
+    padding: 0;
+}
+
+#viewport-main ul.permissions li {
+    display: inline-block;
+    padding-right: 15px;
+}

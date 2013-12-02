@@ -1,14 +1,5 @@
-/*jslint browser: true, nomen: true */
+/*jslint browser: true, nomen: true, unparam: true */
 /*global $, App, TreeModel */
-
-/*
-* Fuel UX Tree
-* https://github.com/ExactTarget/fuelux
-*
-* Copyright (c) 2012 ExactTarget
-* Copyright (c) 2013 Junta de Andalucia
-* Licensed under the MIT license.
-*/
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -29,19 +20,24 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
+// Contains code from Fuel UX Tree - https://github.com/ExactTarget/fuelux
+// Copyright (c) 2012 ExactTarget - Licensed under the MIT license
+
 App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    App.addInitializer(function (options) {
-        App.root = new Tree.Models.TreeData(); // TODO
+    App.addInitializer(function () {
+        App.instances.tree = new Tree.Models.TreeModel();
         $.ajax("/api/nodes/?maxdepth=1", {
             success: function (response) {
-                App.root.initTree(response);
+                App.instances.tree.initTree(response);
             }
         });
-        var treeView = new Tree.Views.NavigationTree({ model: App.root });
+        var treeView = new Tree.Views.NavigationTree({
+            model: App.instances.tree
+        });
         App.tree.show(treeView);
-        App.root.on("change", function () {
+        App.instances.tree.on("change", function () {
             App.tree.show(treeView);
         });
     });
@@ -50,7 +46,7 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
 App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.TreeData = Backbone.Model.extend({
+    Models.TreeModel = Backbone.Model.extend({
         parser: new TreeModel(),
 
         defaults: {
@@ -121,7 +117,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return {};
         },
 
-        loadFromNode: function (node, callback) {
+        loadFromNode: function (node) {
             var url = "/api/nodes/?maxdepth=1&path=",
                 that = this;
             url += node.model.path + "," + node.model.id;
@@ -259,8 +255,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         openContainer: function ($el, $content) {
             var node = this.model.get("tree"),
-                id = $el.attr("id"),
-                that = this;
+                id = $el.attr("id");
             node = node.first(function (obj) {
                 return obj.model.id === id;
             });
@@ -273,15 +268,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectItem: function (evt) {
             var $el = $(evt.target).parents(".tree-item").first(),
                 id = $el.attr("id"),
-                item;
+                item,
+                model,
+                view;
 
             item = this.model.get("tree").first(function (node) {
                 return node.model.id === id;
             });
 
             if (item && item.model.type === "user") {
-                window.location = "/users/";
+                model = new App.User.Models.UserModel({ id: id });
+                view = new App.User.Views.UserForm({ model: model });
             }
+
+//             model.fetch(); TODO
+            App.main.show(view);
         }
     });
 });
