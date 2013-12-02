@@ -22,11 +22,12 @@
 
 // This file creates the global App variable, it should be loaded as soon as
 // possible
+var App;
 
-(function () {
+(function (Backbone) {
     "use strict";
 
-    window.App = new Backbone.Marionette.Application();
+    App = new Backbone.Marionette.Application();
 
     // To store references to models root instances
     App.instances = {};
@@ -39,9 +40,26 @@
         main: "#viewport-main"
     });
 
+    var Router = Backbone.Marionette.AppRouter.extend({
+        appRoutes: {
+            "user/:id": "loadUser"
+        },
+
+        controller: {
+            loadUser: function (id) {
+                var model = new App.User.Models.UserModel({ id: id }),
+                    view = new App.User.Views.UserForm({ model: model });
+                // model.fetch(); TODO
+                App.main.show(view);
+            }
+        }
+    });
+
+    App.instances.router = new Router();
+
     App.on('initialize:after', function () {
         if (Backbone.history) {
             Backbone.history.start();
         }
     });
-}());
+}(Backbone));

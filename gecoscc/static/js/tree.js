@@ -268,21 +268,15 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectItem: function (evt) {
             var $el = $(evt.target).parents(".tree-item").first(),
                 id = $el.attr("id"),
-                item,
-                model,
-                view;
+                item;
 
             item = this.model.get("tree").first(function (node) {
                 return node.model.id === id;
             });
 
             if (item && item.model.type === "user") {
-                model = new App.User.Models.UserModel({ id: id });
-                view = new App.User.Views.UserForm({ model: model });
+                App.instances.router.navigate("user/" + id, { trigger: true });
             }
-
-//             model.fetch(); TODO
-            App.main.show(view);
         }
     });
 });
