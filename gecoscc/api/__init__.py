@@ -8,6 +8,8 @@ UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE')
 
 
 class ResourcePaginatedReadOnly(object):
+    # TODO
+    # Implement permissions filter
 
     schema_collection = None
     schema_detail = None
@@ -67,7 +69,7 @@ class ResourcePaginatedReadOnly(object):
             'pagesize': pagesize,
             'pages': pages,
             'page': page,
-            'users': self.parse_collection(list(objects)),
+            self.collection_name: self.parse_collection(list(objects)),
         }
 
     def get(self):

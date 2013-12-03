@@ -1,20 +1,10 @@
-import logging
-
-from cornice import Service
-
-from gecoscc.models import Nodes
 from gecoscc.permissions import api_login_required, get_user_permissions
 
+from cornice.resource import resource
 
-logger = logging.getLogger(__name__)
+from gecoscc.models import Nodes, Node
+from gecoscc.api import ResourcePaginatedReadOnly
 
-
-desc = """\
-nodes resource allow to retrieve tree structure
-"""
-
-nodes_service = Service(name='nodes', path='/api/nodes/',
-                        description='Logged user attributes')
 
 
 def nodes_type_filter(params):
@@ -65,8 +55,12 @@ def get_filters(node_filters, params):
     return filters
 
 
-@nodes_service.get(validators=(api_login_required,))
-def nodes_list(request):
+
+
+@resource(collection_path='/api/nodes/',
+          path='/api/nodes/{oid}/',
+          description='Nodes resource')
+class NodesResource(ResourcePaginatedReadOnly):
     """ Returns the nodes tree structure
 
     GET filters:
@@ -86,26 +80,34 @@ def nodes_list(request):
     ]
     """
 
-    local_filters = get_filters(node_filters, request.GET)
+    schema_collection = Nodes
+    schema_detail = Node
 
-    permissions_filters = get_user_permissions(request)
+    mongo_filter = {
+    }
+    collection_name = 'nodes'
 
-    logger.debug(str(local_filters))
-    logger.debug(str(permissions_filters))
+    def get_objects_filter(self):
+        # TODO
+        # Implement permissions filter
 
-    filters = local_filters + permissions_filters
+        local_filters = get_filters(node_filters, self.request.GET)
 
-    if local_filters:
-        if len(local_filters) > 1:
-            raw_nodes = request.db.nodes.find({
-                '$and': filters,
-            })
-        else:
-            raw_nodes = request.db.nodes.find(filters[0])
-    else:
-        raw_nodes = request.db.nodes.find()
+        permissions_filters = get_user_permissions(self.request)
 
-    schema = Nodes()
-    nodes = schema.serialize(raw_nodes)
+        filters = local_filters + permissions_filters
 
-    return nodes
+        if local_filters:
+            if len(local_filters) > 1:
+                return {
+                    '$and': filters,
+                }
+            else:
+                return filters[0]
+        return {}
+
+
+    def get_object_filter(self):
+        # TODO
+        # Implement permissions filter
+        return {}
