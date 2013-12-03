@@ -24,6 +24,7 @@ class ResourcePaginatedReadOnly(object):
         self.request = request
         self.default_pagesize = request.registry.settings.get(
             'default_pagesize', 30)
+        self.collection = self.get_collection()
 
     def parse_item(self, item):
         serialized_item = self.schema_detail().deserialize(item)
@@ -39,8 +40,10 @@ class ResourcePaginatedReadOnly(object):
     def get_object_filter(self):
         return {}
 
-    def get_collection(self):
-        return self.request.db[self.collection_name]
+    def get_collection(self, collection=None):
+        if collection is None:
+            collection = self.collection_name
+        return self.request.db[collection]
 
     def collection_get(self):
         page = int(self.request.GET.get('page', 0))
@@ -53,8 +56,7 @@ class ResourcePaginatedReadOnly(object):
                 'limit': pagesize,
             })
 
-        collection = self.get_collection()
-        users_count = collection.find(
+        users_count = self.collection.find(
             self.mongo_filter,
             {'type': 1}
         ).count()
@@ -63,7 +65,7 @@ class ResourcePaginatedReadOnly(object):
 
         collection_filter.update(self.mongo_filter)
 
-        objects = collection.find(collection_filter, **extraargs)
+        objects = self.collection.find(collection_filter, **extraargs)
         if pagesize > 0:
             pages = int(users_count / pagesize)
         else:
@@ -77,14 +79,13 @@ class ResourcePaginatedReadOnly(object):
 
     def get(self):
         oid = self.request.matchdict['oid']
-        collection = self.get_collection()
 
         collection_filter = {
             self.key: ObjectId(oid),
         }
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
-        user = collection.find_one(collection_filter)
+        user = self.collection.find_one(collection_filter)
         if not user:
             raise HTTPNotFound()
 
@@ -121,8 +122,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.pre_save(self, obj)
 
-        collection = self.get_collection()
-        obj_id = collection.insert(obj)
+        obj_id = self.collection.insert(obj)
 
         obj = self.post_save(self, obj)
 
@@ -130,9 +130,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def put(self):
         obj = self.request.validated
-        collection = self.get_collection()
 
-        if not collection.find_one({self.key: obj[self.key]}):
+        if not self.collection.find_one({self.key: obj[self.key]}):
             raise HTTPNotFound()
 
         if not self.integrity_validation(obj):
@@ -142,7 +141,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.pre_save(obj)
 
-        collection.update(
+        self.collection.update(
             {self.key: obj[self.key]},
             obj,
             new=True
