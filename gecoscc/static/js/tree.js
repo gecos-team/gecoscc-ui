@@ -55,10 +55,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         initTree: function (data) {
             var preprocessed = {
-                path: "root",
-                children: []
-            };
-            this.set("tree", this.parseTree(preprocessed, data));
+                    path: "root",
+                    children: []
+                },
+                parsed;
+            parsed = this.parseTree(preprocessed, data);
+            _.each(parsed.children, function (n) {
+                if (n.model.type === "ou") {
+                    n.model.closed = false; // Open top level containers
+                }
+            });
+            this.set("tree", parsed);
         },
 
         parseTree: function (root, data) {
@@ -70,6 +77,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 newnode.id = newnode._id;
                 delete newnode._id;
                 newnode.loaded = true;
+                newnode.closed = true; // All nodes start closed
 
                 aux = root.children;
                 _.each(path, function (step) {
@@ -85,6 +93,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                             type: "ou",
                             name: "unknown",
                             loaded: false,
+                            closed: true, // All nodes start closed
                             children: []
                         };
                         aux.push(obj);
@@ -156,11 +165,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %></div>\n' +
             '    </div>\n' +
-            '    <div class="tree-folder-content">\n',
+            '    <div class="tree-folder-content" ' +
+            '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
         treeContainerPost =
-            '    </div>\n' +
-            '    <div class="tree-loader" style="display: none;">\n' +
-            '        <div class="static-loader">Loading...</div>\n' +
             '    </div>\n' +
             '</div>',
         treeItem =
@@ -204,14 +211,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         recursiveRender: function (node) {
             var that = this,
-                json = _.pick(node, "name", "type", "id"),
+                json = _.pick(node, "name", "type", "id", "closed"),
                 html;
 
             if (json.type === "ou") {
-                json.controlIcon = "plus";
-                if (node.loaded && node.children.length > 0) {
-                    json.controlIcon = "minus";
+                if (!(node.loaded && node.children.length > 0)) {
+                    json.closed = true;
                 }
+                json.controlIcon = json.closed ? "plus" : "minus";
                 html = this.templates.containerPre(json);
                 _.each(node.children, function (child) {
                     html += that.recursiveRender(child);
@@ -259,6 +266,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             node = node.first(function (obj) {
                 return obj.model.id === id;
             });
+            node.model.closed = false;
             if (!(node.model.loaded && node.children.length > 0)) {
                 $content.html(this.loader());
                 this.model.loadFromNode(node);
