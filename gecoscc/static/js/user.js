@@ -1,5 +1,5 @@
-/*jslint browser: true, nomen: true */
-/*global $, App */
+/*jslint browser: true, nomen: true, unparam: true */
+/*global App */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -20,14 +20,6 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-App.module("User", function (User, App, Backbone, Marionette, $, _) {
-    "use strict";
-
-    App.addInitializer(function (options) {
-        // TODO necessary?
-    });
-});
-
 App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
@@ -38,6 +30,30 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Views.UserForm = Marionette.ItemView.extend({
-        template: "#user-template"
+        template: "#user-template",
+
+        events: {
+            "keyup #permission-filter": "permissionFilter",
+            "click #permission-filter-btn": "permissionFilter"
+        },
+
+        permissionFilter: function (evt) {
+            var filter = $(evt.target);
+            if (filter.is("input")) {
+                filter = filter.val();
+            } else {
+                filter = filter.parents('div.input-group').find("input").val();
+            }
+            $("label.permission").each(function (index, label) {
+                var $label = $(label),
+                    filterReady = filter.trim().toLowerCase(),
+                    text = $label.text().trim().toLowerCase();
+                if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
+                    $label.parent().show();
+                } else {
+                    $label.parent().hide();
+                }
+            });
+        }
     });
 });

@@ -36,6 +36,8 @@ var App;
         // sidebar
         tree: "#ex-tree",
         events: "#events",
+        // breadcrumb
+        breadcrumb: "#breadcrumb",
         // main
         main: "#viewport-main"
     });
@@ -50,6 +52,10 @@ var App;
                 var model = new App.User.Models.UserModel({ id: id }),
                     view = new App.User.Views.UserForm({ model: model });
                 // model.fetch(); TODO
+                App.instances.breadcrumb.setSteps([{
+                    url: "#user/" + id,
+                    text: "Usuario" // translation
+                }]);
                 App.main.show(view);
             }
         }

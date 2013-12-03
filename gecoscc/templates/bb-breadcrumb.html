@@ -1,0 +1,12 @@
+<% _.each(steps, function (s, idx, steps) { %>
+    <li
+        <% if (idx === steps.length - 1) { %>
+            class="active">
+        <% } else { %>
+            >
+            <a href="<%= s.url %>">
+        <% } %>
+                <%= s.text %>
+            <% if (idx < steps.length - 1) { print("</a>"); } %>
+        </li>
+<% }); %>

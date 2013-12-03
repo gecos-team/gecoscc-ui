@@ -31,11 +31,6 @@ def reports(context, request):
 #;;;;;;;;;;;
 # TO DELETE
 #;;;;;;;;;;;
-@view_config(route_name='users', renderer='templates/to_delete/users.jinja2')
-def users(context, request):
-    return {}
-
-
 @view_config(route_name='ous', renderer='templates/to_delete/ous.jinja2')
 def ous(context, request):
     return {}
