@@ -77,7 +77,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 newnode.id = newnode._id;
                 delete newnode._id;
                 newnode.loaded = true;
-                newnode.closed = true; // All nodes start closed
+                if (newnode.type === "ou") {
+                    newnode.closed = true; // All container nodes start closed
+                }
 
                 aux = root.children;
                 _.each(path, function (step) {
@@ -93,7 +95,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                             type: "ou",
                             name: "unknown",
                             loaded: false,
-                            closed: true, // All nodes start closed
+                            closed: true, // All container nodes start closed
                             children: []
                         };
                         aux.push(obj);
@@ -277,6 +279,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target).parents(".tree-item").first(),
                 id = $el.attr("id"),
                 item;
+
+            this.$el.find(".tree-item").removeClass("tree-selected");
+            $el.addClass("tree-selected");
 
             item = this.model.get("tree").first(function (node) {
                 return node.model.id === id;
