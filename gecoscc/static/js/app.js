@@ -49,19 +49,35 @@ var App;
 
         controller: {
             loadUser: function (id) {
-                var model = new App.User.Models.UserModel({ id: id }),
+                var model = new App.User.Models.UserModel(),
                     view = new App.User.Views.UserForm({ model: model });
-                // model.fetch(); TODO
                 App.instances.breadcrumb.setSteps([{
                     url: "#user/" + id,
                     text: "Usuario" // translation
                 }]);
-                App.main.show(view);
+                App.main.show(view); // Render the loader indicator
+                model.set("id", id); // Add an ID after rendering the loader
+                model.on("change", function () {
+                    App.main.show(view);
+                });
+                model.fetch();
             }
         }
     });
 
     App.instances.router = new Router();
+
+    App.WithLoaderItemView = Backbone.Marionette.ItemView.extend({
+        render: function () {
+            if (this.model.isNew()) {
+                this.$el.html("<p style='font-size: 3em;'><span class='fa " +
+                    "fa-spinner fa-spin'></span> Loading...</p>");
+            } else {
+                Backbone.Marionette.ItemView.prototype.render.call(this);
+            }
+            return this;
+        }
+    });
 
     App.on('initialize:after', function () {
         if (Backbone.history) {

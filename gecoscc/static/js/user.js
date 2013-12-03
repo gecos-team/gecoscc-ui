@@ -23,13 +23,21 @@
 App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.UserModel = Backbone.Model.extend({});
+    Models.UserModel = Backbone.Model.extend({
+        url: function () {
+            var url = "/api/users/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
+        }
+    });
 });
 
 App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.UserForm = Marionette.ItemView.extend({
+    Views.UserForm = App.WithLoaderItemView.extend({
         template: "#user-template",
 
         events: {
