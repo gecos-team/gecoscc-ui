@@ -51,15 +51,16 @@ class ResourcePaginatedReadOnly(object):
                 'limit': pagesize,
             })
 
-        users_count = self.request.db.nodes.find(
-            {'type': 'user'},
+        collection = self.get_collection()
+        users_count = collection.find(
+            self.mongo_filter,
             {'type': 1}
         ).count()
 
         collection_filter = self.get_objects_filter()
+
         collection_filter.update(self.mongo_filter)
 
-        collection = self.get_collection()
         objects = collection.find(collection_filter, **extraargs)
         if pagesize > 0:
             pages = int(users_count / pagesize)

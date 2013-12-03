@@ -6,7 +6,6 @@ from gecoscc.models import Nodes, Node
 from gecoscc.api import ResourcePaginatedReadOnly
 
 
-
 def nodes_type_filter(params):
     type = params.get('type')
     if type:
@@ -55,11 +54,10 @@ def get_filters(node_filters, params):
     return filters
 
 
-
-
 @resource(collection_path='/api/nodes/',
           path='/api/nodes/{oid}/',
-          description='Nodes resource')
+          description='Nodes resource',
+          validators=(api_login_required,))
 class NodesResource(ResourcePaginatedReadOnly):
     """ Returns the nodes tree structure
 
@@ -90,10 +88,10 @@ class NodesResource(ResourcePaginatedReadOnly):
     def get_objects_filter(self):
         # TODO
         # Implement permissions filter
+        # permissions_filters = get_user_permissions(self.request)
+        permissions_filters = []
 
         local_filters = get_filters(node_filters, self.request.GET)
-
-        permissions_filters = get_user_permissions(self.request)
 
         filters = local_filters + permissions_filters
 
@@ -106,8 +104,8 @@ class NodesResource(ResourcePaginatedReadOnly):
                 return filters[0]
         return {}
 
-
     def get_object_filter(self):
         # TODO
         # Implement permissions filter
+        # permissions_filters = get_user_permissions(self.request)
         return {}
