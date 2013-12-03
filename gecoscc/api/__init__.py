@@ -2,6 +2,7 @@ from bson import ObjectId
 
 from cornice.schemas import CorniceSchema
 
+from pyramid.httpexceptions import HTTPNotFound
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD')
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE')
@@ -17,6 +18,7 @@ class ResourcePaginatedReadOnly(object):
         'type': 'anytype',
     }
     collection_name = 'nodes'
+    key = '_id'
 
     def __init__(self, request):
         self.request = request
@@ -78,11 +80,14 @@ class ResourcePaginatedReadOnly(object):
         collection = self.get_collection()
 
         collection_filter = {
-            '_id': ObjectId(oid),
+            self.key: ObjectId(oid),
         }
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
         user = collection.find_one(collection_filter)
+        if not user:
+            raise HTTPNotFound()
+
         return self.parse_item(user)
 
 
@@ -92,12 +97,60 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         super(ResourcePaginated, self).__init__(request)
         if request.method in UNSAFE_METHODS:
             self.schema = CorniceSchema(self.schema_detail)
+            # Implement write permissions
+
+    def integrity_validation(self, obj):
+        return True
+
+    def pre_save(self, obj):
+        return obj
+
+    def post_save(self, obj):
+        return obj
 
     def collection_post(self):
-        return {"test": "not implemented"}
+        obj = self.request.validated
+
+        if not self.integrity_validation(obj):
+            if len(self.request.errors) < 1:
+                self.request.errors.add('body', 'object', 'Integrity error')
+            return
+
+        # Remove '_id' for security
+        del obj[self.key]
+
+        obj = self.pre_save(self, obj)
+
+        collection = self.get_collection()
+        obj_id = collection.insert(obj)
+
+        obj = self.post_save(self, obj)
+
+        return {self.key: str(obj_id)}
 
     def put(self):
-        return {"test": "not implemented"}
+        obj = self.request.validated
+        collection = self.get_collection()
+
+        if not collection.find_one({self.key: obj[self.key]}):
+            raise HTTPNotFound()
+
+        if not self.integrity_validation(obj):
+            if len(self.request.errors) < 1:
+                self.request.errors.add('body', 'object', 'Integrity error')
+            return
+
+        obj = self.pre_save(obj)
+
+        collection.update(
+            {self.key: obj[self.key]},
+            obj,
+            new=True
+        )
+
+        obj = self.post_save(obj)
+
+        return self.parse_item(obj)
 
     def delete(self):
         return {"test": "not implemented"}
