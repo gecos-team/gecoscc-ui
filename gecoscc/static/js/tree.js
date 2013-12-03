@@ -59,7 +59,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     children: []
                 },
                 parsed;
-            parsed = this.parseTree(preprocessed, data);
+            parsed = this.parseTree(preprocessed, data.nodes);
             _.each(parsed.children, function (n) {
                 if (n.model.type === "ou") {
                     n.model.closed = false; // Open top level containers
@@ -141,7 +141,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     // adecuate root where put the new nodes
                     root.path = node.model.path;
                     root.children = [];
-                    newnode = that.parseTree(root, response);
+                    newnode = that.parseTree(root, response.nodes);
                     // Look for our reference node
                     newnode = newnode.first(function (n) {
                         return n.model.id === node.model.id;

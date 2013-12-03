@@ -37,12 +37,30 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
 App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.UserForm = App.WithLoaderItemView.extend({
+    Views.UserForm = App.GecosItemView.extend({
         template: "#user-template",
 
         events: {
+            "click #submit": "saveForm",
+            "change input": "validate",
+
             "keyup #permission-filter": "permissionFilter",
             "click #permission-filter-btn": "permissionFilter"
+        },
+
+        saveForm: function (evt) {
+            evt.preventDefault();
+            this.model.set({
+                name: this.$el.find("#username").val().trim(),
+                phone: this.$el.find("#phone").val().trim(),
+                email: this.$el.find("#email").val().trim(),
+                first_name: this.$el.find("#firstname").val().trim(),
+                last_name: this.$el.find("#lastname").val().trim(),
+                address: this.$el.find("#address").val().trim()
+            });
+            // TODO password
+            // TODO permissions
+            this.model.save();
         },
 
         permissionFilter: function (evt) {

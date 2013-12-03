@@ -6,9 +6,9 @@
         <form role="form">
             <div class="row">
                 <div class="col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group <% if (!name) { print('has-error'); } %>">
                         <label for="username">Nombre de usuario</label>
-                        <input id="username" type="text" class="form-control" placeholder="Ej: juan" value="<%= name %>">
+                        <input id="username" type="text" class="form-control" placeholder="Ej: juan" required value="<%= name %>">
                     </div>
                     <div class="form-group">
                         <label for="passwd1">Contraseña</label>
@@ -24,9 +24,9 @@
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group <% if (!email) { print('has-error'); } %>">
                         <label for="email">Email</label>
-                        <input id="email" type="email" class="form-control" placeholder="Ej: juan.nadie@gmail.com" value="<%= email %>">
+                        <input id="email" type="email" class="form-control" placeholder="Ej: juan.nadie@gmail.com" required value="<%= email %>">
                     </div>
                     <div class="row"><div class="col-sm-12 col-md-6">
                         <div class="form-group">
@@ -152,7 +152,7 @@
             </div></div>
             <div class="row"><div class="col-sm-12">
                 <a href="/" class="btn btn-default">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar</button>
+                <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
             </div></div>
         </form>
     </div>

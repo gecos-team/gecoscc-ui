@@ -1,5 +1,5 @@
-/*jslint browser: true */
-/*global App: true, Backbone */
+/*jslint browser: true, nomen: true */
+/*global App: true, Backbone, jQuery, _ */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -24,7 +24,7 @@
 // possible
 var App;
 
-(function (Backbone) {
+(function (Backbone, $, _) {
     "use strict";
 
     App = new Backbone.Marionette.Application();
@@ -67,7 +67,7 @@ var App;
 
     App.instances.router = new Router();
 
-    App.WithLoaderItemView = Backbone.Marionette.ItemView.extend({
+    App.GecosItemView = Backbone.Marionette.ItemView.extend({
         render: function () {
             if (this.model.isNew()) {
                 this.$el.html("<p style='font-size: 3em;'><span class='fa " +
@@ -76,6 +76,33 @@ var App;
                 Backbone.Marionette.ItemView.prototype.render.call(this);
             }
             return this;
+        },
+
+        validate: function (evt) {
+            var valid = true,
+                $elems;
+
+            if (evt) {
+                $elems = [$(evt.target)];
+            } else {
+                $elems = this.$el.find("input");
+            }
+
+            _.each($elems, function (el) {
+                var $el = $(el);
+
+                if ($el.is("[required]")) {
+                    if ($el.val().trim() === "") {
+                        $el.parent().addClass("has-error");
+                    } else {
+                        $el.parent().removeClass("has-error");
+                    }
+                }
+
+                // TODO other fields, maybe use parsleyjs.org ?
+            });
+
+            return valid;
         }
     });
 
@@ -84,4 +111,4 @@ var App;
             Backbone.history.start();
         }
     });
-}(Backbone));
+}(Backbone, jQuery, _));
