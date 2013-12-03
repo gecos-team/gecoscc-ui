@@ -37,12 +37,6 @@ class ObjectIdField(object):
         return []
 
 
-class BaseListResource(colander.MappingSchema):
-    page = colander.SchemaNode(colander.Integer())
-    pagesize = colander.SchemaNode(colander.Integer())
-    pages = colander.SchemaNode(colander.Integer())
-
-
 class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     path = colander.SchemaNode(colander.String())
@@ -74,12 +68,8 @@ class User(Node):
     groups = Groups()
 
 
-class UsersList(colander.SequenceSchema):
+class Users(colander.SequenceSchema):
     users = User()
-
-
-class Users(BaseListResource):
-    users = UsersList()
 
 
 class Policy(colander.MappingSchema):
