@@ -3,7 +3,7 @@ import logging
 from cornice import Service
 
 from gecoscc.models import Nodes
-from gecoscc.permissions import api_login_required
+from gecoscc.permissions import api_login_required, get_user_permissions
 
 
 logger = logging.getLogger(__name__)
@@ -17,8 +17,8 @@ nodes_service = Service(name='nodes', path='/api/nodes/',
                         description='Logged user attributes')
 
 
-def nodes_type_filter(request):
-    type = request.GET.get('type')
+def nodes_type_filter(params):
+    type = params.get('type')
     if type:
         return {
             'type': type,
@@ -26,9 +26,9 @@ def nodes_type_filter(request):
     return {}
 
 
-def nodes_maxdepth_filter(request):
-    maxdepth = int(request.GET.get('maxdepth'))
-    path = request.GET.get('path', 'root')
+def nodes_maxdepth_filter(params):
+    maxdepth = int(params.get('maxdepth'))
+    path = params.get('path', 'root')
     range_depth = '0,{0}'.format(maxdepth)
     return {
         'path': {
@@ -37,8 +37,8 @@ def nodes_maxdepth_filter(request):
     }
 
 
-def nodes_path_filter(request):
-    path = request.GET.get('path')
+def nodes_path_filter(params):
+    path = params.get('path')
     if path:
         return {
             'path': {
@@ -53,6 +53,16 @@ node_filters = {
     'maxdepth': nodes_maxdepth_filter,
     'path': nodes_path_filter,
 }
+
+
+def get_filters(node_filters, params):
+    filters = []
+    for (filter_name, filter_func) in node_filters.iteritems():
+        if filter_name in params:
+            filter_dict = filter_func(params)
+            if filter_dict:
+                filters.append(filter_dict)
+    return filters
 
 
 @nodes_service.get(validators=(api_login_required,))
@@ -76,17 +86,17 @@ def nodes_list(request):
     ]
     """
 
-    filters = []
-    for (filter_name, filter_func) in node_filters.iteritems():
-        if filter_name in request.GET:
-            filter_dict = filter_func(request)
-            if filter_dict:
-                filters.append(filter_dict)
+    local_filters = get_filters(node_filters, request.GET)
 
-    logger.debug(str(filters))
+    permissions_filters = get_user_permissions(request)
 
-    if filters:
-        if len(filters) > 1:
+    logger.debug(str(local_filters))
+    logger.debug(str(permissions_filters))
+
+    filters = local_filters + permissions_filters
+
+    if local_filters:
+        if len(local_filters) > 1:
             raw_nodes = request.db.nodes.find({
                 '$and': filters,
             })
