@@ -82,7 +82,19 @@ var App;
             },
 
             loadOU: function (id) {
-                // TODO
+                var model = new App.OU.Models.OUModel(),
+                    view = new App.OU.Views.OUForm({ model: model });
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + id,
+                    text: "Unidad Organizativa" // translation
+                }]);
+                // TODO select node in tree
+                App.main.show(view); // Render the loader indicator
+                model.set("id", id); // Add an ID after rendering the loader
+                model.on("change", function () {
+                    App.main.show(view);
+                });
+                model.fetch();
             }
         }
     });
@@ -129,14 +141,12 @@ var App;
     };
 
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
-        render: function () {
+        getTemplate: function () {
             if (this.model.isNew()) {
-                this.$el.html("<p style='font-size: 3em;'><span class='fa " +
-                    "fa-spinner fa-spin'></span> Loading...</p>");
-            } else {
-                Backbone.Marionette.ItemView.prototype.render.call(this);
+                return "#loader-template";
             }
-            return this;
+            return this.template;
+
         },
 
         validate: function (evt) {

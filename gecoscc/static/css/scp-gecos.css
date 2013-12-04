@@ -138,6 +138,8 @@ footer {
     padding-right: 15px;
 }
 
+/* HOME VIEW */
+
 #home-view dl {
     font-size: 1.8em;
 }
@@ -150,4 +152,35 @@ footer {
     #home-view dl dd {
         margin-left: 260px !important;
     }
+}
+
+/* OU VIEW */
+
+#policies-table tr td:last-child {
+    width: 30%;
+}
+
+#policies-table tr td:last-child a:first-child {
+    margin-left: 8px;
+}
+
+#policies-table tr td:last-child a {
+    float: right;
+}
+
+ul#new-policies li {
+    padding: 10px 0;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #CCC;
+}
+
+ul#new-policies li:last-child {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+}
+
+ul#new-policies li a {
+    position: relative;
+    top: -8px;
 }
