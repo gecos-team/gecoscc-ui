@@ -2,10 +2,11 @@ from bson import ObjectId
 
 from cornice.schemas import CorniceSchema
 
-from pyramid.httpexceptions import HTTPNotFound
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 
-SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD')
-UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE')
+SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
+UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
+SCHEMA_METHODS = ('POST', 'PUT', )
 
 
 class ResourcePaginatedReadOnly(object):
@@ -39,6 +40,9 @@ class ResourcePaginatedReadOnly(object):
 
     def get_object_filter(self):
         return {}
+
+    def get_oid_filter(self, oid):
+        return {self.key: ObjectId(oid)}
 
     def get_collection(self, collection=None):
         if collection is None:
@@ -79,10 +83,7 @@ class ResourcePaginatedReadOnly(object):
 
     def get(self):
         oid = self.request.matchdict['oid']
-
-        collection_filter = {
-            self.key: ObjectId(oid),
-        }
+        collection_filter = self.get_oid_filter(oid)
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
         user = self.collection.find_one(collection_filter)
@@ -96,7 +97,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def __init__(self, request):
         super(ResourcePaginated, self).__init__(request)
-        if request.method in UNSAFE_METHODS:
+        if request.method in SCHEMA_METHODS:
             self.schema = CorniceSchema(self.schema_detail)
             # Implement write permissions
 
@@ -107,6 +108,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         return obj
 
     def post_save(self, obj):
+        return obj
+
+    def pre_delete(self, obj):
+        return obj
+
+    def post_delete(self, obj):
         return obj
 
     def collection_post(self):
@@ -130,8 +137,16 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def put(self):
         obj = self.request.validated
+        oid = self.request.matchdict['oid']
 
-        if not self.collection.find_one({self.key: obj[self.key]}):
+        if oid != obj[self.key]:
+            raise HTTPBadRequest('The object id is not the same that the id in'
+                                 'the url')
+
+        obj_filter = self.get_oid_filter(oid)
+        obj_filter.update(self.mongo_filter)
+
+        if not self.collection.find_one(obj_filter):
             raise HTTPNotFound()
 
         if not self.integrity_validation(obj):
@@ -141,15 +156,40 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.pre_save(obj)
 
-        self.collection.update(
-            {self.key: obj[self.key]},
-            obj,
-            new=True
-        )
+        self.collection.update(obj_filter, obj, new=True)
 
         obj = self.post_save(obj)
 
         return self.parse_item(obj)
 
     def delete(self):
-        return {"test": "not implemented"}
+
+        obj_id = self.request.matchdict['oid']
+
+        filter = self.get_oid_filter(obj_id)
+        filter.update(self.mongo_filter)
+
+        obj = self.collection.find_one(filter)
+        if not obj:
+            raise HTTPNotFound()
+
+        if not self.integrity_validation(obj):
+            if len(self.request.errors) < 1:
+                self.request.errors.add('body', 'object', 'Integrity error')
+            return
+
+        obj = self.pre_save(obj)
+        obj = self.pre_delete(obj)
+
+        status = self.collection.remove(filter)
+
+        if status['ok']:
+            obj = self.post_save(obj)
+            obj = self.post_delete(obj)
+            return {
+                'status': 'The object was deleted successfully',
+                'ok': 1
+            }
+        else:
+            self.request.errors.add('operation', 'db status', status)
+            return
