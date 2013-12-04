@@ -1,4 +1,4 @@
-/*jslint browser: true, nomen: true */
+/*jslint browser: true, nomen: true, vars: false */
 /*global App: true, Backbone, jQuery, _ */
 
 // Copyright 2013 Junta de Andalucia
@@ -27,6 +27,14 @@ var App;
 (function (Backbone, $, _) {
     "use strict";
 
+    var Router,
+        HomeView,
+        numericRegex,
+        emailRegex,
+        ipRegex,
+        urlRegex,
+        applyRegex;
+
     App = new Backbone.Marionette.Application();
 
     // To store references to models root instances
@@ -42,25 +50,39 @@ var App;
         main: "#viewport-main"
     });
 
-    var Router = Backbone.Marionette.AppRouter.extend({
+    Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
-            "user/:id": "loadUser"
+            "": "loadHome",
+            "user/:id": "loadUser",
+            "ou/:id": "loadOU"
         },
 
         controller: {
+            loadHome: function () {
+                var view = new HomeView();
+                App.instances.breadcrumb.setSteps([]);
+                App.tree.$el.find(".tree-selected").removeClass("tree-selected");
+                App.main.show(view);
+            },
+
             loadUser: function (id) {
                 var model = new App.User.Models.UserModel(),
                     view = new App.User.Views.UserForm({ model: model });
                 App.instances.breadcrumb.setSteps([{
-                    url: "#user/" + id,
+                    url: "user/" + id,
                     text: "Usuario" // translation
                 }]);
+                // TODO select node in tree
                 App.main.show(view); // Render the loader indicator
                 model.set("id", id); // Add an ID after rendering the loader
                 model.on("change", function () {
                     App.main.show(view);
                 });
                 model.fetch();
+            },
+
+            loadOU: function (id) {
+                // TODO
             }
         }
     });
@@ -77,34 +99,34 @@ var App;
     * http://rickharrison.github.com/validate.js
     */
 
-    var numericRegex = /^[0-9]+$/,
-//         integerRegex = /^\-?[0-9]+$/,
-//         decimalRegex = /^\-?[0-9]*\.?[0-9]+$/,
-        emailRegex = /^[a-zA-Z0-9.!#$%&amp;'*+\-\/=?\^_`{|}~\-]+@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*$/,
+    numericRegex = /^[0-9]+$/;
+//     integerRegex = /^\-?[0-9]+$/;
+//     decimalRegex = /^\-?[0-9]*\.?[0-9]+$/;
+    emailRegex = /^[a-zA-Z0-9.!#$%&amp;'*+\-\/=?\^_`{|}~\-]+@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*$/;
 //         alphaRegex = /^[a-z]+$/i,
 //         alphaNumericRegex = /^[a-z0-9]+$/i,
 //         alphaDashRegex = /^[a-z0-9_\-]+$/i,
 //         naturalRegex = /^[0-9]+$/i,
 //         naturalNoZeroRegex = /^[1-9][0-9]*$/i,
-        ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
+    ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/;
 //         base64Regex = /[^a-zA-Z0-9\/\+=]/i,
 //         numericDashRegex = /^[\d\-\s]+$/,
-        urlRegex = /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/,
+    urlRegex = /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
 
     /*
     * End - validate.js
     */
 
-        applyRegex = function (regex, $el) {
-            var valid = true;
-            if (regex.test($el.val().trim())) {
-                $el.parent().removeClass("has-error");
-            } else {
-                $el.parent().addClass("has-error");
-                valid = false;
-            }
-            return valid;
-        };
+    applyRegex = function (regex, $el) {
+        var valid = true;
+        if (regex.test($el.val().trim())) {
+            $el.parent().removeClass("has-error");
+        } else {
+            $el.parent().addClass("has-error");
+            valid = false;
+        }
+        return valid;
+    };
 
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
         render: function () {
@@ -156,6 +178,18 @@ var App;
             });
 
             return valid;
+        }
+    });
+
+    HomeView = Backbone.Marionette.ItemView.extend({
+        template: "#home-template",
+
+        render: function () {
+            Backbone.Marionette.ItemView.prototype.render.call(this);
+            this.$el.find('.easyPieChart').easyPieChart({
+                animate: 1000
+            });
+            return this;
         }
     });
 

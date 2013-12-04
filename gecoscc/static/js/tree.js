@@ -146,10 +146,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     newnode = newnode.first(function (n) {
                         return n.model.id === node.model.id;
                     });
-                    // Add the children to the tree, they are the new data
-                    _.each(newnode.children, function (n) {
-                        node.addChild(n);
-                    });
+
+                    if (newnode.children) {
+                        // Add the children to the tree, they are the new data
+                        _.each(newnode.children, function (n) {
+                            node.addChild(n);
+                        });
+                    }
+                    // else empty!
+
                     that.trigger("change");
                 }
             });

@@ -137,3 +137,17 @@ footer {
     display: inline-block;
     padding-right: 15px;
 }
+
+#home-view dl {
+    font-size: 1.8em;
+}
+
+@media (min-width: 768px) {
+    #home-view dl dt {
+        width: 240px !important;
+    }
+
+    #home-view dl dd {
+        margin-left: 260px !important;
+    }
+}

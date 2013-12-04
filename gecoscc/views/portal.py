@@ -8,7 +8,7 @@ from gecoscc.i18n import _
 from gecoscc.views import BaseView
 
 
-@view_config(route_name='home', renderer='templates/home.jinja2')
+@view_config(route_name='home', renderer='templates/base_tree.jinja2')
 def home(context, request):
     return {}
 

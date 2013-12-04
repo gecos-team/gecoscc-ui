@@ -1,32 +1,8 @@
-{% extends "base_tree.jinja2" %}
-
-{% block moreheader %}
-<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
-<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
-
-<style>
-    dl {
-        font-size: 1.8em;
-    }
-
-    @media (min-width: 768px) {
-        dl dt {
-            width: 240px !important;
-        }
-
-        dl dd {
-            margin-left: 260px !important;
-        }
-    }
-</style>
-{% endblock %}
-
-{% block main_content %}
 <div class="panel panel-default">
     <div class="panel-heading">
         <div class="text-muted bootstrap-admin-box-title">Estado de los servicios y tareas</div>
     </div>
-    <div class="bootstrap-admin-panel-content dashboard">
+    <div class="bootstrap-admin-panel-content dashboard" id="home-view">
         <div class="row">
             <div class="col-xs-12 col-sm-12 col-md-6">
                 <dl class="dl-horizontal">
@@ -50,14 +26,3 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block morejs %}
-<script src="{{request.application_url}}/static/js/libs/jquery.easy-pie-chart-1.0.1.min.js"></script>
-<script>
-    $(document).ready(function () {
-        // Easy pie charts
-        $('.easyPieChart').easyPieChart({animate: 1000});
-    });
-</script>
-{% endblock %}

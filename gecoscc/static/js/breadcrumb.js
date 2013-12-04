@@ -26,8 +26,8 @@ App.module("Breadcrumb", function (Breadcrumb, App, Backbone, Marionette, $, _) 
     Breadcrumb.Model = Backbone.Model.extend({
         defaults: {
             steps: [{
-                url: '/',
-                text: 'Inicio' // TODO translate
+                url: "",
+                text: "Inicio" // TODO translate
             }]
         },
 
@@ -51,7 +51,18 @@ App.module("Breadcrumb", function (Breadcrumb, App, Backbone, Marionette, $, _) 
     Breadcrumb.View = Marionette.ItemView.extend({
         template: "#breadcrumb-template",
         tagName: "ol",
-        className: "breadcrumb bootstrap-admin-breadcrumb"
+        className: "breadcrumb bootstrap-admin-breadcrumb",
+
+        events: {
+            "click button": "navigateTo"
+        },
+
+        navigateTo: function (evt) {
+            evt.preventDefault();
+            App.instances.router.navigate($(evt.target).data("href"), {
+                trigger: true
+            });
+        }
     });
 
     App.addInitializer(function () {

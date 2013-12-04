@@ -4,9 +4,9 @@
             class="active">
         <% } else { %>
             >
-            <a href="<%= s.url %>">
+            <button class="btn btn-xs btn-link" data-href="<%= s.url %>">
         <% } %>
                 <%= s.text %>
-            <% if (idx < steps.length - 1) { print("</a>"); } %>
+            <% if (idx < steps.length - 1) { print("</button>"); } %>
         </li>
 <% }); %>
