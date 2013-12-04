@@ -124,7 +124,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 self.request.errors.add('body', 'object', 'Integrity error')
             return
 
-        # Remove '_id' for security
+        # Remove '_id' for security reasons
         del obj[self.key]
 
         obj = self.pre_save(self, obj)
@@ -146,7 +146,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj_filter = self.get_oid_filter(oid)
         obj_filter.update(self.mongo_filter)
 
-        if not self.collection.find_one(obj_filter):
+        real_obj = self.collection.find_one(obj_filter)
+        if not real_obj:
             raise HTTPNotFound()
 
         if not self.integrity_validation(obj):
@@ -156,7 +157,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.pre_save(obj)
 
-        self.collection.update(obj_filter, obj, new=True)
+        real_obj.update(obj)
+        self.collection.update(obj_filter, real_obj, new=True)
 
         obj = self.post_save(obj)
 
