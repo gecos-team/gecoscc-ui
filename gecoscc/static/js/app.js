@@ -137,6 +137,9 @@ var App;
                     } else {
                         $el.parent().removeClass("has-error");
                     }
+                } else if ($el.val().trim() === "") {
+                    // Not required and empty, avoid more validation
+                    return;
                 }
 
                 if ($el.is("[type=email]")) {
