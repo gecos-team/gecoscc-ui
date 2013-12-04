@@ -1,4 +1,5 @@
 from bson import ObjectId
+from copy import deepcopy
 
 from cornice.schemas import CorniceSchema
 
@@ -101,19 +102,19 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             self.schema = CorniceSchema(self.schema_detail)
             # Implement write permissions
 
-    def integrity_validation(self, obj):
+    def integrity_validation(self, obj, real_obj=None):
         return True
 
-    def pre_save(self, obj):
+    def pre_save(self, obj, old_obj=None):
         return obj
 
-    def post_save(self, obj):
+    def post_save(self, obj, old_obj=None):
         return obj
 
-    def pre_delete(self, obj):
+    def pre_delete(self, obj, old_obj=None):
         return obj
 
-    def post_delete(self, obj):
+    def post_delete(self, obj, old_obj=None):
         return obj
 
     def collection_post(self):
@@ -139,9 +140,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.request.validated
         oid = self.request.matchdict['oid']
 
-        if oid != obj[self.key]:
+        if oid != str(obj[self.key]):
             raise HTTPBadRequest('The object id is not the same that the id in'
-                                 'the url')
+                                 ' the url')
 
         obj_filter = self.get_oid_filter(oid)
         obj_filter.update(self.mongo_filter)
@@ -149,18 +150,18 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         real_obj = self.collection.find_one(obj_filter)
         if not real_obj:
             raise HTTPNotFound()
-
-        if not self.integrity_validation(obj):
+        old_obj = deepcopy(real_obj)
+        if not self.integrity_validation(obj, real_obj=real_obj):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
             return
 
-        obj = self.pre_save(obj)
+        obj = self.pre_save(obj, old_obj=old_obj)
 
         real_obj.update(obj)
         self.collection.update(obj_filter, real_obj, new=True)
 
-        obj = self.post_save(obj)
+        obj = self.post_save(obj, old_obj=old_obj)
 
         return self.parse_item(obj)
 
@@ -174,6 +175,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.collection.find_one(filter)
         if not obj:
             raise HTTPNotFound()
+        old_obj = deepcopy(obj)
 
         if not self.integrity_validation(obj):
             if len(self.request.errors) < 1:
@@ -186,7 +188,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         status = self.collection.remove(filter)
 
         if status['ok']:
-            obj = self.post_save(obj)
+            obj = self.post_save(obj, old_obj)
             obj = self.post_delete(obj)
             return {
                 'status': 'The object was deleted successfully',
@@ -198,4 +200,33 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
 
 class TreeResourcePaginated(ResourcePaginated):
-    pass
+
+    def integrity_validation(self, obj, real_obj=None):
+        """ Test that the object path already exist """
+
+        if real_obj is not None and obj['path'] == real_obj['path']:
+            # This path was already verified before
+            return True
+
+        parents = obj['path'].split(',')
+
+        parent_id = parents[-1]
+
+        if parent_id == 'root':
+            return True
+
+        parent = self.collection.find_one({self.key: ObjectId(parent_id)})
+        if not parent:
+            self.request.errors.add('operation', 'path', "parent"
+                                    " doesn't exist {0}".format(parent_id))
+            return False
+
+        candidate_path_parent = ','.join(parents[:-1])
+
+        if parent['path'] != candidate_path_parent:
+            self.request.errors.add(
+                'operation', 'path', "the parent object "
+                "{0} has a different path".format(parent_id))
+            return False
+
+        return True
