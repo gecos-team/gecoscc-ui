@@ -195,3 +195,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         else:
             self.request.errors.add('operation', 'db status', status)
             return
+
+
+class TreeResourcePaginated(ResourcePaginated):
+    pass

@@ -43,6 +43,7 @@ var ou_prefix = 'ou_',
             'type': 'ou',
             'lock': false,
             'source': 'gecos',
+            'policies': [],
         }, function (err, inserted) {
             inserted[0]._id
         });

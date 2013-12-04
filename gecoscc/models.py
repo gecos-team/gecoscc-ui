@@ -83,4 +83,8 @@ class Policies(colander.SequenceSchema):
 
 
 class OrganisationalUnit(Node):
-    pilicies = Policies()
+    policies = Policies()
+
+
+class OrganisationalUnits(colander.SequenceSchema):
+    organisationalunits = OrganisationalUnit()
