@@ -19,6 +19,22 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     }
     collection_name = 'nodes'
 
+    def integrity_validation(self, obj, real_obj=None):
+        status = super(OrganisationalUnitResource,
+                       self).integrity_validation(obj, real_obj)
+        if status:
+            return status
+
+        if (real_obj is not None and obj['path'] != real_obj['path']):
+            # Check if the ou is moving to self depth, that is not correct.
+            if obj['path'] in real_obj['path']:
+                self.request.errors.add(
+                    'operation', 'path',
+                    "the ou is moving to self depth position, "
+                    "that is not allowed")
+            return False
+        return True
+
     def post_delete(self, obj, old_obj=None):
         """This step delete the children nodes"""
         path = obj['path']
@@ -37,9 +53,6 @@ class OrganisationalUnitResource(TreeResourcePaginated):
             #The ou path has changed
             new_path = ','.join([obj.get('path'), str(old_obj[self.key])])
             old_path = ','.join([old_obj.get('path'), str(old_obj[self.key])])
-
-            # TODO
-            # Check that object ou is not moving to self children
 
             children = self.collection.find({
                 'path': {
