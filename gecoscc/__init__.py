@@ -3,7 +3,7 @@ import pymongo
 
 from pyramid.config import Configurator
 from pyramid.exceptions import ConfigurationError
-from pyramid.authentication import AuthTktAuthenticationPolicy
+from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 
 from gecoscc.db import MongoDB, get_db
@@ -86,11 +86,7 @@ def userdb_config(config):
 
 
 def auth_config(config):
-    settings = config.registry.settings
-    secret = read_setting_from_env(settings, 'session.secret', None)
-
-    authn_policy = AuthTktAuthenticationPolicy(
-        secret, callback=get_groups, hashalg='sha512')
+    authn_policy = SessionAuthenticationPolicy(callback=get_groups)
     authz_policy = ACLAuthorizationPolicy()
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
