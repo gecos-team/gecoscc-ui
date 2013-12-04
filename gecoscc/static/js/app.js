@@ -67,7 +67,46 @@ var App;
 
     App.instances.router = new Router();
 
-    App.GecosItemView = Backbone.Marionette.ItemView.extend({
+    /*
+    * Regular expressions taken from:
+    *
+    * validate.js 1.3
+    * Copyright (c) 2011 Rick Harrison, http://rickharrison.me
+    * validate.js is open sourced under the MIT license.
+    * Portions of validate.js are inspired by CodeIgniter.
+    * http://rickharrison.github.com/validate.js
+    */
+
+    var numericRegex = /^[0-9]+$/,
+//         integerRegex = /^\-?[0-9]+$/,
+//         decimalRegex = /^\-?[0-9]*\.?[0-9]+$/,
+        emailRegex = /^[a-zA-Z0-9.!#$%&amp;'*+\-\/=?\^_`{|}~\-]+@[a-zA-Z0-9\-]+(?:\.[a-zA-Z0-9\-]+)*$/,
+//         alphaRegex = /^[a-z]+$/i,
+//         alphaNumericRegex = /^[a-z0-9]+$/i,
+//         alphaDashRegex = /^[a-z0-9_\-]+$/i,
+//         naturalRegex = /^[0-9]+$/i,
+//         naturalNoZeroRegex = /^[1-9][0-9]*$/i,
+        ipRegex = /^((25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})\.){3}(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[0-9]{1,2})$/i,
+//         base64Regex = /[^a-zA-Z0-9\/\+=]/i,
+//         numericDashRegex = /^[\d\-\s]+$/,
+        urlRegex = /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/,
+
+    /*
+    * End - validate.js
+    */
+
+        applyRegex = function (regex, $el) {
+            var valid = true;
+            if (regex.test($el.val().trim())) {
+                $el.parent().removeClass("has-error");
+            } else {
+                $el.parent().addClass("has-error");
+                valid = false;
+            }
+            return valid;
+        };
+
+    App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
         render: function () {
             if (this.model.isNew()) {
                 this.$el.html("<p style='font-size: 3em;'><span class='fa " +
@@ -83,7 +122,7 @@ var App;
                 $elems;
 
             if (evt) {
-                $elems = [$(evt.target)];
+                $elems = [evt.target];
             } else {
                 $elems = this.$el.find("input");
             }
@@ -94,12 +133,23 @@ var App;
                 if ($el.is("[required]")) {
                     if ($el.val().trim() === "") {
                         $el.parent().addClass("has-error");
+                        valid = false;
                     } else {
                         $el.parent().removeClass("has-error");
                     }
                 }
 
-                // TODO other fields, maybe use parsleyjs.org ?
+                if ($el.is("[type=email]")) {
+                    valid = valid && applyRegex(emailRegex, $el);
+                } else if ($el.is("[type=number]")) {
+                    valid = valid && applyRegex(numericRegex, $el);
+                } else if ($el.is("[type=url]")) {
+                    valid = valid && applyRegex(urlRegex, $el);
+                } else if ($el.is("[type=tel]")) {
+                    valid = valid && applyRegex(numericRegex, $el);
+                } else if ($el.is(".ip")) {
+                    valid = valid && applyRegex(ipRegex, $el);
+                }
             });
 
             return valid;
