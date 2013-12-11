@@ -1,216 +1,214 @@
-<div class="row">
-    <!-- Nav tabs -->
-    <ul class="nav nav-tabs">
-        <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
-        <li><a href="#policies" data-toggle="tab">Políticas</a></li>
-    </ul>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
+    <li><a href="#policies" data-toggle="tab">Políticas</a></li>
+</ul>
 
-    <div class="tab-content">
-        <div class="tab-pane fade in active" id="info">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <div class="text-muted bootstrap-admin-box-title">Unidad Organizativa</div>
-                </div>
-                <div class="bootstrap-admin-panel-content dashboard">
-                    <form role="form">
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="form-group">
-                                    <label for="name">Nombre</label>
-                                    <input id="name" type="text" class="form-control" placeholder="Ej: Departamento de Testing">
-                                </div>
+<div class="tab-content">
+    <div class="tab-pane fade in active" id="info">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="text-muted bootstrap-admin-box-title">Unidad Organizativa</div>
+            </div>
+            <div class="bootstrap-admin-panel-content dashboard">
+                <form role="form">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="name">Nombre</label>
+                                <input id="name" type="text" class="form-control" placeholder="Ej: Departamento de Testing" value="<%= name %>">
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="form-group">
-                                    <label for="extra">Información extra</label>
-                                    <textarea id="extra" class="form-control" rows="6"></textarea>
-                                </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <label for="extra">Información extra</label>
+                                <textarea id="extra" class="form-control" rows="6"></textarea>
                             </div>
                         </div>
-                        <div class="row"><div class="col-sm-12">
-                            <a href="/" class="btn btn-default">Cancelar</a>
-                            <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
-                        </div></div>
-                    </form>
-                </div>
+                    </div>
+                    <div class="row"><div class="col-sm-12">
+                        <a href="/" class="btn btn-default">Cancelar</a>
+                        <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                    </div></div>
+                </form>
             </div>
         </div>
+    </div>
 
-        <div class="tab-pane fade" id="policies">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <div class="text-muted bootstrap-admin-box-title">Políticas</div>
-                </div>
-                <div class="bootstrap-admin-panel-content">
-                    <table class="table table-striped table-bordered" id="policies-table">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="odd">
-                                <td>0. Fondo de pantalla</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Borde de las ventanas</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Sonidos del escritorio</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Salvapantallas</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Tema de iconos</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>0. Instalar software</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-software/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>0. Acceso a almacenamiento remoto</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-storage/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Aliquam eleifend sollicitudin</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Etiam viverra eu odio</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Nullam dictum libero vulputate turpis aliquam</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Donec faucibus ligula vitae arcu varius congue</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Pellentesque adipiscing nisl a nibh</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Duis consectetur mollis urna</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Etiam hendrerit</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Sed et magna quam</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Integer at nibh congue</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Nam viverra rhoncus lorem</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Mauris erat nulla</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Nullam nec suscipit massa</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Fusce ac mauris eu augue</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="odd">
-                                <td>Sed viverra, mi ac viverra fringilla</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                            <tr class="even">
-                                <td>Proin accumsan eu enim vel congue</td>
-                                <td>
-                                    <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
-                                    <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+    <div class="tab-pane fade" id="policies">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="text-muted bootstrap-admin-box-title">Políticas</div>
+            </div>
+            <div class="bootstrap-admin-panel-content">
+                <table class="table table-striped table-bordered mb10" id="policies-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="odd">
+                            <td>0. Fondo de pantalla</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Borde de las ventanas</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Sonidos del escritorio</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Salvapantallas</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Tema de iconos</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>0. Instalar software</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-software/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>0. Acceso a almacenamiento remoto</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-storage/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Aliquam eleifend sollicitudin</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Etiam viverra eu odio</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Nullam dictum libero vulputate turpis aliquam</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Donec faucibus ligula vitae arcu varius congue</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Pellentesque adipiscing nisl a nibh</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Duis consectetur mollis urna</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Etiam hendrerit</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Sed et magna quam</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Integer at nibh congue</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Nam viverra rhoncus lorem</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Mauris erat nulla</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Nullam nec suscipit massa</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Fusce ac mauris eu augue</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="odd">
+                            <td>Sed viverra, mi ac viverra fringilla</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                        <tr class="even">
+                            <td>Proin accumsan eu enim vel congue</td>
+                            <td>
+                                <a href="#" class="btn btn-danger btn-xs"><span class="fa fa-times"></span> Borrar</a>
+                                <a href="/ous/policies-wallpaper/" class="btn btn-default btn-xs"><span class="fa fa-edit"></span> Editar</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                    <button id="add-policy" class="btn btn-primary"><span class="fa fa-plus"></span> Añadir</button>
-                </div>
+                <button id="add-policy" class="btn btn-primary"><span class="fa fa-plus"></span> Añadir</button>
             </div>
         </div>
     </div>

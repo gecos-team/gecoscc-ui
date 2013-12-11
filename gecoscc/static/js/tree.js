@@ -248,10 +248,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         selectContainer: function (evt) {
             var $el = $(evt.target),
+                $container,
                 id;
             if ($el.is(".opener")) { return; }
 
-            id = $el.parents(".tree-folder").first().attr("id");
+            $container = $el.parents(".tree-folder").first();
+            id = $container.attr("id");
+
+            this.$el.find(".tree-selected").removeClass("tree-selected");
+            $container.find(".tree-folder-header").first().addClass("tree-selected");
+
             App.instances.router.navigate("ou/" + id, { trigger: true });
         },
 
@@ -295,7 +301,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 id = $el.attr("id"),
                 item;
 
-            this.$el.find(".tree-item").removeClass("tree-selected");
+            this.$el.find(".tree-selected").removeClass("tree-selected");
             $el.addClass("tree-selected");
 
             item = this.model.get("tree").first(function (node) {

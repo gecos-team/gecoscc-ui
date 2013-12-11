@@ -39,6 +39,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
 
     Views.OUForm = App.GecosFormItemView.extend({
         template: "#ou-template",
+        tagName: "div",
+        className: "col-sm-12",
 
         events: {
             "click #submit": "saveForm",
@@ -47,13 +49,31 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
+            var $button = $(evt.target),
+                promise;
 
             if (this.validate()) {
+                $button.tooltip({
+                    html: true,
+                    title: "<span class='fa fa-spin fa-spinner'></span> Saving..." // TODO translate
+                });
+                $button.tooltip("show");
                 this.model.set({
                     name: this.$el.find("#name").val().trim(),
                     extra: this.$el.find("#extra").val().trim()
                 });
-                this.model.save();
+                promise = this.model.save();
+                promise.done(function () {
+                    $button.tooltip("destroy");
+                    $button.tooltip({
+                        html: true,
+                        title: "<span class='fa fa-check'></span> Done" // TODO translate
+                    });
+                    $button.tooltip("show");
+                    setTimeout(function () {
+                        $button.tooltip("destroy");
+                    }, 2000);
+                });
             }
         }
     });

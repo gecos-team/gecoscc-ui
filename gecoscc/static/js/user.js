@@ -39,6 +39,8 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
     Views.UserForm = App.GecosFormItemView.extend({
         template: "#user-template",
+        tagName: "div",
+        className: "col-sm-12",
 
         events: {
             "click #submit": "saveForm",
@@ -50,8 +52,15 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
+            var $button = $(evt.target),
+                promise;
 
             if (this.validate()) {
+                $button.tooltip({
+                    html: true,
+                    title: "<span class='fa fa-spin fa-spinner'></span> Saving..." // TODO translate
+                });
+                $button.tooltip("show");
                 this.model.set({
                     name: this.$el.find("#username").val().trim(),
                     phone: this.$el.find("#phone").val().trim(),
@@ -62,7 +71,18 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
                 // TODO password
                 // TODO permissions
-                this.model.save();
+                promise = this.model.save();
+                promise.done(function () {
+                    $button.tooltip("destroy");
+                    $button.tooltip({
+                        html: true,
+                        title: "<span class='fa fa-check'></span> Done" // TODO translate
+                    });
+                    $button.tooltip("show");
+                    setTimeout(function () {
+                        $button.tooltip("destroy");
+                    }, 2000);
+                });
             }
         },
 
