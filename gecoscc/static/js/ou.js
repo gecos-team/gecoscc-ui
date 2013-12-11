@@ -24,13 +24,29 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.OUModel = Backbone.Model.extend({
+        defaults: {
+            policiesCollection: null
+        },
+
         url: function () {
             var url = "/api/ous/";
             if (this.has("id")) {
                 url += this.get("id") + '/';
             }
             return url;
+        },
+
+        parse: function (response) {
+            var result = _.clone(response);
+            result.policiesCollection = new Models.PolicyCollection(response.policies);
+            return result;
         }
+    });
+
+    Models.PolicyModel = Backbone.Model.extend({});
+
+    Models.PolicyCollection = Backbone.Collection.extend({
+        model: Models.PolicyModel
     });
 });
 
