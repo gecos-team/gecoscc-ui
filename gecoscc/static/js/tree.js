@@ -168,7 +168,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     var treeContainerPre =
             '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
-            '        <span class="fa fa-<%= controlIcon %>-square-o"></span> ' +
+            '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
             '        <span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %></div>\n' +
             '    </div>\n' +
@@ -198,6 +198,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click .tree-folder-header": "selectContainer",
+            "click .tree-folder-header .opener": "openContainer",
             "click .tree-item": "selectItem"
         },
 
@@ -246,6 +247,15 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         selectContainer: function (evt) {
+            var $el = $(evt.target),
+                id;
+            if ($el.is(".opener")) { return; }
+
+            id = $el.parents(".tree-folder").first().attr("id");
+            App.instances.router.navigate("ou/" + id, { trigger: true });
+        },
+
+        openContainer: function (evt) {
             var $el = $(evt.target).parents(".tree-folder").first(),
                 $treeFolderContent = $el.find('.tree-folder-content').first(),
                 classToTarget,
@@ -258,7 +268,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 classToTarget = '.fa-plus-square-o';
                 classToAdd = 'fa-minus-square-o';
-                this.openContainer($el, $treeFolderContent);
+                this.openContainerAux($el, $treeFolderContent);
                 $treeFolderContent.show();
             }
 
@@ -267,7 +277,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .addClass(classToAdd);
         },
 
-        openContainer: function ($el, $content) {
+        openContainerAux: function ($el, $content) {
             var node = this.model.get("tree"),
                 id = $el.attr("id");
             node = node.first(function (obj) {
