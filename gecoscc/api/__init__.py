@@ -194,7 +194,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 'ok': 1
             }
         else:
-            self.request.errors.add(obj[self.key], 'db status', status)
+            self.request.errors.add(unicode(obj[self.key]), 'db status',
+                                    status)
             return
 
 
@@ -216,7 +217,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
         parent = self.collection.find_one({self.key: ObjectId(parent_id)})
         if not parent:
-            self.request.errors.add(obj[self.key], 'path', "parent"
+            self.request.errors.add(unicode(obj[self.key]), 'path', "parent"
                                     " doesn't exist {0}".format(parent_id))
             return False
 
@@ -224,8 +225,65 @@ class TreeResourcePaginated(ResourcePaginated):
 
         if parent['path'] != candidate_path_parent:
             self.request.errors.add(
-                obj[self.key], 'path', "the parent object "
+                unicode(obj[self.key]), 'path', "the parent object "
                 "{0} has a different path".format(parent_id))
             return False
 
         return True
+
+
+class TreeLeafResourcePaginated(TreeResourcePaginated):
+
+    def check_memberof_integrity(self, obj):
+        """ Check if memberof ids already exists"""
+        if 'memberof' not in obj:
+            return True
+
+        for group_id in obj['memberof']:
+            group = self.request.db.groups.find_one({'_id': group_id})
+            if not group:
+                self.request.errors.add(
+                    unicode(obj[self.key]), 'memberof',
+                    "The group {0} doesn't exist".format(unicode(group_id)))
+                return False
+
+        return True
+
+    def integrity_validation(self, obj, real_obj=None):
+        result = super(TreeLeafResourcePaginated, self).integrity_validation(
+            obj, real_obj)
+        result = result and self.check_memberof_integrity(obj)
+        return result
+
+    def post_save(self, obj, old_obj=None):
+
+        if self.request.method == 'DELETE':
+            newmemberof = []
+        else:
+            newmemberof = obj.get('memberof', [])
+        oldmemberof = old_obj.get('memberof', [])
+
+        adds = [n for n in newmemberof if n not in oldmemberof]
+        removes = [n for n in oldmemberof if n not in newmemberof]
+
+        for group_id in removes:
+            self.request.db.groups.update({
+                '_id': group_id
+            }, {
+                '$pull': {
+                    'nodemembers': obj['_id']
+                }
+            })
+
+        for group_id in adds:
+
+            # Add newmember to new group
+            self.request.db.groups.update({
+                '_id': group_id
+            }, {
+                '$push': {
+                    'nodemembers': obj['_id']
+                }
+            })
+
+        return super(TreeLeafResourcePaginated, self).post_save(obj, old_obj)

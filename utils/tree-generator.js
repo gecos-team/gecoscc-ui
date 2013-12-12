@@ -120,7 +120,7 @@ var ou_prefix = 'ou_',
             'type': 'user',
             'lock': false,
             'source': 'gecos',
-            'groups': [generic_group_oid],
+            'memberof': [],
             'email': name + '@example.com'
         }, function (err, inserted) {
             inserted[0]._id
