@@ -46,6 +46,8 @@ class GroupResource(ResourcePaginated):
             self.collection.remove({self.key: group_id})
 
     def modify_group_relations(self, obj, old_obj):
+        if old_obj is None:
+            return
         # Modify parent relation
         if obj.get('memberof', '') != old_obj.get('memberof', ''):
 
@@ -101,6 +103,9 @@ class GroupResource(ResourcePaginated):
 
     def modify_node_relations(self, obj, old_obj):
 
+        if old_obj is None:
+            return
+
         newmembers = obj.get('nodemembers', [])
         oldmembers = old_obj.get('nodemembers', [])
 
@@ -126,11 +131,11 @@ class GroupResource(ResourcePaginated):
                 }
             }, multi=False)
 
-    def post_save(self, obj, old_obj):
+    def post_save(self, obj, old_obj=None):
         if self.request.method == 'DELETE':
             self.remove_relations(obj)
         else:
             self.modify_node_relations(obj, old_obj)
             self.modify_group_relations(obj, old_obj)
 
-        return super(GroupResource, self).pre_save(obj, old_obj)
+        return super(GroupResource, self).post_save(obj, old_obj)

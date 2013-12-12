@@ -97,7 +97,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def __init__(self, request):
         super(ResourcePaginated, self).__init__(request)
-        if request.method in SCHEMA_METHODS:
+        if request.method == 'POST':
+            schema = self.schema_detail()
+            del schema['_id']
+            self.schema = CorniceSchema(schema)
+
+        elif request.method == 'PUT':
             self.schema = CorniceSchema(self.schema_detail)
             # Implement write permissions
 
@@ -125,13 +130,14 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
 
         # Remove '_id' for security reasons
-        del obj[self.key]
+        if self.key in obj:
+            del obj[self.key]
 
-        obj = self.pre_save(self, obj)
+        obj = self.pre_save(obj)
 
         obj_id = self.collection.insert(obj)
 
-        obj = self.post_save(self, obj)
+        obj = self.post_save(obj)
 
         return {self.key: str(obj_id)}
 
