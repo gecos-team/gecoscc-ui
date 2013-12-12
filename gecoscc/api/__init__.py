@@ -273,7 +273,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                 '$pull': {
                     'nodemembers': obj['_id']
                 }
-            })
+            }, multi=False)
 
         for group_id in adds:
 
@@ -284,6 +284,6 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                 '$push': {
                     'nodemembers': obj['_id']
                 }
-            })
+            }, multi=False)
 
         return super(TreeLeafResourcePaginated, self).post_save(obj, old_obj)
