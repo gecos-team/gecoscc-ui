@@ -1,7 +1,9 @@
 var ou_prefix = 'ou_',
-    user_prefix = 'user_'
+    user_prefix = 'user_',
+    group_prefix = 'group_',
     users = 0,
     ous = 0,
+    groups = 0,
     types = ['ou', 'user'],
     max_levels = 10,
     max_objects = 1000,
@@ -29,6 +31,56 @@ var ou_prefix = 'ou_',
             children = types_creator[new_object_type](path);
         }
     },
+
+    group_creator = function(name, maxlevel) {
+        var parent_id = arguments[2],
+            children_counter = random_int(max_levels) + 1,
+            nodes = random_int(max_levels) + 1,
+            max_node_id = db.nodes.find({'type': 'user'}).count(),
+            group = {
+                '_id': ObjectId(),
+                'name': name,
+            }
+
+        if (parent_id !== undefined) {
+            group.memberof = parent_id;
+            db.groups.update({
+                    '_id': parent_id,
+            }, {
+                '$push': {
+                    'groupmembers': group['_id']
+                }
+            });
+        }
+
+        group['nodemembers'] = [];
+        // insert groups in nodes (two ways relation)
+        for(var n = 0; n<nodes; n += 1) {
+            var node_suffix = random_int(max_node_id),
+                node_name = user_prefix + node_suffix;
+            node = db.nodes.findOne({'name': node_name});
+            group['nodemembers'].push(node['_id']);
+            db.nodes.update({
+                '_id': node['_id']
+            }, {
+                '$push': {
+                    'memberof': group['_id']
+                }
+            });
+        }
+
+        db.groups.insert(group);
+
+        if (maxlevel > 0) {
+            for(children_counter=children_counter;
+                    children_counter >0;
+                    children_counter -= 1) {
+               groups += 1;
+               group_creator(group_prefix + groups, maxlevel-1, group._id);
+            }
+        }
+
+    }
 
     ou_creator = function (path) {
         var name = ou_prefix + ous,
@@ -68,10 +120,7 @@ var ou_prefix = 'ou_',
             'type': 'user',
             'lock': false,
             'source': 'gecos',
-            'groups': [{
-                '_id':generic_group_oid,
-                'name':'generic-group'
-            }],
+            'groups': [generic_group_oid],
             'email': name + '@example.com'
         }, function (err, inserted) {
             inserted[0]._id
@@ -88,6 +137,11 @@ var ou_prefix = 'ou_',
 db.nodes.drop();
 
 ou_creator('root');
+
+group_creator(group_prefix + db.groups.count(), 3);
+group_creator(group_prefix + db.groups.count(), 2);
+group_creator(group_prefix + db.groups.count(), 1);
+group_creator(group_prefix + db.groups.count(), 3);
 
 db.nodes.ensureIndex({'path': 1});
 db.nodes.ensureIndex({'type': 1});

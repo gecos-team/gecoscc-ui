@@ -29,7 +29,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
             # Check if the ou is moving to self depth, that is not correct.
             if obj['path'] in real_obj['path']:
                 self.request.errors.add(
-                    'operation', 'path',
+                    obj[self.key], 'path',
                     "the ou is moving to self depth position, "
                     "that is not allowed")
             return False

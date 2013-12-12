@@ -29,12 +29,10 @@ class ResourcePaginatedReadOnly(object):
         self.collection = self.get_collection()
 
     def parse_item(self, item):
-        serialized_item = self.schema_detail().deserialize(item)
-        return self.schema_detail().serialize(serialized_item)
+        return self.schema_detail().serialize(item)
 
     def parse_collection(self, collection):
-        serialized_data = self.schema_collection().deserialize(collection)
-        return self.schema_collection().serialize(serialized_data)
+        return self.schema_collection().serialize(collection)
 
     def get_objects_filter(self):
         return {}
@@ -61,7 +59,7 @@ class ResourcePaginatedReadOnly(object):
                 'limit': pagesize,
             })
 
-        users_count = self.collection.find(
+        nodes_count = self.collection.find(
             self.mongo_filter,
             {'type': 1}
         ).count()
@@ -72,14 +70,15 @@ class ResourcePaginatedReadOnly(object):
 
         objects = self.collection.find(collection_filter, **extraargs)
         if pagesize > 0:
-            pages = int(users_count / pagesize)
+            pages = int(nodes_count / pagesize)
         else:
             pagesize = 1
+        parsed_objects = self.parse_collection(list(objects))
         return {
             'pagesize': pagesize,
             'pages': pages,
             'page': page,
-            self.collection_name: self.parse_collection(list(objects)),
+            self.collection_name: parsed_objects,
         }
 
     def get(self):
@@ -87,11 +86,11 @@ class ResourcePaginatedReadOnly(object):
         collection_filter = self.get_oid_filter(oid)
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
-        user = self.collection.find_one(collection_filter)
-        if not user:
+        node = self.collection.find_one(collection_filter)
+        if not node:
             raise HTTPNotFound()
 
-        return self.parse_item(user)
+        return self.parse_item(node)
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
@@ -195,7 +194,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 'ok': 1
             }
         else:
-            self.request.errors.add('operation', 'db status', status)
+            self.request.errors.add(obj[self.key], 'db status', status)
             return
 
 
@@ -217,7 +216,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
         parent = self.collection.find_one({self.key: ObjectId(parent_id)})
         if not parent:
-            self.request.errors.add('operation', 'path', "parent"
+            self.request.errors.add(obj[self.key], 'path', "parent"
                                     " doesn't exist {0}".format(parent_id))
             return False
 
@@ -225,7 +224,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
         if parent['path'] != candidate_path_parent:
             self.request.errors.add(
-                'operation', 'path', "the parent object "
+                obj[self.key], 'path', "the parent object "
                 "{0} has a different path".format(parent_id))
             return False
 
