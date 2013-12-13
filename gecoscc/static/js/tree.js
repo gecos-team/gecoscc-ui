@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global $, App, TreeModel */
+/*global $, App, TreeModel, GecosUtils */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -147,13 +147,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         return n.model.id === node.model.id;
                     });
 
-                    if (newnode.children) {
+                    if (newnode && newnode.children) {
                         // Add the children to the tree, they are the new data
                         _.each(newnode.children, function (n) {
                             node.addChild(n);
                         });
                     }
-                    // else empty!
+                    // else empty! TODO add message as child
 
                     that.trigger("change");
                 }
@@ -196,7 +196,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    <div class="tree-item-name"><%= name %></div>' +
             '</div>',
         extraOpts =
-            '<button class="btn btn-primary"><span class="fa fa-plus"></span> Añadir nuevo</button>';
+            '<p><button class="add btn btn-primary">' +
+            '    <span class="fa fa-plus"></span> Añadir nuevo' +
+            '</button></p>' +
+            '<p><button class="delete btn btn-danger">' +
+            '    <span class="fa fa-times"></span> Borrar' +
+            '</button></p>';
 
     Views.NavigationTree = Marionette.ItemView.extend({
         templates: {
@@ -329,11 +334,23 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             $el.popover("show");
 
-            $el.parent().find(".popover button").click(function (evt) {
+            $el.parent().find(".popover button.btn.add").click(function (evt) {
                 evt.preventDefault();
                 var id = $el.parents(".tree-folder").first().attr("id");
                 $el.popover("destroy");
                 that.showNewItemModal(id);
+            });
+
+            $el.parent().find(".popover button.btn.delete").click(function (evt) {
+                evt.preventDefault();
+                GecosUtils.confirmModal.find("button.btn-danger")
+                    .off("click")
+                    .on("click", function (evt) {
+                        evt.preventDefault();
+                        // TODO delete model
+                        GecosUtils.confirmModal.modal("hide");
+                    });
+                GecosUtils.confirmModal.modal("show");
             });
         },
 
