@@ -53,10 +53,10 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
-            "ou/:ouid/user": "newUser",
-            "ou/:ouid/user/:userid": "loadUser",
-            "ou/": "newOU",
-            "ou/:ouid": "loadOU"
+            "ou/:containerid/user": "newUser",
+            "ou/:containerid/user/:userid": "loadUser",
+            "ou/:containerid/ou": "newOU",
+            "ou/:containerid/ou/:ouid": "loadOU"
         },
 
         controller: {
@@ -67,7 +67,7 @@ var App;
                 App.main.show(view);
             },
 
-            newUser: function (ouid) {
+            newUser: function (containerid) {
                 var model = new App.User.Models.UserModel({
                         id: "NEWNODE" + Math.random(),
                         name: "new user"
@@ -77,16 +77,16 @@ var App;
                     path;
 
                 App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + ouid + "/user",
+                    url: "ou/" + containerid + "/user",
                     text: "Usuario" // translation
                 }]);
 
                 parent = App.instances.tree.get("tree").first(function (n) {
-                    return n.model.id === ouid;
+                    return n.model.id === containerid;
                 });
                 path = parent.model.path + ',' + parent.model.id;
                 model.set("path", path);
-                App.instances.tree.addNode(ouid, {
+                App.instances.tree.addNode(containerid, {
                     id: model.get("id"),
                     type: "user",
                     loaded: false,
@@ -100,12 +100,12 @@ var App;
                 App.main.show(view);
             },
 
-            loadUser: function (ouid, userid) {
+            loadUser: function (containerid, userid) {
                 var model = new App.User.Models.UserModel(),
                     view = new App.User.Views.UserForm({ model: model });
 
                 App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + ouid + "/user/" + userid,
+                    url: "ou/" + containerid + "/user/" + userid,
                     text: "Usuario" // translation
                 }]);
                 // TODO select node in tree
@@ -117,16 +117,45 @@ var App;
                 model.fetch();
             },
 
-            newOU: function () {
-                // TODO
+            newOU: function (containerid) {
+                var model = new App.OU.Models.OUModel({
+                        id: "NEWNODE" + Math.random(),
+                        name: "new ou"
+                    }),
+                    view = new App.OU.Views.OUForm({ model: model }),
+                    parent,
+                    path;
+
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/",
+                    text: "Unidad Organizativa" // translation
+                }]);
+
+                parent = App.instances.tree.get("tree").first(function (n) {
+                    return n.model.id === containerid;
+                });
+                path = parent.model.path + ',' + parent.model.id;
+                model.set("path", path);
+                App.instances.tree.addNode(containerid, {
+                    id: model.get("id"),
+                    type: "ou",
+                    loaded: false,
+                    name: model.get("name"),
+                    children: []
+                });
+
+                model.on("change", function () {
+                    App.main.show(view);
+                });
+                App.main.show(view);
             },
 
-            loadOU: function (ouid) {
+            loadOU: function (containerid, ouid) {
                 var model = new App.OU.Models.OUModel(),
                     view = new App.OU.Views.OUForm({ model: model });
 
                 App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + ouid,
+                    url: "ou/" + containerid + "/ou" + ouid,
                     text: "Unidad Organizativa" // translation
                 }]);
                 // TODO select node in tree

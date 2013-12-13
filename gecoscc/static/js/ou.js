@@ -25,6 +25,10 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.OUModel = Backbone.Model.extend({
         defaults: {
+            type: "ou",
+            source: "gecos",
+            lock: false,
+            policies: [],
             policiesCollection: null
         },
 
@@ -40,6 +44,38 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             var result = _.clone(response);
             result.policiesCollection = new Models.PolicyCollection(response.policies);
             return result;
+        },
+
+        save: function (key, val, options) {
+            var tempId, promise;
+
+            // Remove temporal ID
+            if (this.has("id") && this.get("id").indexOf("NEWNODE") === 0) {
+                tempId = this.get("id");
+                this.unset("id", { silent: true });
+            }
+
+            promise = Backbone.Model.prototype.save.call(this, key, val, options);
+
+            if (tempId) {
+                promise.done(function (resp) {
+                    var tree = App.instances.tree.get("tree"),
+                        node = tree.first(function (n) {
+                            return n.model.id === tempId;
+                        }),
+                        parent = node.parent;
+
+                    while (parent.children.length > 0) {
+                        parent.children[0].drop();
+                    }
+                    App.instances.tree.loadFromNode(parent);
+                    App.instances.router.navigate("ou/" + parent.model.id + "/ou/" + resp._id, {
+                        trigger: true
+                    });
+                });
+            }
+
+            return promise;
         }
     });
 

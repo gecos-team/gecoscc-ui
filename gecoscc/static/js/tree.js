@@ -268,7 +268,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target),
                 $container,
                 id;
-            if ($el.is(".opener") || $el.is(".extra-opts")) {
+            if ($el.is(".opener") || $el.is(".extra-opts") || $el.is("button")) {
                 return;
             }
 
@@ -375,6 +375,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
                     if (item === "user") {
                         App.instances.router.navigate("ou/" + containerId + "/user", {
+                            trigger: true
+                        });
+                    } else if (item === "ou") {
+                        App.instances.router.navigate("ou/" + containerId + "/ou", {
                             trigger: true
                         });
                     }
