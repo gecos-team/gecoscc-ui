@@ -267,7 +267,10 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             newmemberof = []
         else:
             newmemberof = obj.get('memberof', [])
-        oldmemberof = old_obj.get('memberof', [])
+        if old_obj is not None:
+            oldmemberof = old_obj.get('memberof', [])
+        else:
+            oldmemberof = []
 
         adds = [n for n in newmemberof if n not in oldmemberof]
         removes = [n for n in oldmemberof if n not in newmemberof]
