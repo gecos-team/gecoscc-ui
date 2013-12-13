@@ -13,6 +13,7 @@ class GroupResource(ResourcePaginated):
 
     schema_collection = Groups
     schema_detail = Group
+    objtype = 'group'
 
     mongo_filter = {}
 

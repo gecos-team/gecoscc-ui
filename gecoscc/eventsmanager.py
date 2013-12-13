@@ -1,8 +1,9 @@
+import logging
+
 from pyramid.security import authenticated_userid
 
 from pyramid_sockjs.session import Session
 
-import logging
 logger = logging.getLogger(__name__)
 
 CHANNELS = {

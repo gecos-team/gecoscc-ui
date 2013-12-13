@@ -5,6 +5,9 @@ from cornice.schemas import CorniceSchema
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 
+from gecoscc.tasks import object_created, object_changed, object_deleted
+
+
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
 SCHEMA_METHODS = ('POST', 'PUT', )
@@ -20,6 +23,7 @@ class ResourcePaginatedReadOnly(object):
         'type': 'anytype',
     }
     collection_name = 'nodes'
+    objtype = None
     key = '_id'
 
     def __init__(self, request):
@@ -27,6 +31,11 @@ class ResourcePaginatedReadOnly(object):
         self.default_pagesize = request.registry.settings.get(
             'default_pagesize', 30)
         self.collection = self.get_collection()
+        if self.objtype is None:
+            raise self.BadResourceDefinition('objtype is not defined')
+
+    class BadResourceDefinition(Exception):
+        pass
 
     def parse_item(self, item):
         return self.schema_detail().serialize(item)
@@ -139,7 +148,18 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.post_save(obj)
 
-        return {self.key: str(obj_id)}
+        obj.update({self.key: obj_id})
+        self.notify_created(obj)
+        return self.parse_item(obj)
+
+    def notify_created(self, obj):
+        object_created.delay(self.objtype, obj)
+
+    def notify_changed(self, obj, old_obj):
+        object_changed.delay(self.objtype, obj, old_obj)
+
+    def notify_deleted(self, obj):
+        object_deleted.delay(self.objtype, obj)
 
     def put(self):
         obj = self.request.validated
@@ -168,6 +188,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.post_save(obj, old_obj=old_obj)
 
+        self.notify_changed(old_obj, obj)
+
         return self.parse_item(obj)
 
     def delete(self):
@@ -195,6 +217,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if status['ok']:
             obj = self.post_save(obj, old_obj)
             obj = self.post_delete(obj)
+
+            self.notify_deleted(obj)
             return {
                 'status': 'The object was deleted successfully',
                 'ok': 1

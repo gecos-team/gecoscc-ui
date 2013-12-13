@@ -13,6 +13,7 @@ class UserResource(TreeLeafResourcePaginated):
 
     schema_collection = Users
     schema_detail = User
+    objtype = 'user'
 
     mongo_filter = {
         'type': 'user',

@@ -13,6 +13,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
 
     schema_collection = OrganisationalUnits
     schema_detail = OrganisationalUnit
+    objtype = 'ou'
 
     mongo_filter = {
         'type': 'ou',
