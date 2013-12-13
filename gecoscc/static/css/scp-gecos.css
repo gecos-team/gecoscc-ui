@@ -59,6 +59,8 @@ footer {
 
 #ex-tree {
     width: auto;
+    min-width: 275px;
+    min-height: 300px;
 }
 
 #events {

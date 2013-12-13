@@ -158,6 +158,18 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     that.trigger("change");
                 }
             });
+        },
+
+        addNode: function (referenceID, obj) {
+            var tree = this.get("tree"),
+                parent,
+                node;
+            node = this.parser.parse(obj);
+            parent = tree.first(function (n) {
+                return n.model.id === referenceID;
+            });
+            parent.addChild(node);
+            this.trigger("change");
         }
     });
 });
@@ -170,7 +182,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    <div class="tree-folder-header">\n' +
             '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
             '        <span class="fa fa-group"></span>\n' +
-            '        <div class="tree-folder-name"><%= name %></div>\n' +
+            '        <div class="tree-folder-name"><%= name %> ' +
+            '<span class="extra-opts fa fa-caret-down"></span></div>\n' +
             '    </div>\n' +
             '    <div class="tree-folder-content" ' +
             '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
@@ -181,7 +194,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-item" style="display: block;" id="<%= id %>">' +
             '    <span class="fa fa-<%= icon %>"></span>' +
             '    <div class="tree-item-name"><%= name %></div>' +
-            '</div>';
+            '</div>',
+        extraOpts =
+            '<button class="btn btn-primary"><span class="fa fa-plus"></span> Añadir nuevo</button>';
 
     Views.NavigationTree = Marionette.ItemView.extend({
         templates: {
@@ -196,9 +211,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             printer: "printer"
         },
 
+        newItemModal: undefined,
+
         events: {
             "click .tree-folder-header": "selectContainer",
             "click .tree-folder-header .opener": "openContainer",
+            "click .tree-folder-name .extra-opts": "containerExtraOptions",
             "click .tree-item": "selectItem"
         },
 
@@ -250,7 +268,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target),
                 $container,
                 id;
-            if ($el.is(".opener")) { return; }
+            if ($el.is(".opener") || $el.is(".extra-opts")) {
+                return;
+            }
 
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
@@ -296,8 +316,30 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        containerExtraOptions: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                that = this;
+
+            $el.popover("destroy");
+            $el.popover({
+                html: true,
+                placement: "bottom",
+                content: extraOpts
+            });
+            $el.popover("show");
+
+            $el.parent().find(".popover button").click(function (evt) {
+                evt.preventDefault();
+                var id = $el.parents(".tree-folder").first().attr("id");
+                $el.popover("destroy");
+                that.showNewItemModal(id);
+            });
+        },
+
         selectItem: function (evt) {
             var $el = $(evt.target).parents(".tree-item").first(),
+                containerId = $el.parents(".tree-folder").first().attr("id"),
                 id = $el.attr("id"),
                 item;
 
@@ -309,8 +351,36 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             if (item && item.model.type === "user") {
-                App.instances.router.navigate("user/" + id, { trigger: true });
+                App.instances.router.navigate("ou/" + containerId + "/user/" + id, { trigger: true });
             }
+        },
+
+        showNewItemModal: function (containerId) {
+            var that = this;
+
+            if (!this.newItemModal) {
+                this.newItemModal = $("#new-item-modal").modal({
+                    show: false
+                });
+            }
+
+            this.newItemModal.find("button.btn-primary")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    var item = that.newItemModal.find("input[type=radio]:checked").val(),
+                        model;
+
+                    that.newItemModal.modal("hide");
+
+                    if (item === "user") {
+                        App.instances.router.navigate("ou/" + containerId + "/user", {
+                            trigger: true
+                        });
+                    }
+                });
+
+            this.newItemModal.modal("show");
         }
     });
 });

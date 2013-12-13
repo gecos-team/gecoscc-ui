@@ -24,12 +24,56 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.UserModel = Backbone.Model.extend({
+        defaults: {
+            type: "user",
+            lock: false,
+            source: "gecos",
+            first_name: "",
+            last_name: "",
+            name: "",
+            address: "",
+            phone: "",
+            email: ""
+        },
+
         url: function () {
             var url = "/api/users/";
             if (this.has("id")) {
                 url += this.get("id") + '/';
             }
             return url;
+        },
+
+        save: function (key, val, options) {
+            var tempId, promise;
+
+            // Remove temporal ID
+            if (this.has("id") && this.get("id").indexOf("NEWNODE") === 0) {
+                tempId = this.get("id");
+                this.unset("id", { silent: true });
+            }
+
+            promise = Backbone.Model.prototype.save.call(this, key, val, options);
+
+            if (tempId) {
+                promise.done(function (resp) {
+                    var tree = App.instances.tree.get("tree"),
+                        node = tree.first(function (n) {
+                            return n.model.id === tempId;
+                        }),
+                        parent = node.parent;
+
+                    while (parent.children.length > 0) {
+                        parent.children[0].drop();
+                    }
+                    App.instances.tree.loadFromNode(parent);
+                    App.instances.router.navigate("ou/" + parent.model.id + "/user/" + resp._id, {
+                        trigger: true
+                    });
+                });
+            }
+
+            return promise;
         }
     });
 });
@@ -58,7 +102,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.validate()) {
                 $button.tooltip({
                     html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> Saving..." // TODO translate
+                    title: "<span class='fa fa-spin fa-spinner'></span> Guardando..." // TODO translate
                 });
                 $button.tooltip("show");
                 this.model.set({
@@ -76,7 +120,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $button.tooltip("destroy");
                     $button.tooltip({
                         html: true,
-                        title: "<span class='fa fa-check'></span> Done" // TODO translate
+                        title: "<span class='fa fa-check'></span> Terminado" // TODO translate
                     });
                     $button.tooltip("show");
                     setTimeout(function () {

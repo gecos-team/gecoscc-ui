@@ -53,8 +53,10 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
-            "user/:id": "loadUser",
-            "ou/:id": "loadOU"
+            "ou/:ouid/user": "newUser",
+            "ou/:ouid/user/:userid": "loadUser",
+            "ou/": "newOU",
+            "ou/:ouid": "loadOU"
         },
 
         controller: {
@@ -65,32 +67,71 @@ var App;
                 App.main.show(view);
             },
 
-            loadUser: function (id) {
+            newUser: function (ouid) {
+                var model = new App.User.Models.UserModel({
+                        id: "NEWNODE" + Math.random(),
+                        name: "new user"
+                    }),
+                    view = new App.User.Views.UserForm({ model: model }),
+                    parent,
+                    path;
+
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + ouid + "/user",
+                    text: "Usuario" // translation
+                }]);
+
+                parent = App.instances.tree.get("tree").first(function (n) {
+                    return n.model.id === ouid;
+                });
+                path = parent.model.path + ',' + parent.model.id;
+                model.set("path", path);
+                App.instances.tree.addNode(ouid, {
+                    id: model.get("id"),
+                    type: "user",
+                    loaded: false,
+                    name: model.get("name"),
+                    children: []
+                });
+
+                model.on("change", function () {
+                    App.main.show(view);
+                });
+                App.main.show(view);
+            },
+
+            loadUser: function (ouid, userid) {
                 var model = new App.User.Models.UserModel(),
                     view = new App.User.Views.UserForm({ model: model });
+
                 App.instances.breadcrumb.setSteps([{
-                    url: "user/" + id,
+                    url: "ou/" + ouid + "/user/" + userid,
                     text: "Usuario" // translation
                 }]);
                 // TODO select node in tree
                 App.main.show(view); // Render the loader indicator
-                model.set("id", id); // Add an ID after rendering the loader
+                model.set("id", userid); // Add an ID after rendering the loader
                 model.on("change", function () {
                     App.main.show(view);
                 });
                 model.fetch();
             },
 
-            loadOU: function (id) {
+            newOU: function () {
+                // TODO
+            },
+
+            loadOU: function (ouid) {
                 var model = new App.OU.Models.OUModel(),
                     view = new App.OU.Views.OUForm({ model: model });
+
                 App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + id,
+                    url: "ou/" + ouid,
                     text: "Unidad Organizativa" // translation
                 }]);
                 // TODO select node in tree
                 App.main.show(view); // Render the loader indicator
-                model.set("id", id); // Add an ID after rendering the loader
+                model.set("id", ouid); // Add an ID after rendering the loader
                 model.on("change", function () {
                     App.main.show(view);
                 });

@@ -42,19 +42,20 @@
   background-color: #dfeef5;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header span {
+.fuelux .tree .tree-folder .tree-folder-header > span {
   position: absolute;
   top: 2px;
   left: 20px;
   float: left;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header span:first-child {
+.fuelux .tree .tree-folder .tree-folder-header > span:first-child {
   left: 5px;
 }
 
 .fuelux .tree .tree-folder .tree-folder-header .tree-folder-name {
   padding-left: 40px;
+  padding-right: 5px;
   white-space: nowrap;
 }
 
