@@ -37,7 +37,7 @@ var App;
 
     App = new Backbone.Marionette.Application();
 
-    // To store references to models root instances
+    // To store references to root instances
     App.instances = {};
 
     App.addRegions({
@@ -94,9 +94,11 @@ var App;
                     children: []
                 });
 
-                model.on("change", function () {
-                    App.main.show(view);
-                });
+                model
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
                 App.main.show(view);
             },
 
@@ -111,9 +113,11 @@ var App;
                 // TODO select node in tree
                 App.main.show(view); // Render the loader indicator
                 model.set("id", userid); // Add an ID after rendering the loader
-                model.on("change", function () {
-                    App.main.show(view);
-                });
+                model
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
                 model.fetch();
             },
 
@@ -144,9 +148,11 @@ var App;
                     children: []
                 });
 
-                model.on("change", function () {
-                    App.main.show(view);
-                });
+                model
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
                 App.main.show(view);
             },
 
@@ -161,9 +167,11 @@ var App;
                 // TODO select node in tree
                 App.main.show(view); // Render the loader indicator
                 model.set("id", ouid); // Add an ID after rendering the loader
-                model.on("change", function () {
-                    App.main.show(view);
-                });
+                model
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
                 model.fetch();
             }
         }

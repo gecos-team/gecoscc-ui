@@ -186,3 +186,31 @@ ul#new-policies li a {
     position: relative;
     top: -8px;
 }
+
+#groups.container {
+    padding-bottom: 30px;
+}
+
+#groups tr td:last-child {
+    width: 30%;
+}
+
+#groups tr td:last-child a:first-child {
+    margin-left: 8px;
+}
+
+#groups tr td:last-child a {
+    float: right;
+}
+
+/* TODO remove? */
+#groups ul.permissions {
+    margin: 0;
+    padding: 0;
+}
+
+#groups ul.permissions li {
+    display: inline-block;
+    padding-right: 15px;
+}
+/* END remove? */
