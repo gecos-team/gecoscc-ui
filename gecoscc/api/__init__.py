@@ -66,7 +66,7 @@ class ResourcePaginatedReadOnly(object):
         extraargs = {}
         if pagesize > 0:
             extraargs.update({
-                'skip': page*pagesize,
+                'skip': page * pagesize,
                 'limit': pagesize,
             })
 
