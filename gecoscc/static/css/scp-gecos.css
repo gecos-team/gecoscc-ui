@@ -195,11 +195,11 @@ ul#new-policies li a {
     width: 30%;
 }
 
-#groups tr td:last-child a:first-child {
+#groups tr td:last-child button:first-child {
     margin-left: 8px;
 }
 
-#groups tr td:last-child a {
+#groups tr td:last-child button {
     float: right;
 }
 

@@ -59,17 +59,23 @@ var App;
         controller: {
             loadTable: function () {
                 var view;
+                App.main.show(App.instances.loader);
 
                 if (!App.instances.groups) {
                     App.instances.groups = new App.Models.GroupCollection();
                 }
+                App.instances.groups
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
+
                 view = new App.Views.GroupTable({
                     collection: App.instances.groups
                 });
-                App.main.show(App.instances.loader);
                 App.instances.groups.fetch({
                     success: function () {
-                        App.main.show(view);
+                        App.instances.groups.trigger("change");
                     }
                 });
             }
@@ -146,7 +152,34 @@ App.module("Views", function (Views, App, Backbone, Marionette, $, _) {
     Views.GroupRow = Marionette.ItemView.extend({
         template: "#groups-row-template",
 
-        tagName: "tr"
+        tagName: "tr",
+
+        events: {
+            "click button.edit-group": "edit",
+            "click button.btn-danger": "deleteModel"
+        },
+
+        edit: function (evt) {
+            evt.preventDefault();
+            // TODO
+        },
+
+        deleteModel: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            GecosUtils.confirmModal.find("button.btn-danger")
+                .off("click")
+                .on("click", function (evt) {
+                    that.model.destroy({
+                        success: function () {
+                            App.instances.groups.fetch();
+                        }
+                    });
+                    GecosUtils.confirmModal.modal("hide");
+                });
+            GecosUtils.confirmModal.modal("show");
+        }
     });
 
     Views.GroupTable = Marionette.CollectionView.extend({
@@ -159,12 +192,13 @@ App.module("Views", function (Views, App, Backbone, Marionette, $, _) {
         appendBuffer: function (collectionView, buffer) {
             var $table = $(this.template);
             $table.find("tbody").append(buffer);
-            collectionView.$el.append($table);
+            collectionView.$el.html($table);
         },
 
         onRender: function () {
             /* Table initialisation */
-            var $table = this.$el.find("table")
+            var $table = this.$el.find("table");
+
             if ($table.find("tr").length > 0) {
                 $table.dataTable({
                     sDom: "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-8'i><'col-md-4'p>>",
