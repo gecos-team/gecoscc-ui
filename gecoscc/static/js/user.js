@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global App */
+/*global App, GecosUtils */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -88,6 +88,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click #submit": "saveForm",
+            "click #delete": "deleteModel",
             "change input": "validate",
 
             "keyup #permission-filter": "permissionFilter",
@@ -147,6 +148,24 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $label.parent().hide();
                 }
             });
+        },
+
+        deleteModel: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            GecosUtils.confirmModal.find("button.btn-danger")
+                .off("click")
+                .on("click", function (evt) {
+                    that.model.destroy({
+                        success: function () {
+                            App.instances.tree.reloadTree();
+                            App.instances.router.navigate("", { trigger: true });
+                        }
+                    });
+                    GecosUtils.confirmModal.modal("hide");
+                });
+            GecosUtils.confirmModal.modal("show");
         }
     });
 });

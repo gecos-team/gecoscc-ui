@@ -68,6 +68,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             this.set("tree", parsed);
         },
 
+        reloadTree: function () {
+            var that = this;
+            $.ajax("/api/nodes/?maxdepth=1", {
+                success: function (response) {
+                    that.initTree(response);
+                }
+            });
+        },
+
         parseTree: function (root, data) {
             _.each(data, function (node) {
                 var newnode = _.clone(node),
@@ -272,6 +281,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectContainer: function (evt) {
             var $el = $(evt.target),
                 $container,
+                parentId,
                 id;
             if ($el.is(".opener") || $el.is(".extra-opts") || $el.is("button")) {
                 return;
@@ -279,11 +289,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
+            parentId = $container.parents(".tree-folder").first().attr("id"),
 
             this.$el.find(".tree-selected").removeClass("tree-selected");
             $container.find(".tree-folder-header").first().addClass("tree-selected");
 
-            App.instances.router.navigate("ou/" + id, { trigger: true });
+            App.instances.router.navigate("ou/" + parentId + "/ou/" + id, {
+                trigger: true
+            });
         },
 
         openContainer: function (evt) {
@@ -347,7 +360,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     .off("click")
                     .on("click", function (evt) {
                         evt.preventDefault();
-                        // TODO delete model
+                        var id = $el.parents(".tree-folder").first().attr("id"),
+                            model = new App.OU.Models.OUModel({ id: id });
+                        model.destroy({
+                            success: function () {
+                                App.instances.tree.reloadTree();
+                            }
+                        });
                         GecosUtils.confirmModal.modal("hide");
                     });
                 GecosUtils.confirmModal.modal("show");
@@ -368,7 +387,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             if (item && item.model.type === "user") {
-                App.instances.router.navigate("ou/" + containerId + "/user/" + id, { trigger: true });
+                App.instances.router.navigate("ou/" + containerId + "/user/" + id, {
+                    trigger: true
+                });
             }
         },
 

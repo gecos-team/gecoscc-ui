@@ -84,6 +84,7 @@ class NodesResource(ResourcePaginatedReadOnly):
     mongo_filter = {
     }
     collection_name = 'nodes'
+    objtype = 'nodes'
 
     def get_objects_filter(self):
         # TODO
