@@ -3,6 +3,8 @@ from bson.objectid import InvalidId
 
 import colander
 
+from gecoscc.i18n import TranslationString as _
+
 
 class MyModel(object):
     pass
@@ -117,3 +119,42 @@ class OrganisationalUnit(Node):
 
 class OrganisationalUnits(colander.SequenceSchema):
     organisationalunits = OrganisationalUnit()
+
+
+JOB_STATUS = {
+    # Calculating node changes
+    'processing': _('Processing'),
+
+    # The configurator is applying the changes
+    'applying': _('Applying changes'),
+
+    # All the changes were applied SUCCESSFULLY
+    'finished': _('Changes applied'),
+
+    # There was errors during the process
+    'errors': _('There was errors'),
+}
+
+
+class Job(colander.MappingSchema):
+    # This is not a ObjectId, is a UUID4 format string of numbers
+    _id = colander.SchemaNode(colander.String())
+
+    userid = colander.SchemaNode(ObjectIdField())
+    objid = colander.SchemaNode(ObjectIdField())
+
+    # Verify that the status selected already exists
+    status = colander.SchemaNode(colander.String(),
+                                 validator=colander.OneOf(JOB_STATUS.keys()))
+    type = colander.SchemaNode(colander.String())
+    op = colander.SchemaNode(colander.String(),
+                             validator=colander.OneOf(
+                                 ['created', 'changed', 'deleted']
+                             ))
+
+    created = colander.SchemaNode(colander.DateTime())
+    last_update = colander.SchemaNode(colander.DateTime())
+
+
+class Jobs(colander.SequenceSchema):
+    jobs = Job()

@@ -7,7 +7,7 @@ from datetime import datetime
 from pyramid.security import authenticated_userid
 from pyramid_sockjs.session import Session
 
-from gecoscc.i18n import TranslationString as _
+from gecoscc.models import JOB_STATUS
 
 logger = logging.getLogger(__name__)
 
@@ -17,20 +17,6 @@ CHANNELS = {
 
 
 class JobStorage(object):
-
-    JOB_STATUS = {
-        # Calculating node changes
-        'processing': _('Processing'),
-
-        # The configurator is applying the changes
-        'applying': _('Applying changes'),
-
-        # All the changes were applied SUCCESSFULLY
-        'finished': _('Changes applied'),
-
-        # There was errors during the process
-        'errors': _('There was errors'),
-    }
 
     class JobDoesNotExist(Exception):
         pass
@@ -43,17 +29,6 @@ class JobStorage(object):
 
     class JobOperationForbidden(Exception):
         pass
-
-    job_schema = {
-        '_id': 'The starting celery task id, jobid',
-        'userid': 'The user object id',
-        'status': 'processing',
-        'objid': 'The object id related',
-        'type': 'The principal type (node, group)',
-        'op': 'the operation type',
-        'created': '',
-        'last_update': '',
-    }
 
     def __init__(self, collection, userdb, user):
         self.collection = collection
@@ -86,9 +61,7 @@ class JobStorage(object):
         }):
             raise self.JobAlreadyExists()
 
-        job = deepcopy(self.job_schema)
-
-        job.update({
+        job = {
             '_id': jobid,
             'userid': userid,
             'objid': objid,
@@ -96,7 +69,7 @@ class JobStorage(object):
             'op': op,
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
-        })
+        }
 
         self.collection.insert(job)
 
@@ -108,7 +81,7 @@ class JobStorage(object):
             '_id': jobid
         })
 
-        if status not in self.JOB_STATUS:
+        if status not in JOB_STATUS:
             raise self.StatusInvalidException()
         if not job:
             raise self.JobDoesNotExist()
