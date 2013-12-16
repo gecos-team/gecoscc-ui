@@ -153,7 +153,6 @@ user_template = {
     "_id": ObjectId("527a325cbd4d720d3ab11025"),
     "username": "admin",
     "password": "$2a$12$NNyrOEYPdBu4OApMpfeYfu/GArui2yLVJPIyglPIgPKT03sOHTCGy",
-    "apikey": ["638cc54845864082a2c1513e7a17e933"],
     "email": "admin@example.com",
     "permissions": ["root,"]
 };

@@ -52,10 +52,6 @@ class MongoUserDB(object):
         ], unique=True)
 
         self.db.adminusers.ensure_index([
-            ('apikey', pymongo.DESCENDING),
-        ], unique=True)
-
-        self.db.adminusers.ensure_index([
             ('email', pymongo.DESCENDING),
         ], unique=True)
 
