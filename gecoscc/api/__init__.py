@@ -2,6 +2,7 @@ from bson import ObjectId
 from copy import deepcopy
 
 from cornice.schemas import CorniceSchema
+from celery.exceptions import Ignore
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 
@@ -153,13 +154,22 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         return self.parse_item(obj)
 
     def notify_created(self, obj):
-        object_created.delay(self.objtype, obj)
+        result = object_created.delay(self.objtype, obj)
+        if not isinstance(result.result, Ignore):
+            # Save task status into logger
+            pass
 
     def notify_changed(self, obj, old_obj):
-        object_changed.delay(self.objtype, obj, old_obj)
+        result = object_changed.delay(self.objtype, obj, old_obj)
+        if not isinstance(result.result, Ignore):
+            # Save task status into logger
+            pass
 
     def notify_deleted(self, obj):
-        object_deleted.delay(self.objtype, obj)
+        result = object_deleted.delay(self.objtype, obj)
+        if not isinstance(result.result, Ignore):
+            # Save task status into logger
+            pass
 
     def put(self):
         obj = self.request.validated

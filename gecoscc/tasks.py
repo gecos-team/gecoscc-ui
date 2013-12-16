@@ -1,8 +1,8 @@
 from bson import ObjectId
 
 from celery.task import Task, task
-
 from celery.signals import task_prerun
+from celery.exceptions import Ignore
 
 
 class ChefTask(Task):
@@ -19,7 +19,10 @@ class ChefTask(Task):
         op('[{0}] {1}'.format(self.jid, message))
 
     def init_jobid(self):
-        self.jid = unicode(ObjectId())
+        if self.request is not None:
+            self.jid = self.request.id
+        else:
+            self.jid = unicode(ObjectId())
 
     def group_created(self, objnew):
         self.log('info', 'Group created {0}'.format(objnew['_id']))
@@ -58,7 +61,8 @@ def init_jobid(sender, **kargs):
 @task(base=ChefTask)
 def task_test(value):
     self = task_test
-    self.log('debug', unicode(self.pyramid.db.adminusers.count()))
+    self.log('debug', unicode(self.db.adminusers.count()))
+    return Ignore()
 
 
 @task(base=ChefTask)
@@ -67,7 +71,7 @@ def object_created(objtype, obj):
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
-        func(obj)
+        return func(obj)
 
     else:
         self.log('error', 'The method {0}_created does not exist'.format(
@@ -80,7 +84,7 @@ def object_changed(objtype, objnew, objold):
 
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
-        func(objnew, objold)
+        return func(objnew, objold)
 
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
@@ -93,7 +97,7 @@ def object_deleted(objtype, obj):
 
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
-        func(obj)
+        return func(obj)
 
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
