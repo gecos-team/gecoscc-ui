@@ -283,10 +283,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $container,
                 parentId,
                 id;
+
             if ($el.is(".opener") || $el.is(".extra-opts") || $el.is("button")) {
                 return;
             }
 
+            this.closeExtraOptions();
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
             parentId = $container.parents(".tree-folder").first().attr("id"),
@@ -305,6 +307,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 classToTarget,
                 classToAdd;
 
+            this.closeExtraOptions();
             if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
                 classToTarget = '.fa-minus-square-o';
                 classToAdd = 'fa-plus-square-o';
@@ -339,7 +342,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target),
                 that = this;
 
-            $el.popover("destroy");
+            this.closeExtraOptions();
             $el.popover({
                 html: true,
                 placement: "bottom",
@@ -373,12 +376,17 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
+        closeExtraOptions: function () {
+            App.tree.$el.find(".tree-folder-name .extra-opts").popover("destroy");
+        },
+
         selectItem: function (evt) {
             var $el = $(evt.target).parents(".tree-item").first(),
                 containerId = $el.parents(".tree-folder").first().attr("id"),
                 id = $el.attr("id"),
                 item;
 
+            this.closeExtraOptions();
             this.$el.find(".tree-selected").removeClass("tree-selected");
             $el.addClass("tree-selected");
 
