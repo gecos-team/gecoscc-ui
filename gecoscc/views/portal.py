@@ -4,7 +4,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.i18n import _
+from gecoscc.i18n import TranslationString as _
 from gecoscc.views import BaseView
 
 

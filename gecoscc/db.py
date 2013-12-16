@@ -59,6 +59,18 @@ class MongoDB(object):
             ('type', pymongo.DESCENDING),
         ])
 
+        db.nodes.ensure_index([
+            ('name', pymongo.DESCENDING),
+        ], unique=True)
+
+        db.groups.ensure_index([
+            ('name', pymongo.DESCENDING),
+        ], unique=True)
+
+        db.jobs.ensure_index([
+            ('name', pymongo.DESCENDING),
+        ], unique=True)
+
 
 def get_db(request):
     return request.registry.settings['mongodb'].get_database()

@@ -1,5 +1,6 @@
 import bcrypt
 from uuid import uuid4
+import pymongo
 
 from pyramid.security import authenticated_userid
 
@@ -42,6 +43,21 @@ class MongoUserDB(object):
     def __init__(self, mongo_connection, collection_name):
         self.db = mongo_connection.get_database()
         self.collection = self.db[collection_name]
+        self.indexes()
+
+    def indexes(self):
+
+        self.db.adminusers.ensure_index([
+            ('username', pymongo.DESCENDING),
+        ], unique=True)
+
+        self.db.adminusers.ensure_index([
+            ('apikey', pymongo.DESCENDING),
+        ], unique=True)
+
+        self.db.adminusers.ensure_index([
+            ('email', pymongo.DESCENDING),
+        ], unique=True)
 
     def get_user(self, username):
         user = self.collection.find_one({'username': username})

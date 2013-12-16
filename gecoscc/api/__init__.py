@@ -1,8 +1,9 @@
 from bson import ObjectId
 from copy import deepcopy
 
+from pymongo.errors import DuplicateKeyError
+
 from cornice.schemas import CorniceSchema
-from celery.exceptions import Ignore
 
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 
@@ -145,7 +146,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.pre_save(obj)
 
-        obj_id = self.collection.insert(obj)
+        try:
+            obj_id = self.collection.insert(obj)
+        except DuplicateKeyError, e:
+            raise HTTPBadRequest('The Object already exists: '
+                                 '{0}'.format(e.message))
 
         obj = self.post_save(obj)
 
@@ -153,23 +158,41 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         self.notify_created(obj)
         return self.parse_item(obj)
 
+    def _job_params(self, obj, op):
+
+        if self.objtype == 'group':
+            type = 'group'
+        else:
+            type = 'node'
+
+        params = {
+            'type': type,
+            'objid': obj['_id'],
+            'op': op,
+        }
+
+        return params
+
     def notify_created(self, obj):
         result = object_created.delay(self.objtype, obj)
-        if not isinstance(result.result, Ignore):
-            # Save task status into logger
-            pass
+
+        params = self._job_params(obj, 'created')
+
+        self.request.jobs.create(result.task_id, **params)
 
     def notify_changed(self, obj, old_obj):
         result = object_changed.delay(self.objtype, obj, old_obj)
-        if not isinstance(result.result, Ignore):
-            # Save task status into logger
-            pass
+
+        params = self._job_params(obj, 'changed')
+
+        self.request.jobs.create(result.task_id, **params)
 
     def notify_deleted(self, obj):
         result = object_deleted.delay(self.objtype, obj)
-        if not isinstance(result.result, Ignore):
-            # Save task status into logger
-            pass
+
+        params = self._job_params(obj, 'deleted')
+
+        self.request.jobs.create(result.task_id, **params)
 
     def put(self):
         obj = self.request.validated
@@ -194,7 +217,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.pre_save(obj, old_obj=old_obj)
 
         real_obj.update(obj)
-        self.collection.update(obj_filter, real_obj, new=True)
+
+        try:
+            self.collection.update(obj_filter, real_obj, new=True)
+        except DuplicateKeyError, e:
+            raise HTTPBadRequest('Duplicated object {0}'.format(
+                e.message))
 
         obj = self.post_save(obj, old_obj=old_obj)
 

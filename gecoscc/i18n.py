@@ -1,3 +1,4 @@
 from pyramid.i18n import TranslationStringFactory
 
-_ = TranslationStringFactory('gecoscc')
+
+TranslationString = TranslationStringFactory('gecoscc')

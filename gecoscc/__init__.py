@@ -9,7 +9,7 @@ from pyramid.authorization import ACLAuthorizationPolicy
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
-from gecoscc.eventsmanager import EventsManager
+from gecoscc.eventsmanager import EventsManager, get_jobstorage
 from gecoscc.permissions import is_logged
 
 
@@ -156,6 +156,7 @@ def main(global_config, **settings):
     route_config_auxiliary(config, route_prefix='/sjs/')
 
     config.set_request_property(is_logged, 'is_logged', reify=True)
+    config.set_request_property(get_jobstorage, 'jobs', reify=True)
 
     config.scan('gecoscc.views')
     config.scan('gecoscc.api')
