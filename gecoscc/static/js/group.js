@@ -1,5 +1,5 @@
 /*jslint browser: true, unparam: true, nomen: true, vars: false */
-/*global App:true, Backbone */
+/*global App */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -20,79 +20,7 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-var App;
-
-(function (Backbone) {
-    "use strict";
-    var Router,
-        Loader;
-
-    App = new Backbone.Marionette.Application();
-
-    // To store references to root instances
-    App.instances = {};
-
-    App.addRegions({
-        // main
-        main: "#viewport-main"
-    });
-
-    Loader = Backbone.Marionette.ItemView.extend({
-        render: function () {
-            this.$el.html('<p style="font-size: 3em;">' +
-                '<span class="fa fa-spin fa-spinner"></span> Loading...</p>');
-            return this;
-        }
-    });
-
-    App.instances.loader = new Loader();
-
-    Router = Backbone.Marionette.AppRouter.extend({
-        appRoutes: {
-            "": "loadTable"
-//             "ou/:containerid/user": "newUser",
-//             "ou/:containerid/user/:userid": "loadUser",
-//             "ou/:containerid/ou": "newOU",
-//             "ou/:containerid/ou/:ouid": "loadOU"
-        },
-
-        controller: {
-            loadTable: function () {
-                var view;
-                App.main.show(App.instances.loader);
-
-                if (!App.instances.groups) {
-                    App.instances.groups = new App.Models.GroupCollection();
-                }
-                App.instances.groups
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
-
-                view = new App.Views.GroupTable({
-                    collection: App.instances.groups
-                });
-                App.instances.groups.fetch({
-                    success: function () {
-                        App.instances.groups.trigger("change");
-                    }
-                });
-            }
-        }
-    });
-
-    App.instances.router = new Router();
-
-    App.on('initialize:after', function () {
-        if (Backbone.history) {
-            Backbone.history.start();
-        }
-        App.instances.router.controller.loadTable();
-    });
-}(Backbone));
-
-App.module("Models", function (Models, App, Backbone, Marionette, $, _) {
+App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.Group = Backbone.Model.extend({
@@ -146,7 +74,7 @@ App.module("Models", function (Models, App, Backbone, Marionette, $, _) {
     });
 });
 
-App.module("Views", function (Views, App, Backbone, Marionette, $, _) {
+App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Views.GroupRow = Marionette.ItemView.extend({
