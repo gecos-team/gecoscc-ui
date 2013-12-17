@@ -49,11 +49,8 @@ var App;
 
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
-            "": "loadTable"
-//             "ou/:containerid/user": "newUser",
-//             "ou/:containerid/user/:userid": "loadUser",
-//             "ou/:containerid/ou": "newOU",
-//             "ou/:containerid/ou/:ouid": "loadOU"
+            "": "loadTable",
+            "group/:gid": "editGroup"
         },
 
         controller: {
@@ -64,18 +61,33 @@ var App;
                 if (!App.instances.groups) {
                     App.instances.groups = new App.Group.Models.GroupCollection();
                 }
-                App.instances.groups
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
-
                 view = new App.Group.Views.GroupTable({
                     collection: App.instances.groups
                 });
+
                 App.instances.groups.fetch({
                     success: function () {
-                        App.instances.groups.trigger("change");
+                        App.main.show(view);
+                    }
+                });
+            },
+
+            editGroup: function (gid) {
+                var group, view;
+                App.main.show(App.instances.loader);
+
+                if (App.instances.groups && App.instances.groups.length > 0) {
+                    group = App.instances.groups.find(function (g) {
+                        return g.get("id") === gid;
+                    });
+                } else {
+                    group = new App.Group.Models.Group({ id: gid });
+                }
+                view = new App.Group.Views.GroupForm({ model: group });
+
+                group.fetch({
+                    success: function () {
+                        App.main.show(view);
                     }
                 });
             }
@@ -85,9 +97,12 @@ var App;
     App.instances.router = new Router();
 
     App.on('initialize:after', function () {
+        var path = window.location.hash.substring(1);
+
         if (Backbone.history) {
             Backbone.history.start();
         }
-        App.instances.router.controller.loadTable();
+
+        App.instances.router.navigate(path, { trigger: true });
     });
 }(Backbone));

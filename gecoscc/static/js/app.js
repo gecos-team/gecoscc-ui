@@ -282,8 +282,12 @@ var App;
     });
 
     App.on('initialize:after', function () {
+        var path = window.location.hash.substring(1);
+
         if (Backbone.history) {
             Backbone.history.start();
         }
+
+        App.instances.router.navigate(path, { trigger: true });
     });
 }(Backbone, jQuery, _));

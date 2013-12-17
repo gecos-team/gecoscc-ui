@@ -65,7 +65,7 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         model: Models.Group,
 
         url: function () {
-            return "/api/groups/";
+            return "/api/groups/?pagesize=1000";
         },
 
         parse: function (response) {
@@ -89,7 +89,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         edit: function (evt) {
             evt.preventDefault();
-            // TODO
+            var id = this.$el.find("td").first().attr("id");
+            App.instances.router.navigate("group/" + id, { trigger: true });
         },
 
         deleteModel: function (evt) {
@@ -110,6 +111,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
+    // TODO Convert this into a composite view
+    // https://github.com/marionettejs/backbone.marionette/blob/master/docs/marionette.compositeview.md
     Views.GroupTable = Marionette.CollectionView.extend({
         itemView: Views.GroupRow,
 
@@ -157,6 +160,65 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     }
                 });
             }
+        }
+    });
+
+    Views.GroupForm = Marionette.Layout.extend({
+        template: "#groups-form-template",
+
+        regions: {
+            memberof: "#memberof"
+        },
+
+        onRender: function () {
+            var groups, widget, promise;
+
+            if (App.instances.groups && App.instances.groups.length > 0) {
+                groups = App.instances.groups;
+                promise = $.Deferred();
+                promise.resolve();
+            } else {
+                groups = new App.Group.Models.GroupCollection();
+                promise = groups.fetch();
+            }
+
+            widget = Views.GroupWidget({
+                collection: groups
+            });
+            promise.done(function () {
+                this.memberof.show(widget);
+            });
+        }
+    });
+
+    Views.GroupWidget = Marionette.ItemView.extend({
+        template: "#groups-widget-template",
+
+        tagName: "div",
+        className: "well",
+        unique: true,
+        checked: undefined,
+
+        serializeData: function () {
+            var data = {},
+                inputType = "checkbox";
+
+            if (this.collection) {
+                if (this.unique) {
+                    inputType = "radio";
+                    if (_.isUndefined(this.checked)) {
+                        this.checked = "";
+                    }
+                } else if (_.isUndefined(this.checked)) {
+                    this.checked = [];
+                }
+                data = {
+                    items: this.collection.toJSON(),
+                    inputType: inputType,
+                    checked: this.checked
+                };
+            }
+            return data;
         }
     });
 });
