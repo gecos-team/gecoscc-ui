@@ -11,18 +11,18 @@ var ou_prefix = 'ou_',
     generic_group_oid = ObjectId(),
 
     random_int = function (max) {
-        return Math.floor(Math.random() * max)
+        return Math.floor(Math.random() * max);
     },
 
-    choice = function(l) {
-        return l[random_int(l.length)]
+    choice = function (l) {
+        return l[random_int(l.length)];
     },
 
     object_creator = function (path) {
         var new_object_type = choice(types);
 
         if (db.nodes.count() >= max_objects) {
-            return
+            return;
         }
 
         if ((new_object_type == 'ou' &&
@@ -32,7 +32,7 @@ var ou_prefix = 'ou_',
         }
     },
 
-    group_creator = function(name, maxlevel) {
+    group_creator = function (name, maxlevel) {
         var parent_id = arguments[2],
             children_counter = random_int(max_levels) + 1,
             nodes = random_int(max_levels) + 1,
@@ -42,44 +42,47 @@ var ou_prefix = 'ou_',
                 'name': name,
             }
 
-        if (parent_id !== undefined) {
-            group.memberof = parent_id;
-            db.groups.update({
+        if (!db.groups.findOne({ name: name })) {
+            if (parent_id !== undefined) {
+                group.memberof = parent_id;
+                db.groups.update({
                     '_id': parent_id,
-            }, {
-                '$push': {
-                    'groupmembers': group['_id']
+                }, {
+                    '$push': {
+                        'groupmembers': group['_id']
+                    }
+                });
+            }
+
+            group['nodemembers'] = [];
+            // insert groups in nodes (two ways relation)
+            for (var n = 0; n<nodes; n += 1) {
+                var node_suffix = random_int(max_node_id),
+                    node_name = user_prefix + node_suffix;
+                node = db.nodes.findOne({'name': node_name});
+                group['nodemembers'].push(node['_id']);
+                db.nodes.update({
+                    '_id': node['_id']
+                }, {
+                    '$push': {
+                        'memberof': group['_id']
+                    }
+                });
+            }
+
+            db.groups.insert(group);
+
+            if (maxlevel > 0) {
+                for(children_counter=children_counter;
+                        children_counter >0;
+                        children_counter -= 1) {
+                groups += 1;
+                group_creator(group_prefix + groups, maxlevel-1, group._id);
                 }
-            });
-        }
-
-        group['nodemembers'] = [];
-        // insert groups in nodes (two ways relation)
-        for(var n = 0; n<nodes; n += 1) {
-            var node_suffix = random_int(max_node_id),
-                node_name = user_prefix + node_suffix;
-            node = db.nodes.findOne({'name': node_name});
-            group['nodemembers'].push(node['_id']);
-            db.nodes.update({
-                '_id': node['_id']
-            }, {
-                '$push': {
-                    'memberof': group['_id']
-                }
-            });
-        }
-
-        db.groups.insert(group);
-
-        if (maxlevel > 0) {
-            for(children_counter=children_counter;
-                    children_counter >0;
-                    children_counter -= 1) {
-               groups += 1;
-               group_creator(group_prefix + groups, maxlevel-1, group._id);
+            } else {
+                groups += 1;
             }
         }
-
     }
 
     ou_creator = function (path) {
@@ -135,6 +138,7 @@ var ou_prefix = 'ou_',
 
 
 db.nodes.drop();
+db.groups.drop();
 
 ou_creator('root');
 
