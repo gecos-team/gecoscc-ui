@@ -171,7 +171,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            var groups, widget, promise;
+            var that = this,
+                groups,
+                widget,
+                promise;
 
             if (App.instances.groups && App.instances.groups.length > 0) {
                 groups = App.instances.groups;
@@ -182,11 +185,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 promise = groups.fetch();
             }
 
-            widget = Views.GroupWidget({
+            widget = new Views.GroupWidget({
                 collection: groups
             });
             promise.done(function () {
-                this.memberof.show(widget);
+                that.memberof.show(widget);
             });
         }
     });
@@ -194,10 +197,17 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     Views.GroupWidget = Marionette.ItemView.extend({
         template: "#groups-widget-template",
 
-        tagName: "div",
-        className: "well",
         unique: true,
         checked: undefined,
+
+        ui: {
+            "filter": "input.group-filter"
+        },
+
+        events: {
+            "keyup @ui.filter": "filterGroups",
+            "click .group-filter-btn": "filterGroups"
+        },
 
         serializeData: function () {
             var data = {},
@@ -219,6 +229,22 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 };
             }
             return data;
+        },
+
+        filterGroups: function (evt) {
+            evt.preventDefault();
+            var filter = this.ui.filter.val();
+
+            this.$el.find("label.group").each(function (index, label) {
+                var $label = $(label),
+                    filterReady = filter.trim().toLowerCase(),
+                    text = $label.text().trim().toLowerCase();
+                if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
+                    $label.parent().show();
+                } else {
+                    $label.parent().hide();
+                }
+            });
         }
     });
 });

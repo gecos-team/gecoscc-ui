@@ -175,29 +175,10 @@
 <script type="text/html" id="groups-table-template">{% include "bb-groups-table.html" %}</script>
 <script type="text/html" id="groups-row-template">{% include "bb-groups-row.html" %}</script>
 <script type="text/html" id="groups-form-template">{% include "bb-groups-form.html" %}</script>
+<script type="text/html" id="groups-widget-template">{% include "bb-groups-widget.html" %}</script>
 
 <script>
 //     $(document).ready(function () {
-//         var permissionFilter = function (filter) {
-//             $("label.permission").each(function (index, label) {
-//                 var $label = $(label),
-//                     filterReady = filter.trim().toLowerCase(),
-//                     text = $label.text().trim().toLowerCase();
-//                 if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
-//                     $label.parent().show();
-//                 } else {
-//                     $label.parent().hide();
-//                 }
-//             });
-//         };
-//
-//         $("#permission-filter").on("keyup", function (evt) {
-//             permissionFilter($(evt.target).val());
-//         });
-//         $("#permission-filter-btn").on("click", function (evt) {
-//             permissionFilter($(evt.target).parents('div.input-group').find("input").val());
-//         });
-//
 //         var modal = $("#group-modal").modal({ show: false }),
 //             editModal = $("#edit-group-modal").modal({ show: false });
 //         $("#add-group").click(function () {

@@ -203,14 +203,12 @@ ul#new-policies li a {
     float: right;
 }
 
-/* TODO remove? */
-#groups ul.permissions {
+ul.groups-widget {
     margin: 0;
     padding: 0;
 }
 
-#groups ul.permissions li {
+ul.groups-widget li {
     display: inline-block;
     padding-right: 15px;
 }
-/* END remove? */

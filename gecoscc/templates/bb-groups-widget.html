@@ -1,31 +1,33 @@
 <label>Grupos:</label>
 <div class="input-group mb10">
-    <input type="text" class="form-control" class="group-filter" placeholder="Filtra">
+    <input type="text" class="form-control group-filter" placeholder="Filtra">
     <span class="input-group-btn">
-        <button class="btn btn-primary" class="group-filter-btn" type="button"><span class="fa fa-search"></span></button>
+        <button class="btn btn-primary group-filter-btn" type="button"><span class="fa fa-search"></span></button>
     </span>
 </div>
-<ul class="groups-widget">
-    <% _.each(items, function (item) { %>
-    <li>
-        <label class="group <%= inputType %>-inline">
-            <input
-                type="<%= inputType %>"
-                id="<%= item.id %>"
-                value="<%= item.id %>"
-                <% if (inputType === "radio") { %>
-                    name="groups-widget-options"
-                    <% if (checked === item.id) { %>
-                        checked
+<div class="well">
+    <ul class="groups-widget">
+        <% _.each(items, function (item) { %>
+        <li>
+            <label class="group <%= inputType %>-inline">
+                <input
+                    type="<%= inputType %>"
+                    id="<%= item.id %>"
+                    value="<%= item.id %>"
+                    <% if (inputType === "radio") { %>
+                        name="groups-widget-options"
+                        <% if (checked === item.id) { %>
+                            checked
+                        <% } %>
+                    <% } else { %>
+                        <% _.each(checked, function (id) { if (id === item.id) { %>
+                            checked
+                        <% }}); %>
                     <% } %>
-                <% } else { %>
-                    <% _.each(checked, function (id) { if (id === item.id) { %>
-                        checked
-                    <% }}); %>
-                <% } %>
-            >
-            <%= item.name %>
-        </label>
-    </li>
-    <% }); %>
-</ul>
+                >
+                <%= item.name %>
+            </label>
+        </li>
+        <% }); %>
+    </ul>
+</div>
