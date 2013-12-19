@@ -111,20 +111,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
-    // TODO Convert this into a composite view
-    // https://github.com/marionettejs/backbone.marionette/blob/master/docs/marionette.compositeview.md
-    Views.GroupTable = Marionette.CollectionView.extend({
+    Views.GroupTable = Marionette.CompositeView.extend({
+        template: "#groups-table-template",
         itemView: Views.GroupRow,
-
-        initialize: function () {
-            this.template = $("#groups-table-template").html();
-        },
-
-        appendBuffer: function (collectionView, buffer) {
-            var $table = $(this.template);
-            $table.find("tbody").append(buffer);
-            collectionView.$el.html($table);
-        },
+        itemViewContainer: "tbody",
 
         onRender: function () {
             /* Table initialisation */
