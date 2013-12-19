@@ -160,6 +160,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             memberof: "#memberof"
         },
 
+        events: {
+            "click button#delete": "deleteModel",
+            "click button#save": "save",
+            "click button#goback": "go2table",
+        },
+
         onRender: function () {
             var that = this,
                 groups,
@@ -181,6 +187,38 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             promise.done(function () {
                 that.memberof.show(widget);
             });
+        },
+
+        deleteModel: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            GecosUtils.confirmModal.find("button.btn-danger")
+                .off("click")
+                .on("click", function (evt) {
+                    that.model.destroy({
+                        success: function () {
+                            App.instances.router.navigate("", { trigger: true });
+                        }
+                    });
+                    GecosUtils.confirmModal.modal("hide");
+                });
+            GecosUtils.confirmModal.modal("show");
+        },
+
+        save: function (evt) {
+            evt.preventDefault();
+            // TODO
+            this.model.save({
+                success: function () {
+                    App.instances.router.navigate("", { trigger: true });
+                }
+            });
+        },
+
+        go2table: function (evt) {
+            evt.preventDefault();
+            App.instances.router.navigate("", { trigger: true });
         }
     });
 
