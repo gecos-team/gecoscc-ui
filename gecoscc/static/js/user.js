@@ -86,13 +86,39 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
 
+        ui: {
+            memberof: "div#groups-widget"
+        },
+
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
-            "change input": "validate",
+            "change input": "validate"
+        },
 
-            "keyup #permission-filter": "permissionFilter",
-            "click #permission-filter-btn": "permissionFilter"
+        onRender: function () {
+            var groups,
+                widget,
+                promise;
+
+            if (App.instances.groups && App.instances.groups.length > 0) {
+                groups = App.instances.groups;
+                promise = $.Deferred();
+                promise.resolve();
+            } else {
+                groups = new App.Group.Models.GroupCollection();
+                promise = groups.fetch();
+            }
+
+            widget = new App.Group.Views.GroupWidget({
+                el: this.ui.memberof[0],
+                collection: groups,
+                checked: this.model.get("memberof"),
+                unique: false
+            });
+            promise.done(function () {
+                widget.render();
+            });
         },
 
         saveForm: function (evt) {
@@ -129,25 +155,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     }, 2000);
                 });
             }
-        },
-
-        permissionFilter: function (evt) {
-            var filter = $(evt.target);
-            if (filter.is("input")) {
-                filter = filter.val();
-            } else {
-                filter = filter.parents('div.input-group').find("input").val();
-            }
-            $("label.permission").each(function (index, label) {
-                var $label = $(label),
-                    filterReady = filter.trim().toLowerCase(),
-                    text = $label.text().trim().toLowerCase();
-                if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
-                    $label.parent().show();
-                } else {
-                    $label.parent().hide();
-                }
-            });
         },
 
         deleteModel: function (evt) {

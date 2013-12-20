@@ -231,7 +231,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         ui: {
-            "filter": "input.group-filter"
+            filter: "input.group-filter"
         },
 
         events: {
