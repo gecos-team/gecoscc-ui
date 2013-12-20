@@ -29,6 +29,7 @@ var App;
 
     var Router,
         HomeView,
+        NewElementView,
         numericRegex,
         emailRegex,
         ipRegex,
@@ -272,14 +273,22 @@ var App;
     HomeView = Backbone.Marionette.ItemView.extend({
         template: "#home-template",
 
-        render: function () {
-            Backbone.Marionette.ItemView.prototype.render.call(this);
+        onRender: function () {
             this.$el.find('.easyPieChart').easyPieChart({
                 animate: 1000
             });
-            return this;
         }
     });
+
+    NewElementView = Backbone.Marionette.ItemView.extend({
+        template: "#new-element-template",
+
+        serializeData: function () {
+            return {}; // This view needs no model
+        }
+    });
+
+    App.instances.newElement = new NewElementView();
 
     App.on('initialize:after', function () {
         var path = window.location.hash.substring(1);
