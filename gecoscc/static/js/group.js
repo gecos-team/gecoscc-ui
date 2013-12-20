@@ -24,27 +24,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.Group = Backbone.Model.extend({
-// {
-//     "memberof": "52aad006b984eb7df73da7b0",
-//     "_id": "52aad006b984eb7df73da7b1",
-//     "name": "group_2",
-//     "groupmembers": [
-//         "52aad006b984eb7df73da7b2",
-//         "52aad006b984eb7df73da7b3",
-//         "52aad006b984eb7df73da7b4",
-//         "52aad006b984eb7df73da7b5",
-//         "52aad006b984eb7df73da7b6",
-//         "52aad006b984eb7df73da7b7"
-//     ],
-//     "nodemembers": [
-//         "52aad005b984eb7df73da3d5",
-//         "52aad005b984eb7df73da3d3",
-//         "52aad005b984eb7df73da4ab",
-//         "52aad006b984eb7df73da762",
-//         "52aad005b984eb7df73da4fa"
-//     ]
-// }
-
         url: function () {
             var url = "/api/groups/";
             if (this.has("id")) {
@@ -56,7 +35,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         parse: function (response) {
             var result = _.clone(response);
             result.id = response._id;
-            delete result._id;
             return result;
         }
     });
@@ -182,7 +160,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             widget = new Views.GroupWidget({
-                collection: groups
+                collection: groups,
+                checked: this.model.get("memberof")
             });
             promise.done(function () {
                 that.memberof.show(widget);
@@ -208,7 +187,21 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         save: function (evt) {
             evt.preventDefault();
-            // TODO
+            var name, memberof;
+
+            name = this.$el.find("#name").val().trim();
+            if (name.length === 0) {
+                this.$el.find("#name").parent().addClass("has-error");
+                return;
+            }
+            this.$el.find("#name").parent().removeClass("has-error");
+            this.model.set("name", name);
+
+            memberof = this.memberof.$el.find("input[type=radio]:checked");
+            if (memberof.length > 0) {
+                this.model.set("memberof", memberof.val());
+            }
+
             this.model.save({
                 success: function () {
                     App.instances.router.navigate("", { trigger: true });
@@ -227,6 +220,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         unique: true,
         checked: undefined,
+
+        initialize: function (options) {
+            if (_.has(options, "unique")) {
+                this.unique = options.unique;
+            }
+            if (_.has(options, "checked")) {
+                this.checked = options.checked;
+            }
+        },
 
         ui: {
             "filter": "input.group-filter"
