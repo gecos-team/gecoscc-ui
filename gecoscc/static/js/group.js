@@ -94,6 +94,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         itemView: Views.GroupRow,
         itemViewContainer: "tbody",
 
+        events: {
+            "click button#add-group": "addGroup"
+        },
+
         onRender: function () {
             /* Table initialisation */
             var $table = this.$el.find("table");
@@ -128,6 +132,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     }
                 });
             }
+        },
+
+        addGroup: function (evt) {
+            evt.preventDefault();
+            // TODO
         }
     });
 
