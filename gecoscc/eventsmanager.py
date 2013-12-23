@@ -1,7 +1,5 @@
 import logging
 
-from copy import deepcopy
-
 from datetime import datetime
 
 from pyramid.security import authenticated_userid
