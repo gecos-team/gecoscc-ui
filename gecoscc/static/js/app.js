@@ -55,7 +55,7 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
-            "ou/:containerid/new": "newItem",
+            "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/user": "newUser",
             "ou/:containerid/user/:userid": "loadUser",
             "ou/:containerid/ou": "newOU",
@@ -70,7 +70,7 @@ var App;
                 App.main.show(view);
             },
 
-            newItem: function (containerid) {
+            newItemDashboard: function (containerid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/new",
                     text: "Nuevo elemento" // translation
@@ -101,7 +101,6 @@ var App;
                     url: "ou/" + containerid + "/user",
                     text: "Usuario" // translation
                 }]);
-
                 this._newItemHelper(App.User.Models.UserModel, App.User.Views.UserForm, containerid);
             },
 
@@ -110,46 +109,38 @@ var App;
                     url: "ou/",
                     text: "Unidad Organizativa" // translation
                 }]);
-
                 this._newItemHelper(App.OU.Models.OUModel, App.OU.Views.OUForm, containerid);
             },
 
-            loadUser: function (containerid, userid) {
-                var model = new App.User.Models.UserModel({ id: userid }),
-                    view = new App.User.Views.UserForm({ model: model });
+            _loadItemHelper: function (Model, View, id) {
+                var model = new Model({ id: id }),
+                    view = new View({ model: model });
 
                 App.main.show(App.instances.loaderView); // Render the loader indicator
+                // TODO select node in tree
+
+                model
+                    .off("change")
+                    .on("change", function () {
+                        App.main.show(view);
+                    });
+                model.fetch();
+            },
+
+            loadUser: function (containerid, userid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user/" + userid,
                     text: "Usuario" // translation
                 }]);
-                // TODO select node in tree
-
-                model
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
-                model.fetch();
+                this._loadItemHelper(App.User.Models.UserModel, App.User.Views.UserForm, userid);
             },
 
             loadOU: function (containerid, ouid) {
-                var model = new App.OU.Models.OUModel({ id: ouid }),
-                    view = new App.OU.Views.OUForm({ model: model });
-
-                App.main.show(App.instances.loaderView); // Render the loader indicator
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/ou" + ouid,
                     text: "Unidad Organizativa" // translation
                 }]);
-                // TODO select node in tree
-
-                model
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
-                model.fetch();
+                this._loadItemHelper(App.OU.Models.OUModel, App.OU.Views.OUForm, ouid);
             }
         }
     });

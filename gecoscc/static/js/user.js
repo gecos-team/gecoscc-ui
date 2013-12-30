@@ -122,7 +122,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.validate()) {
                 $button.tooltip({
                     html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> Guardando..." // TODO translate
+                    title: "<span class='fa fa-spin fa-spinner'></span> Guardando..." // translate
                 });
                 $button.tooltip("show");
                 this.model.set({
@@ -140,7 +140,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $button.tooltip("destroy");
                     $button.tooltip({
                         html: true,
-                        title: "<span class='fa fa-check'></span> Terminado" // TODO translate
+                        title: "<span class='fa fa-check'></span> Terminado" // translate
                     });
                     $button.tooltip("show");
                     setTimeout(function () {
