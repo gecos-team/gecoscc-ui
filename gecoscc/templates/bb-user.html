@@ -1,4 +1,4 @@
-<div id="<%= id %>" class="panel panel-default">
+<div id="<% if (typeof id !== 'undefined') { print(id); } %>" class="panel panel-default">
     <div class="panel-heading">
         <div class="text-muted bootstrap-admin-box-title">Usuario</div>
     </div>
@@ -53,7 +53,9 @@
             <div class="row"><div class="col-sm-12">
                 <a href="/" class="btn btn-default">Cancelar</a>
                 <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
-                <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                <% if (typeof id !== "undefined") { %>
+                    <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                <% } %>
             </div></div>
         </form>
     </div>

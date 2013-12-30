@@ -30,6 +30,7 @@ var App;
     var Router,
         HomeView,
         NewElementView,
+        LoaderView,
         numericRegex,
         emailRegex,
         ipRegex,
@@ -79,52 +80,51 @@ var App;
                 App.main.show(App.instances.newElementView);
             },
 
-            newUser: function (containerid) {
-                var model = new App.User.Models.UserModel({
-                        id: "NEWNODE" + Math.random(),
-                        name: "new user"
-                    }),
-                    view = new App.User.Views.UserForm({ model: model }),
+            _newItemHelper: function (Model, View, containerid) {
+                var model = new Model({}),
+                    view = new View({ model: model }),
                     parent,
                     path;
 
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/user",
-                    text: "Usuario" // translation
-                }]);
-
+                App.main.show(App.instances.loaderView); // Render the loader indicator
                 parent = App.instances.tree.get("tree").first(function (n) {
                     return n.model.id === containerid;
                 });
                 path = parent.model.path + ',' + parent.model.id;
                 model.set("path", path);
-                App.instances.tree.addNode(containerid, {
-                    id: model.get("id"),
-                    type: "user",
-                    loaded: false,
-                    name: model.get("name"),
-                    children: []
-                });
 
-                model
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
                 App.main.show(view);
             },
 
+            newUser: function (containerid) {
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/user",
+                    text: "Usuario" // translation
+                }]);
+
+                this._newItemHelper(App.User.Models.UserModel, App.User.Views.UserForm, containerid);
+            },
+
+            newOU: function (containerid) {
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/",
+                    text: "Unidad Organizativa" // translation
+                }]);
+
+                this._newItemHelper(App.OU.Models.OUModel, App.OU.Views.OUForm, containerid);
+            },
+
             loadUser: function (containerid, userid) {
-                var model = new App.User.Models.UserModel(),
+                var model = new App.User.Models.UserModel({ id: userid }),
                     view = new App.User.Views.UserForm({ model: model });
 
+                App.main.show(App.instances.loaderView); // Render the loader indicator
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user/" + userid,
                     text: "Usuario" // translation
                 }]);
                 // TODO select node in tree
-                App.main.show(view); // Render the loader indicator
-                model.set("id", userid); // Add an ID after rendering the loader
+
                 model
                     .off("change")
                     .on("change", function () {
@@ -133,52 +133,17 @@ var App;
                 model.fetch();
             },
 
-            newOU: function (containerid) {
-                var model = new App.OU.Models.OUModel({
-                        id: "NEWNODE" + Math.random(),
-                        name: "new ou"
-                    }),
-                    view = new App.OU.Views.OUForm({ model: model }),
-                    parent,
-                    path;
-
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/",
-                    text: "Unidad Organizativa" // translation
-                }]);
-
-                parent = App.instances.tree.get("tree").first(function (n) {
-                    return n.model.id === containerid;
-                });
-                path = parent.model.path + ',' + parent.model.id;
-                model.set("path", path);
-                App.instances.tree.addNode(containerid, {
-                    id: model.get("id"),
-                    type: "ou",
-                    loaded: false,
-                    name: model.get("name"),
-                    children: []
-                });
-
-                model
-                    .off("change")
-                    .on("change", function () {
-                        App.main.show(view);
-                    });
-                App.main.show(view);
-            },
-
             loadOU: function (containerid, ouid) {
-                var model = new App.OU.Models.OUModel(),
+                var model = new App.OU.Models.OUModel({ id: ouid }),
                     view = new App.OU.Views.OUForm({ model: model });
 
+                App.main.show(App.instances.loaderView); // Render the loader indicator
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/ou" + ouid,
                     text: "Unidad Organizativa" // translation
                 }]);
                 // TODO select node in tree
-                App.main.show(view); // Render the loader indicator
-                model.set("id", ouid); // Add an ID after rendering the loader
+
                 model
                     .off("change")
                     .on("change", function () {
@@ -231,14 +196,6 @@ var App;
     };
 
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
-        getTemplate: function () {
-            if (this.model.isNew()) {
-                return "#loader-template";
-            }
-            return this.template;
-
-        },
-
         validate: function (evt) {
             var valid = true,
                 $elems;
@@ -303,6 +260,16 @@ var App;
     });
 
     App.instances.newElementView = new NewElementView();
+
+    LoaderView = Backbone.Marionette.ItemView.extend({
+        template: "#loader-template",
+
+        serializeData: function () {
+            return {}; // This view needs no model
+        }
+    });
+
+    App.instances.loaderView = new LoaderView();
 
     App.on('initialize:after', function () {
         var path = window.location.hash.substring(1);
