@@ -14,26 +14,32 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-6 col-xs-12">
-            <label>Grupos hijos</label>
-            <ul>
-            <% _.each(groupmembers, function (g) { %>
-                <li><a href="#group/<%= g %>"><%= g %></a></li>
-            <% }); %>
-            </ul>
-        </div>
-        <div class="col-sm-6 col-xs-12">
-            <label>Nodos pertenecientes al grupo</label>
-            <ul>
-            <% _.each(nodemembers, function (n) { %>
-                <li><%= n %></li>
-            <% }); %>
-            </ul>
-        </div>
+        <% if (groupmembers.length > 0) { %>
+            <div class="col-sm-6 col-xs-12">
+                <label>Grupos hijos</label>
+                <ul>
+                <% _.each(groupmembers, function (g) { %>
+                    <li><a href="#group/<%= g %>"><%= g %></a></li>
+                <% }); %>
+                </ul>
+            </div>
+        <% } %>
+        <% if (nodemembers.length > 0) { %>
+            <div class="col-sm-6 col-xs-12">
+                <label>Nodos pertenecientes al grupo</label>
+                <ul>
+                <% _.each(nodemembers, function (n) { %>
+                    <li><%= n %></li>
+                <% }); %>
+                </ul>
+            </div>
+        <% } %>
     </div>
     <div class="row"><div class="col-sm-12">
         <button class="btn btn-primary" type="submit" id="save">Guardar</button>
         <button class="btn btn-default" id="goback">Cancelar</button>
-        <button class="btn btn-danger pull-right" id="delete">Borrar</button>
+        <% if (typeof id !== "undefined") { %>
+            <button class="btn btn-danger pull-right" id="delete">Borrar</button>
+        <% } %>
     </div></div>
 </form>

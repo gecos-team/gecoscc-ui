@@ -24,6 +24,12 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.Group = Backbone.Model.extend({
+        defaults: {
+            name: "",
+            groupmembers: [],
+            nodemembers: []
+        },
+
         url: function () {
             var url = "/api/groups/";
             if (this.has("id")) {
@@ -136,7 +142,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         addGroup: function (evt) {
             evt.preventDefault();
-            // TODO
+            App.instances.router.navigate("group", { trigger: true });
         }
     });
 

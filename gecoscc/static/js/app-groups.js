@@ -50,6 +50,7 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadTable",
+            "group": "newGroup",
             "group/:gid": "editGroup"
         },
 
@@ -70,6 +71,13 @@ var App;
                         App.main.show(view);
                     }
                 });
+            },
+
+            newGroup: function () {
+                var group = new App.Group.Models.Group(),
+                    view = new App.Group.Views.GroupForm({ model: group });
+
+                App.main.show(view);
             },
 
             editGroup: function (gid) {
