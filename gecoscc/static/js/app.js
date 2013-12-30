@@ -54,6 +54,7 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
+            "ou/:containerid/new": "newItem",
             "ou/:containerid/user": "newUser",
             "ou/:containerid/user/:userid": "loadUser",
             "ou/:containerid/ou": "newOU",
@@ -66,6 +67,16 @@ var App;
                 App.instances.breadcrumb.setSteps([]);
                 App.tree.$el.find(".tree-selected").removeClass("tree-selected");
                 App.main.show(view);
+            },
+
+            newItem: function (containerid) {
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/new",
+                    text: "Nuevo elemento" // translation
+                }]);
+
+                App.instances.newElementView.containerId = containerid;
+                App.main.show(App.instances.newElementView);
             },
 
             newUser: function (containerid) {
@@ -284,11 +295,14 @@ var App;
         template: "#new-element-template",
 
         serializeData: function () {
-            return {}; // This view needs no model
+            // This view needs no model
+            return {
+                ouID: this.containerId
+            };
         }
     });
 
-    App.instances.newElement = new NewElementView();
+    App.instances.newElementView = new NewElementView();
 
     App.on('initialize:after', function () {
         var path = window.location.hash.substring(1);

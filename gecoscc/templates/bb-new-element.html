@@ -6,26 +6,26 @@
         <div class="bootstrap-admin-panel-content" id="new-element-view">
             <div class="row bootstrap-admin-light-padding-bottom">
                 <div class="col-xs-12 col-sm-6">
-                    <a href="/users/" class="thumbnail">
+                    <a id="new-user" href="#ou/<%= ouID %>/user" class="thumbnail">
                         <span class="fa fa-user"></span>
                         <p>Usuarios</p>
                     </a>
                 </div>
                 <div class="col-xs-12 col-sm-6">
-                    <a href="/ous/" class="thumbnail">
+                    <a id="new-ou" href="#ou/<%= ouID %>/ou" class="thumbnail">
                         <span class="fa fa-group"></span>
                         <p>Unidad Organizativa</p>
                     </a>
                 </div>
             </div>
             <div class="row bootstrap-admin-light-padding-bottom">
-                <div class="col-xs-12 col-sm-6">
+                <div id="new-computer" class="col-xs-12 col-sm-6">
                     <a href="/computers/" class="thumbnail">
                         <span class="fa fa-desktop"></span>
                         <p>Puestos de Trabajo</p>
                     </a>
                 </div>
-                <div class="col-xs-12 col-sm-6">
+                <div id="new-printer" class="col-xs-12 col-sm-6">
                     <a href="/printers/" class="thumbnail">
                         <span class="fa fa-print"></span>
                         <p>Impresoras</p>

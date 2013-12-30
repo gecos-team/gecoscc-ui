@@ -354,7 +354,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 evt.preventDefault();
                 var id = $el.parents(".tree-folder").first().attr("id");
                 $el.popover("destroy");
-                that.showNewItemModal(id);
+                App.instances.router.navigate("ou/" + id + "/new", {
+                    trigger: true
+                });
             });
 
             $el.parent().find(".popover button.btn.delete").click(function (evt) {
@@ -399,38 +401,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     trigger: true
                 });
             }
-        },
-
-        showNewItemModal: function (containerId) {
-            var that = this;
-
-            if (!this.newItemModal) {
-                this.newItemModal = $("#new-item-modal").modal({
-                    show: false
-                });
-            }
-
-            this.newItemModal.find("button.btn-primary")
-                .off("click")
-                .on("click", function (evt) {
-                    evt.preventDefault();
-                    var item = that.newItemModal.find("input[type=radio]:checked").val(),
-                        model;
-
-                    that.newItemModal.modal("hide");
-
-                    if (item === "user") {
-                        App.instances.router.navigate("ou/" + containerId + "/user", {
-                            trigger: true
-                        });
-                    } else if (item === "ou") {
-                        App.instances.router.navigate("ou/" + containerId + "/ou", {
-                            trigger: true
-                        });
-                    }
-                });
-
-            this.newItemModal.modal("show");
         }
     });
 });

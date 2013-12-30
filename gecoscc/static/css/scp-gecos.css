@@ -156,6 +156,31 @@ footer {
     }
 }
 
+/* NEW ELEMENT VIEW */
+
+#new-element-view a.thumbnail {
+    text-align: center;
+    color: white;
+    background-color: #666;
+    padding-top: 20px;
+}
+
+#new-element-view a.thumbnail:hover {
+    text-decoration: none;
+    border-color: #666;
+    -moz-box-shadow: 0 0 2px 2px #666;
+    -webkit-box-shadow: 0 0 2px 2px #666;
+    box-shadow: 0 0 2px 2px #666;
+}
+
+#new-element-view a.thumbnail span {
+    font-size: 130px;
+}
+
+#new-element-view a.thumbnail p {
+    font-size: 25px;
+}
+
 /* OU VIEW */
 
 #policies-table tr td:last-child {
@@ -186,6 +211,8 @@ ul#new-policies li a {
     position: relative;
     top: -8px;
 }
+
+/* GROUP VIEWS */
 
 #groups.container {
     padding-bottom: 30px;
