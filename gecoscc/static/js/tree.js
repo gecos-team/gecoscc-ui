@@ -190,7 +190,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
             '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
-            '        <span class="fa fa-group"></span>\n' +
+            '<span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %> ' +
             '<span class="extra-opts fa fa-caret-down"></span></div>\n' +
             '    </div>\n' +
@@ -198,25 +198,30 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
         treeContainerPost =
             '    </div>\n' +
-            '</div>',
+            '</div>\n',
         treeItem =
-            '<div class="tree-item" style="display: block;" id="<%= id %>">' +
-            '    <span class="fa fa-<%= icon %>"></span>' +
-            '    <div class="tree-item-name"><%= name %></div>' +
-            '</div>',
+            '<div class="tree-item" style="display: block;" id="<%= id %>">\n' +
+            '    <span class="fa fa-<%= icon %>"></span>\n' +
+            '    <div class="tree-item-name"><%= name %></div>\n' +
+            '</div>\n',
         extraOpts =
-            '<p><button class="add btn btn-primary">' +
-            '    <span class="fa fa-plus"></span> Añadir nuevo' +
-            '</button></p>' +
-            '<p><button class="delete btn btn-danger">' +
-            '    <span class="fa fa-times"></span> Borrar' +
-            '</button></p>';
+            '<div class="tree-extra-options">\n' +
+            '    <ul class="nav nav-pills nav-stacked">\n' +
+            '        <li><a href="#ou/<%= ouId %>/new">\n' +
+            '            <span class="fa fa-plus"></span> Añadir nuevo\n' +
+            '        </a></li>\n' +
+            '        <li><a href="#" class="text-danger">\n' +
+            '            <span class="fa fa-times"></span> Borrar\n' +
+            '        </a></li>\n' +
+            '    </ul>\n' +
+            '</div>\n';
 
     Views.NavigationTree = Marionette.ItemView.extend({
         templates: {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
-            item: _.template(treeItem)
+            item: _.template(treeItem),
+            extraOpts: _.template(extraOpts)
         },
 
         iconClasses: {
@@ -340,33 +345,20 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         containerExtraOptions: function (evt) {
             evt.preventDefault();
             var $el = $(evt.target),
+                ouId = $el.parents(".tree-folder").first().attr("id"),
+                $html = $(this.templates.extraOpts({ ouId: ouId })),
                 that = this;
 
             this.closeExtraOptions();
-            $el.popover({
-                html: true,
-                placement: "bottom",
-                content: extraOpts
-            });
-            $el.popover("show");
+            $html.insertAfter($el.parents(".tree-folder-header").first());
 
-            $el.parent().find(".popover button.btn.add").click(function (evt) {
-                evt.preventDefault();
-                var id = $el.parents(".tree-folder").first().attr("id");
-                $el.popover("destroy");
-                App.instances.router.navigate("ou/" + id + "/new", {
-                    trigger: true
-                });
-            });
-
-            $el.parent().find(".popover button.btn.delete").click(function (evt) {
+            $html.find("a.text-danger").click(function (evt) {
                 evt.preventDefault();
                 GecosUtils.confirmModal.find("button.btn-danger")
                     .off("click")
                     .on("click", function (evt) {
                         evt.preventDefault();
-                        var id = $el.parents(".tree-folder").first().attr("id"),
-                            model = new App.OU.Models.OUModel({ id: id });
+                        var model = new App.OU.Models.OUModel({ id: ouId });
                         model.destroy({
                             success: function () {
                                 App.instances.tree.reloadTree();
@@ -379,7 +371,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         closeExtraOptions: function () {
-            App.tree.$el.find(".tree-folder-name .extra-opts").popover("destroy");
+            App.tree.$el.find(".tree-extra-options").remove();
         },
 
         selectItem: function (evt) {

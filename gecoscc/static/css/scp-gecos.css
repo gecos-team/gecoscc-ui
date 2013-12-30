@@ -45,6 +45,8 @@ footer {
     }
 }
 
+/* NAVIGATION TREE */
+
 #nav-tree {
     height: 70%;
     overflow-y: hidden;
@@ -62,6 +64,16 @@ footer {
     min-width: 275px;
     min-height: 300px;
 }
+
+#nav-tree .tree-extra-options ul.nav {
+    margin-left: 35px;
+}
+
+#nav-tree .tree-extra-options ul.nav li a {
+    padding: 0 0 0 5px;
+}
+
+/* EVENTS */
 
 #events {
     height: 30%;
@@ -125,6 +137,8 @@ footer {
     position: relative;
     top: 3px;
 }
+
+/* MAIN AREA */
 
 #viewport-main {
     padding-bottom: 20px;
