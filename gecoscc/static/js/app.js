@@ -117,7 +117,7 @@ var App;
                     view = new View({ model: model });
 
                 App.main.show(App.instances.loaderView); // Render the loader indicator
-                // TODO select node in tree
+                App.tree.currentView.selectItemById(id);
 
                 model
                     .off("change")

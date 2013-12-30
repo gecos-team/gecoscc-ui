@@ -1,5 +1,5 @@
 /*jslint browser: true, unparam: true, nomen: true, vars: false */
-/*global App */
+/*global App, GecosUtils */
 
 // Copyright 2013 Junta de Andalucia
 //

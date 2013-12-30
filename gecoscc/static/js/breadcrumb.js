@@ -27,7 +27,7 @@ App.module("Breadcrumb", function (Breadcrumb, App, Backbone, Marionette, $, _) 
         defaults: {
             steps: [{
                 url: "",
-                text: "Inicio" // TODO translate
+                text: "Inicio" // translate
             }]
         },
 

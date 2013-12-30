@@ -296,7 +296,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.closeExtraOptions();
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
-            parentId = $container.parents(".tree-folder").first().attr("id"),
+            parentId = $container.parents(".tree-folder").first().attr("id");
 
             this.$el.find(".tree-selected").removeClass("tree-selected");
             $container.find(".tree-folder-header").first().addClass("tree-selected");
@@ -346,8 +346,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
-                $html = $(this.templates.extraOpts({ ouId: ouId })),
-                that = this;
+                $html = $(this.templates.extraOpts({ ouId: ouId }));
 
             this.closeExtraOptions();
             $html.insertAfter($el.parents(".tree-folder-header").first());
@@ -392,6 +391,26 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.instances.router.navigate("ou/" + containerId + "/user/" + id, {
                     trigger: true
                 });
+            }
+        },
+
+        selectItemById: function (id) {
+            var $item = this.$el.find('#' + id),
+                that = this,
+                highlight = function ($item) {
+                    that.$el.find(".tree-selected").removeClass("tree-selected");
+                    if ($item.is(".tree-folder")) {
+                        // Is a container
+                        $item.find(".tree-folder-header").first().addClass("tree-selected");
+                    } else {
+                        $item.addClass("tree-selected");
+                    }
+                };
+
+            if ($item.length > 0) {
+                highlight($item);
+            } else {
+                // TODO need to load more tree
             }
         }
     });
