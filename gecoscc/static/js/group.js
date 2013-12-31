@@ -110,7 +110,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             if ($table.find("tr").length > 0) {
                 $table.dataTable({
-                    sDom: "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-8'i><'col-md-4'p>>",
+                    sDom: "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-7'i><'col-md-5'p>>",
                     sPaginationType: "bootstrap",
                     oLanguage: {
                         sLengthMenu: "_MENU_ registros por página",
