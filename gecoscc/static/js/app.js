@@ -117,14 +117,34 @@ var App;
                     view = new View({ model: model });
 
                 App.main.show(App.instances.loaderView); // Render the loader indicator
-                App.tree.currentView.selectItemById(id);
-
                 model
                     .off("change")
                     .on("change", function () {
                         App.main.show(view);
                     });
-                model.fetch();
+
+                model.fetch().done(function () {
+                    // Item loaded, now we need to update the tree
+                    var node = App.instances.tree.get("tree").first(function (n) {
+                            return n.model.id === id;
+                        }),
+                        promise = $.Deferred();
+                    if (node) {
+                        promise.resolve();
+                    } else {
+                        $.ajax("/api/nodes/?maxdepth=1&path=" + model.get("path"), {
+                            success: function (response) {
+                                var treeModel = new App.Tree.Models.TreeModel();
+                                treeModel.initTree(response);
+                                App.instances.tree.mergeTrees(treeModel.get("tree"));
+                                promise.resolve(); // TODO wait to render
+                            }
+                        });
+                    }
+                    promise.done(function () {
+                        App.tree.currentView.selectItemById(id);
+                    });
+                });
             },
 
             loadUser: function (containerid, userid) {

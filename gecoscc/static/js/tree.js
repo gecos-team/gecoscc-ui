@@ -27,16 +27,16 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     "use strict";
 
     App.addInitializer(function () {
+        var treeView;
+
         App.instances.tree = new Tree.Models.TreeModel();
-        $.ajax("/api/nodes/?maxdepth=1", {
-            success: function (response) {
-                App.instances.tree.initTree(response);
-            }
-        });
-        var treeView = new Tree.Views.NavigationTree({
+        App.instances.tree.reloadTree();
+
+        treeView = new Tree.Views.NavigationTree({
             model: App.instances.tree
         });
         App.tree.show(treeView);
+
         App.instances.tree.on("change", function () {
             App.tree.show(treeView);
         });
@@ -179,6 +179,38 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             });
             parent.addChild(node);
             this.trigger("change");
+        },
+
+        mergeTrees: function (newTree) {
+            var current = this.get("tree"),
+                that = this;
+
+            newTree.walk(function (node) {
+                var aux;
+                if (node.model.path === "root") { return; }
+
+                aux = _.find(current.children, function (n) {
+                    return n.model.id === node.model.id;
+                });
+                if (!aux) {
+                    // The node is not present, we need to add it
+                    aux = _.clone(node.model);
+                    aux = that.parser.parse(aux);
+                    current.addChild(aux);
+                    current.walk(function (item) {
+                        if (item.model.type === "ou") {
+                            // TODO improve this
+                            item.model.closed = false; // Open all containers
+                        }
+                    });
+                    return false; // No need to go deeper
+                }
+                current = aux;
+                current.model.closed = false;
+                return;
+            });
+
+            this.trigger("change");
         }
     });
 });
@@ -260,7 +292,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 html;
 
             if (json.type === "ou") {
-                if (!(node.loaded && node.children.length > 0)) {
+                if (node.children.length === 0) {
                     json.closed = true;
                 }
                 json.controlIcon = json.closed ? "plus" : "minus";
@@ -398,22 +430,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         selectItemById: function (id) {
-            var $item = this.$el.find('#' + id),
-                that = this,
-                highlight = function ($item) {
-                    that.$el.find(".tree-selected").removeClass("tree-selected");
-                    if ($item.is(".tree-folder")) {
-                        // Is a container
-                        $item.find(".tree-folder-header").first().addClass("tree-selected");
-                    } else {
-                        $item.addClass("tree-selected");
-                    }
-                };
+            var $item = this.$el.find('#' + id);
 
-            if ($item.length > 0) {
-                highlight($item);
+            this.$el.find(".tree-selected").removeClass("tree-selected");
+            if ($item.is(".tree-folder")) {
+                // Is a container
+                $item.find(".tree-folder-header").first().addClass("tree-selected");
             } else {
-                // TODO need to load more tree
+                $item.addClass("tree-selected");
             }
         }
     });
