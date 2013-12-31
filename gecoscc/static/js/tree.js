@@ -192,7 +192,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
             '<span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %> ' +
-            '<span class="extra-opts fa fa-caret-down"></span></div>\n' +
+            '<span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '    </div>\n' +
             '    <div class="tree-folder-content" ' +
             '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
@@ -349,6 +349,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $html = $(this.templates.extraOpts({ ouId: ouId }));
 
             this.closeExtraOptions();
+            $el.removeClass("fa-caret-right").addClass("fa-caret-down");
             $html.insertAfter($el.parents(".tree-folder-header").first());
 
             $html.find("a.text-danger").click(function (evt) {
@@ -370,7 +371,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         closeExtraOptions: function () {
-            App.tree.$el.find(".tree-extra-options").remove();
+            App.tree.$el
+                .find(".tree-extra-options").remove().end()
+                .find(".extra-opts.fa-caret-down").removeClass("fa-caret-down").addClass("fa-caret-right");
         },
 
         selectItem: function (evt) {
