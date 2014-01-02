@@ -133,14 +133,11 @@ var App;
                     if (node && node.model.loaded) {
                         promise.resolve();
                     } else {
-                        $.ajax("/api/nodes/?maxdepth=0&path=" + model.get("path"), {
-                            success: function (response) {
-                                var treeModel = new App.Tree.Models.TreeModel();
-                                treeModel.initTree(response);
-                                App.instances.tree.addTree(treeModel.get("tree"));
-                                promise.resolve(); // TODO wait to render
-                            }
-                        });
+                        promise = App.instances.tree.loadFromNode(
+                            model.get("path"),
+                            model.get("id"),
+                            true
+                        );
                     }
                     promise.done(function () {
                         App.tree.currentView.selectItemById(id);

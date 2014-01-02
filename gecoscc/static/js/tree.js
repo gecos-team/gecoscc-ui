@@ -138,34 +138,16 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return {};
         },
 
-        loadFromNode: function (node) { // TODO TO DELETE
-            var url = "/api/nodes/?maxdepth=1&path=",
+        loadFromNode: function (nodePath, nodeId, loadHimself) {
+            var url = "/api/nodes/?maxdepth=1&path=" + nodePath,
                 that = this;
-            url += node.model.path + "," + node.model.id;
-            $.ajax(url, {
+
+            if (!loadHimself) { url += ',' + nodeId; }
+            return $.ajax(url, {
                 success: function (response) {
-                    var root = _.pick(node.parent.model, "id", "name", "type"),
-                        newNode;
-
-                    // Prepare the parsing operation, need to provide an
-                    // adecuate root where put the new nodes
-                    root.path = node.model.path;
-                    root.children = [];
-                    newNode = that.parseTree(root, response.nodes);
-                    // Look for our reference node
-                    newNode = newNode.first(function (n) {
-                        return n.model.id === node.model.id;
-                    });
-
-                    if (newNode && newNode.children) {
-                        // Add the children to the tree, they are the new data
-                        _.each(newNode.children, function (n) {
-                            node.addChild(n);
-                        });
-                    }
-                    // else empty! TODO add message as child
-
-                    that.trigger("change");
+                    var treeModel = new Models.TreeModel();
+                    treeModel.initTree(response);
+                    that.addTree(treeModel.get("tree"));
                 }
             });
         },
@@ -394,7 +376,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             node.model.closed = false;
             if (!(node.model.loaded && node.children.length > 0)) {
                 $content.html(this.loader());
-                this.model.loadFromNode(node);
+                this.model.loadFromNode(node.model.path, node.model.id);
             }
         },
 
