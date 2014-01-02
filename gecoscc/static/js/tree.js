@@ -384,9 +384,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
-                $html = $(this.templates.extraOpts({ ouId: ouId }));
+                $html = $(this.templates.extraOpts({ ouId: ouId })),
+                closing = $el.is(".fa-caret-down");
 
             this.closeExtraOptions();
+            if (closing) { return; }
             $el.removeClass("fa-caret-right").addClass("fa-caret-down");
             $html.insertAfter($el.parents(".tree-folder-header").first());
 
