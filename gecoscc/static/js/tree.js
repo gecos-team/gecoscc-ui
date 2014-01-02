@@ -59,6 +59,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     children: []
                 },
                 parsed;
+
             parsed = this.parseTree(preprocessed, data.nodes);
             _.each(parsed.children, function (n) {
                 if (n.model.type === "ou") {
@@ -79,15 +80,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         parseTree: function (root, data) {
             _.each(data, function (node) {
-                var newnode = _.clone(node),
+                var newNode = _.clone(node),
                     path = node.path.split(','),
                     aux;
 
-                newnode.id = newnode._id;
-                delete newnode._id;
-                newnode.loaded = true;
-                if (newnode.type === "ou") {
-                    newnode.closed = true; // All container nodes start closed
+                newNode.id = newNode._id;
+                delete newNode._id;
+                newNode.loaded = true;
+                if (newNode.type === "ou") {
+                    newNode.closed = true; // All container nodes start closed
                 }
 
                 aux = root.children;
@@ -112,17 +113,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     aux = obj.children;
                 });
 
-                // We have arrived to the parent of the newnode (aux),
-                // newnode may be already present if it was created as a
+                // We have arrived to the parent of the newNode (aux),
+                // newNode may be already present if it was created as a
                 // container
                 node = _.find(aux, function (obj) {
-                    return obj.id === newnode.id;
+                    return obj.id === newNode.id;
                 });
                 if (node) {
-                    _.defaults(node, newnode);
+                    _.defaults(node, newNode);
                 } else {
-                    newnode.children = [];
-                    aux.push(newnode);
+                    newNode.children = [];
+                    aux.push(newNode);
                 }
             });
 
@@ -137,28 +138,28 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return {};
         },
 
-        loadFromNode: function (node) {
+        loadFromNode: function (node) { // TODO TO DELETE
             var url = "/api/nodes/?maxdepth=1&path=",
                 that = this;
             url += node.model.path + "," + node.model.id;
             $.ajax(url, {
                 success: function (response) {
                     var root = _.pick(node.parent.model, "id", "name", "type"),
-                        newnode;
+                        newNode;
 
                     // Prepare the parsing operation, need to provide an
                     // adecuate root where put the new nodes
                     root.path = node.model.path;
                     root.children = [];
-                    newnode = that.parseTree(root, response.nodes);
+                    newNode = that.parseTree(root, response.nodes);
                     // Look for our reference node
-                    newnode = newnode.first(function (n) {
+                    newNode = newNode.first(function (n) {
                         return n.model.id === node.model.id;
                     });
 
-                    if (newnode && newnode.children) {
+                    if (newNode && newNode.children) {
                         // Add the children to the tree, they are the new data
-                        _.each(newnode.children, function (n) {
+                        _.each(newNode.children, function (n) {
                             node.addChild(n);
                         });
                     }
@@ -181,36 +182,54 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             this.trigger("change");
         },
 
-        mergeTrees: function (newTree) {
-            var current = this.get("tree"),
-                that = this;
+        addTree: function (root) {
+            var tree = this.get("tree"),
+                that = this,
+                findNode,
+                newNode;
 
-            newTree.walk(function (node) {
-                var aux;
-                if (node.model.path === "root") { return; }
-
-                aux = _.find(current.children, function (n) {
-                    return n.model.id === node.model.id;
+            findNode = function (root, id) {
+                return root.first({ strategy: 'breadth' }, function (node) {
+                    return node.model.id === id;
                 });
-                if (!aux) {
-                    // The node is not present, we need to add it
-                    aux = _.clone(node.model);
-                    aux = that.parser.parse(aux);
-                    current.addChild(aux);
-                    current.walk(function (item) {
-                        if (item.model.type === "ou") {
-                            // TODO improve this
-                            item.model.closed = false; // Open all containers
-                        }
-                    });
-                    return false; // No need to go deeper
+            };
+
+            root.walk({ strategy: 'breadth' }, function (node) {
+                if (node.model.path === 'root') { return; }
+
+                var reference = findNode(tree, node.model.id),
+                    model = _.clone(node.model);
+
+                delete model.children;
+
+                if (reference && !reference.model.loaded && node.model.loaded) {
+                    // The node already exists, load the data in it
+                    model.children = reference.model.children;
+                    reference.model = model;
+                } else if (!reference) {
+                    // We need to add a new node, let's find the parent
+                    reference = findNode(tree, node.parent.model.id);
+                    if (reference) { // This should always eval to true
+                        model.children = [];
+                        newNode = that.parser.parse(model);
+                        reference.addChild(newNode);
+                    }
                 }
-                current = aux;
-                current.model.closed = false;
-                return;
             });
 
             this.trigger("change");
+        },
+
+        openAllContainersFrom: function (id) {
+            var node = this.get("tree").first(function (n) {
+                    return n.model.id === id;
+                });
+
+            if (!node) { return; }
+            while (node.parent) {
+                node.parent.model.closed = false;
+                node = node.parent;
+            }
         }
     });
 });
@@ -430,8 +449,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         selectItemById: function (id) {
-            var $item = this.$el.find('#' + id);
+            var $item;
 
+            this.model.openAllContainersFrom(id);
+            this.render();
+
+            $item = this.$el.find('#' + id);
             this.$el.find(".tree-selected").removeClass("tree-selected");
             if ($item.is(".tree-folder")) {
                 // Is a container

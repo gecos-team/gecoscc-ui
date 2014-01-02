@@ -129,14 +129,15 @@ var App;
                             return n.model.id === id;
                         }),
                         promise = $.Deferred();
+
                     if (node) {
                         promise.resolve();
                     } else {
-                        $.ajax("/api/nodes/?maxdepth=1&path=" + model.get("path"), {
+                        $.ajax("/api/nodes/?maxdepth=0&path=" + model.get("path"), {
                             success: function (response) {
                                 var treeModel = new App.Tree.Models.TreeModel();
                                 treeModel.initTree(response);
-                                App.instances.tree.mergeTrees(treeModel.get("tree"));
+                                App.instances.tree.addTree(treeModel.get("tree"));
                                 promise.resolve(); // TODO wait to render
                             }
                         });
