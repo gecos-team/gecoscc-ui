@@ -1,5 +1,5 @@
 /*jslint browser: true, unparam: true, nomen: true, vars: false */
-/*global App, GecosUtils */
+/*global App, GecosUtils, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -113,28 +113,28 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     sDom: "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-7'i><'col-md-5'p>>",
                     sPaginationType: "bootstrap",
                     oLanguage: {
-                        sLengthMenu: "_MENU_ registros por página",
                         oAria: {
-                            sSortAscending: ": activar para odernar ascendentemente la columna",
-                            sSortDescending: ": activar para odernar descendentemente la columna"
+                            sSortAscending: gettext(": activate to sort column ascending"),
+                            sSortDescending: gettext(": activate to sort column descending")
                         },
                         oPaginate: {
-                            sFirst: "Primero",
-                            sLast: "Último",
-                            sPrevious: "Anterior",
-                            sNext: "Siguiente"
+                            sFirst: gettext("First"),
+                            sLast: gettext("Last"),
+                            sPrevious: gettext("Next"),
+                            sNext: gettext("Previous")
                         },
-                        sEmptyTable: "No hay datos disponibles en la tabla",
-                        sInfo: "Mostrando de _START_ a _END_ de _TOTAL_ registros",
-                        sInfoEmpty: "Mostrando de 0 a 0 de 0 registros",
-                        sInfoFiltered: "(filtrados de un total de _MAX_ registros)",
-                        // sInfoPostFix: "All records shown are derived from real information.",
+                        sEmptyTable: gettext("No data available in table"),
+                        sInfo: gettext("Showing _START_ to _END_ of _TOTAL_ entries"),
+                        sInfoEmpty: gettext("Showing 0 to 0 of 0 entries"),
+                        sInfoFiltered: gettext("(filtered from _MAX_ total entries)"),
+                        // sInfoPostFix: gettext("All records shown are derived from real information."),
                         // sInfoThousands: ",",
-                        sLoadingRecords: "Cargando...",
-                        sProcessing: "Procesando...",
-                        sSearch: "Buscar:",
+                        sLengthMenu: gettext("Show _MENU_ entries"),
+                        sLoadingRecords: gettext("Loading..."),
+                        sProcessing: gettext("Processing..."),
+                        sSearch: gettext("Search:"),
                         // sUrl: "http://www.sprymedia.co.uk/dataTables/lang.txt",
-                        sZeroRecords: "Ningún registro que encaje encontrado"
+                        sZeroRecords: gettext("No matching records found")
                     }
                 });
             }
@@ -156,7 +156,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click button#delete": "deleteModel",
             "click button#save": "save",
-            "click button#goback": "go2table",
+            "click button#goback": "go2table"
         },
 
         onRender: function () {

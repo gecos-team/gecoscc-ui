@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, vars: false */
-/*global App: true, Backbone, jQuery, _ */
+/*global App: true, Backbone, jQuery, _, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -24,7 +24,7 @@
 // possible
 var App;
 
-(function (Backbone, $, _) {
+(function (Backbone, $, _, gettext) {
     "use strict";
 
     var Router,
@@ -66,14 +66,16 @@ var App;
             loadHome: function () {
                 var view = new HomeView();
                 App.instances.breadcrumb.setSteps([]);
-                App.tree.$el.find(".tree-selected").removeClass("tree-selected");
+                App.tree.$el
+                    .find(".tree-selected")
+                    .removeClass("tree-selected");
                 App.main.show(view);
             },
 
             newItemDashboard: function (containerid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/new",
-                    text: "Nuevo elemento" // translation
+                    text: gettext("New element")
                 }]);
 
                 App.instances.newElementView.containerId = containerid;
@@ -86,7 +88,8 @@ var App;
                     parent,
                     path;
 
-                App.main.show(App.instances.loaderView); // Render the loader indicator
+                // Render the loader indicator
+                App.main.show(App.instances.loaderView);
                 parent = App.instances.tree.get("tree").first(function (n) {
                     return n.model.id === containerid;
                 });
@@ -99,24 +102,33 @@ var App;
             newUser: function (containerid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user",
-                    text: "Usuario" // translation
+                    text: gettext("User")
                 }]);
-                this._newItemHelper(App.User.Models.UserModel, App.User.Views.UserForm, containerid);
+                this._newItemHelper(
+                    App.User.Models.UserModel,
+                    App.User.Views.UserForm,
+                    containerid
+                );
             },
 
             newOU: function (containerid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/",
-                    text: "Unidad Organizativa" // translation
+                    text: gettext("Organisational Unit")
                 }]);
-                this._newItemHelper(App.OU.Models.OUModel, App.OU.Views.OUForm, containerid);
+                this._newItemHelper(
+                    App.OU.Models.OUModel,
+                    App.OU.Views.OUForm,
+                    containerid
+                );
             },
 
             _loadItemHelper: function (Model, View, id) {
                 var model = new Model({ id: id }),
                     view = new View({ model: model });
 
-                App.main.show(App.instances.loaderView); // Render the loader indicator
+                // Render the loader indicator
+                App.main.show(App.instances.loaderView);
                 model
                     .off("change")
                     .on("change", function () {
@@ -148,17 +160,25 @@ var App;
             loadUser: function (containerid, userid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user/" + userid,
-                    text: "Usuario" // translation
+                    text: gettext("User")
                 }]);
-                this._loadItemHelper(App.User.Models.UserModel, App.User.Views.UserForm, userid);
+                this._loadItemHelper(
+                    App.User.Models.UserModel,
+                    App.User.Views.UserForm,
+                    userid
+                );
             },
 
             loadOU: function (containerid, ouid) {
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/ou" + ouid,
-                    text: "Unidad Organizativa" // translation
+                    text: gettext("Organisational Unit")
                 }]);
-                this._loadItemHelper(App.OU.Models.OUModel, App.OU.Views.OUForm, ouid);
+                this._loadItemHelper(
+                    App.OU.Models.OUModel,
+                    App.OU.Views.OUForm,
+                    ouid
+                );
             }
         }
     });
@@ -289,4 +309,4 @@ var App;
 
         App.instances.router.navigate(path, { trigger: true });
     });
-}(Backbone, jQuery, _));
+}(Backbone, jQuery, _, gettext));

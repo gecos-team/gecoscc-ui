@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false */
-/*global App:true, Backbone */
+/*global App:true, Backbone, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -22,7 +22,7 @@
 
 var App;
 
-(function (Backbone) {
+(function (Backbone, gettext) {
     "use strict";
     var Router,
         Loader;
@@ -40,7 +40,8 @@ var App;
     Loader = Backbone.Marionette.ItemView.extend({
         render: function () {
             this.$el.html('<p style="font-size: 3em;">' +
-                '<span class="fa fa-spin fa-spinner"></span> Loading...</p>');
+                '<span class="fa fa-spin fa-spinner"></span> ' +
+                gettext('Loading...') + '</p>');
             return this;
         }
     });
@@ -113,4 +114,4 @@ var App;
 
         App.instances.router.navigate(path, { trigger: true });
     });
-}(Backbone));
+}(Backbone, gettext));

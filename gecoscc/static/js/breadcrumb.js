@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global App */
+/*global App, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -27,7 +27,7 @@ App.module("Breadcrumb", function (Breadcrumb, App, Backbone, Marionette, $, _) 
         defaults: {
             steps: [{
                 url: "",
-                text: "Inicio" // translate
+                text: gettext("Home")
             }]
         },
 
