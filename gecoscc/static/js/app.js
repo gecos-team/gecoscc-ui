@@ -130,7 +130,7 @@ var App;
                         }),
                         promise = $.Deferred();
 
-                    if (node) {
+                    if (node && node.model.loaded) {
                         promise.resolve();
                     } else {
                         $.ajax("/api/nodes/?maxdepth=0&path=" + model.get("path"), {

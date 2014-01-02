@@ -185,8 +185,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         addTree: function (root) {
             var tree = this.get("tree"),
                 that = this,
-                findNode,
-                newNode;
+                findNode;
 
             findNode = function (root, id) {
                 return root.first({ strategy: 'breadth' }, function (node) {
@@ -198,14 +197,20 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 if (node.model.path === 'root') { return; }
 
                 var reference = findNode(tree, node.model.id),
-                    model = _.clone(node.model);
+                    model = _.clone(node.model),
+                    newNode,
+                    parent;
 
                 delete model.children;
 
                 if (reference && !reference.model.loaded && node.model.loaded) {
                     // The node already exists, load the data in it
                     model.children = reference.model.children;
-                    reference.model = model;
+                    model.closed = reference.model.closed;
+                    parent = reference.parent;
+                    reference.drop();
+                    newNode = that.parser.parse(model);
+                    parent.addChild(newNode);
                 } else if (!reference) {
                     // We need to add a new node, let's find the parent
                     reference = findNode(tree, node.parent.model.id);
