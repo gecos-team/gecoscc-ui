@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global $, App, TreeModel, GecosUtils */
+/*global $, App, TreeModel, GecosUtils, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -246,10 +246,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-extra-options">\n' +
             '    <ul class="nav nav-pills nav-stacked">\n' +
             '        <li><a href="#ou/<%= ouId %>/new">\n' +
-            '            <span class="fa fa-plus"></span> Añadir nuevo\n' +
+            '            <span class="fa fa-plus"></span> ' + gettext('Add new') + '\n' +
             '        </a></li>\n' +
             '        <li><a href="#" class="text-danger">\n' +
-            '            <span class="fa fa-times"></span> Borrar\n' +
+            '            <span class="fa fa-times"></span> ' + gettext('Borrar') + '\n' +
             '        </a></li>\n' +
             '    </ul>\n' +
             '</div>\n';
@@ -318,7 +318,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         loader: function (size) {
             size = size || 1;
             return "<p style='font-size: " + size + "em;'><span class='fa " +
-                "fa-spinner fa-spin'></span> Loading...</p>";
+                "fa-spinner fa-spin'></span> " + gettext("Loading") +
+                "...</p>";
         },
 
         selectContainer: function (evt) {

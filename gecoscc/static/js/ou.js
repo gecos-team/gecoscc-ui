@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global App, GecosUtils */
+/*global App, GecosUtils, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -101,7 +101,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.validate()) {
                 $button.tooltip({
                     html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> Saving..." // translate
+                    title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
                 });
                 $button.tooltip("show");
                 this.model.set({
@@ -113,7 +113,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $button.tooltip("destroy");
                     $button.tooltip({
                         html: true,
-                        title: "<span class='fa fa-check'></span> Done" // translate
+                        title: "<span class='fa fa-check'></span> " + gettext("Done")
                     });
                     $button.tooltip("show");
                     setTimeout(function () {
