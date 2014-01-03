@@ -124,8 +124,16 @@ var App;
             },
 
             _loadItemHelper: function (Model, View, id) {
-                var model = new Model({ id: id }),
-                    view = new View({ model: model });
+                var model, view, skipFetch;
+
+                model = App.instances.cache.get(id);
+                if (_.isUndefined(model)) {
+                    model = new Model({ id: id });
+                    App.instances.cache.set(id, model);
+                } else {
+                    skipFetch = true;
+                }
+                view = new View({ model: model });
 
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
@@ -135,26 +143,30 @@ var App;
                         App.main.show(view);
                     });
 
-                model.fetch().done(function () {
-                    // Item loaded, now we need to update the tree
-                    var node = App.instances.tree.get("tree").first(function (n) {
-                            return n.model.id === id;
-                        }),
-                        promise = $.Deferred();
+                if (skipFetch) {
+                    model.trigger("change");
+                } else {
+                    model.fetch().done(function () {
+                        // Item loaded, now we need to update the tree
+                        var node = App.instances.tree.get("tree").first(function (n) {
+                                return n.model.id === id;
+                            }),
+                            promise = $.Deferred();
 
-                    if (node && node.model.loaded) {
-                        promise.resolve();
-                    } else {
-                        promise = App.instances.tree.loadFromNode(
-                            model.get("path"),
-                            model.get("id"),
-                            true
-                        );
-                    }
-                    promise.done(function () {
-                        App.tree.currentView.selectItemById(id);
+                        if (node && node.model.loaded) {
+                            promise.resolve();
+                        } else {
+                            promise = App.instances.tree.loadFromNode(
+                                model.get("path"),
+                                model.get("id"),
+                                true
+                            );
+                        }
+                        promise.done(function () {
+                            App.tree.currentView.selectItemById(id);
+                        });
                     });
-                });
+                }
             },
 
             loadUser: function (containerid, userid) {

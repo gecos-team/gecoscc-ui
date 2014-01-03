@@ -100,7 +100,11 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 promise.resolve();
             } else {
                 groups = new App.Group.Models.GroupCollection();
-                promise = groups.fetch();
+                promise = groups.fetch({
+                    success: function () {
+                        App.instances.groups = groups;
+                    }
+                });
             }
 
             widget = new App.Group.Views.GroupWidget({
