@@ -55,6 +55,7 @@ var App;
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
+            "byid/:id": "loadById",
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/user": "newUser",
             "ou/:containerid/user/:userid": "loadUser",
@@ -70,6 +71,24 @@ var App;
                     .find(".tree-selected")
                     .removeClass("tree-selected");
                 App.main.show(view);
+            },
+
+            loadById: function (id) {
+                var model = App.instances.cache.get(id),
+                    parent,
+                    url;
+
+                if (_.isUndefined(model)) {
+                    $.ajax("/api/nodes/" + id + '/').done(function (response) {
+                        parent = _.last(response.path.split(','));
+                        url = "ou/" + parent + "/" + response.type + "/" + id;
+                        App.instances.router.navigate(url, { trigger: true });
+                    });
+                } else {
+                    parent = _.last(model.get("path").split(','));
+                    url = "ou/" + parent + "/" + model.get("type") + "/" + id;
+                    App.instances.router.navigate(url, { trigger: true });
+                }
             },
 
             newItemDashboard: function (containerid) {
@@ -145,6 +164,7 @@ var App;
 
                 if (skipFetch) {
                     model.trigger("change");
+                    App.tree.currentView.selectItemById(id);
                 } else {
                     model.fetch().done(function () {
                         // Item loaded, now we need to update the tree

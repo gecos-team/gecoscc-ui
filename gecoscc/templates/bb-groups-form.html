@@ -29,7 +29,7 @@
                 <label>Nodos pertenecientes al grupo</label>
                 <ul>
                 <% _.each(nodemembers, function (n) { %>
-                    <li><%= n %></li>
+                    <li><a href="/#byid/<%= n %>"><%= n %></a></li>
                 <% }); %>
                 </ul>
             </div>
