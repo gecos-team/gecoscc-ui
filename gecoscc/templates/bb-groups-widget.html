@@ -1,32 +1,36 @@
-<div class="input-group mb10">
-    <input type="text" class="form-control group-filter" placeholder="Filtra">
-    <span class="input-group-btn">
-        <button class="btn btn-primary group-filter-btn" type="button"><span class="fa fa-search"></span></button>
-    </span>
-</div>
-<div class="well">
-    <ul class="groups-widget">
-        <% _.each(items, function (item) { %>
-        <li>
-            <label class="group <%= inputType %>-inline">
-                <input
-                    type="<%= inputType %>"
-                    id="<%= item.id %>"
-                    value="<%= item.id %>"
-                    <% if (inputType === "radio") { %>
-                        name="groups-widget-options"
-                        <% if (checked === item.id) { %>
-                            checked
+<div class="row"><div class="col-sm-6">
+    <div class="input-group mb10">
+        <input type="text" class="form-control group-filter" placeholder="Filtra">
+        <span class="input-group-btn">
+            <button class="btn btn-default group-filter-btn" type="button"><span class="fa fa-eraser"></span></button>
+        </span>
+    </div>
+</div></div>
+<div class="row"><div class="col-sm-12">
+    <div class="well">
+        <ul class="groups-widget">
+            <% _.each(items, function (item) { %>
+            <li>
+                <label class="group <%= inputType %>-inline">
+                    <input
+                        type="<%= inputType %>"
+                        id="<%= item.id %>"
+                        value="<%= item.id %>"
+                        <% if (inputType === "radio") { %>
+                            name="groups-widget-options"
+                            <% if (checked === item.id) { %>
+                                checked
+                            <% } %>
+                        <% } else { %>
+                            <% _.each(checked, function (id) { if (id === item.id) { %>
+                                checked
+                            <% }}); %>
                         <% } %>
-                    <% } else { %>
-                        <% _.each(checked, function (id) { if (id === item.id) { %>
-                            checked
-                        <% }}); %>
-                    <% } %>
-                >
-                <%= item.name %>
-            </label>
-        </li>
-        <% }); %>
-    </ul>
-</div>
+                    >
+                    <%= item.name %>
+                </label>
+            </li>
+            <% }); %>
+        </ul>
+    </div>
+</div></div>

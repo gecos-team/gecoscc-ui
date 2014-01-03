@@ -251,7 +251,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "keyup @ui.filter": "filterGroups",
-            "click .group-filter-btn": "filterGroups"
+            "click .group-filter-btn": "cleanFilter"
         },
 
         serializeData: function () {
@@ -290,6 +290,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $label.parent().hide();
                 }
             });
+        },
+
+        cleanFilter: function (evt) {
+            this.ui.filter.val("");
+            this.filterGroups(evt);
+            this.ui.filter.focus();
         }
     });
 });
