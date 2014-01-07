@@ -202,7 +202,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         save: function (evt) {
             evt.preventDefault();
-            var name, memberof;
+            var name, memberof, $button;
 
             name = this.$el.find("#name").val().trim();
             if (name.length === 0) {
@@ -212,16 +212,39 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.$el.find("#name").parent().removeClass("has-error");
             this.model.set("name", name);
 
+            $button = $(evt.target);
+            $button.tooltip({
+                html: true,
+                title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
+            });
+            $button.tooltip("show");
+
             memberof = this.memberof.$el.find("input[type=radio]:checked");
             if (memberof.length > 0) {
                 this.model.set("memberof", memberof.val());
             }
 
-            this.model.save({
-                success: function () {
-                    App.instances.router.navigate("", { trigger: true });
-                }
-            });
+            this.model.save()
+                .done(function () {
+                    $button.tooltip("destroy");
+                    $button.tooltip({
+                        html: true,
+                        title: "<span class='fa fa-check'></span> " + gettext("Done")
+                    });
+                    $button.tooltip("show");
+                    setTimeout(function () {
+                        $button.tooltip("destroy");
+                        App.instances.router.navigate("", { trigger: true });
+                    }, 1500);
+                })
+                .fail(function () {
+                    $button.tooltip("destroy");
+                    $button.tooltip({
+                        html: true,
+                        title: "<span class='text-danger fa fa-exclamation-triangle'></span> " + gettext("Failure")
+                    });
+                    $button.tooltip("show");
+                });
         },
 
         go2table: function (evt) {

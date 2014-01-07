@@ -100,7 +100,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         obj = {
                             id: step,
                             type: "ou",
-                            name: "unknown",
+                            name: gettext("unknown"),
                             loaded: false,
                             closed: true, // All container nodes start closed
                             children: []
