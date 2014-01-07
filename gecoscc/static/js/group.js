@@ -319,6 +319,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.ui.filter.val("");
             this.filterGroups(evt);
             this.ui.filter.focus();
+        },
+
+        getChecked: function () {
+            return _.map(this.$el.find("input:checked"), function (item) {
+                return $(item).attr("id");
+            });
         }
     });
 });

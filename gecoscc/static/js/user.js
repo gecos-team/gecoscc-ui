@@ -79,9 +79,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
 
-        ui: {
-            memberof: "div#groups-widget"
-        },
+        groupsWidget: undefined,
 
         events: {
             "click #submit": "saveForm",
@@ -91,7 +89,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onRender: function () {
             var groups,
-                widget,
                 promise;
 
             if (App.instances.groups && App.instances.groups.length > 0) {
@@ -107,15 +104,15 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
             }
 
-            widget = new App.Group.Views.GroupWidget({
-                el: this.ui.memberof[0],
+            this.groupsWidget = new App.Group.Views.GroupWidget({
+                el: this.$el.find("div#groups-widget")[0],
                 collection: groups,
                 checked: this.model.get("memberof"),
                 unique: false
             });
-            promise.done(function () {
-                widget.render();
-            });
+            promise.done(_.bind(function () {
+                this.groupsWidget.render();
+            }, this));
         },
 
         saveForm: function (evt) {
@@ -135,10 +132,10 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     email: this.$el.find("#email").val().trim(),
                     first_name: this.$el.find("#firstname").val().trim(),
                     last_name: this.$el.find("#lastname").val().trim(),
-                    address: this.$el.find("#address").val().trim()
+                    address: this.$el.find("#address").val().trim(),
+                    memberof: this.groupsWidget.getChecked()
                 });
                 // TODO password
-                // TODO permissions
                 promise = this.model.save();
                 promise.done(function () {
                     $button.tooltip("destroy");
