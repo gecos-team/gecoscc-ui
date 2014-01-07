@@ -84,6 +84,7 @@
         <div class="row"><div class="col-sm-12">
             <div id="breadcrumb" class="navbar navbar-default bootstrap-admin-navbar-thin"></div>
         </div></div>
+        <div id="alerts-area" class="row"></div>
         <div id="viewport-main" class="row">
             {% block main_content %}{% endblock %} <!-- TODO block to be deleted -->
         </div>
@@ -190,6 +191,7 @@
     <script type="text/html" id="user-template">{% include "bb-user.html" %}</script>
     <script type="text/html" id="ou-template">{% include "bb-ou.html" %}</script>
     <script type="text/html" id="groups-widget-template">{% include "bb-groups-widget.html" %}</script>
+    <script type="text/html" id="alert-template">{% include "bb-alert.html" %}</script>
 
     <script type="text/html" id="loader-template">
         <p style='font-size: 3em;'>

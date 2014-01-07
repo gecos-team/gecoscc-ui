@@ -31,6 +31,7 @@ var App;
         HomeView,
         NewElementView,
         LoaderView,
+        AlertView,
         numericRegex,
         emailRegex,
         ipRegex,
@@ -46,9 +47,9 @@ var App;
         // sidebar
         tree: "#ex-tree",
         events: "#events",
-        // breadcrumb
+        // main area
         breadcrumb: "#breadcrumb",
-        // main
+        alerts: "#alerts-area",
         main: "#viewport-main"
     });
 
@@ -66,6 +67,7 @@ var App;
         controller: {
             loadHome: function () {
                 var view = new HomeView();
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
                 App.tree.$el
                     .find(".tree-selected")
@@ -92,6 +94,7 @@ var App;
             },
 
             newItemDashboard: function (containerid) {
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/new",
                     text: gettext("New element")
@@ -119,6 +122,7 @@ var App;
             },
 
             newUser: function (containerid) {
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user",
                     text: gettext("User")
@@ -131,6 +135,7 @@ var App;
             },
 
             newOU: function (containerid) {
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/",
                     text: gettext("Organisational Unit")
@@ -190,6 +195,7 @@ var App;
             },
 
             loadUser: function (containerid, userid) {
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/user/" + userid,
                     text: gettext("User")
@@ -202,6 +208,7 @@ var App;
             },
 
             loadOU: function (containerid, ouid) {
+                App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/ou" + ouid,
                     text: gettext("Organisational Unit")
@@ -331,6 +338,44 @@ var App;
     });
 
     App.instances.loaderView = new LoaderView();
+
+    AlertView = Backbone.Marionette.ItemView.extend({
+        template: "#alert-template",
+
+        data: {
+            cssClass: "info",
+            strongText: "",
+            regularText: ""
+        },
+
+        serializeData: function () {
+            return this.data;
+        },
+
+        initialize: function (options) {
+            if (_.has(options, "type")) {
+                this.data.cssClass = options.type;
+            }
+            if (_.has(options, "bold")) {
+                this.data.strongText = options.bold;
+            }
+            if (_.has(options, "text")) {
+                this.data.regularText = options.text;
+            }
+        }
+    });
+
+    App.showAlert(function (type, bold, text) {
+        var view;
+
+        if (type === "error") { type = "danger"; }
+        view = new AlertView({
+            type: type,
+            bold: bold,
+            text: text
+        });
+        App.alerts.show(view);
+    });
 
     App.on('initialize:after', function () {
         var path = window.location.hash.substring(1);
