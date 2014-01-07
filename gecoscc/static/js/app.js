@@ -341,6 +341,8 @@ var App;
 
     AlertView = Backbone.Marionette.ItemView.extend({
         template: "#alert-template",
+        tagName: "div",
+        className: "col-sm-12",
 
         data: {
             cssClass: "info",
@@ -362,10 +364,17 @@ var App;
             if (_.has(options, "text")) {
                 this.data.regularText = options.text;
             }
+        },
+
+        onRender: function () {
+            var $el = this.$el;
+            $('html, body').animate({
+                scrollTop: $el.offset().top
+            }, 1000);
         }
     });
 
-    App.showAlert(function (type, bold, text) {
+    App.showAlert = function (type, bold, text) {
         var view;
 
         if (type === "error") { type = "danger"; }
@@ -375,7 +384,7 @@ var App;
             text: text
         });
         App.alerts.show(view);
-    });
+    };
 
     App.on('initialize:after', function () {
         var path = window.location.hash.substring(1);

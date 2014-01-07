@@ -151,6 +151,11 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                         $button.tooltip("destroy");
                     }, 2000);
                 });
+                promise.fail(function () {
+                    $button.tooltip("destroy");
+                    App.showAlert("error", gettext("Saving the User failed."),
+                        gettext("Something went wrong, please try again in a few moments."));
+                });
             }
         },
 
@@ -165,6 +170,10 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                         success: function () {
                             App.instances.tree.reloadTree();
                             App.instances.router.navigate("", { trigger: true });
+                        },
+                        error: function () {
+                            App.showAlert("error", gettext("Couldn't delete the User."),
+                                gettext("Something went wrong, please try again in a few moments."));
                         }
                     });
                     GecosUtils.confirmModal.modal("hide");

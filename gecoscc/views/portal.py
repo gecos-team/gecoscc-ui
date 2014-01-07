@@ -46,8 +46,7 @@ def printers(context, request):
 
 @view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2')
 def sockjs_home(context, request):
-    return {
-    }
+    return {}
 
 
 class LoginViews(BaseView):
