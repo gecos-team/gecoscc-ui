@@ -1,7 +1,10 @@
 Gecos Control Center - UI
 =========================
 
-.. image:: https://codeclimate.com/github/gecos-team/gecoscc-ui.png   :target: https://codeclimate.com/github/gecos-team/gecoscc-ui
+|CodeClimate|_
+
+.. |CodeClimate| image:: https://codeclimate.com/github/gecos-team/gecoscc-ui.png
+.. _CodeClimate: https://codeclimate.com/github/gecos-team/gecoscc-ui
 
 
 Copyright © 2013 Junta de Andalucia < http://www.juntadeandalucia.es >
