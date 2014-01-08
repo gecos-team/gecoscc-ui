@@ -3,6 +3,10 @@
 {% block nav_bar_home %}{% endblock %}
 {% block nav_bar_groups %}active{% endblock %}
 
+{% block moreheader %}
+<link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block inner_content %}
 <div id="groups" class="container">
     <h1>Grupos</h1>
@@ -165,6 +169,7 @@
 
 {% block extrajs %}
 <script src="{{request.application_url}}/static/js/libs/jquery.dataTables-1.9.4.min.js"></script>
+<script src="{{request.application_url}}/static/js/libs/chosen.jquery-0.13.0.min.js"></script>
 <script src="{{request.application_url}}/static/js/libs/DT_bootstrap.min.js"></script>
 <script src="{{request.application_url}}/static/js/libs/underscore-1.5.2.min.js"></script>
 <script src="{{request.application_url}}/static/js/libs/backbone-1.1.0.min.js"></script>

@@ -207,10 +207,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             widget = new Views.GroupWidget({
                 collection: groups,
-                checked: this.model.get("memberof")
+                checked: this.model.get("memberof"),
+                unique: true
             });
             promise.done(function () {
                 that.memberof.show(widget);
+                that.memberof.$el.find("select").chosen();
             });
 
             aux = this.model.get("groupmembers").join(',');
@@ -288,10 +290,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             $button.tooltip("show");
 
-            memberof = this.memberof.$el.find("input[type=radio]:checked");
-            if (memberof.length > 0) {
-                this.model.set("memberof", memberof.val());
-            }
+            memberof = this.memberof.currentView.getChecked();
+            this.model.set("memberof", memberof);
 
             this.model.save()
                 .done(function () {
@@ -325,7 +325,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     Views.GroupWidget = Marionette.ItemView.extend({
         template: "#groups-widget-template",
 
-        unique: true,
+        unique: false,
         checked: undefined,
 
         initialize: function (options) {
@@ -348,13 +348,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         serializeData: function () {
             var data = {},
-                inputType = "checkbox",
                 aux,
                 groups;
 
             if (this.collection) {
                 if (this.unique) {
-                    inputType = "radio";
                     if (_.isUndefined(this.checked)) {
                         this.checked = "";
                     }
@@ -370,8 +368,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
 
                 data = {
+                    unique: this.unique,
                     items: groups,
-                    inputType: inputType,
                     checked: this.checked
                 };
             }
@@ -401,6 +399,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         getChecked: function () {
+            var result;
+            if (this.unique) {
+                result = this.$el.find("option:selected").val();
+                if (result.length === 0) { return null; }
+                return result;
+            }
             return _.map(this.$el.find("input:checked"), function (item) {
                 return $(item).attr("id");
             });
