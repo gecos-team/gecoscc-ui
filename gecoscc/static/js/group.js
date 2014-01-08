@@ -279,7 +279,9 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         serializeData: function () {
             var data = {},
-                inputType = "checkbox";
+                inputType = "checkbox",
+                aux,
+                groups;
 
             if (this.collection) {
                 if (this.unique) {
@@ -290,8 +292,16 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 } else if (_.isUndefined(this.checked)) {
                     this.checked = [];
                 }
+
+                aux = _.flatten([this.checked]);
+                // Sort the groups, checked first
+                groups = this.collection.toJSON();
+                groups = _.sortBy(groups, function (g) {
+                    return _.contains(aux, g.id) ? 0 : 1;
+                });
+
                 data = {
-                    items: this.collection.toJSON(),
+                    items: groups,
                     inputType: inputType,
                     checked: this.checked
                 };
