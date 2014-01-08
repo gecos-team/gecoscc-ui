@@ -68,8 +68,8 @@ class MongoDB(object):
         ], unique=True)
 
         db.jobs.ensure_index([
-            ('name', pymongo.DESCENDING),
-        ], unique=True)
+            ('userid', pymongo.DESCENDING),
+        ])
 
 
 def get_db(request):
