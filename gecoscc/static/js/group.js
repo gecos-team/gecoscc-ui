@@ -146,11 +146,41 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
+    Views.GroupMembers = Marionette.ItemView.extend({
+        template: "#groupmembers-template",
+
+        initialize: function (options) {
+            this.groupmembers = options.groupmembers;
+        },
+
+        serializeData: function () {
+            return {
+                groupmembers: _.pairs(this.groupmembers)
+            };
+        }
+    });
+
+    Views.NodeMembers = Marionette.ItemView.extend({
+        template: "#nodemembers-template",
+
+        initialize: function (options) {
+            this.nodemembers = options.nodemembers;
+        },
+
+        serializeData: function () {
+            return {
+                nodemembers: _.pairs(this.nodemembers)
+            };
+        }
+    });
+
     Views.GroupForm = Marionette.Layout.extend({
         template: "#groups-form-template",
 
         regions: {
-            memberof: "#memberof"
+            memberof: "#memberof",
+            groupmembers: "#groupmembers",
+            nodemembers: "#nodemembers"
         },
 
         events: {
@@ -163,7 +193,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             var that = this,
                 groups,
                 widget,
-                promise;
+                promise,
+                aux;
 
             if (App.instances.groups && App.instances.groups.length > 0) {
                 groups = App.instances.groups;
@@ -181,6 +212,44 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             promise.done(function () {
                 that.memberof.show(widget);
             });
+
+            aux = this.model.get("groupmembers").join(',');
+            if (aux.length === 0) {
+                aux = new Views.GroupMembers({ groupmembers: {} });
+                this.groupmembers.show(aux);
+            } else {
+                $.ajax("/api/groups/?oids=" + aux).done(function (response) {
+                    var items = response.groups,
+                        groupmembers = {},
+                        view;
+
+                    _.each(items, function (g) {
+                        groupmembers[g._id] = g.name;
+                    });
+
+                    view = new Views.GroupMembers({ groupmembers: groupmembers });
+                    that.groupmembers.show(view);
+                });
+            }
+
+            aux = this.model.get("nodemembers").join(',');
+            if (aux.length === 0) {
+                aux = new Views.NodeMembers({ nodemembers: {} });
+                this.nodemembers.show(aux);
+            } else {
+                $.ajax("/api/nodes/?oids=" + aux).done(function (response) {
+                    var items = response.nodes,
+                        nodemembers = {},
+                        view;
+
+                    _.each(items, function (n) {
+                        nodemembers[n._id] = n.name;
+                    });
+
+                    view = new Views.NodeMembers({ nodemembers: nodemembers });
+                    that.nodemembers.show(view);
+                });
+            }
         },
 
         deleteModel: function (evt) {
