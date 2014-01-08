@@ -245,6 +245,8 @@ ul#new-policies li a {
 ul.groups-widget {
     margin: 0;
     padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
 ul.groups-widget li {
