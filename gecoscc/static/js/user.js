@@ -81,10 +81,16 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         groupsWidget: undefined,
 
+        ui: {
+            passwd1: "input#passwd1",
+            passwd2: "input#passwd2"
+        },
+
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
-            "change input": "validate"
+            "change input": "validate",
+            "keyup input:password": "checkPasswords"
         },
 
         onRender: function () {
@@ -120,7 +126,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $button = $(evt.target),
                 promise;
 
-            if (this.validate()) {
+            if (this.validate() && this.checkPasswords()) {
                 $button.tooltip({
                     html: true,
                     title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
@@ -133,9 +139,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     first_name: this.$el.find("#firstname").val().trim(),
                     last_name: this.$el.find("#lastname").val().trim(),
                     address: this.$el.find("#address").val().trim(),
+                    password: this.$el.find("#passwd1").val(),
                     memberof: this.groupsWidget.getChecked()
                 });
-                // TODO password
                 promise = this.model.save();
                 promise.done(function () {
                     $button.tooltip("destroy");
@@ -153,6 +159,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     App.showAlert("error", gettext("Saving the User failed."),
                         gettext("Something went wrong, please try again in a few moments."));
                 });
+            } else {
+                App.showAlert("error", gettext("Invalid data."),
+                    gettext("Please, fix the errors in the fields below and try again."));
             }
         },
 
@@ -176,6 +185,23 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     GecosUtils.confirmModal.modal("hide");
                 });
             GecosUtils.confirmModal.modal("show");
+        },
+
+        checkPasswords: function () {
+            var result = false,
+                p1 = this.ui.passwd1.val(),
+                p2 = this.ui.passwd2.val();
+
+            if (p1 === p2) {
+                result = true;
+                this.ui.passwd1.parents(".form-group").first().removeClass("has-error");
+                this.ui.passwd2.parents(".form-group").first().removeClass("has-error");
+            } else {
+                this.ui.passwd1.parents(".form-group").first().addClass("has-error");
+                this.ui.passwd2.parents(".form-group").first().addClass("has-error");
+            }
+
+            return result;
         }
     });
 });
