@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from gecoscc.permissions import api_login_required, get_user_permissions
 
 from cornice.resource import resource
@@ -37,10 +39,18 @@ def nodes_path_filter(params):
     return {}
 
 
+def nodes_oids_filter(params):
+    oids = params.get('oids')
+    return {
+        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
+    }
+
+
 node_filters = {
     'type': nodes_type_filter,
     'maxdepth': nodes_maxdepth_filter,
     'path': nodes_path_filter,
+    'oids': nodes_oids_filter,
 }
 
 

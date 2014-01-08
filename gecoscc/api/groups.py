@@ -1,8 +1,17 @@
+from bson import ObjectId
+
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginated
 from gecoscc.models import Group, Groups
 from gecoscc.permissions import api_login_required
+
+
+def groups_oids_filter(params):
+    oids = params.get('oids')
+    return {
+        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
+    }
 
 
 @resource(collection_path='/api/groups/',
@@ -18,6 +27,11 @@ class GroupResource(ResourcePaginated):
     mongo_filter = {}
 
     collection_name = 'groups'
+
+    def get_objects_filter(self):
+        if 'oids' in self.request.GET:
+            return groups_oids_filter(self.request.GET)
+        return {}
 
     def remove_relations(self, obj):
         # Remove group from any other group or node where is defined
