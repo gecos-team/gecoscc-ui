@@ -44,6 +44,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    <span class="fa fa-<%= icon %>"></span>\n' +
             '    <div class="tree-item-name"><%= name %></div>\n' +
             '</div>\n',
+        emptyTree =
+            '<a href="#newroot">\n' +
+            '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
+            '</a>\n',
         extraOpts =
             '<div class="tree-extra-options">\n' +
             '    <ul class="nav nav-pills nav-stacked">\n' +
@@ -61,6 +65,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
             item: _.template(treeItem),
+            emptyTree: _.template(emptyTree),
             extraOpts: _.template(extraOpts)
         },
 
@@ -83,7 +88,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var tree = this.model.toJSON(),
                 html;
 
-            if (_.keys(tree).length > 0) {
+            if (_.isUndefined(tree)) {
+                // Empty tree
+                html = this.templates.emptyTree({});
+            } else if (_.keys(tree).length > 0) {
                 html = this.recursiveRender(tree);
             } else {
                 html = this.loader(2.5);

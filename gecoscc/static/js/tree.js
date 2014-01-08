@@ -116,8 +116,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 node = _.find(aux, function (obj) {
                     return obj.id === newNode.id;
                 });
-                if (node) {
-                    _.defaults(node, newNode);
+                if (node && !node.loaded) {
+                    _.extend(node, newNode);
                 } else {
                     newNode.children = [];
                     aux.push(newNode);

@@ -57,6 +57,7 @@ var App;
         appRoutes: {
             "": "loadHome",
             "byid/:id": "loadById",
+            "newroot": "newRoot",
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/user": "newUser",
             "ou/:containerid/user/:userid": "loadUser",
@@ -72,6 +73,12 @@ var App;
                 App.tree.$el
                     .find(".tree-selected")
                     .removeClass("tree-selected");
+                App.main.show(view);
+            },
+
+            newRoot: function () {
+                var model = new App.OU.Models.OUModel({ path: "root" }),
+                    view = new App.OU.Views.OUForm({ model: model });
                 App.main.show(view);
             },
 
@@ -105,7 +112,7 @@ var App;
             },
 
             _newItemHelper: function (Model, View, containerid) {
-                var model = new Model({}),
+                var model = new Model(),
                     view = new View({ model: model }),
                     parent,
                     path;
