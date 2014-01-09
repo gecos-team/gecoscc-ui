@@ -1,29 +1,40 @@
-from pyramid.security import remember, forget
-from pyramid.httpexceptions import HTTPFound
+import logging
 
-from pyramid.view import view_config
+from pyramid.security import remember, forget, authenticated_userid
+from pyramid.httpexceptions import HTTPFound
+from pyramid.renderers import render
+from pyramid.response import Response
+
+from pyramid.view import view_config, forbidden_view_config
 
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.i18n import TranslationString as _
 from gecoscc.views import BaseView
 
 
-@view_config(route_name='home', renderer='templates/base_tree.jinja2')
+logger = logging.getLogger(__name__)
+
+
+@view_config(route_name='home', renderer='templates/base_tree.jinja2',
+             permission='edit')
 def home(context, request):
     return {}
 
 
-@view_config(route_name='admins', renderer='templates/admins.jinja2')
+@view_config(route_name='admins', renderer='templates/admins.jinja2',
+             permission='edit')
 def admins(context, request):
     return {}
 
 
-@view_config(route_name='groups', renderer='templates/groups.jinja2')
+@view_config(route_name='groups', renderer='templates/groups.jinja2',
+             permission='edit')
 def groups(context, request):
     return {}
 
 
-@view_config(route_name='reports', renderer='templates/reports.jinja2')
+@view_config(route_name='reports', renderer='templates/reports.jinja2',
+             permission='edit')
 def reports(context, request):
     return {}
 
@@ -31,12 +42,14 @@ def reports(context, request):
 #;;;;;;;;;;;
 # TO DELETE
 #;;;;;;;;;;;
-@view_config(route_name='computers', renderer='templates/to_delete/computers.jinja2')
+@view_config(route_name='computers',
+             renderer='templates/to_delete/computers.jinja2')
 def computers(context, request):
     return {}
 
 
-@view_config(route_name='printers', renderer='templates/to_delete/printers.jinja2')
+@view_config(route_name='printers',
+             renderer='templates/to_delete/printers.jinja2')
 def printers(context, request):
     return {}
 #;;;;;;;;;;;;;;;
@@ -44,7 +57,8 @@ def printers(context, request):
 #;;;;;;;;;;;;;;;
 
 
-@view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2')
+@view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2',
+             permission='edit')
 def sockjs_home(context, request):
     return {}
 
@@ -86,3 +100,27 @@ class LoginViews(BaseView):
         headers = forget(self.request)
         return HTTPFound(location=self.request.route_path('login'),
                          headers=headers)
+
+
+@forbidden_view_config()
+@view_config(route_name='forbidden-view')
+def forbidden_view(context, request):
+    user = authenticated_userid(request)
+    if user is not None:
+        try:
+            reason = context.explanation
+        except AttributeError:
+            reason = 'unknown'
+        logger.debug("User {!r} tripped Forbidden view, request {!r}, "
+                     "reason {!r}".format(user, request, reason))
+        response = Response(render('templates/forbidden.jinja2', {}))
+        response.status_int = 403
+        return response
+
+    if user is None and request.is_xhr:
+        response = Response(render('templates/forbidden.jinja2', {}))
+        response.status_int = 403
+        return response
+
+    loginurl = request.route_url('login', _query=(('next', request.path),))
+    return HTTPFound(location=loginurl)

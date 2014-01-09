@@ -10,7 +10,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import EventsManager, get_jobstorage
-from gecoscc.permissions import is_logged
+from gecoscc.permissions import is_logged, LoggedFactory
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -23,16 +23,18 @@ def read_setting_from_env(settings, key, default=None):
 
 def route_config(config):
     config.add_static_view('static', 'static')
-    config.add_route('home', '/')
-    config.add_route('admins', '/admins/')
-    config.add_route('groups', '/groups/')
-    config.add_route('reports', '/reports/')
+    config.add_route('home', '/', factory=LoggedFactory)
+    config.add_route('admins', '/admins/', factory=LoggedFactory)
+    config.add_route('groups', '/groups/', factory=LoggedFactory)
+    config.add_route('reports', '/reports/', factory=LoggedFactory)
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
     config.add_sockjs_route('sockjs', prefix='/sockjs',
                             session=EventsManager,
                             per_user=True,
                             cookie_needed=True)
+
+    config.add_route('forbidden-view', '/error403/')
 
 
 def route_config_auxiliary(config, route_prefix):
@@ -41,8 +43,8 @@ def route_config_auxiliary(config, route_prefix):
 
 
 def to_delete_route_config(config):
-    config.add_route('computers', '/computers/')
-    config.add_route('printers', '/printers/')
+    config.add_route('computers', '/computers/', factory=LoggedFactory)
+    config.add_route('printers', '/printers/', factory=LoggedFactory)
 
 
 def database_config(config):

@@ -1,4 +1,6 @@
 from pyramid.security import authenticated_userid
+from pyramid.security import (Allow, Authenticated, Everyone,
+                              ALL_PERMISSIONS)
 from pyramid.httpexceptions import HTTPForbidden
 
 
@@ -27,3 +29,27 @@ def get_permissions_filter(request):
                 })
 
     return ou_filter
+
+
+class RootFactory(object):
+    __acl__ = [
+        (Allow, Everyone, ALL_PERMISSIONS),
+    ]
+
+    def __init__(self, request):
+        self.request = request
+
+    def get_groups(self, userid, request):
+        return []
+
+
+class LoggedFactory(object):
+    __acl__ = [
+        (Allow, Authenticated, ALL_PERMISSIONS),
+    ]
+
+    def __init__(self, request):
+        self.request = request
+
+    def get_groups(self, userid, request):
+        return []
