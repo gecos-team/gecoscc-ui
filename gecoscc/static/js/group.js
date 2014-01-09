@@ -212,7 +212,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             promise.done(function () {
                 that.memberof.show(widget);
-                that.memberof.$el.find("select").chosen();
             });
 
             aux = this.model.get("groupmembers").join(',');
@@ -374,6 +373,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 };
             }
             return data;
+        },
+
+        onRender: function () {
+            if (this.unique) {
+                this.$el.find("select").chosen();
+            }
         },
 
         filterGroups: function (evt) {
