@@ -23,6 +23,8 @@ requires = [
     'celery-with-mongodb==3.0',
     'pyramid_celery==1.3',
     'cornice==0.16.2',
+
+    'gevent-websocket==0.3.6',
 ]
 
 setup(name='gecoscc',
