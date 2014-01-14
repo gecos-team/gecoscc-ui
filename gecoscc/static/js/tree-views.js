@@ -242,8 +242,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return node.model.id === id;
             });
 
-            if (item && item.model.type === "user") {
-                App.instances.router.navigate("ou/" + containerId + "/user/" + id, {
+            if (item && item.model.type !== "ou") {
+                App.instances.router.navigate("ou/" + containerId + "/" + item.model.type + "/" + id, {
                     trigger: true
                 });
             }

@@ -23,7 +23,7 @@
 App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.Group = Backbone.Model.extend({
+    Models.GroupModel = Backbone.Model.extend({
         defaults: {
             name: "",
             groupmembers: [],
@@ -46,10 +46,10 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     });
 
     Models.GroupCollection = Backbone.Collection.extend({
-        model: Models.Group,
+        model: Models.GroupModel,
 
         url: function () {
-            return "/api/groups/?pagesize=1000";
+            return "/api/groups/";
         },
 
         parse: function (response) {
@@ -60,91 +60,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
 
 App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
-
-    Views.GroupRow = Marionette.ItemView.extend({
-        template: "#groups-row-template",
-
-        tagName: "tr",
-
-        events: {
-            "click button.edit-group": "edit",
-            "click button.btn-danger": "deleteModel"
-        },
-
-        edit: function (evt) {
-            evt.preventDefault();
-            var id = this.$el.find("td").first().attr("id");
-            App.instances.router.navigate("group/" + id, { trigger: true });
-        },
-
-        deleteModel: function (evt) {
-            evt.preventDefault();
-            var that = this;
-
-            GecosUtils.confirmModal.find("button.btn-danger")
-                .off("click")
-                .on("click", function (evt) {
-                    that.model.destroy({
-                        success: function () {
-                            App.instances.groups.fetch();
-                        }
-                    });
-                    GecosUtils.confirmModal.modal("hide");
-                });
-            GecosUtils.confirmModal.modal("show");
-        }
-    });
-
-    Views.GroupTable = Marionette.CompositeView.extend({
-        template: "#groups-table-template",
-        itemView: Views.GroupRow,
-        itemViewContainer: "tbody",
-
-        events: {
-            "click button#add-group": "addGroup"
-        },
-
-        onRender: function () {
-            /* Table initialisation */
-            var $table = this.$el.find("table");
-
-            if ($table.find("tr").length > 0) {
-                $table.dataTable({
-                    sDom: "<'row'<'col-md-8'l><'col-md-4'f>r>t<'row'<'col-md-7'i><'col-md-5'p>>",
-                    sPaginationType: "bootstrap",
-                    oLanguage: {
-                        oAria: {
-                            sSortAscending: gettext(": activate to sort column ascending"),
-                            sSortDescending: gettext(": activate to sort column descending")
-                        },
-                        oPaginate: {
-                            sFirst: gettext("First"),
-                            sLast: gettext("Last"),
-                            sPrevious: gettext("Next"),
-                            sNext: gettext("Previous")
-                        },
-                        sEmptyTable: gettext("No data available in table"),
-                        sInfo: gettext("Showing _START_ to _END_ of _TOTAL_ entries"),
-                        sInfoEmpty: gettext("Showing 0 to 0 of 0 entries"),
-                        sInfoFiltered: gettext("(filtered from _MAX_ total entries)"),
-                        // sInfoPostFix: gettext("All records shown are derived from real information."),
-                        // sInfoThousands: ",",
-                        sLengthMenu: gettext("Show _MENU_ entries"),
-                        sLoadingRecords: gettext("Loading..."),
-                        sProcessing: gettext("Processing..."),
-                        sSearch: gettext("Search:"),
-                        // sUrl: "http://www.sprymedia.co.uk/dataTables/lang.txt",
-                        sZeroRecords: gettext("No matching records found")
-                    }
-                });
-            }
-        },
-
-        addGroup: function (evt) {
-            evt.preventDefault();
-            App.instances.router.navigate("group", { trigger: true });
-        }
-    });
 
     Views.GroupMembers = Marionette.ItemView.extend({
         template: "#groupmembers-template",

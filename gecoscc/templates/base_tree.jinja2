@@ -5,6 +5,7 @@
 <link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
+<link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
 {% block moreheader %}{% endblock %}
 {% endblock %}
 
@@ -190,6 +191,9 @@
     <script type="text/html" id="new-element-template">{% include "bb-new-element.html" %}</script>
     <script type="text/html" id="user-template">{% include "bb-user.html" %}</script>
     <script type="text/html" id="ou-template">{% include "bb-ou.html" %}</script>
+    <script type="text/html" id="groups-form-template">{% include "bb-groups-form.html" %}</script>
+    <script type="text/html" id="groupmembers-template">{% include "bb-groups-groupmembers.html" %}</script>
+    <script type="text/html" id="nodemembers-template">{% include "bb-groups-nodemembers.html" %}</script>
     <script type="text/html" id="groups-widget-template">{% include "bb-groups-widget.html" %}</script>
     <script type="text/html" id="alert-template">{% include "bb-alert.html" %}</script>
 

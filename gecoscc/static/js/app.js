@@ -62,7 +62,9 @@ var App;
             "ou/:containerid/user": "newUser",
             "ou/:containerid/user/:userid": "loadUser",
             "ou/:containerid/ou": "newOU",
-            "ou/:containerid/ou/:ouid": "loadOU"
+            "ou/:containerid/ou/:ouid": "loadOU",
+            "ou/:containerid/group": "newGroup",
+            "ou/:containerid/group/:groupid": "loadGroup"
         },
 
         controller: {
@@ -154,6 +156,19 @@ var App;
                 );
             },
 
+            newGroup: function (containerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/group",
+                    text: gettext("Group")
+                }]);
+                this._newItemHelper(
+                    App.Group.Models.GroupModel,
+                    App.Group.Views.GroupForm,
+                    containerid
+                );
+            },
+
             _loadItemHelper: function (Model, View, id) {
                 var model, view, skipFetch;
 
@@ -224,6 +239,19 @@ var App;
                     App.OU.Models.OUModel,
                     App.OU.Views.OUForm,
                     ouid
+                );
+            },
+
+            loadGroup: function (containerid, groupid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/group/" + groupid,
+                    text: gettext("Group")
+                }]);
+                this._loadItemHelper(
+                    App.Group.Models.GroupModel,
+                    App.Group.Views.GroupForm,
+                    groupid
                 );
             }
         }
