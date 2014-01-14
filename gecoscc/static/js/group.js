@@ -106,12 +106,37 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button#goback": "go2table"
         },
 
+        renderMembers: function (propName, View) {
+            var oids = this.model.get(propName).join(','),
+                aux = {},
+                that = this;
+
+            if (oids.length === 0) {
+                aux[propName] = {};
+                aux = new View(aux);
+                this[propName].show(aux);
+            } else {
+                $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+                    var items = response.nodes,
+                        members = {},
+                        view;
+
+                    _.each(items, function (el) {
+                        members[el._id] = el.name;
+                    });
+
+                    aux[propName] = members;
+                    view = new View(aux);
+                    that[propName].show(view);
+                });
+            }
+        },
+
         onRender: function () {
             var that = this,
                 groups,
                 widget,
-                promise,
-                aux;
+                promise;
 
             if (App.instances.groups && App.instances.groups.length > 0) {
                 groups = App.instances.groups;
@@ -131,43 +156,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.memberof.show(widget);
             });
 
-            aux = this.model.get("groupmembers").join(',');
-            if (aux.length === 0) {
-                aux = new Views.GroupMembers({ groupmembers: {} });
-                this.groupmembers.show(aux);
-            } else {
-                $.ajax("/api/groups/?oids=" + aux).done(function (response) {
-                    var items = response.groups,
-                        groupmembers = {},
-                        view;
-
-                    _.each(items, function (g) {
-                        groupmembers[g._id] = g.name;
-                    });
-
-                    view = new Views.GroupMembers({ groupmembers: groupmembers });
-                    that.groupmembers.show(view);
-                });
-            }
-
-            aux = this.model.get("nodemembers").join(',');
-            if (aux.length === 0) {
-                aux = new Views.NodeMembers({ nodemembers: {} });
-                this.nodemembers.show(aux);
-            } else {
-                $.ajax("/api/nodes/?oids=" + aux).done(function (response) {
-                    var items = response.nodes,
-                        nodemembers = {},
-                        view;
-
-                    _.each(items, function (n) {
-                        nodemembers[n._id] = n.name;
-                    });
-
-                    view = new Views.NodeMembers({ nodemembers: nodemembers });
-                    that.nodemembers.show(view);
-                });
-            }
+            this.renderMembers("groupmembers", Views.GroupMembers);
+            this.renderMembers("nodemembers", Views.NodeMembers);
         },
 
         deleteModel: function (evt) {
@@ -176,7 +166,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             GecosUtils.confirmModal.find("button.btn-danger")
                 .off("click")
-                .on("click", function (evt) {
+                .on("click", function () {
                     that.model.destroy({
                         success: function () {
                             App.instances.router.navigate("", { trigger: true });
