@@ -1,5 +1,5 @@
 /*jslint vars: false, nomen: true, unparam: true */
-/*global ObjectId, db */
+/*global ObjectId, db, print */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -20,19 +20,23 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-(function (ObjectId, db) {
+(function (ObjectId, db, print) {
     "use strict";
 
-    var ou_prefix = 'ou_',
-        user_prefix = 'user_',
-        group_prefix = 'group_',
+    var OU_PREFIX = 'ou_',
+        USER_PREFIX = 'user_',
+        GROUP_PREFIX = 'group_',
+        MAX_LEVELS = 10,
+        MAX_OBJECTS = 1000,
+        MAX_NODES_PER_GROUP = 12,
+        TYPES = ['ou', 'user', 'group'],
+        SEPARATOR = ',',
+        GROUP_NESTED_PROBABILITY = 0.7,
         users = 0,
         ous = 0,
         groups = 0,
-        types = ['ou', 'user'],
-        max_levels = 10,
-        max_objects = 1000,
-        separator = ',',
+        potential_group_members = [],
+        existing_groups = [],
         random_int,
         choice,
         object_creator,
@@ -41,9 +45,10 @@
         types_creator,
         group_creator,
         user_template,
-        i,
-        ou,
+        limit,
         user,
+        ou,
+        i,
         j;
 
     random_int = function (max) {
@@ -55,24 +60,21 @@
     };
 
     object_creator = function (path) {
-        var new_object_type = choice(types);
+        var new_object_type = choice(TYPES);
 
-        if (db.nodes.count() >= max_objects) {
+        if (db.nodes.count() >= MAX_OBJECTS ||
+                (new_object_type === 'ou' && path.split(SEPARATOR).length >= MAX_LEVELS)) {
             return;
         }
 
-        if ((new_object_type === 'ou' &&
-                path.split(separator).length < max_levels) ||
-                new_object_type === 'user') {
-            children = types_creator[new_object_type](path);
-        }
+        types_creator[new_object_type](path);
     };
 
     ou_creator = function (path) {
-        var name = ou_prefix + ous,
+        var name = OU_PREFIX + ous,
             oid = new ObjectId(),
-            new_children = random_int(max_levels) + 1,
-            idx;
+            new_children = random_int(MAX_LEVELS) + 1,
+            h;
 
         ous += 1;
 
@@ -85,21 +87,24 @@
             'source': 'gecos',
             'policies': []
         }, function (err, inserted) {
-            inserted[0]._id;
+            print(inserted[0]._id);
         });
 
-        path = path + separator + oid;
+        path = path + SEPARATOR + oid;
 
-        for (idx = 0; idx < new_children; idx += 1) {
+        // Add children to the OU
+        for (h = 0; h < new_children; h += 1) {
             object_creator(path);
         }
 
     };
 
     user_creator = function (path) {
-        var name = user_prefix + users,
+        var name = USER_PREFIX + users,
             oid = new ObjectId();
+
         users += 1;
+        potential_group_members.push(oid);
 
         db.nodes.insert({
             '_id': oid,
@@ -111,80 +116,72 @@
             'memberof': [],
             'email': name + '@example.com'
         }, function (err, inserted) {
-            inserted[0]._id;
+            print(inserted[0]._id);
+        });
+    };
+
+    group_creator = function (path) {
+        var oid = new ObjectId(),
+            nodes_to_add = random_int(MAX_NODES_PER_GROUP),
+            group = {
+                '_id': oid,
+                'path': path,
+                'name': GROUP_PREFIX + groups,
+                'memberof': null,
+                'nodemembers': [],
+                'groupmembers': [],
+                'type': 'group',
+                'lock': false,
+                'source': 'gecos'
+            },
+            count = 0,
+            node_oid,
+            parent_oid;
+
+        groups += 1;
+
+        if (Math.random() > GROUP_NESTED_PROBABILITY) {
+            // This group is going to be a child of another group
+            parent_oid = random_int(existing_groups.length);
+            parent_oid = existing_groups[parent_oid];
+            group.memberof = parent_oid;
+            db.nodes.update({
+                '_id': parent_oid
+            }, {
+                '$push': {
+                    'groupmembers': oid
+                }
+            });
+        }
+
+        // Add some nodes to this group
+        for (count; count < nodes_to_add; count += 1) {
+            node_oid = random_int(potential_group_members.length);
+            node_oid = potential_group_members[node_oid];
+            group.nodemembers.push(node_oid);
+            db.nodes.update({
+                '_id': node_oid
+            }, {
+                '$push': {
+                    'memberof': oid
+                }
+            });
+        }
+
+        db.nodes.insert(group, function (err, inserted) {
+            print(inserted[0]._id);
         });
     };
 
     types_creator = {
         'ou': ou_creator,
-        'user': user_creator
-    };
-
-    group_creator = function (name, maxlevel, parent_id) {
-        var children_counter = random_int(max_levels) + 1,
-            nodes = random_int(max_levels) + 1,
-            max_node_id = db.nodes.find({'type': 'user'}).count(),
-            group = {
-                '_id': new ObjectId(),
-                'name': name
-            },
-            node_suffix,
-            node_name,
-            node,
-            n,
-            counter;
-
-        if (!db.groups.findOne({ name: name })) {
-            if (parent_id !== undefined) {
-                group.memberof = parent_id;
-                db.groups.update({
-                    '_id': parent_id
-                }, {
-                    '$push': {
-                        'groupmembers': group._id
-                    }
-                });
-            }
-
-            group.nodemembers = [];
-
-            // insert groups in nodes (two ways relation)
-            for (n = 0; n < nodes; n += 1) {
-                node_suffix = random_int(max_node_id);
-                node_name = user_prefix + node_suffix;
-                node = db.nodes.findOne({ 'name': node_name });
-                group.nodemembers.push(node._id);
-                db.nodes.update({
-                    '_id': node._id
-                }, {
-                    '$push': {
-                        'memberof': group._id
-                    }
-                });
-            }
-
-            db.groups.insert(group);
-
-            if (maxlevel > 0) {
-                for (counter = children_counter; counter > 0; counter -= 1) {
-                    groups += 1;
-                    group_creator(group_prefix + groups, maxlevel - 1, group._id);
-                }
-            } else {
-                groups += 1;
-            }
-        }
+        'user': user_creator,
+        'group': group_creator
     };
 
     db.nodes.drop();
-    db.groups.drop();
 
-    ou_creator('root');
-
-    group_creator(group_prefix + db.groups.count(), 3);
-    group_creator(group_prefix + db.groups.count(), 2);
-    group_creator(group_prefix + db.groups.count(), 1);
-    group_creator(group_prefix + db.groups.count(), 3);
+    ou_creator('root'); // Populate the DB with the tree content
 
     db.nodes.ensureIndex({'path': 1});
     db.nodes.ensureIndex({'type': 1});
@@ -201,11 +198,11 @@
     };
 
     db.adminusers.drop();
-
     db.adminusers.insert(user_template);
 
     ous = db.nodes.find({ 'type': 'ou' });
 
+    // Make the first 10 users admins of some OUs
     for (i = 0; i < 10; i += 1) {
         user = user_template;
         user.username = 'user_' + i;
@@ -213,10 +210,11 @@
         user.permissions = [];
         user._id = new ObjectId();
 
-        for (j = 0; j < random_int(10); j += 1) {
+        limit = random_int(10);
+        for (j = 0; j < limit; j += 1) {
             ou = ous[random_int(ous.count())];
             user.permissions.push(ou._id);
         }
         db.adminusers.insert(user);
     }
-}(ObjectId, db));
+}(ObjectId, db, print));
