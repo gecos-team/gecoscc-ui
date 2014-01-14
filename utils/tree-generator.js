@@ -192,7 +192,7 @@
     user_template = {
         "_id": new ObjectId("527a325cbd4d720d3ab11025"),
         "username": "admin",
-        "password": "$2a$12$NNyrOEYPdBu4OApMpfeYfu/GArui2yLVJPIyglPIgPKT03sOHTCGy",
+        "password": "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu",
         "email": "admin@example.com",
         "permissions": ["root,"]
     };

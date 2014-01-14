@@ -72,7 +72,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         iconClasses: {
             user: "user",
             computer: "desktop",
-            printer: "printer"
+            printer: "printer",
+            group: "link"
         },
 
         newItemModal: undefined,
