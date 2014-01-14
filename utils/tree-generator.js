@@ -127,7 +127,6 @@
                 '_id': oid,
                 'path': path,
                 'name': GROUP_PREFIX + groups,
-                'memberof': null,
                 'nodemembers': [],
                 'groupmembers': [],
                 'type': 'group',

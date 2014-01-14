@@ -2,7 +2,7 @@ from bson import ObjectId
 
 from cornice.resource import resource
 
-from gecoscc.api import ResourcePaginated
+from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Group, Groups
 from gecoscc.permissions import api_login_required
 
@@ -18,7 +18,7 @@ def groups_oids_filter(params):
           path='/api/groups/{oid}/',
           description='Groups resource',
           validators=(api_login_required,))
-class GroupResource(ResourcePaginated):
+class GroupResource(TreeLeafResourcePaginated):
 
     schema_collection = Groups
     schema_detail = Group
