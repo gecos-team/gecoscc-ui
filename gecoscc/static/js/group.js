@@ -91,6 +91,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
     Views.GroupForm = Marionette.Layout.extend({
         template: "#groups-form-template",
+        tagName: "div",
+        className: "col-sm-12",
 
         regions: {
             memberof: "#memberof",

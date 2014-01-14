@@ -121,6 +121,10 @@ var App;
 
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
+                if (!(App.instances.tree.has("tree"))) {
+                    App.instances.router.navigate("", { trigger: true });
+                    return;
+                }
                 parent = App.instances.tree.get("tree").first(function (n) {
                     return n.model.id === containerid;
                 });

@@ -1,35 +1,42 @@
-<form role="form">
-    <div class="row">
-        <div class="col-sm-12">
-            <div class="form-group">
-                <label for="name">Nombre</label>
-                <input type="text" class="form-control" id="name" placeholder="Ej: Administradores" required value="<%= name %>">
-            </div>
-            <label>Pertenece a</label>
-            <div id="memberof">
-                <p style="font-size: 1.5em;">
-                    <span class="fa fa-spin fa-spinner"></span> Cargando...
-                </p>
-            </div>
-        </div>
+<div id="<% if (typeof id !== 'undefined') { print(id); } %>" class="panel panel-default">
+    <div class="panel-heading">
+        <div class="text-muted bootstrap-admin-box-title">Usuario</div>
     </div>
-    <div class="row">
-        <div class="col-sm-6 col-xs-12" id="groupmembers">
-            <p style="font-size: 1.5em;">
-                <span class="fa fa-spin fa-spinner"></span> Cargando...
-            </p>
-        </div>
-        <div class="col-sm-6 col-xs-12" id="nodemembers">
-            <p style="font-size: 1.5em;">
-                <span class="fa fa-spin fa-spinner"></span> Cargando...
-            </p>
-        </div>
+    <div class="bootstrap-admin-panel-content dashboard">
+        <form role="form">
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="name">Nombre</label>
+                        <input type="text" class="form-control" id="name" placeholder="Ej: Administradores" required value="<%= name %>">
+                    </div>
+                    <label>Pertenece a</label>
+                    <div id="memberof">
+                        <p style="font-size: 1.5em;">
+                            <span class="fa fa-spin fa-spinner"></span> Cargando...
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-xs-12" id="groupmembers">
+                    <p style="font-size: 1.5em;">
+                        <span class="fa fa-spin fa-spinner"></span> Cargando...
+                    </p>
+                </div>
+                <div class="col-sm-6 col-xs-12" id="nodemembers">
+                    <p style="font-size: 1.5em;">
+                        <span class="fa fa-spin fa-spinner"></span> Cargando...
+                    </p>
+                </div>
+            </div>
+            <div class="row"><div class="col-sm-12">
+                <button class="btn btn-primary" type="submit" id="save">Guardar</button>
+                <button class="btn btn-default" id="goback">Cancelar</button>
+                <% if (typeof id !== "undefined") { %>
+                    <button class="btn btn-danger pull-right" id="delete">Borrar</button>
+                <% } %>
+            </div></div>
+        </form>
     </div>
-    <div class="row"><div class="col-sm-12">
-        <button class="btn btn-primary" type="submit" id="save">Guardar</button>
-        <button class="btn btn-default" id="goback">Cancelar</button>
-        <% if (typeof id !== "undefined") { %>
-            <button class="btn btn-danger pull-right" id="delete">Borrar</button>
-        <% } %>
-    </div></div>
-</form>
+</div>
