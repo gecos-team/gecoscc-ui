@@ -32,7 +32,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
             '<span class="fa fa-group"></span>\n' +
             '        <div class="tree-folder-name"><%= name %> ' +
-            '<span class="extra-opts fa fa-caret-right"></span></div>\n' +
+            '<span class="extra-opts fa fa-caret-right"></span></div>' +
+            '<input type="checkbox" class="pull-right tree-selection">\n' +
             '    </div>\n' +
             '    <div class="tree-folder-content" ' +
             '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
@@ -43,6 +44,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-item" style="display: block;" id="<%= id %>">\n' +
             '    <span class="fa fa-<%= icon %>"></span>\n' +
             '    <div class="tree-item-name"><%= name %></div>\n' +
+            '    <input type="checkbox" class="pull-right tree-selection">\n' +
             '</div>\n',
         emptyTree =
             '<a href="#newroot">\n' +
@@ -76,13 +78,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             group: "link"
         },
 
-        newItemModal: undefined,
+        selectionInfoView: undefined,
 
         events: {
             "click .tree-folder-header": "selectContainer",
             "click .tree-folder-header .opener": "openContainer",
+            "click .tree-folder-header .tree-selection": "multiSelectItem",
             "click .tree-folder-name .extra-opts": "containerExtraOptions",
-            "click .tree-item": "selectItem"
+            "click .tree-item": "selectItem",
+            "click .tree-item .tree-selection": "multiSelectItem"
+        },
+
+        initialize: function () {
+            this.selectionInfoView = new Views.SelectionInfo({
+                el: $("#tree-selection-info")[0]
+            });
         },
 
         render: function () {
@@ -263,6 +273,44 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 $item.addClass("tree-selected");
             }
+        },
+
+        multiSelectItem: function (evt) {
+            evt.stopPropagation();
+            var $el = $(evt.target).parent();
+            if ($el.is(".tree-folder-header")) {
+                $el = $el.parent();
+            }
+            this.selectionInfoView.addIdToSelection($el.attr("id"));
+        },
+
+        clearMultiSelectedItems: function () {
+            this.$el.find("input.tree-selection").attr("checked", false);
+        }
+    });
+
+    Views.SelectionInfo = Marionette.ItemView.extend({
+        template: "#tree-selection-template",
+
+        selection: [],
+
+        events: {
+            "click button": "clearSelection"
+        },
+
+        serializeData: function () {
+            return { selection: this.selection };
+        },
+
+        addIdToSelection: function (id) {
+            this.selection.push(id);
+            this.render();
+        },
+
+        clearSelection: function () {
+            this.selection = [];
+            App.tree.currentView.clearMultiSelectedItems();
+            this.render();
         }
     });
 });

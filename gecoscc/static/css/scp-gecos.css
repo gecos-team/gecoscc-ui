@@ -47,6 +47,11 @@ footer {
 
 /* NAVIGATION TREE */
 
+#tree-selection-info div.info {
+    padding: 5px 15px;
+    border-bottom: 1px solid #DDD;
+}
+
 #nav-tree {
     height: 70%;
     overflow-y: hidden;
