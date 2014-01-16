@@ -149,7 +149,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 parentId,
                 id;
 
-            if ($el.is(".opener") || $el.is(".extra-opts") || $el.is("button")) {
+            if ($el.is(".opener") || $el.is(".extra-opts")) {
                 return;
             }
 
@@ -207,27 +207,30 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
                 $html = $(this.templates.extraOpts({ ouId: ouId })),
-                closing = $el.is(".fa-caret-down");
+                closing = $el.is(".fa-caret-down"),
+                clickCB;
 
             this.closeExtraOptions();
             if (closing) { return; }
             $el.removeClass("fa-caret-right").addClass("fa-caret-down");
             $html.insertAfter($el.parents(".tree-folder-header").first());
 
+            clickCB = function (evt) {
+                evt.preventDefault();
+                var model = new App.OU.Models.OUModel({ id: ouId });
+                model.destroy({
+                    success: function () {
+                        App.instances.tree.reloadTree();
+                    }
+                });
+                GecosUtils.confirmModal.modal("hide");
+            };
+
             $html.find("a.text-danger").click(function (evt) {
                 evt.preventDefault();
                 GecosUtils.confirmModal.find("button.btn-danger")
                     .off("click")
-                    .on("click", function (evt) {
-                        evt.preventDefault();
-                        var model = new App.OU.Models.OUModel({ id: ouId });
-                        model.destroy({
-                            success: function () {
-                                App.instances.tree.reloadTree();
-                            }
-                        });
-                        GecosUtils.confirmModal.modal("hide");
-                    });
+                    .on("click", clickCB);
                 GecosUtils.confirmModal.modal("show");
             });
         },
@@ -277,11 +280,18 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         multiSelectItem: function (evt) {
             evt.stopPropagation();
-            var $el = $(evt.target).parent();
+            var $el = $(evt.target),
+                checked = $el.is(":checked");
+
+            $el = $el.parent();
             if ($el.is(".tree-folder-header")) {
                 $el = $el.parent();
             }
-            this.selectionInfoView.addIdToSelection($el.attr("id"));
+            if (checked) {
+                this.selectionInfoView.addIdToSelection($el.attr("id"));
+            } else {
+                this.selectionInfoView.removeIdFromSelection($el.attr("id"));
+            }
         },
 
         clearMultiSelectedItems: function () {
@@ -293,13 +303,39 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#tree-selection-template",
 
         selection: [],
+        cache: App.createCache(),
 
         events: {
-            "click button": "clearSelection"
+            "click button#selection-info-clear": "clearSelection",
+            "click button#selection-info-add2group": "add2group"
         },
 
         serializeData: function () {
-            return { selection: this.selection };
+            var tree = App.instances.tree.get("tree"),
+                nodes = [],
+                that = this;
+
+            _.each(this.selection, function (id) {
+                var node = that.cache.get(id);
+                if (node) { nodes.push(node); }
+            });
+
+            if (nodes.length !== this.selection.length) {
+                nodes = [];
+                tree.walk(function (node) {
+                    if (_.contains(that.selection, node.model.id)) {
+                        nodes.push(node.model);
+                        that.cache.set(node.model.id, node.model);
+                    }
+                });
+            }
+
+            return {
+                noGroups: _.every(nodes, function (node) {
+                    return node.type !== "group";
+                }),
+                number: this.selection.length
+            };
         },
 
         addIdToSelection: function (id) {
@@ -307,10 +343,22 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.render();
         },
 
-        clearSelection: function () {
+        removeIdFromSelection: function (id) {
+            this.selection = _.reject(this.selection, function (id2) {
+                return id === id2;
+            });
+            this.render();
+        },
+
+        clearSelection: function (evt) {
+            evt.preventDefault();
             this.selection = [];
             App.tree.currentView.clearMultiSelectedItems();
             this.render();
+        },
+
+        add2group: function (evt) {
+            evt.preventDefault();
         }
     });
 });

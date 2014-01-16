@@ -1,5 +1,9 @@
-<% if (selection.length > 0) { %>
+<% if (number > 0) { %>
     <div class="info">
-        Selección: <%= selection.length %> elementos <button class="btn btn-default btn-xs pull-right"><span class="fa fa-eraser"></span></button>
+        Selección: <%= number %>
+        <% if (noGroups) { %>
+            <button id="selection-info-add2group" class="btn btn-default btn-xs">Añadir a un grupo</button>
+        <% } %>
+        <button id="selection-info-clear" class="btn btn-default btn-xs pull-right"><span class="fa fa-eraser"></span></button>
     </div>
 <% } %>
