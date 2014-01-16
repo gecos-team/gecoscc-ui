@@ -55,27 +55,31 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     path: "root",
                     children: []
                 },
-                parsed;
+                aux;
 
-            parsed = this.parseTree(preprocessed, data.nodes);
-            _.each(parsed.children, function (n) {
+            aux = this.parseTree(preprocessed, data.nodes);
+            _.each(aux[0].children, function (n) {
                 if (n.model.type === "ou") {
                     n.model.closed = false; // Open top level containers
                 }
             });
-            this.set("tree", parsed);
+            this.set("tree", aux[0]);
+            return aux[1]; // Return unknown ids
         },
 
         reloadTree: function () {
             var that = this;
             $.ajax("/api/nodes/?maxdepth=1", {
                 success: function (response) {
-                    that.initTree(response);
+                    var unknownIds = that.initTree(response);
+                    that.resolveUnknownNodes(unknownIds);
                 }
             });
         },
 
         parseTree: function (root, data) {
+            var unknownIds = [];
+
             _.each(data, function (node) {
                 var newNode = _.clone(node),
                     path = node.path.split(','),
@@ -105,6 +109,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                             closed: true, // All container nodes start closed
                             children: []
                         };
+                        unknownIds.push(step);
                         aux.push(obj);
                     }
                     aux = obj.children;
@@ -124,7 +129,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
             });
 
-            return this.parser.parse(root);
+            return [this.parser.parse(root), unknownIds];
         },
 
         toJSON: function () {
@@ -142,14 +147,22 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!loadHimself) { url += ',' + nodeId; }
             return $.ajax(url, {
                 success: function (response) {
-                    var treeModel = new Models.TreeModel();
-                    treeModel.initTree(response);
-                    that.addTree(treeModel.get("tree"));
+                    var treeModel = new Models.TreeModel(),
+                        unknownIds = treeModel.initTree(response),
+                        promise;
+
+                    that.addTree(treeModel.get("tree"), true);
+                    promise = that.resolveUnknownNodes(unknownIds, true);
+                    if (_.isUndefined(promise)) {
+                        promise = $.Deferred();
+                        promise.resolve();
+                    }
+                    promise.done(function () { that.trigger("change"); });
                 }
             });
         },
 
-        addNode: function (referenceID, obj) {
+        addNode: function (referenceID, obj, silent) {
             var tree = this.get("tree"),
                 parent,
                 node;
@@ -158,10 +171,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 return n.model.id === referenceID;
             });
             parent.addChild(node);
-            this.trigger("change");
+            if (!silent) { this.trigger("change"); }
         },
 
-        addTree: function (root) {
+        addTree: function (root, silent) {
             var tree = this.get("tree"),
                 that = this,
                 findNode;
@@ -201,7 +214,26 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
             });
 
-            this.trigger("change");
+            if (!silent) { this.trigger("change"); }
+        },
+
+        resolveUnknownNodes: function (unknownIds, silent) {
+            var that = this,
+                oids;
+
+            if (unknownIds.length === 0) { return; }
+            oids = unknownIds.join(',');
+
+            return $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+                var tree = that.get("tree");
+                _.each(response.nodes, function (n) {
+                    var node = tree.first(function (item) {
+                        return item.model.id === n._id;
+                    });
+                    node.model.name = n.name;
+                });
+                if (!silent) { that.trigger("change"); }
+            });
         },
 
         openAllContainersFrom: function (id) {
