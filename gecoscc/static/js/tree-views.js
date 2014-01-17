@@ -97,6 +97,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         render: function () {
             var tree = this.model.toJSON(),
+                oids = this.selectionInfoView.getSelection(),
+                that = this,
                 html;
 
             if (_.isUndefined(tree)) {
@@ -109,6 +111,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             this.$el.html(html);
+            _.each(oids, function (id) {
+                var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
+                $checkbox.attr("checked", true);
+            });
+
             this.bindUIElements();
             return this;
         },
@@ -157,6 +164,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
             parentId = $container.parents(".tree-folder").first().attr("id");
+            if (_.isUndefined(parentId)) { parentId = "root"; }
 
             this.$el.find(".tree-selected").removeClass("tree-selected");
             $container.find(".tree-folder-header").first().addClass("tree-selected");
@@ -242,10 +250,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         selectItem: function (evt) {
-            var $el = $(evt.target).parents(".tree-item").first(),
-                containerId = $el.parents(".tree-folder").first().attr("id"),
-                id = $el.attr("id"),
-                item;
+            var $el = $(evt.target),
+                containerId,
+                item,
+                id;
+
+            if (!$el.is(".tree-item")) {
+                $el = $el.parents(".tree-item").first();
+            }
+            containerId = $el.parents(".tree-folder").first().attr("id");
+            id = $el.attr("id");
 
             this.closeExtraOptions();
             this.$el.find(".tree-selected").removeClass("tree-selected");
@@ -332,7 +346,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             return {
                 noGroups: _.every(nodes, function (node) {
-                    return node.type !== "group";
+                    return (node.type !== "group" && node.type !== "ou");
                 }),
                 number: this.selection.length
             };
@@ -359,6 +373,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         add2group: function (evt) {
             evt.preventDefault();
+        },
+
+        getSelection: function () {
+            return _.clone(this.selection);
         }
     });
 });
