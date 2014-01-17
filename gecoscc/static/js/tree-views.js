@@ -327,7 +327,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         serializeData: function () {
             var tree = App.instances.tree.get("tree"),
                 nodes = [],
-                that = this;
+                groups = [],
+                that = this,
+                noGroupsInSelection;
 
             _.each(this.selection, function (id) {
                 var node = that.cache.get(id);
@@ -344,12 +346,31 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
             }
 
+            noGroupsInSelection = _.every(nodes, function (node) {
+                return (node.type !== "group" && node.type !== "ou");
+            });
+            if (noGroupsInSelection) {
+                if (App.instances.groups && App.instances.groups.length > 0) {
+                    groups = App.instances.groups.toJSON();
+                } else {
+                    groups = new App.Group.Models.GroupCollection();
+                    groups.fetch().done(function () {
+                        that.render();
+                    });
+                    App.instances.groups = groups;
+                    noGroupsInSelection = false;
+                }
+            }
+
             return {
-                noGroups: _.every(nodes, function (node) {
-                    return (node.type !== "group" && node.type !== "ou");
-                }),
+                noGroups: noGroupsInSelection,
+                groups: groups,
                 number: this.selection.length
             };
+        },
+
+        onRender: function () {
+            this.$el.find("select").chosen();
         },
 
         addIdToSelection: function (id) {
@@ -371,12 +392,33 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.render();
         },
 
-        add2group: function (evt) {
-            evt.preventDefault();
-        },
-
         getSelection: function () {
             return _.clone(this.selection);
+        },
+
+        add2group: function (evt) {
+            evt.preventDefault();
+            var groupId = this.$el.find("select option:selected").val(),
+                groupModel = App.instances.groups.get(groupId),
+                that = this,
+                models = [];
+
+            _.each(this.selection, function (id) {
+                // TODO
+                // 1. Add the model id to nodemembers of group
+                // 2. Get the models
+                // 3. Fetch them and add a callback
+                //    1. Add the groupID to the memberof
+                //    2. Save the model
+                var node = that.cache.get(id);
+
+                groupModel.get("nodemembers").push(id);
+                if (_.isUndefined(node)) {
+
+                }
+            });
+
+            groupModel.save();
         }
     });
 });

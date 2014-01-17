@@ -1,9 +1,26 @@
 <% if (number > 0) { %>
     <div class="info">
-        Selección: <%= number %>
+        <div>
+            Selección: <%= number %>
+            <button id="selection-info-clear" class="btn btn-default btn-xs pull-right">
+                <span class="fa fa-eraser"></span>
+            </button>
+        </div>
         <% if (noGroups) { %>
-            <button id="selection-info-add2group" class="btn btn-default btn-xs">Añadir a un grupo</button>
+            <div>
+                Añadir a:
+                <select class="chzn-select">
+                    <option value="">Ninguno</option>
+                    <% _.each(groups, function (item) { %>
+                        <option value="<%= item.id %>">
+                            <%= item.name %>
+                        </option>
+                    <% }); %>
+                </select>
+                <button id="selection-info-add2group" class="btn btn-default btn-xs">
+                    Guardar
+                </button>
+            </div>
         <% } %>
-        <button id="selection-info-clear" class="btn btn-default btn-xs pull-right"><span class="fa fa-eraser"></span></button>
     </div>
 <% } %>
