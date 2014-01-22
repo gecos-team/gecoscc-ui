@@ -246,6 +246,22 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 node.parent.model.closed = false;
                 node = node.parent;
             }
+        },
+
+        findNodes: function (ids) {
+            var tree = this.get("tree"),
+                nodes = [];
+
+            tree.walk({strategy: 'breadth'}, function (node) {
+                if (_.contains(ids, node.model.id)) {
+                    nodes.push(node.model);
+                }
+                if (ids.length === nodes.length) {
+                    return false;
+                }
+            });
+
+            return nodes;
         }
     });
 });

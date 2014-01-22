@@ -324,12 +324,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button#selection-info-add2group": "add2group"
         },
 
-        serializeData: function () {
-            var tree = App.instances.tree.get("tree"),
-                nodes = [],
-                groups = [],
-                that = this,
-                noGroupsInSelection;
+        getNodes: function () {
+            var that = this,
+                nodes = [];
 
             _.each(this.selection, function (id) {
                 var node = that.cache.get(id);
@@ -337,14 +334,20 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             if (nodes.length !== this.selection.length) {
-                nodes = [];
-                tree.walk(function (node) {
-                    if (_.contains(that.selection, node.model.id)) {
-                        nodes.push(node.model);
-                        that.cache.set(node.model.id, node.model);
-                    }
+                nodes = App.instances.tree.findNodes(this.selection);
+                _.each(nodes, function (n) {
+                    that.cache.set(n.id, n);
                 });
             }
+
+            return nodes;
+        },
+
+        serializeData: function () {
+            var nodes = this.getNodes(),
+                groups = [],
+                that = this,
+                noGroupsInSelection;
 
             noGroupsInSelection = _.every(nodes, function (node) {
                 return (node.type !== "group" && node.type !== "ou");
@@ -400,25 +403,42 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var groupId = this.$el.find("select option:selected").val(),
                 groupModel = App.instances.groups.get(groupId),
-                that = this,
+                nodes = this.getNodes(),
+                promises = [],
                 models = [];
 
+            // 1. Add the model id to nodemembers of group
             _.each(this.selection, function (id) {
-                // TODO
-                // 1. Add the model id to nodemembers of group
-                // 2. Get the models
-                // 3. Fetch them and add a callback
-                //    1. Add the groupID to the memberof
-                //    2. Save the model
-                var node = that.cache.get(id);
-
                 groupModel.get("nodemembers").push(id);
-                if (_.isUndefined(node)) {
-
-                }
             });
 
-            groupModel.save();
+            // 2. Get the models
+            _.each(nodes, function (n) {
+                var model;
+
+                switch (n.type) {
+                case "user":
+                    model = new App.User.Models.UserModel({ id: n.id });
+                    break;
+                }
+
+                models.push(model);
+                // 3. Fetch them
+                promises.push(model.fetch());
+            });
+
+            // 4. When fetched
+            $.when.apply($, promises).done(function () {
+                _.each(models, function (m) {
+                    // 4.1. Add the groupID to the memberof
+                    m.get("memberof").push(groupId);
+                    // 4.2 Save the model
+                    m.save();
+                });
+                groupModel.save();
+            });
+
+            this.clearSelection();
         }
     });
 });
