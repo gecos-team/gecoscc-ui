@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global $, App, TreeModel, GecosUtils, gettext */
+/*global App, TreeModel, gettext */
 
 // Copyright 2013 Junta de Andalucia
 //
