@@ -65,7 +65,9 @@ var App;
             "ou/:containerid/ou": "newOU",
             "ou/:containerid/ou/:ouid": "loadOU",
             "ou/:containerid/group": "newGroup",
-            "ou/:containerid/group/:groupid": "loadGroup"
+            "ou/:containerid/group/:groupid": "loadGroup",
+            "ou/:containerid/computer": "newComputer",
+            "ou/:containerid/computer/:groupid": "loadComputer"
         },
 
         controller: {
@@ -174,6 +176,19 @@ var App;
                 );
             },
 
+            newComputer: function (containerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/computer",
+                    text: gettext("Computer")
+                }]);
+                this._newItemHelper(
+                    App.Computer.Models.ComputerModel,
+                    App.Computer.Views.ComputerForm,
+                    containerid
+                );
+            },
+
             _loadItemHelper: function (Model, View, id) {
                 var model, view, skipFetch;
 
@@ -257,6 +272,19 @@ var App;
                     App.Group.Models.GroupModel,
                     App.Group.Views.GroupForm,
                     groupid
+                );
+            },
+
+            loadComputer: function (containerid, computerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/computer/" + computerid,
+                    text: gettext("Computer")
+                }]);
+                this._loadItemHelper(
+                    App.Computer.Models.ComputerModel,
+                    App.Computer.Views.ComputerForm,
+                    computerid
                 );
             }
         }

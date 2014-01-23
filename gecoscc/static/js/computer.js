@@ -25,6 +25,26 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
     "use strict";
 
     Models.ComputerModel = Backbone.Model.extend({
+        defaults: {
+            type: "computer",
+            lock: false,
+            source: "gecos",
+            identifier: "",
+            ip: "",
+            mac: "",
+            family: "laptop",
+            serial: "",
+            registry: "",
+            extra: ""
+        },
+
+        url: function () {
+            var url = "/api/computers/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
+        }
     });
 });
 
@@ -32,6 +52,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Views.ComputerForm = App.GecosFormItemView.extend({
-        template: "#computer-template"
+        template: "#computer-template",
+        tagName: "div",
+        className: "col-sm-12",
     });
 });

@@ -121,6 +121,35 @@ class OrganisationalUnits(colander.SequenceSchema):
     organisationalunits = OrganisationalUnit()
 
 
+class Computer(Node):
+    memberof = ObjectIdList(missing=[], default=[])
+    identifier = colander.SchemaNode(colander.String(),
+                                     default='',
+                                     missing='')
+    ip = colander.SchemaNode(colander.String(),
+                             default='',
+                             missing='')
+    mac = colander.SchemaNode(colander.String(),
+                              default='',
+                              missing='')
+    family = colander.SchemaNode(colander.String(),  # FIXME it's a choices
+                                 default='',
+                                 missing='')
+    serial = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    registry = colander.SchemaNode(colander.String(),
+                                   default='',
+                                   missing='')
+    extra = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
+
+
+class Computers(colander.SequenceSchema):
+    users = User()
+
+
 JOB_STATUS = {
     # Calculating node changes
     'processing': _('Processing'),
