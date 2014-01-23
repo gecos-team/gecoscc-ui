@@ -23,30 +23,34 @@
 (function (ObjectId, db, print) {
     "use strict";
 
-    var OU_PREFIX = 'ou_',
-        USER_PREFIX = 'user_',
-        GROUP_PREFIX = 'group_',
+    var PREFIXES = {
+            OU: 'ou_',
+            USER: 'user_',
+            GROUP: 'group_',
+            COMPUTER: 'computer_'
+        },
         MAX_LEVELS = 10,
         MAX_OBJECTS = 1000,
         MAX_NODES_PER_GROUP = 12,
-        TYPES = ['ou', 'user', 'group'],
+        TYPES = ['ou', 'user', 'group', 'computer'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.7,
-        users = 0,
-        ous = 0,
-        groups = 0,
+        counters = {
+            ous: 0,
+            users: 0,
+            groups: 0,
+            computers: 0
+        },
         potential_group_members = [],
         existing_groups = [],
+        constructors = {},
         random_int,
         choice,
         object_creator,
-        ou_creator,
-        user_creator,
-        types_creator,
-        group_creator,
         user_template,
         limit,
         user,
+        ous,
         ou,
         i,
         j;
@@ -67,16 +71,16 @@
             return;
         }
 
-        types_creator[new_object_type](path);
+        constructors[new_object_type](path);
     };
 
-    ou_creator = function (path) {
-        var name = OU_PREFIX + ous,
+    constructors.ou = function (path) {
+        var name = PREFIXES.OU + counters.ous,
             oid = new ObjectId(),
             new_children = random_int(MAX_LEVELS) + 1,
             h;
 
-        ous += 1;
+        counters.ous += 1;
 
         db.nodes.insert({
             '_id': oid,
@@ -99,11 +103,11 @@
 
     };
 
-    user_creator = function (path) {
-        var name = USER_PREFIX + users,
+    constructors.user = function (path) {
+        var name = PREFIXES.USER + counters.users,
             oid = new ObjectId();
 
-        users += 1;
+        counters.users += 1;
         potential_group_members.push(oid);
 
         db.nodes.insert({
@@ -120,13 +124,13 @@
         });
     };
 
-    group_creator = function (path) {
+    constructors.group = function (path) {
         var oid = new ObjectId(),
             nodes_to_add = random_int(MAX_NODES_PER_GROUP),
             group = {
                 '_id': oid,
                 'path': path,
-                'name': GROUP_PREFIX + groups,
+                'name': PREFIXES.GROUP + counters.groups,
                 'nodemembers': [],
                 'groupmembers': [],
                 'type': 'group',
@@ -137,7 +141,7 @@
             node_oid,
             parent_oid;
 
-        groups += 1;
+        counters.groups += 1;
 
         if (Math.random() > GROUP_NESTED_PROBABILITY) {
             // This group is going to be a child of another group
@@ -172,21 +176,44 @@
         });
     };
 
-    types_creator = {
-        'ou': ou_creator,
-        'user': user_creator,
-        'group': group_creator
+    constructors.computer = function (path) {
+        var name = PREFIXES.COMPUTER + counters.computers,
+            ip = random_int(256) + '.' + random_int(256) + '.' +
+                random_int(256) + '.' + random_int(256),
+            types = ['desktop', 'laptop', 'netbook', 'tablet'],
+            oid = new ObjectId();
+
+        counters.computers += 1;
+        potential_group_members.push(oid);
+
+        db.nodes.insert({
+            '_id': oid,
+            'path': path,
+            'name': name,
+            'type': 'computer',
+            'lock': false,
+            'source': 'gecos',
+            'memberof': [],
+            'identifier': 'id_' + name,
+            'ip': ip,
+            'mac': '98:5C:29:31:CF:07',
+            'family': types[random_int(types.length)],
+            'serial': 'SN' + random_int(100000),
+            'registry': 'JDA' + random_int(10000),
+            'extra': ''
+        }, function (err, inserted) {
+            print(inserted[0]._id);
+        });
     };
 
     db.nodes.drop();
 
-    ou_creator('root'); // Populate the DB with the tree content
+    constructors.ou('root'); // Populate the DB with the tree content
 
     db.nodes.ensureIndex({'path': 1});
     db.nodes.ensureIndex({'type': 1});
 
-
-    /* adminuser generation */
+    // Admin user generation
 
     user_template = {
         "_id": new ObjectId("527a325cbd4d720d3ab11025"),

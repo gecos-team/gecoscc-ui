@@ -75,7 +75,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             user: "user",
             computer: "desktop",
             printer: "printer",
-            group: "link"
+            group: "link",
+            storage: "hdd-o"
         },
 
         selectionInfoView: undefined,
