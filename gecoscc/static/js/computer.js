@@ -55,5 +55,35 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#computer-template",
         tagName: "div",
         className: "col-sm-12",
+
+        groupsWidget: undefined,
+
+        onRender: function () {
+            var groups,
+                promise;
+
+            if (App.instances.groups && App.instances.groups.length > 0) {
+                groups = App.instances.groups;
+                promise = $.Deferred();
+                promise.resolve();
+            } else {
+                groups = new App.Group.Models.GroupCollection();
+                promise = groups.fetch({
+                    success: function () {
+                        App.instances.groups = groups;
+                    }
+                });
+            }
+
+            this.groupsWidget = new App.Group.Views.GroupWidget({
+                el: this.$el.find("div#groups-widget")[0],
+                collection: groups,
+                checked: this.model.get("memberof"),
+                unique: false
+            });
+            promise.done(_.bind(function () {
+                this.groupsWidget.render();
+            }, this));
+        }
     });
 });
