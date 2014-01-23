@@ -27,19 +27,23 @@
             OU: 'ou_',
             USER: 'user_',
             GROUP: 'group_',
-            COMPUTER: 'computer_'
+            COMPUTER: 'computer_',
+            PRINTER: 'printer_',
+            STORAGE: 'storage_'
         },
         MAX_LEVELS = 10,
         MAX_OBJECTS = 1000,
         MAX_NODES_PER_GROUP = 12,
-        TYPES = ['ou', 'user', 'group', 'computer'],
+        TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.7,
         counters = {
             ous: 0,
             users: 0,
             groups: 0,
-            computers: 0
+            computers: 0,
+            printers: 0,
+            storages: 0
         },
         potential_group_members = [],
         existing_groups = [],
@@ -47,6 +51,7 @@
         random_int,
         choice,
         object_creator,
+        rootId,
         user_template,
         limit,
         user,
@@ -101,6 +106,7 @@
             object_creator(path);
         }
 
+        return oid;
     };
 
     constructors.user = function (path) {
@@ -122,6 +128,8 @@
         }, function (err, inserted) {
             print(inserted[0]._id);
         });
+
+        return oid;
     };
 
     constructors.group = function (path) {
@@ -174,6 +182,8 @@
         db.nodes.insert(group, function (err, inserted) {
             print(inserted[0]._id);
         });
+
+        return oid;
     };
 
     constructors.computer = function (path) {
@@ -197,18 +207,68 @@
             'identifier': 'id_' + name,
             'ip': ip,
             'mac': '98:5C:29:31:CF:07',
-            'family': types[random_int(types.length)],
+            'family': choice(types),
             'serial': 'SN' + random_int(100000),
             'registry': 'JDA' + random_int(10000),
             'extra': ''
         }, function (err, inserted) {
             print(inserted[0]._id);
         });
+
+        return oid;
+    };
+
+    constructors.printer = function (path) {
+        var name = PREFIXES.PRINTER + counters.printers,
+            oid = new ObjectId();
+
+        counters.printers += 1;
+        potential_group_members.push(oid);
+
+        db.nodes.insert({
+            '_id': oid,
+            'path': path,
+            'name': name,
+            'type': 'printer',
+            'lock': false,
+            'source': 'gecos',
+            'memberof': []
+        }, function (err, inserted) {
+            print(inserted[0]._id);
+        });
+
+        return oid;
+    };
+
+    constructors.storage = function (path) {
+        var name = PREFIXES.STORAGE + counters.storages,
+            oid = new ObjectId();
+
+        counters.storages += 1;
+        potential_group_members.push(oid);
+
+        db.nodes.insert({
+            '_id': oid,
+            'path': path,
+            'name': name,
+            'type': 'storage',
+            'lock': false,
+            'source': 'gecos',
+            'memberof': []
+        }, function (err, inserted) {
+            print(inserted[0]._id);
+        });
+
+        return oid;
     };
 
     db.nodes.drop();
 
-    constructors.ou('root'); // Populate the DB with the tree content
+    rootId = constructors.ou('root'); // Populate the DB with the tree content
+    while (db.nodes.count() < MAX_OBJECTS) {
+        // Add more children to the root
+        constructors.ou('root,' + rootId);
+    }
 
     db.nodes.ensureIndex({'path': 1});
     db.nodes.ensureIndex({'type': 1});

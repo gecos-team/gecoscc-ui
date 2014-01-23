@@ -135,6 +135,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         toJSON: function () {
             var tree = this.get("tree");
             if (tree) {
+                // Everything must be contained in one OU
                 return _.clone(tree.model.children[0]);
             }
             return {};
