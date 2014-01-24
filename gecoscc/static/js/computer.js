@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true, vars: false */
-/*global App */
+/*global App, gettext, GecosUtils */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -29,6 +29,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             type: "computer",
             lock: false,
             source: "gecos",
+            name: "",
             identifier: "",
             ip: "",
             mac: "",
@@ -44,6 +45,31 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
                 url += this.get("id") + '/';
             }
             return url;
+        },
+
+        save: function (key, val, options) {
+            var isNew = this.isNew(),
+                promise = Backbone.Model.prototype.save.call(this, key, val, options);
+
+            if (isNew) {
+                promise.done(function (resp) {
+                    var tree = App.instances.tree.get("tree"),
+                        parentId = _.last(resp.path.split(',')),
+                        parent = tree.first(function (n) {
+                            return n.model.id === parentId;
+                        });
+
+                    while (parent.children.length > 0) {
+                        parent.children[0].drop();
+                    }
+                    App.instances.tree.loadFromNode(parent);
+                    App.instances.router.navigate("ou/" + parent.model.id + "/computer/" + resp._id, {
+                        trigger: true
+                    });
+                });
+            }
+
+            return promise;
         }
     });
 });
@@ -57,6 +83,12 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         groupsWidget: undefined,
+
+        events: {
+            "click #submit": "saveForm",
+            "click #delete": "deleteModel",
+            "change input": "validate"
+        },
 
         onRender: function () {
             var groups,
@@ -84,6 +116,73 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             promise.done(_.bind(function () {
                 this.groupsWidget.render();
             }, this));
+        },
+
+        saveForm: function (evt) {
+            evt.preventDefault();
+            var $button = $(evt.target),
+                promise;
+
+            if (this.validate()) {
+                $button.tooltip({
+                    html: true,
+                    title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
+                });
+                $button.tooltip("show");
+                this.model.set({
+                    memberof: this.groupsWidget.getChecked(),
+                    name: this.$el.find("#name").val().trim(),
+                    identifier: this.$el.find("#identifier").val().trim(),
+                    ip: this.$el.find("#ip").val().trim(),
+                    mac: this.$el.find("#mac").val().trim(),
+                    family: this.$el.find("#family option:selected").val().trim(),
+                    serial: this.$el.find("#serial").val().trim(),
+                    registry: this.$el.find("#registry").val().trim(),
+                    extra: this.$el.find("#extra").val().trim()
+                });
+                promise = this.model.save();
+                promise.done(function () {
+                    $button.tooltip("destroy");
+                    $button.tooltip({
+                        html: true,
+                        title: "<span class='fa fa-check'></span> " + gettext("Done")
+                    });
+                    $button.tooltip("show");
+                    setTimeout(function () {
+                        $button.tooltip("destroy");
+                    }, 2000);
+                });
+                promise.fail(function () {
+                    $button.tooltip("destroy");
+                    App.showAlert("error", gettext("Saving the Computer failed."),
+                        gettext("Something went wrong, please try again in a few moments."));
+                });
+            } else {
+                App.showAlert("error", gettext("Invalid data."),
+                    gettext("Please, fix the errors in the fields below and try again."));
+            }
+        },
+
+        deleteModel: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            GecosUtils.confirmModal.find("button.btn-danger")
+                .off("click")
+                .on("click", function (evt) {
+                    that.model.destroy({
+                        success: function () {
+                            App.instances.tree.reloadTree();
+                            App.instances.router.navigate("", { trigger: true });
+                        },
+                        error: function () {
+                            App.showAlert("error", gettext("Couldn't delete the Computer."),
+                                gettext("Something went wrong, please try again in a few moments."));
+                        }
+                    });
+                    GecosUtils.confirmModal.modal("hide");
+                });
+            GecosUtils.confirmModal.modal("show");
         }
     });
 });
