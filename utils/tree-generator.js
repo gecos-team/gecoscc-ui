@@ -158,8 +158,10 @@
     };
 
     constructors.user = function (path) {
-        var email = 'user_' + counters.user + '@example.com';
-        return constructors.default(path, 'user', { 'email': email });
+        var email = 'user_' + counters.user + '@example.com',
+            oid = constructors.default(path, 'user', { 'email': email });
+        potential_group_members.push(oid);
+        return oid;
     };
 
     constructors.group = function (path) {
@@ -195,6 +197,8 @@
             });
         }
 
+        existing_groups.push(oid);
+
         // Add some nodes to this group
         for (count; count < nodes_to_add; count += 1) {
             node_oid = random_int(potential_group_members.length);
@@ -219,9 +223,10 @@
     constructors.computer = function (path) {
         var ip = random_int(256) + '.' + random_int(256) + '.' +
                 random_int(256) + '.' + random_int(256),
-            types = ['desktop', 'laptop', 'netbook', 'tablet'];
+            types = ['desktop', 'laptop', 'netbook', 'tablet'],
+            oid;
 
-        return constructors.default(path, 'computer', {
+        oid = constructors.default(path, 'computer', {
             'identifier': 'id_computer_' + counters.computer,
             'ip': ip,
             'mac': '98:5C:29:31:CF:07',
@@ -230,14 +235,20 @@
             'registry': 'JDA' + random_int(10000),
             'extra': ''
         });
+        potential_group_members.push(oid);
+        return oid;
     };
 
     constructors.printer = function (path) {
-        return constructors.default(path, 'printer', {});
+        var oid = constructors.default(path, 'printer', {});
+        potential_group_members.push(oid);
+        return oid;
     };
 
     constructors.storage = function (path) {
-        return constructors.default(path, 'printer', {});
+        var oid = constructors.default(path, 'printer', {});
+        potential_group_members.push(oid);
+        return oid;
     };
 
     db.nodes.drop();
@@ -248,8 +259,8 @@
         constructors.ou('root,' + rootId);
     }
 
-    db.nodes.ensureIndex({'path': 1});
-    db.nodes.ensureIndex({'type': 1});
+    db.nodes.ensureIndex({ 'path': 1 });
+    db.nodes.ensureIndex({ 'type': 1 });
 
     // Admin user generation
 
