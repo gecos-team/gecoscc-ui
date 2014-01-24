@@ -43,7 +43,6 @@ def route_config_auxiliary(config, route_prefix):
 
 
 def to_delete_route_config(config):
-    config.add_route('computers', '/computers/', factory=LoggedFactory)
     config.add_route('printers', '/printers/', factory=LoggedFactory)
 
 

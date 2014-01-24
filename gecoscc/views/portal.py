@@ -42,12 +42,6 @@ def reports(context, request):
 #;;;;;;;;;;;
 # TO DELETE
 #;;;;;;;;;;;
-@view_config(route_name='computers',
-             renderer='templates/to_delete/computers.jinja2')
-def computers(context, request):
-    return {}
-
-
 @view_config(route_name='printers',
              renderer='templates/to_delete/printers.jinja2')
 def printers(context, request):
