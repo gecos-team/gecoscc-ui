@@ -26,8 +26,6 @@ class GroupResource(TreeLeafResourcePaginated):
 
     mongo_filter = {}
 
-    collection_name = 'groups'
-
     def get_objects_filter(self):
         if 'oids' in self.request.GET:
             return groups_oids_filter(self.request.GET)
@@ -37,7 +35,7 @@ class GroupResource(TreeLeafResourcePaginated):
         # Remove group from any other group or node where is defined
 
         # Remove group link from nodes
-        self.request.db.nodes.update({
+        self.collection.update({
             'memberof': obj[self.key]
         }, {
             '$pull': {
@@ -47,6 +45,7 @@ class GroupResource(TreeLeafResourcePaginated):
 
         # Remove group link from other groups
         self.collection.update({
+            'type': 'group',
             'groupmembers': obj[self.key]
         }, {
             '$pull': {
@@ -128,7 +127,7 @@ class GroupResource(TreeLeafResourcePaginated):
         removes = [n for n in oldmembers if n not in newmembers]
 
         for node_id in removes:
-            self.request.nodes.update({
+            self.collection.update({
                 '_id': node_id
             }, {
                 '$pull': {
@@ -137,8 +136,7 @@ class GroupResource(TreeLeafResourcePaginated):
             }, multi=False)
 
         for node_id in adds:
-
-            self.request.nodes.update({
+            self.collection.update({
                 '_id': node_id
             }, {
                 '$push': {

@@ -24,7 +24,8 @@ class ObjectIdField(object):
                 return colander.drop
             return colander.null
         if not isinstance(appstruct, ObjectId):
-            raise colander.Invalid(node, '{0} is not a ObjectId'.format(appstruct))
+            raise colander.Invalid(node, '{0} is not a ObjectId'.format(
+                appstruct))
         return unicode(appstruct)
 
     def deserialize(self, node, cstruct):
@@ -35,9 +36,11 @@ class ObjectIdField(object):
         try:
             return ObjectId(cstruct)
         except InvalidId:
-            raise colander.Invalid(node, '{0} is not a valid id'.format(cstruct))
+            raise colander.Invalid(node, '{0} is not a valid id'.format(
+                cstruct))
         except TypeError:
-            raise colander.Invalid(node, '{0} is not a objectid string'.format(cstruct))
+            raise colander.Invalid(node, '{0} is not a objectid string'.format(
+                cstruct))
 
     def cstruct_children(self, node, cstruct):
         return []
@@ -52,6 +55,9 @@ class Node(colander.MappingSchema):
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
 
+    # Group objects
+    memberof = colander.Seq(ObjectIdField())
+
 
 class Nodes(colander.SequenceSchema):
     nodes = Node()
@@ -63,13 +69,7 @@ class ObjectIdList(colander.SequenceSchema):
                                missing=[])
 
 
-class Group(colander.MappingSchema):
-    _id = colander.SchemaNode(ObjectIdField())
-    name = colander.SchemaNode(colander.String())
-
-    # Group objects
-    memberof = colander.SchemaNode(ObjectIdField(),
-                                   missing=colander.drop)
+class Group(Node):
 
     # Group object members
     groupmembers = ObjectIdList(missing=[], default=[])
