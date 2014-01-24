@@ -23,33 +23,28 @@
 (function (ObjectId, db, print) {
     "use strict";
 
-    var PREFIXES = {
-            OU: 'ou_',
-            USER: 'user_',
-            GROUP: 'group_',
-            COMPUTER: 'computer_',
-            PRINTER: 'printer_',
-            STORAGE: 'storage_'
-        },
-        MAX_LEVELS = 10,
+    var MAX_LEVELS = 10,
         MAX_OBJECTS = 1000,
         MAX_NODES_PER_GROUP = 12,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.7,
         counters = {
-            ous: 0,
-            users: 0,
-            groups: 0,
-            computers: 0,
-            printers: 0,
-            storages: 0
+            ou: 0,
+            user: 0,
+            group: 0,
+            computer: 0,
+            printer: 0,
+            storage: 0
         },
         potential_group_members = [],
         existing_groups = [],
         constructors = {},
         random_int,
         choice,
+        keys,
+        each,
+        defaults,
         object_creator,
         rootId,
         user_template,
@@ -68,6 +63,52 @@
         return l[random_int(l.length)];
     };
 
+    keys = Object.keys || function (obj) {
+        var result = [],
+            key;
+        if (obj !== Object.create(obj)) { throw new TypeError('Invalid object'); }
+        for (key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                result.push(key);
+            }
+        }
+        return result;
+    };
+
+    each = function (obj, iterator, context) {
+        var idx, length, breaker, keysAux;
+        breaker = {};
+        if (obj === null) { return; }
+        if (Array.prototype.forEach && obj.forEach === Array.prototype.forEach) {
+            obj.forEach(iterator, context);
+        } else if (obj.length === +obj.length) {
+            for (idx = 0, length = obj.length; idx < length; idx += 1) {
+                if (iterator.call(context, obj[idx], idx, obj) === breaker) { return; }
+            }
+        } else {
+            keysAux = keys(obj);
+            for (idx = 0, length = keysAux.length; idx < length; i += 1) {
+                if (iterator.call(context, obj[keysAux[idx]], keysAux[idx], obj) === breaker) { return; }
+            }
+        }
+    };
+
+    defaults = function (obj) {
+        each(Array.prototype.slice.call(arguments, 1), function (source) {
+            var prop;
+            if (source) {
+                for (prop in source) {
+                    if (source.hasOwnProperty(prop)) {
+                        if (obj[prop] === undefined) {
+                            obj[prop] = source[prop];
+                        }
+                    }
+                }
+            }
+        });
+        return obj;
+    };
+
     object_creator = function (path) {
         var new_object_type = choice(TYPES);
 
@@ -79,57 +120,46 @@
         constructors[new_object_type](path);
     };
 
-    constructors.ou = function (path) {
-        var name = PREFIXES.OU + counters.ous,
+    constructors.default = function (path, type, extraValues) {
+        var name = type + '_' + counters[type],
             oid = new ObjectId(),
-            new_children = random_int(MAX_LEVELS) + 1,
-            h;
+            defs,
+            values;
 
-        counters.ous += 1;
-
-        db.nodes.insert({
+        counters[type] += 1;
+        defs = {
             '_id': oid,
             'path': path,
             'name': name,
-            'type': 'ou',
+            'type': type,
             'lock': false,
-            'source': 'gecos',
-            'policies': []
-        }, function (err, inserted) {
+            'source': 'gecos'
+        };
+        values = defaults(extraValues, defs);
+
+        db.nodes.insert(values, function (err, inserted) {
             print(inserted[0]._id);
         });
-
-        path = path + SEPARATOR + oid;
-
-        // Add children to the OU
-        for (h = 0; h < new_children; h += 1) {
-            object_creator(path);
-        }
 
         return oid;
     };
 
-    constructors.user = function (path) {
-        var name = PREFIXES.USER + counters.users,
-            oid = new ObjectId();
+    constructors.ou = function (path) {
+        var oid = constructors.default(path, 'ou', { 'policies': [] }),
+            new_children = random_int(MAX_LEVELS) + 1,
+            h;
 
-        counters.users += 1;
-        potential_group_members.push(oid);
-
-        db.nodes.insert({
-            '_id': oid,
-            'path': path,
-            'name': name,
-            'type': 'user',
-            'lock': false,
-            'source': 'gecos',
-            'memberof': [],
-            'email': name + '@example.com'
-        }, function (err, inserted) {
-            print(inserted[0]._id);
-        });
-
+        path = path + SEPARATOR + oid;
+        // Add children to the OU
+        for (h = 0; h < new_children; h += 1) {
+            object_creator(path);
+        }
         return oid;
+    };
+
+    constructors.user = function (path) {
+        var email = 'user_' + counters.user + '@example.com';
+        return constructors.default(path, 'user', { 'email': email });
     };
 
     constructors.group = function (path) {
@@ -138,7 +168,7 @@
             group = {
                 '_id': oid,
                 'path': path,
-                'name': PREFIXES.GROUP + counters.groups,
+                'name': 'group_' + counters.group,
                 'nodemembers': [],
                 'groupmembers': [],
                 'type': 'group',
@@ -149,7 +179,7 @@
             node_oid,
             parent_oid;
 
-        counters.groups += 1;
+        counters.group += 1;
 
         if (Math.random() > GROUP_NESTED_PROBABILITY) {
             // This group is going to be a child of another group
@@ -187,79 +217,27 @@
     };
 
     constructors.computer = function (path) {
-        var name = PREFIXES.COMPUTER + counters.computers,
-            ip = random_int(256) + '.' + random_int(256) + '.' +
+        var ip = random_int(256) + '.' + random_int(256) + '.' +
                 random_int(256) + '.' + random_int(256),
-            types = ['desktop', 'laptop', 'netbook', 'tablet'],
-            oid = new ObjectId();
+            types = ['desktop', 'laptop', 'netbook', 'tablet'];
 
-        counters.computers += 1;
-        potential_group_members.push(oid);
-
-        db.nodes.insert({
-            '_id': oid,
-            'path': path,
-            'name': name,
-            'type': 'computer',
-            'lock': false,
-            'source': 'gecos',
-            'memberof': [],
-            'identifier': 'id_' + name,
+        return constructors.default(path, 'computer', {
+            'identifier': 'id_computer_' + counters.computer,
             'ip': ip,
             'mac': '98:5C:29:31:CF:07',
             'family': choice(types),
             'serial': 'SN' + random_int(100000),
             'registry': 'JDA' + random_int(10000),
             'extra': ''
-        }, function (err, inserted) {
-            print(inserted[0]._id);
         });
-
-        return oid;
     };
 
     constructors.printer = function (path) {
-        var name = PREFIXES.PRINTER + counters.printers,
-            oid = new ObjectId();
-
-        counters.printers += 1;
-        potential_group_members.push(oid);
-
-        db.nodes.insert({
-            '_id': oid,
-            'path': path,
-            'name': name,
-            'type': 'printer',
-            'lock': false,
-            'source': 'gecos',
-            'memberof': []
-        }, function (err, inserted) {
-            print(inserted[0]._id);
-        });
-
-        return oid;
+        return constructors.default(path, 'printer', {});
     };
 
     constructors.storage = function (path) {
-        var name = PREFIXES.STORAGE + counters.storages,
-            oid = new ObjectId();
-
-        counters.storages += 1;
-        potential_group_members.push(oid);
-
-        db.nodes.insert({
-            '_id': oid,
-            'path': path,
-            'name': name,
-            'type': 'storage',
-            'lock': false,
-            'source': 'gecos',
-            'memberof': []
-        }, function (err, inserted) {
-            print(inserted[0]._id);
-        });
-
-        return oid;
+        return constructors.default(path, 'printer', {});
     };
 
     db.nodes.drop();
