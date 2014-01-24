@@ -90,48 +90,22 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             }, this));
         },
 
+        customValidate: function () {
+            return this.checkPasswords();
+        },
+
         saveForm: function (evt) {
             evt.preventDefault();
-            var $button = $(evt.target),
-                promise;
-
-            if (this.validate() && this.checkPasswords()) {
-                $button.tooltip({
-                    html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
-                });
-                $button.tooltip("show");
-                this.model.set({
-                    name: this.$el.find("#username").val().trim(),
-                    phone: this.$el.find("#phone").val().trim(),
-                    email: this.$el.find("#email").val().trim(),
-                    first_name: this.$el.find("#firstname").val().trim(),
-                    last_name: this.$el.find("#lastname").val().trim(),
-                    address: this.$el.find("#address").val().trim(),
-                    password: this.$el.find("#passwd1").val(),
-                    memberof: this.groupsWidget.getChecked()
-                });
-                promise = this.model.save();
-                promise.done(function () {
-                    $button.tooltip("destroy");
-                    $button.tooltip({
-                        html: true,
-                        title: "<span class='fa fa-check'></span> " + gettext("Done")
-                    });
-                    $button.tooltip("show");
-                    setTimeout(function () {
-                        $button.tooltip("destroy");
-                    }, 2000);
-                });
-                promise.fail(function () {
-                    $button.tooltip("destroy");
-                    App.showAlert("error", gettext("Saving the User failed."),
-                        gettext("Something went wrong, please try again in a few moments."));
-                });
-            } else {
-                App.showAlert("error", gettext("Invalid data."),
-                    gettext("Please, fix the errors in the fields below and try again."));
-            }
+            this.saveModel($(evt.target), {
+                memberof: _.bind(this.groupsWidget.getChecked, this),
+                name: "#username",
+                phone: "#phone",
+                email: "#email",
+                first_name: "#firstname",
+                last_name: "#lastname",
+                address: "#address",
+                password: "#passwd1"
+            });
         },
 
         deleteModel: function (evt) {

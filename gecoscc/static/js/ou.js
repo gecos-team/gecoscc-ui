@@ -65,37 +65,10 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
-            var $button = $(evt.target),
-                promise;
-
-            if (this.validate()) {
-                $button.tooltip({
-                    html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
-                });
-                $button.tooltip("show");
-                this.model.set({
-                    name: this.$el.find("#name").val().trim(),
-                    extra: this.$el.find("#extra").val().trim()
-                });
-                promise = this.model.save();
-                promise.done(function () {
-                    $button.tooltip("destroy");
-                    $button.tooltip({
-                        html: true,
-                        title: "<span class='fa fa-check'></span> " + gettext("Done")
-                    });
-                    $button.tooltip("show");
-                    setTimeout(function () {
-                        $button.tooltip("destroy");
-                    }, 2000);
-                });
-                promise.fail(function () {
-                    $button.tooltip("destroy");
-                    App.showAlert("error", gettext("Saving the OU failed."),
-                        gettext("Something went wrong, please try again in a few moments."));
-                });
-            }
+            this.saveModel($(evt.target), {
+                name: "#name",
+                extra: "#extra"
+            });
         },
 
         deleteModel: function (evt) {

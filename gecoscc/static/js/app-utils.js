@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true */
-/*global App, Backbone, jQuery, _ */
+/*global App, Backbone, jQuery, _, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -154,6 +154,71 @@
             });
 
             return valid;
+        },
+
+        customValidate: function () {
+            // To be overwritten
+            return true;
+        },
+
+        saveModel: function ($button, mapping) {
+            var that = this,
+                promise = $.Deferred();
+
+            if (!(this.validate() && this.customValidate())) {
+                App.showAlert(
+                    "error",
+                    gettext("Invalid data."),
+                    gettext("Please, fix the errors in the fields below and try again.")
+                );
+                promise.reject();
+                return promise;
+            }
+
+            $button.tooltip({
+                html: true,
+                title: "<span class='fa fa-spin fa-spinner'></span> " +
+                       gettext("Saving") + "..."
+            });
+            $button.tooltip("show");
+
+            _.each(_.pairs(mapping), function (relation) {
+                var key = relation[1],
+                    value;
+
+                if (_.isString(key)) {
+                    value = that.$el.find(key).val().trim();
+                } else if (_.isFunction(key)) {
+                    value = key();
+                } else {
+                    value = key;
+                }
+                that.model.set(relation[0], value, { silent: true });
+            });
+
+            promise = this.model.save();
+            promise.done(function () {
+                $button.tooltip("destroy");
+                $button.tooltip({
+                    html: true,
+                    title: "<span class='fa fa-check'></span> " +
+                           gettext("Done")
+                });
+                $button.tooltip("show");
+                setTimeout(function () {
+                    $button.tooltip("destroy");
+                }, 2000);
+            });
+            promise.fail(function () {
+                $button.tooltip("destroy");
+                App.showAlert(
+                    "error",
+                    gettext("Saving the " + that.model.resourceType + " failed."),
+                    gettext("Something went wrong, please try again in a few moments.")
+                );
+            });
+
+            return promise;
         }
     });
 

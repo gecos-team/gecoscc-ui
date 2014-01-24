@@ -89,47 +89,17 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
-            var $button = $(evt.target),
-                promise;
-
-            if (this.validate()) {
-                $button.tooltip({
-                    html: true,
-                    title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
-                });
-                $button.tooltip("show");
-                this.model.set({
-                    memberof: this.groupsWidget.getChecked(),
-                    name: this.$el.find("#name").val().trim(),
-                    identifier: this.$el.find("#identifier").val().trim(),
-                    ip: this.$el.find("#ip").val().trim(),
-                    mac: this.$el.find("#mac").val().trim(),
-                    family: this.$el.find("#family option:selected").val().trim(),
-                    serial: this.$el.find("#serial").val().trim(),
-                    registry: this.$el.find("#registry").val().trim(),
-                    extra: this.$el.find("#extra").val().trim()
-                });
-                promise = this.model.save();
-                promise.done(function () {
-                    $button.tooltip("destroy");
-                    $button.tooltip({
-                        html: true,
-                        title: "<span class='fa fa-check'></span> " + gettext("Done")
-                    });
-                    $button.tooltip("show");
-                    setTimeout(function () {
-                        $button.tooltip("destroy");
-                    }, 2000);
-                });
-                promise.fail(function () {
-                    $button.tooltip("destroy");
-                    App.showAlert("error", gettext("Saving the Computer failed."),
-                        gettext("Something went wrong, please try again in a few moments."));
-                });
-            } else {
-                App.showAlert("error", gettext("Invalid data."),
-                    gettext("Please, fix the errors in the fields below and try again."));
-            }
+            this.saveModel($(evt.target), {
+                memberof: _.bind(this.groupsWidget.getChecked, this),
+                name: "#name",
+                identifier: "#identifier",
+                ip: "#ip",
+                mac: "#mac",
+                family: "#family option:selected",
+                serial: "#serial",
+                registry: "#registry",
+                extra: "#extra"
+            });
         },
 
         deleteModel: function (evt) {
