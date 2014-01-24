@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true */
-/*global App, Backbone, jQuery, _, gettext */
+/*global App, Backbone, jQuery, _, gettext, GecosUtils */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -115,6 +115,11 @@
     });
 
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
+        // a resourceType property should be declared by models that extend
+        // this, example:
+        //
+        // resourceType: "user",
+
         validate: function (evt) {
             var valid = true,
                 $elems;
@@ -161,6 +166,18 @@
             return true;
         },
 
+        setPropInModel: function (prop, key) {
+            var value;
+            if (_.isString(key)) {
+                value = this.$el.find(key).val().trim();
+            } else if (_.isFunction(key)) {
+                value = key();
+            } else {
+                value = key;
+            }
+            this.model.set(prop, value, { silent: true });
+        },
+
         saveModel: function ($button, mapping) {
             var that = this,
                 promise = $.Deferred();
@@ -183,17 +200,7 @@
             $button.tooltip("show");
 
             _.each(_.pairs(mapping), function (relation) {
-                var key = relation[1],
-                    value;
-
-                if (_.isString(key)) {
-                    value = that.$el.find(key).val().trim();
-                } else if (_.isFunction(key)) {
-                    value = key();
-                } else {
-                    value = key;
-                }
-                that.model.set(relation[0], value, { silent: true });
+                that.setPropInModel(relation[0], relation[1]);
             });
 
             promise = this.model.save();
@@ -219,6 +226,31 @@
             });
 
             return promise;
+        },
+
+        deleteModel: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            GecosUtils.confirmModal.find("button.btn-danger")
+                .off("click")
+                .on("click", function () {
+                    that.model.destroy({
+                        success: function () {
+                            App.instances.tree.reloadTree();
+                            App.instances.router.navigate("", { trigger: true });
+                        },
+                        error: function () {
+                            App.showAlert(
+                                "error",
+                                gettext("Couldn't delete the " + that.model.resourceType + "."),
+                                gettext("Something went wrong, please try again in a few moments.")
+                            );
+                        }
+                    });
+                    GecosUtils.confirmModal.modal("hide");
+                });
+            GecosUtils.confirmModal.modal("show");
         }
     });
 

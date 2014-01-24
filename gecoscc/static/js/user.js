@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global App, GecosUtils, gettext */
+/*global App */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -106,28 +106,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 address: "#address",
                 password: "#passwd1"
             });
-        },
-
-        deleteModel: function (evt) {
-            evt.preventDefault();
-            var that = this;
-
-            GecosUtils.confirmModal.find("button.btn-danger")
-                .off("click")
-                .on("click", function (evt) {
-                    that.model.destroy({
-                        success: function () {
-                            App.instances.tree.reloadTree();
-                            App.instances.router.navigate("", { trigger: true });
-                        },
-                        error: function () {
-                            App.showAlert("error", gettext("Couldn't delete the User."),
-                                gettext("Something went wrong, please try again in a few moments."));
-                        }
-                    });
-                    GecosUtils.confirmModal.modal("hide");
-                });
-            GecosUtils.confirmModal.modal("show");
         },
 
         checkPasswords: function () {

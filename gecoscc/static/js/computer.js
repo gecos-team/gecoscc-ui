@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true, vars: false */
-/*global App, gettext, GecosUtils */
+/*global App */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -100,28 +100,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 registry: "#registry",
                 extra: "#extra"
             });
-        },
-
-        deleteModel: function (evt) {
-            evt.preventDefault();
-            var that = this;
-
-            GecosUtils.confirmModal.find("button.btn-danger")
-                .off("click")
-                .on("click", function (evt) {
-                    that.model.destroy({
-                        success: function () {
-                            App.instances.tree.reloadTree();
-                            App.instances.router.navigate("", { trigger: true });
-                        },
-                        error: function () {
-                            App.showAlert("error", gettext("Couldn't delete the Computer."),
-                                gettext("Something went wrong, please try again in a few moments."));
-                        }
-                    });
-                    GecosUtils.confirmModal.modal("hide");
-                });
-            GecosUtils.confirmModal.modal("show");
         }
     });
 });
