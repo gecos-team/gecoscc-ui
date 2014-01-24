@@ -71,6 +71,49 @@
         return valid;
     };
 
+    // Custom models and views, for reusing code between resources
+
+    App.GecosResourceModel = Backbone.Model.extend({
+        url: function () {
+            var url = "/api/" + this.resourceType + "s/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
+        },
+
+        parse: function (response) {
+            var result = _.clone(response);
+            result.id = response._id;
+            return result;
+        },
+
+        save: function (key, val, options) {
+            var isNew = this.isNew(),
+                promise = Backbone.Model.prototype.save.call(this, key, val, options);
+
+            if (isNew) {
+                promise.done(function (resp) {
+                    var tree = App.instances.tree.get("tree"),
+                        parentId = _.last(resp.path.split(',')),
+                        parent = tree.first(function (n) {
+                            return n.model.id === parentId;
+                        });
+
+                    while (parent.children.length > 0) {
+                        parent.children[0].drop();
+                    }
+                    App.instances.tree.loadFromNode(parent);
+                    App.instances.router.navigate("ou/" + parent.model.id + '/' + this.resourceType + '/' + resp._id, {
+                        trigger: true
+                    });
+                });
+            }
+
+            return promise;
+        }
+    });
+
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
         validate: function (evt) {
             var valid = true,

@@ -24,7 +24,9 @@
 App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.ComputerModel = Backbone.Model.extend({
+    Models.ComputerModel = App.GecosResourceModel.extend({
+        resourceType: "computer",
+
         defaults: {
             type: "computer",
             lock: false,
@@ -37,39 +39,6 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             serial: "",
             registry: "",
             extra: ""
-        },
-
-        url: function () {
-            var url = "/api/computers/";
-            if (this.has("id")) {
-                url += this.get("id") + '/';
-            }
-            return url;
-        },
-
-        save: function (key, val, options) {
-            var isNew = this.isNew(),
-                promise = Backbone.Model.prototype.save.call(this, key, val, options);
-
-            if (isNew) {
-                promise.done(function (resp) {
-                    var tree = App.instances.tree.get("tree"),
-                        parentId = _.last(resp.path.split(',')),
-                        parent = tree.first(function (n) {
-                            return n.model.id === parentId;
-                        });
-
-                    while (parent.children.length > 0) {
-                        parent.children[0].drop();
-                    }
-                    App.instances.tree.loadFromNode(parent);
-                    App.instances.router.navigate("ou/" + parent.model.id + "/computer/" + resp._id, {
-                        trigger: true
-                    });
-                });
-            }
-
-            return promise;
         }
     });
 });

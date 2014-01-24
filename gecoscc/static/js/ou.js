@@ -23,7 +23,9 @@
 App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.OUModel = Backbone.Model.extend({
+    Models.OUModel = App.GecosResourceModel.extend({
+        resourceType: "ou",
+
         defaults: {
             type: "ou",
             source: "gecos",
@@ -32,43 +34,11 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             policiesCollection: null
         },
 
-        url: function () {
-            var url = "/api/ous/";
-            if (this.has("id")) {
-                url += this.get("id") + '/';
-            }
-            return url;
-        },
-
         parse: function (response) {
             var result = _.clone(response);
             result.policiesCollection = new Models.PolicyCollection(response.policies);
+            result.id = response._id;
             return result;
-        },
-
-        save: function (key, val, options) {
-            var isNew = this.isNew(),
-                promise = Backbone.Model.prototype.save.call(this, key, val, options);
-
-            if (isNew) {
-                promise.done(function (resp) {
-                    var tree = App.instances.tree.get("tree"),
-                        parentId = _.last(resp.path.split(',')),
-                        parent = tree.first(function (n) {
-                            return n.model.id === parentId;
-                        });
-
-                    while (parent.children.length > 0) {
-                        parent.children[0].drop();
-                    }
-                    App.instances.tree.loadFromNode(parent);
-                    App.instances.router.navigate("ou/" + parent.model.id + "/ou/" + resp._id, {
-                        trigger: true
-                    });
-                });
-            }
-
-            return promise;
         }
     });
 

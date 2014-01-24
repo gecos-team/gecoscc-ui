@@ -23,25 +23,13 @@
 App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.GroupModel = Backbone.Model.extend({
+    Models.GroupModel = App.GecosResourceModel.extend({
+        resourceType: "group",
+
         defaults: {
             name: "",
             groupmembers: [],
             nodemembers: []
-        },
-
-        url: function () {
-            var url = "/api/groups/";
-            if (this.has("id")) {
-                url += this.get("id") + '/';
-            }
-            return url;
-        },
-
-        parse: function (response) {
-            var result = _.clone(response);
-            result.id = response._id;
-            return result;
         }
     });
 
