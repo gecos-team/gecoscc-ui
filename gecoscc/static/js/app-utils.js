@@ -230,27 +230,30 @@
 
         deleteModel: function (evt) {
             evt.preventDefault();
-            var that = this;
+            var that = this,
+                cb;
 
-            GecosUtils.confirmModal.find("button.btn-danger")
-                .off("click")
-                .on("click", function () {
-                    that.model.destroy({
-                        success: function () {
-                            App.instances.tree.reloadTree();
-                            App.instances.router.navigate("", { trigger: true });
-                        },
-                        error: function () {
-                            App.showAlert(
-                                "error",
-                                gettext("Couldn't delete the " + that.model.resourceType + "."),
-                                gettext("Something went wrong, please try again in a few moments.")
-                            );
-                        }
-                    });
-                    GecosUtils.confirmModal.modal("hide");
+            cb = function () {
+                that.model.destroy({
+                    success: function () {
+                        App.instances.tree.reloadTree();
+                        App.instances.router.navigate("", { trigger: true });
+                    },
+                    error: function () {
+                        App.showAlert(
+                            "error",
+                            gettext("Couldn't delete the " + that.model.resourceType + "."),
+                            gettext("Something went wrong, please try again in a few moments.")
+                        );
+                    }
                 });
-            GecosUtils.confirmModal.modal("show");
+            };
+
+            GecosUtils.askConfirmation({
+                callback: cb,
+                message: gettext("Deleting a " + that.model.resourceType +
+                    " is a permanent action. You won't be able to undo it.")
+            });
         }
     });
 

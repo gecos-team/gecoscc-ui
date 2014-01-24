@@ -32,6 +32,7 @@
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                         <h4 class="modal-title">¿Estás seguro?</h4>
                     </div>
+                    <div class="modal-body"></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-danger">Sí, adelante</button>
@@ -54,8 +55,24 @@
 
         <script>
             $(document).ready(function () {
-                GecosUtils = {
-                    confirmModal: $("#confirm-modal").modal({ show: false })
+                var confirmModal = $("#confirm-modal").modal({ show: false });
+                window.GecosUtils = {
+                    askConfirmation: function (options) {
+                        if (!_.has(options, "callback")) { return; }
+                        confirmModal.find("button.btn-danger")
+                            .off("click")
+                            .on("click", function () {
+                                options.callback();
+                                confirmModal.modal("hide");
+                            });
+                        if (_.has(options, "message")) {
+                            confirmModal.find(".modal-body").html(
+                                "<p>" + options.message + "</p>");
+                        } else {
+                            confirmModal.find(".modal-body").html("");
+                        }
+                        confirmModal.modal("show");
+                    }
                 };
             });
         </script>
