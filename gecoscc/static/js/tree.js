@@ -238,7 +238,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         openAllContainersFrom: function (id) {
-            var node = this.get("tree").first(function (n) {
+            var node = this.get("tree").first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
                 });
 
@@ -253,7 +253,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var tree = this.get("tree"),
                 nodes = [];
 
-            tree.walk({strategy: 'breadth'}, function (node) {
+            tree.walk({ strategy: 'breadth' }, function (node) {
                 if (_.contains(ids, node.model.id)) {
                     nodes.push(node.model);
                 }
@@ -263,6 +263,25 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             });
 
             return nodes;
+        },
+
+        updateNodeById: function (id, silent) {
+            // It's safe to assume in this case that the node is already
+            // present in the tree
+            var tree = this.get("tree"),
+                that = this,
+                node = tree.first({ strategy: 'breadth' }, function (n) {
+                    return n.model.id === id;
+                });
+
+            node.model.name = "<span class='fa fa-spin fa-spinner'></span> " + gettext("Loading");
+            if (!silent) { this.trigger("change"); }
+            $.ajax("/api/nodes/?oids=" + id).done(function (response) {
+                var data = response.nodes[0];
+                node.model.name = data.name;
+                node.model.type = data.type;
+                if (!silent) { that.trigger("change"); }
+            });
         }
     });
 });

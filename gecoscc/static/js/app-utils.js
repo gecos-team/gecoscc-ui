@@ -215,6 +215,7 @@
                 setTimeout(function () {
                     $button.tooltip("destroy");
                 }, 2000);
+                App.instances.tree.updateNodeById(that.model.get("id"));
             });
             promise.fail(function () {
                 $button.tooltip("destroy");
