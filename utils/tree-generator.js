@@ -256,7 +256,7 @@
             port: random_int(65535) + 1,
             protocol: choice(protocols),
             devicepath: "/some/path/sd" + random_int(256),
-            mount: "/mnt/sto" + random_int(10),
+            mount: choice(["fstab", "gvfs"]),
             extraops: ""
         });
         potential_group_members.push(oid);

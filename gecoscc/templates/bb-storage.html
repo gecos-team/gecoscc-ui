@@ -7,7 +7,7 @@
             <div class="row"><div class="col-sm-12">
                 <div class="form-group">
                     <label for="name">Nombre</label>
-                    <input id="name" type="text" class="form-control" placeholder="Ej: Acceso al almacenamiento en red A01">
+                    <input id="name" type="text" class="form-control" placeholder="Ej: Acceso al almacenamiento en red A01" value="<%= name %>">
                 </div>
             </div></div>
             <div class="row">
@@ -19,67 +19,73 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-sm-9 col-xs-12">
+                <div class="col-sm-5 col-xs-12">
                     <div class="form-group">
                         <label for="server">Servidor</label>
-                        <input id="server" type="text" class="form-control" placeholder="Ej: 192.168.12.078">
+                        <input id="server" type="text" class="form-control ip" placeholder="Ej: 192.168.12.078" value="<%= server %>">
                     </div>
                 </div>
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
                         <label for="port">Puerto</label>
-                        <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="Ej: 9100">
+                        <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="Ej: 9100" value="<%= port %>">
+                    </div>
+                </div>
+                <div class="col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label for="extraops">Opciones Extra</label>
+                        <input id="extraops" type="text" class="form-control" value="<%= extraops %>">
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
-                        <label for="type">Tipo de servidor</label>
-                        <select id="type" class="form-control">
-                            <option value="ftp">FTP</option>
-                            <option value="ssh">SSHFS</option>
-                            <option value="nfs">NFS</option>
-                            <option selected="" value="smb">SAMBA v3</option>
-                            <option value="smb4">SAMBA v4</option>
+                        <label for="protocol">Tipo de servidor</label>
+                        <select id="protocol" class="form-control">
+                            <option value="ftp" <% if (protocol === 'ftp') { print('selected'); } %>>FTP</option>
+                            <option value="ssh" <% if (protocol === 'ssh') { print('selected'); } %>>SSHFS</option>
+                            <option value="nfs" <% if (protocol === 'nfs') { print('selected'); } %>>NFS</option>
+                            <option value="smb" <% if (protocol === 'smb') { print('selected'); } %>>SAMBA v3</option>
+                            <option value="smb4" <% if (protocol === 'smb4') { print('selected'); } %>>SAMBA v4</option>
                         </select>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
-                        <label for="path">Nombre de directorio local</label>
-                        <input id="path" type="text" class="form-control" placeholder="Ej: /ruta/al/directorio">
+                        <label for="devicepath">Nombre de directorio local</label>
+                        <input id="devicepath" type="text" class="form-control" placeholder="Ej: /ruta/al/directorio" value="<%= devicepath %>">
                     </div>
                 </div>
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
                         <label for="mount">Montaje</label>
                         <select id="mount" class="form-control">
-                            <option selected="" value="fstab">En arranque (fstab)</option>
-                            <option value="gvfs">En entorno usuario (gvfs)</option>
+                            <option value="fstab" <% if (mount === 'fstab') { print('selected'); } %>>En arranque (fstab)</option>
+                            <option value="gvfs" <% if (mount === 'gvfs') { print('selected'); } %>>En entorno usuario (gvfs)</option>
                         </select>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label for="extraops">Opciones Extra</label>
-                        <input id="extraops" type="text" class="form-control">
-                    </div>
-                </div>
-                <div class="col-sm-4 col-xs-12">
+            <!--<div class="row">
+                <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
                         <label for="user">Usuario</label>
                         <input id="user" type="text" class="form-control" placeholder="Ej: juan">
                     </div>
                 </div>
-                <div class="col-sm-4 col-xs-12">
+                <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
                         <label for="passwd">Contraseña</label>
                         <input id="passwd" type="password" class="form-control">
                     </div>
                 </div>
+            </div>-->
+            <label>Grupos</label>
+            <div id="groups-widget">
+                <p style="font-size: 1.5em;">
+                    <span class="fa fa-spin fa-spinner"></span> Cargando...
+                </p>
             </div>
             <div class="row"><div class="col-sm-12">
                 <a href="/" class="btn btn-default">Cancelar</a>
