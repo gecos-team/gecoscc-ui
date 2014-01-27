@@ -246,7 +246,19 @@
     };
 
     constructors.storage = function (path) {
-        var oid = constructors.default(path, 'printer', {});
+        var ip = random_int(256) + '.' + random_int(256) + '.' +
+                random_int(256) + '.' + random_int(256),
+            protocols = ["ftp", "ssh", "nfs", "smb", "smb4"],
+            oid;
+
+        oid = constructors.default(path, 'storage', {
+            server: ip,
+            port: random_int(65535) + 1,
+            protocol: choice(protocols),
+            devicepath: "/some/path/sd" + random_int(256),
+            mount: "/mnt/sto" + random_int(10),
+            extraops: ""
+        });
         potential_group_members.push(oid);
         return oid;
     };

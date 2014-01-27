@@ -67,7 +67,9 @@ var App;
             "ou/:containerid/group": "newGroup",
             "ou/:containerid/group/:groupid": "loadGroup",
             "ou/:containerid/computer": "newComputer",
-            "ou/:containerid/computer/:groupid": "loadComputer"
+            "ou/:containerid/computer/:computerid": "loadComputer",
+            "ou/:containerid/storage": "newStorage",
+            "ou/:containerid/storage/:storageid": "loadStorage"
         },
 
         controller: {
@@ -189,6 +191,19 @@ var App;
                 );
             },
 
+            newStorage: function (containerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/storage",
+                    text: gettext("Remote storage")
+                }]);
+                this._newItemHelper(
+                    App.Storage.Models.StorageModel,
+                    App.Storage.Views.StorageForm,
+                    containerid
+                );
+            },
+
             _loadItemHelper: function (Model, View, id) {
                 var model, view, skipFetch;
 
@@ -285,6 +300,19 @@ var App;
                     App.Computer.Models.ComputerModel,
                     App.Computer.Views.ComputerForm,
                     computerid
+                );
+            },
+
+            loadStorage: function (containerid, storageid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/storage/" + storageid,
+                    text: gettext("Remote storage")
+                }]);
+                this._loadItemHelper(
+                    App.Storage.Models.StorageModel,
+                    App.Storage.Views.StorageForm,
+                    storageid
                 );
             }
         }

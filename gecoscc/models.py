@@ -147,7 +147,33 @@ class Computer(Node):
 
 
 class Computers(colander.SequenceSchema):
-    users = User()
+    computers = Computer()
+
+
+class Storage(Node):
+    memberof = ObjectIdList(missing=[], default=[])
+    server = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    port = colander.SchemaNode(colander.String(),  # FIXME it's a number
+                               default='',
+                               missing='')
+    protocol = colander.SchemaNode(colander.String(),  # FIXME it's a choices
+                                   default='',
+                                   missing='')
+    devicepath = colander.SchemaNode(colander.String(),
+                                     default='',
+                                     missing='')
+    mount = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
+    extraops = colander.SchemaNode(colander.String(),
+                                   default='',
+                                   missing='')
+
+
+class Storages(colander.SequenceSchema):
+    storages = Storage()
 
 
 JOB_STATUS = {

@@ -41,7 +41,7 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         parse: function (response) {
-            return response.groups;
+            return response.nodes;
         }
     });
 });

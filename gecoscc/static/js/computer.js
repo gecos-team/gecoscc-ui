@@ -20,7 +20,6 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-
 App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
