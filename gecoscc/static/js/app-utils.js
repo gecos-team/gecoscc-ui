@@ -192,12 +192,9 @@
                 return promise;
             }
 
-            $button.tooltip({
-                html: true,
-                title: "<span class='fa fa-spin fa-spinner'></span> " +
-                       gettext("Saving") + "..."
-            });
-            $button.tooltip("show");
+            $button.attr("disabled", "disabled");
+            $button.html("<span class='fa fa-spin fa-spinner'></span> " +
+                         gettext("Saving") + "...");
 
             _.each(_.pairs(mapping), function (relation) {
                 that.setPropInModel(relation[0], relation[1]);
@@ -205,20 +202,17 @@
 
             promise = this.model.save();
             promise.done(function () {
-                $button.tooltip("destroy");
-                $button.tooltip({
-                    html: true,
-                    title: "<span class='fa fa-check'></span> " +
-                           gettext("Done")
-                });
-                $button.tooltip("show");
+                $button.html("<span class='fa fa-check'></span> " +
+                             gettext("Done"));
                 setTimeout(function () {
-                    $button.tooltip("destroy");
+                    $button.html(gettext("Save"));
+                    $button.attr("disabled", false);
                 }, 2000);
                 App.instances.tree.updateNodeById(that.model.get("id"));
             });
             promise.fail(function () {
-                $button.tooltip("destroy");
+                $button.html(gettext("Save"));
+                $button.attr("disabled", false);
                 App.showAlert(
                     "error",
                     gettext("Saving the " + that.model.resourceType + " failed."),
