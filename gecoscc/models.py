@@ -161,9 +161,9 @@ class Storage(Node):
     protocol = colander.SchemaNode(colander.String(),  # FIXME it's a choices
                                    default='',
                                    missing='')
-    devicepath = colander.SchemaNode(colander.String(),
-                                     default='',
-                                     missing='')
+    localpath = colander.SchemaNode(colander.String(),
+                                    default='',
+                                    missing='')
     mount = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')

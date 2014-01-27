@@ -34,7 +34,7 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             server: "",
             port: 21,
             protocol: "ftp",
-            devicepath: "",
+            localpath: "",
             mount: "fstab",
             extraops: ""
         },
@@ -104,9 +104,27 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
 //             connect += this.$el.find("#user").val() + '@';
             connect += this.$el.find("#server").val() + ':';
             connect += this.ui.port.val() + ':';
-            connect += this.$el.find("#devicepath").val();
+            connect += this.$el.find("#localpath").val();
             connect += " " + this.$el.find("#extraops").val();
             this.$el.find("#connect").val(connect);
+        },
+
+        saveForm: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            this.saveModel($(evt.target), {
+                memberof: _.bind(this.groupsWidget.getChecked, this),
+                name: "#name",
+                server: "#server",
+                port: function () {
+                    return parseInt(that.$el.find("#port").val(), 10);
+                },
+                extraops: "#extraops",
+                protocol: "#protocol option:selected",
+                localpath: "#localpath",
+                mount: "#mount option:selected"
+            });
         }
     });
 });
