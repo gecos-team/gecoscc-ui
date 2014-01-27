@@ -31,6 +31,7 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             source: "gecos",
             lock: false,
             policies: [],
+            extra: "",
             policiesCollection: null
         },
 

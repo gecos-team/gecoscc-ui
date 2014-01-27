@@ -115,6 +115,9 @@ class Policies(colander.SequenceSchema):
 
 class OrganisationalUnit(Node):
     policies = Policies()
+    extra = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
 
 
 class OrganisationalUnits(colander.SequenceSchema):

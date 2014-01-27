@@ -145,7 +145,10 @@
     };
 
     constructors.ou = function (path) {
-        var oid = constructors.default(path, 'ou', { 'policies': [] }),
+        var oid = constructors.default(path, 'ou', {
+                'policies': [],
+                'extra': ''
+            }),
             new_children = random_int(MAX_LEVELS) + 1,
             h;
 
