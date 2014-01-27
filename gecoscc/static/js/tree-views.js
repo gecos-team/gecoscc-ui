@@ -185,11 +185,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
                 classToTarget = '.fa-minus-square-o';
                 classToAdd = 'fa-plus-square-o';
+                this.openContainerAux($el, $treeFolderContent, false);
                 $treeFolderContent.hide();
             } else {
                 classToTarget = '.fa-plus-square-o';
                 classToAdd = 'fa-minus-square-o';
-                this.openContainerAux($el, $treeFolderContent);
+                this.openContainerAux($el, $treeFolderContent, true);
                 $treeFolderContent.show();
             }
 
@@ -198,14 +199,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .addClass(classToAdd);
         },
 
-        openContainerAux: function ($el, $content) {
+        openContainerAux: function ($el, $content, opened) {
             var node = this.model.get("tree"),
                 id = $el.attr("id");
             node = node.first(function (obj) {
                 return obj.model.id === id;
             });
-            node.model.closed = false;
-            if (!(node.model.loaded && node.children.length > 0)) {
+            node.model.closed = !opened;
+            if (opened && !(node.model.loaded && node.children.length > 0)) {
                 $content.html(this.loader());
                 this.model.loadFromNode(node.model.path, node.model.id);
             }
