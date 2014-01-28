@@ -1,5 +1,7 @@
 from bson import ObjectId
 
+from pyramid.httpexceptions import HTTPBadRequest
+
 from cornice.resource import resource
 
 from gecoscc.api import TreeLeafResourcePaginated
@@ -12,6 +14,14 @@ def groups_oids_filter(params):
     return {
         '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
     }
+
+
+def make_cycles(collection, group, old_group):
+    """ Detect if new_group make cycles before save
+         return True if make cycles and otherwise return False.
+    """
+    # TODO
+    return False
 
 
 @resource(collection_path='/api/groups/',
@@ -143,6 +153,11 @@ class GroupResource(TreeLeafResourcePaginated):
                     'memberof': obj[self.key]
                 }
             }, multi=False)
+
+    def pre_save(self, obj, old_obj):
+
+        if make_cycles(self.collection, obj, old_obj):
+            raise HTTPBadRequest('This groups combination can create cycles')
 
     def post_save(self, obj, old_obj=None):
         if self.request.method == 'DELETE':
