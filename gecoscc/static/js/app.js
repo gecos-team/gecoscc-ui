@@ -226,7 +226,7 @@ var App;
 
                 if (skipFetch) {
                     model.trigger("change");
-                    App.tree.currentView.selectItemById(id);
+                    App.tree.currentView.editLeafById(id);
                 } else {
                     model.fetch().done(function () {
                         // Item loaded, now we need to update the tree
@@ -245,7 +245,7 @@ var App;
                             );
                         }
                         promise.done(function () {
-                            App.tree.currentView.selectItemById(id);
+                            App.tree.currentView.editLeafById(id);
                         });
                     });
                 }

@@ -82,12 +82,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectionInfoView: undefined,
 
         events: {
-            "click .tree-folder-header": "selectContainer",
+            "click .tree-folder-header": "editContainer",
             "click .tree-folder-header .opener": "openContainer",
-            "click .tree-folder-header .tree-selection": "multiSelectItem",
-            "click .tree-folder-name .extra-opts": "containerExtraOptions",
-            "click .tree-item": "selectItem",
-            "click .tree-item .tree-selection": "multiSelectItem"
+            "click .tree-folder-header .tree-selection": "selectNode",
+            "click .tree-folder-name .extra-opts": "showContainerMenu",
+            "click .tree-item": "editLeaf",
+            "click .tree-item .tree-selection": "selectNode"
         },
 
         initialize: function () {
@@ -151,7 +151,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 "...</p>";
         },
 
-        selectContainer: function (evt) {
+        editContainer: function (evt) {
             var $el = $(evt.target),
                 $container,
                 parentId,
@@ -221,7 +221,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
-        containerExtraOptions: function (evt) {
+        showContainerMenu: function (evt) {
             evt.preventDefault();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
@@ -243,14 +243,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
-        closeExtraOptions: function () {
+        hideContainerMenu: function () {
             App.tree.$el
                 .find(".tree-extra-options").remove().end()
                 .find(".extra-opts.fa-caret-down").removeClass("fa-caret-down")
                                                   .addClass("fa-caret-right");
         },
 
-        selectItem: function (evt) {
+        editLeaf: function (evt) {
             var $el = $(evt.target),
                 containerId,
                 item,
@@ -277,7 +277,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
-        selectItemById: function (id) {
+        editLeafById: function (id) {
             var $item;
 
             this.model.openAllContainersFrom(id);
@@ -293,7 +293,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
-        multiSelectItem: function (evt) {
+        selectNode: function (evt) {
             evt.stopPropagation();
             var $el = $(evt.target),
                 checked = $el.is(":checked");
@@ -309,7 +309,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
-        clearMultiSelectedItems: function () {
+        clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
         }
     });
@@ -392,7 +392,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         clearSelection: function (evt) {
             evt.preventDefault();
             this.selection = [];
-            App.tree.currentView.clearMultiSelectedItems();
+            App.tree.currentView.clearNodeSelection();
             this.render();
         },
 
@@ -420,6 +420,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 switch (n.type) {
                 case "user":
                     model = new App.User.Models.UserModel({ id: n.id });
+                    break;
+                case "computer":
+                    model = new App.Computer.Models.ComputerModel({ id: n.id });
+                    break;
+                case "storage":
+                    model = new App.Storage.Models.StorageModel({ id: n.id });
                     break;
                 }
 
