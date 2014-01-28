@@ -79,7 +79,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
             }
 
-            this.groupsWidget = new App.Group.Views.GroupWidget({
+            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                 el: this.$el.find("div#groups-widget")[0],
                 collection: groups,
                 checked: this.model.get("memberof"),

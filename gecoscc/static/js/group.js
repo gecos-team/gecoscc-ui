@@ -310,4 +310,55 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         }
     });
+
+    Views.MultiGroupWidget = Marionette.ItemView.extend({
+        template: "#groups-multi-widget-template",
+
+        groupTpl: _.template("<li><label class='group checkbox-inline'>" +
+                             "<input type='checkbox'" +
+                             "       id='<%= id %>'" +
+                             "       <%= checked %>>" +
+                             "<%= name %></label></li>"),
+
+        checked: [],
+
+        initialize: function (options) {
+            if (_.has(options, "checked") && _.isArray(options.cheked)) {
+                this.checked = options.checked;
+            }
+        },
+
+        ui: {
+            filter: "input.group-filter"
+        },
+
+        events: {
+            "keyup @ui.filter": "filterGroups",
+            "click .group-filter-btn": "cleanFilter"
+        },
+
+        onRender: function () {
+            var groups = this.collection.toJSON(),
+                lists = { 0: [], 1: [], 2: [], 3: [] },
+                that = this;
+
+            _.each(groups, function (g, idx) {
+                g.checked = _.contains(that.cheked, g.id);
+                lists[idx % 4].push(that.groupTpl(g));
+            });
+            this.$el.find("ul.group-column").each(function (idx, ul) {
+                $(ul).html(lists[idx].join(""));
+            });
+        },
+
+        filterGroups: function (evt) {
+            evt.preventDefault();
+            // TODO
+        },
+
+        cleanFilter: function (evt) {
+            evt.preventDefault();
+            // TODO
+        }
+    });
 });
