@@ -353,7 +353,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         initialize: function (options) {
             var that = this;
-            if (_.has(options, "checked") && _.isArray(options.cheked)) {
+            if (_.has(options, "checked") && _.isArray(options.checked)) {
                 this.checked = options.checked;
             }
             this.collection = new App.Group.Models.PaginatedGroupCollection();
@@ -369,7 +369,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "keyup @ui.filter": "filterGroups",
             "click .group-filter-btn": "cleanFilter",
-            "click ul.pagination a": "goToPage"
+            "click ul.pagination a": "goToPage",
+            "change label.group input": "selectGroup"
         },
 
         serializeData: function () {
@@ -377,18 +378,19 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 inRange = this.collection.pagesInRange,
                 pages = inRange * 2 + 1,
                 current = this.collection.currentPage,
+                total = this.collection.totalPages,
                 i = 0,
                 page;
 
             for (i; i < pages; i += 1) {
                 page = current - inRange + i;
-                if (page >= 0 && page < this.collection.totalPages) {
+                if (page >= 0 && page < total) {
                     paginator.push([page, page === current]);
                 }
             }
             return {
-                prev: true, // FIXME
-                next: true,
+                prev: current !== 0,
+                next: current !== (total - 1),
                 pages: paginator,
                 showLoader: this.showLoader
             };
@@ -400,7 +402,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this;
 
             _.each(groups, function (g, idx) {
-                g.checked = _.contains(that.cheked, g.id);
+                g.checked = _.contains(that.checked, g.id) ? "checked" : "";
                 lists[idx % 4].push(that.groupTpl(g));
             });
             this.$el.find("ul.group-column").each(function (idx, ul) {
@@ -424,6 +426,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 page;
 
+            if ($el.parent().is(".disabled")) { return; }
             if ($el.is(".previous")) {
                 page = this.collection.currentPage - 1;
             } else if ($el.is(".next")) {
@@ -434,6 +437,24 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.collection.goTo(page, {
                 success: function () { that.render(); }
             });
+        },
+
+        selectGroup: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                nid = $el.attr("id");
+
+            if ($el.is(":checked")) {
+                this.checked.push(nid);
+            } else {
+                this.checked = _.reject(this.checked, function (id) {
+                    return id === nid;
+                });
+            }
+        },
+
+        getChecked: function () {
+            return this.checked;
         }
     });
 });
