@@ -166,7 +166,7 @@
             return true;
         },
 
-        setPropInModel: function (prop, key) {
+        _setPropInModel: function (prop, key) {
             var value;
             if (_.isString(key)) {
                 value = this.$el.find(key).val().trim();
@@ -176,6 +176,27 @@
                 value = key;
             }
             this.model.set(prop, value, { silent: true });
+        },
+
+        _showSavingProcess: function ($button, phase) {
+            switch (phase) {
+            case "progress":
+                $button.attr("disabled", "disabled");
+                $button.html("<span class='fa fa-spin fa-spinner'></span> " +
+                             gettext("Saving") + "...");
+                break;
+            case "success":
+                $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
+                setTimeout(function () {
+                    $button.html(gettext("Save"));
+                    $button.attr("disabled", false);
+                }, 2000);
+                break;
+            case "failure":
+                $button.html(gettext("Save"));
+                $button.attr("disabled", false);
+                break;
+            }
         },
 
         saveModel: function ($button, mapping) {
@@ -192,27 +213,18 @@
                 return promise;
             }
 
-            $button.attr("disabled", "disabled");
-            $button.html("<span class='fa fa-spin fa-spinner'></span> " +
-                         gettext("Saving") + "...");
-
+            this._showSavingProcess($button, "progress");
             _.each(_.pairs(mapping), function (relation) {
-                that.setPropInModel(relation[0], relation[1]);
+                that._setPropInModel(relation[0], relation[1]);
             });
 
             promise = this.model.save();
             promise.done(function () {
-                $button.html("<span class='fa fa-check'></span> " +
-                             gettext("Done"));
-                setTimeout(function () {
-                    $button.html(gettext("Save"));
-                    $button.attr("disabled", false);
-                }, 2000);
+                that._showSavingProcess($button, "success");
                 App.instances.tree.updateNodeById(that.model.get("id"));
             });
             promise.fail(function () {
-                $button.html(gettext("Save"));
-                $button.attr("disabled", false);
+                that._showSavingProcess($button, "failure");
                 App.showAlert(
                     "error",
                     gettext("Saving the " + that.model.resourceType + " failed."),

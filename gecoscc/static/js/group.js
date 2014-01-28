@@ -152,17 +152,17 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var that = this;
 
-            GecosUtils.confirmModal.find("button.btn-danger")
-                .off("click")
-                .on("click", function () {
+            GecosUtils.askConfirmation({
+                callback: function () {
                     that.model.destroy({
                         success: function () {
+                            App.instances.tree.reloadTree();
                             App.instances.router.navigate("", { trigger: true });
                         }
                     });
-                    GecosUtils.confirmModal.modal("hide");
-                });
-            GecosUtils.confirmModal.modal("show");
+                },
+                message: "Deleting a Group is a permanent action."
+            });
         },
 
         save: function (evt) {

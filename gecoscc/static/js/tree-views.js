@@ -175,31 +175,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
-        openContainer: function (evt) {
-            var $el = $(evt.target).parents(".tree-folder").first(),
-                $treeFolderContent = $el.find('.tree-folder-content').first(),
-                classToTarget,
-                classToAdd;
-
-            this.closeExtraOptions();
-            if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
-                classToTarget = '.fa-minus-square-o';
-                classToAdd = 'fa-plus-square-o';
-                this.openContainerAux($el, $treeFolderContent, false);
-                $treeFolderContent.hide();
-            } else {
-                classToTarget = '.fa-plus-square-o';
-                classToAdd = 'fa-minus-square-o';
-                this.openContainerAux($el, $treeFolderContent, true);
-                $treeFolderContent.show();
-            }
-
-            $el.find(classToTarget).first()
-                .removeClass('fa-plus-square-o fa-minus-square-o')
-                .addClass(classToAdd);
-        },
-
-        openContainerAux: function ($el, $content, opened) {
+        _openContainerAux: function ($el, $content, opened) {
             var node = this.model.get("tree"),
                 id = $el.attr("id");
             node = node.first(function (obj) {
@@ -212,43 +188,66 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        openContainer: function (evt) {
+            var $el = $(evt.target).parents(".tree-folder").first(),
+                $treeFolderContent = $el.find('.tree-folder-content').first(),
+                classToTarget,
+                classToAdd;
+
+            this.closeExtraOptions();
+            if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
+                classToTarget = '.fa-minus-square-o';
+                classToAdd = 'fa-plus-square-o';
+                this._openContainerAux($el, $treeFolderContent, false);
+                $treeFolderContent.hide();
+            } else {
+                classToTarget = '.fa-plus-square-o';
+                classToAdd = 'fa-minus-square-o';
+                this._openContainerAux($el, $treeFolderContent, true);
+                $treeFolderContent.show();
+            }
+
+            $el.find(classToTarget).first()
+                .removeClass('fa-plus-square-o fa-minus-square-o')
+                .addClass(classToAdd);
+        },
+
+        _deleteOU: function () {
+            var model = new App.OU.Models.OUModel({ id: this });
+            model.destroy({
+                success: function () {
+                    App.instances.tree.reloadTree();
+                }
+            });
+        },
+
         containerExtraOptions: function (evt) {
             evt.preventDefault();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
                 $html = $(this.templates.extraOpts({ ouId: ouId })),
                 closing = $el.is(".fa-caret-down"),
-                clickCB;
+                that = this;
 
             this.closeExtraOptions();
             if (closing) { return; }
             $el.removeClass("fa-caret-right").addClass("fa-caret-down");
             $html.insertAfter($el.parents(".tree-folder-header").first());
 
-            clickCB = function (evt) {
-                evt.preventDefault();
-                var model = new App.OU.Models.OUModel({ id: ouId });
-                model.destroy({
-                    success: function () {
-                        App.instances.tree.reloadTree();
-                    }
-                });
-                GecosUtils.confirmModal.modal("hide");
-            };
-
             $html.find("a.text-danger").click(function (evt) {
                 evt.preventDefault();
-                GecosUtils.confirmModal.find("button.btn-danger")
-                    .off("click")
-                    .on("click", clickCB);
-                GecosUtils.confirmModal.modal("show");
+                GecosUtils.askConfirmation({
+                    callback: _.bind(that._deleteOU, ouId),
+                    message: "Deleting an OU is a permanent action. It will also delete all its children."
+                });
             });
         },
 
         closeExtraOptions: function () {
             App.tree.$el
                 .find(".tree-extra-options").remove().end()
-                .find(".extra-opts.fa-caret-down").removeClass("fa-caret-down").addClass("fa-caret-right");
+                .find(".extra-opts.fa-caret-down").removeClass("fa-caret-down")
+                                                  .addClass("fa-caret-right");
         },
 
         selectItem: function (evt) {
