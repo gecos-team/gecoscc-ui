@@ -161,7 +161,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return;
             }
 
-            this.closeExtraOptions();
+            this.hideContainerMenu();
             $container = $el.parents(".tree-folder").first();
             id = $container.attr("id");
             parentId = $container.parents(".tree-folder").first().attr("id");
@@ -194,7 +194,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 classToTarget,
                 classToAdd;
 
-            this.closeExtraOptions();
+            this.hideContainerMenu();
             if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
                 classToTarget = '.fa-minus-square-o';
                 classToAdd = 'fa-plus-square-o';
@@ -229,7 +229,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 closing = $el.is(".fa-caret-down"),
                 that = this;
 
-            this.closeExtraOptions();
+            this.hideContainerMenu();
             if (closing) { return; }
             $el.removeClass("fa-caret-right").addClass("fa-caret-down");
             $html.insertAfter($el.parents(".tree-folder-header").first());
@@ -262,7 +262,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             containerId = $el.parents(".tree-folder").first().attr("id");
             id = $el.attr("id");
 
-            this.closeExtraOptions();
+            this.hideContainerMenu();
             this.$el.find(".tree-selected").removeClass("tree-selected");
             $el.addClass("tree-selected");
 
