@@ -81,9 +81,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                 el: this.$el.find("div#groups-widget")[0],
-                collection: groups,
-                checked: this.model.get("memberof"),
-                unique: false
+//                 collection: groups,
+                checked: this.model.get("memberof")
+//                 unique: false
             });
             promise.done(_.bind(function () {
                 this.groupsWidget.render();

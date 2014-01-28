@@ -12,29 +12,37 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
+    <% if (showLoader) { %>
+        <p><span class='fa fa-spinner fa-spin'></span> Cargando...</p>
+    <% } else { %>
+        <div class="col-sm-3">
+            <ul class="list-unstyled group-column"></ul>
+        </div>
+        <div class="col-sm-3">
+            <ul class="list-unstyled group-column"></ul>
+        </div>
+        <div class="col-sm-3">
+            <ul class="list-unstyled group-column"></ul>
+        </div>
+        <div class="col-sm-3">
+            <ul class="list-unstyled group-column"></ul>
+        </div>
+    <% } %>
 </div>
 <div class="row">
-    <div class="col-sm-6 col-sm-offset-6">
-        <ul class="pagination">
-            <li><a class="previous" href="#">&laquo;</a></li>
-            <!--<li><a href="#">1</a></li>
-            <li><a href="#">2</a></li>
-            <li><a href="#">3</a></li>
-            <li><a href="#">4</a></li>
-            <li><a href="#">5</a></li>-->
-            <li><a class="next" href="#">&raquo;</a></li>
+    <div class="col-sm-12">
+        <ul class="pagination pull-right">
+            <li <% if (!prev) { print('class="disabled"'); } %>>
+                <a class="previous" href="#">&laquo;</a>
+            </li>
+            <% _.each(pages, function (p) { %>
+                <li <% if (p[1]) { print('class="active"'); } %>>
+                    <a href="#"><%= p[0] %></a>
+                </li>
+            <% }); %>
+            <li <% if (!next) { print('class="disabled"'); } %>>
+                <a class="next" href="#">&raquo;</a>
+            </li>
         </ul>
     </div>
 </div>

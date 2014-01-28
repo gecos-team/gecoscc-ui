@@ -44,6 +44,35 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             return response.nodes;
         }
     });
+
+    Models.PaginatedGroupCollection = Backbone.Paginator.requestPager.extend({
+        model: Models.GroupModel,
+
+        paginator_core: {
+            type: "GET",
+            dataType: "json",
+            url: "/api/groups/"
+        },
+
+        paginator_ui: {
+            firstPage: 0,
+            currentPage: 0,
+            perPage: 16,
+            pagesInRange: 2,
+            // 10 as a default in case your service doesn't return the total
+            totalPages: 10
+        },
+
+        server_api: {
+            page: function () { return this.currentPage; },
+            pagesize: function () { return this.perPage; }
+        },
+
+        parse: function (response) {
+            this.totalPages = response.pages;
+            return response.nodes;
+        }
+    });
 });
 
 App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
@@ -323,9 +352,14 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         checked: [],
 
         initialize: function (options) {
+            var that = this;
             if (_.has(options, "checked") && _.isArray(options.cheked)) {
                 this.checked = options.checked;
             }
+            this.collection = new App.Group.Models.PaginatedGroupCollection();
+            this.collection.goTo(0, {
+                success: function () { that.render(); }
+            });
         },
 
         ui: {
@@ -334,7 +368,30 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "keyup @ui.filter": "filterGroups",
-            "click .group-filter-btn": "cleanFilter"
+            "click .group-filter-btn": "cleanFilter",
+            "click ul.pagination a": "goToPage"
+        },
+
+        serializeData: function () {
+            var paginator = [],
+                inRange = this.collection.pagesInRange,
+                pages = inRange * 2 + 1,
+                current = this.collection.currentPage,
+                i = 0,
+                page;
+
+            for (i; i < pages; i += 1) {
+                page = current - inRange + i;
+                if (page >= 0 && page < this.collection.totalPages) {
+                    paginator.push([page, page === current]);
+                }
+            }
+            return {
+                prev: true, // FIXME
+                next: true,
+                pages: paginator,
+                showLoader: this.showLoader
+            };
         },
 
         onRender: function () {
@@ -359,6 +416,24 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         cleanFilter: function (evt) {
             evt.preventDefault();
             // TODO
+        },
+
+        goToPage: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                that = this,
+                page;
+
+            if ($el.is(".previous")) {
+                page = this.collection.currentPage - 1;
+            } else if ($el.is(".next")) {
+                page = this.collection.currentPage + 1;
+            } else {
+                page = parseInt($el.text(), 10);
+            }
+            this.collection.goTo(page, {
+                success: function () { that.render(); }
+            });
         }
     });
 });
