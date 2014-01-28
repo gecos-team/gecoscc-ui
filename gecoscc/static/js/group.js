@@ -166,8 +166,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             widget = new Views.GroupWidget({
                 collection: groups,
-                checked: this.model.get("memberof"),
-                unique: true
+                checked: this.model.get("memberof")
             });
             promise.done(function () {
                 that.memberof.show(widget);
@@ -248,30 +247,17 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     Views.GroupWidget = Marionette.ItemView.extend({
         template: "#groups-widget-template",
 
-        unique: false,
         checked: undefined,
 
         initialize: function (options) {
-            if (_.has(options, "unique")) {
-                this.unique = options.unique;
-            }
             if (_.has(options, "checked")) {
                 this.checked = options.checked;
             }
         },
 
-        ui: {
-            filter: "input.group-filter"
-        },
-
-        events: {
-            "keyup @ui.filter": "filterGroups",
-            "click .group-filter-btn": "cleanFilter"
-        },
-
         serializeData: function () {
             var data = {},
-                aux,
+                that = this,
                 groups;
 
             if (this.collection) {
@@ -279,19 +265,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (_.isUndefined(this.checked)) {
                         this.checked = "";
                     }
-                } else if (_.isUndefined(this.checked)) {
-                    this.checked = [];
                 }
 
-                aux = _.flatten([this.checked]);
                 // Sort the groups, checked first
                 groups = this.collection.toJSON();
                 groups = _.sortBy(groups, function (g) {
-                    return _.contains(aux, g.id) ? 0 : 1;
+                    return that.checked === g.id ? 0 : 1;
                 });
 
                 data = {
-                    unique: this.unique,
                     items: groups,
                     checked: this.checked
                 };
@@ -300,43 +282,13 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            if (this.unique) {
-                this.$el.find("select").chosen();
-            }
-        },
-
-        filterGroups: function (evt) {
-            evt.preventDefault();
-            var filter = this.ui.filter.val();
-
-            this.$el.find("label.group").each(function (index, label) {
-                var $label = $(label),
-                    filterReady = filter.trim().toLowerCase(),
-                    text = $label.text().trim().toLowerCase();
-                if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
-                    $label.parent().show();
-                } else {
-                    $label.parent().hide();
-                }
-            });
-        },
-
-        cleanFilter: function (evt) {
-            this.ui.filter.val("");
-            this.filterGroups(evt);
-            this.ui.filter.focus();
+            this.$el.find("select").chosen();
         },
 
         getChecked: function () {
-            var result;
-            if (this.unique) {
-                result = this.$el.find("option:selected").val();
-                if (result.length === 0) { return null; }
-                return result;
-            }
-            return _.map(this.$el.find("input:checked"), function (item) {
-                return $(item).attr("id");
-            });
+            var result = this.$el.find("option:selected").val();
+            if (result.length === 0) { return null; }
+            return result;
         }
     });
 
@@ -413,11 +365,24 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         filterGroups: function (evt) {
             evt.preventDefault();
             // TODO
+//             var filter = this.ui.filter.val();
+//
+//             this.$el.find("label.group").each(function (index, label) {
+//                 var $label = $(label),
+//                     filterReady = filter.trim().toLowerCase(),
+//                     text = $label.text().trim().toLowerCase();
+//                 if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
+//                     $label.parent().show();
+//                 } else {
+//                     $label.parent().hide();
+//                 }
+//             });
         },
 
         cleanFilter: function (evt) {
-            evt.preventDefault();
-            // TODO
+            this.ui.filter.val("");
+            this.filterGroups(evt);
+            this.ui.filter.focus();
         },
 
         goToPage: function (evt) {

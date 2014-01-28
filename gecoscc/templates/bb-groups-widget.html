@@ -1,51 +1,15 @@
-<% if (unique) { %>
-
-    <div class="row groups-widget"><div class="col-sm-6"><div class="form-group">
-        <select class="chzn-select">
-            <option value="">Ninguno</option>
-            <% _.each(items, function (item) { %>
-                <option
-                    value="<%= item.id %>"
-                    <% if (item.id === checked) { %>
-                        selected
-                    <% } %>
-                >
-                    <%= item.name %>
-                </option>
-            <% }); %>
-        </select>
-    </div></div></div>
-
-<% } else { %>
-
-    <div class="row"><div class="col-sm-6">
-        <div class="input-group mb10">
-            <input type="text" class="form-control group-filter" placeholder="Filtra">
-            <span class="input-group-btn">
-                <button class="btn btn-default group-filter-btn" type="button"><span class="fa fa-eraser"></span></button>
-            </span>
-        </div>
-    </div></div>
-    <div class="row"><div class="col-sm-12">
-        <div class="well">
-            <ul class="groups-widget">
-                <% _.each(items, function (item) { %>
-                <li>
-                    <label class="group checkbox-inline">
-                        <input
-                            type="checkbox"
-                            id="<%= item.id %>"
-                            value="<%= item.id %>"
-                            <% _.each(checked, function (id) { if (id === item.id) { %>
-                                checked
-                            <% }}); %>
-                        >
-                        <%= item.name %>
-                    </label>
-                </li>
-                <% }); %>
-            </ul>
-        </div>
-    </div></div>
-
-<% } %>
+<div class="row groups-widget"><div class="col-sm-6"><div class="form-group">
+    <select class="chzn-select">
+        <option value="">Ninguno</option>
+        <% _.each(items, function (item) { %>
+            <option
+                value="<%= item.id %>"
+                <% if (item.id === checked) { %>
+                    selected
+                <% } %>
+            >
+                <%= item.name %>
+            </option>
+        <% }); %>
+    </select>
+</div></div></div>
