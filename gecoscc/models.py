@@ -124,6 +124,14 @@ class OrganisationalUnits(colander.SequenceSchema):
     organisationalunits = OrganisationalUnit()
 
 
+COMPUTER_FAMILY = {
+    'desktop': _('Desktop'),
+    'laptop': _('Laptop'),
+    'netbook': _('Netbook'),
+    'tablet': _('Tablet'),
+}
+
+
 class Computer(Node):
     memberof = ObjectIdList(missing=[], default=[])
     identifier = colander.SchemaNode(colander.String(),
@@ -136,8 +144,10 @@ class Computer(Node):
                               default='',
                               missing='')
     family = colander.SchemaNode(colander.String(),  # FIXME it's a choices
-                                 default='',
-                                 missing='')
+                                 default='desktop',
+                                 validator=colander.OneOf(
+                                     COMPUTER_FAMILY.keys()
+                                 ))
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
