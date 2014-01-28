@@ -71,30 +71,11 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            var groups, promise;
-
-            if (App.instances.groups && App.instances.groups.length > 0) {
-                groups = App.instances.groups;
-                promise = $.Deferred();
-                promise.resolve();
-            } else {
-                groups = new App.Group.Models.GroupCollection();
-                promise = groups.fetch({
-                    success: function () {
-                        App.instances.groups = groups;
-                    }
-                });
-            }
-
-            this.groupsWidget = new App.Group.Views.GroupWidget({
+            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                 el: this.$el.find("div#groups-widget")[0],
-                collection: groups,
-                checked: this.model.get("memberof"),
-                unique: false
+                checked: this.model.get("memberof")
             });
-            promise.done(_.bind(function () {
-                this.groupsWidget.render();
-            }, this));
+            this.groupsWidget.render();
 
             this.updateConnect();
         },
