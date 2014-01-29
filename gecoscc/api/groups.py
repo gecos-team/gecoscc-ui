@@ -34,7 +34,9 @@ class GroupResource(TreeLeafResourcePaginated):
     schema_detail = Group
     objtype = 'group'
 
-    mongo_filter = {}
+    mongo_filter = {
+        'type': 'group',
+    }
 
     def get_objects_filter(self):
         if 'oids' in self.request.GET:
