@@ -95,7 +95,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             var that = this;
 
             this.saveModel($(evt.target), {
-                memberof: _.bind(this.groupsWidget.getChecked, this),
+                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
                 server: "#server",
                 port: function () {

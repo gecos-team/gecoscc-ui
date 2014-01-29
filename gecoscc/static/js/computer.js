@@ -74,7 +74,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         saveForm: function (evt) {
             evt.preventDefault();
             this.saveModel($(evt.target), {
-                memberof: _.bind(this.groupsWidget.getChecked, this),
+                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
                 identifier: "#identifier",
                 ip: "#ip",
