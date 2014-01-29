@@ -115,8 +115,8 @@
     });
 
     App.GecosFormItemView = Backbone.Marionette.ItemView.extend({
-        // a resourceType property should be declared by models that extend
-        // this, example:
+        // a resourceType property should be declared by models that use
+        // this view for edition, example:
         //
         // resourceType: "user",
 

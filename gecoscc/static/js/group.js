@@ -37,7 +37,7 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         model: Models.GroupModel,
 
         url: function () {
-            return "/api/groups/";
+            return "/api/groups/?pagesize=99999";
         },
 
         parse: function (response) {
@@ -123,6 +123,16 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button#goback": "go2table"
         },
 
+        helperView: undefined,
+
+        initialize: function (options) {
+            this.helperView = new App.GecosFormItemView({
+                model: options.model,
+                el: this.el
+            });
+            this.helperView.resourceType = "group";
+        },
+
         renderMembers: function (propName, View) {
             var oids = this.model.get(propName).join(','),
                 aux = {},
@@ -177,65 +187,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         deleteModel: function (evt) {
-            evt.preventDefault();
-            var that = this;
-
-            GecosUtils.askConfirmation({
-                callback: function () {
-                    that.model.destroy({
-                        success: function () {
-                            App.instances.tree.reloadTree();
-                            App.instances.router.navigate("", { trigger: true });
-                        }
-                    });
-                },
-                message: "Deleting a Group is a permanent action."
-            });
+            this.helperView.deleteModel(evt);
         },
 
         save: function (evt) {
             evt.preventDefault();
-            var name, memberof, $button;
-
-            name = this.$el.find("#name").val().trim();
-            if (name.length === 0) {
-                this.$el.find("#name").parent().addClass("has-error");
-                return;
-            }
-            this.$el.find("#name").parent().removeClass("has-error");
-            this.model.set("name", name);
-
-            $button = $(evt.target);
-            $button.tooltip({
-                html: true,
-                title: "<span class='fa fa-spin fa-spinner'></span> " + gettext("Saving") + "..."
+            this.helperView.saveModel($(evt.target), {
+                memberof: _.bind(this.memberof.currentView.getChecked, this),
+                name: "#name"
             });
-            $button.tooltip("show");
-
-            memberof = this.memberof.currentView.getChecked();
-            this.model.set("memberof", memberof);
-
-            this.model.save()
-                .done(function () {
-                    $button.tooltip("destroy");
-                    $button.tooltip({
-                        html: true,
-                        title: "<span class='fa fa-check'></span> " + gettext("Done")
-                    });
-                    $button.tooltip("show");
-                    setTimeout(function () {
-                        $button.tooltip("destroy");
-                        App.instances.router.navigate("", { trigger: true });
-                    }, 1500);
-                })
-                .fail(function () {
-                    $button.tooltip("destroy");
-                    $button.tooltip({
-                        html: true,
-                        title: "<span class='text-danger fa fa-exclamation-triangle'></span> " + gettext("Failure")
-                    });
-                    $button.tooltip("show");
-                });
         },
 
         go2table: function (evt) {
