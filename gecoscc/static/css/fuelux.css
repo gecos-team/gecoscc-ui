@@ -39,10 +39,6 @@
           border-radius: 6px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header:hover {
-  background-color: #dfeef5;
-}
-
 .fuelux .tree .tree-folder .tree-folder-header > span {
   position: absolute;
   top: 2px;
@@ -79,8 +75,9 @@
           border-radius: 6px;
 }
 
+.fuelux .tree .tree-folder .tree-folder-header:hover,
 .fuelux .tree .tree-item:hover {
-  background-color: #dfeef5;
+  background-color: #dfeef5 !important;
 }
 
 .fuelux .tree .tree-item .tree-item-name {
@@ -97,11 +94,6 @@
   display: block;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header.selected,
-.fuelux .tree .tree-item.selected {
-  background-color: #FAF186;
-}
-
 .fuelux .tree .tree-folder .tree-folder-header .tree-selection,
 .fuelux .tree .tree-item .tree-selection {
   margin-right: -25px;
@@ -113,10 +105,11 @@
   display: block;
 }
 
-.fuelux .tree .tree-selected {
-  background-color: #b9dff1;
+.fuelux .tree .tree-folder .tree-folder-header.multiselected,
+.fuelux .tree .tree-item.multiselected {
+  background-color: #FAF186;
 }
 
-.fuelux .tree .tree-selected:hover {
-  background-color: #b9dff1;
+.fuelux .tree .tree-selected {
+  background-color: #b9dff1 !important;
 }

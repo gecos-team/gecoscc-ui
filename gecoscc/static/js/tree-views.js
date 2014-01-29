@@ -123,7 +123,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             _.each(oids, function (id) {
                 var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
                 $checkbox.attr("checked", true);
-                $checkbox.parent().addClass("selected");
+                $checkbox.parent().addClass("multiselected");
             });
 
             if (!_.isNull(this.activeNode)) {
@@ -205,13 +205,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.stopPropagation();
             var $el = $(evt.target).parents(".tree-folder").first(),
                 $treeFolderContent = $el.find('.tree-folder-content').first(),
-                classToTarget,
-                classToAdd;
+                classToTarget = '.fa-minus-square-o',
+                classToAdd = 'fa-plus-square-o';
 
             this.hideContainerMenu();
             if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
-                classToTarget = '.fa-minus-square-o';
-                classToAdd = 'fa-plus-square-o';
                 this._openContainerAux($el, $treeFolderContent, false);
                 $treeFolderContent.hide();
             } else {
@@ -283,9 +281,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             $el = $el.parent();
             if (checked) {
-                $el.addClass("selected");
+                $el.addClass("multiselected");
             } else {
-                $el.removeClass("selected");
+                $el.removeClass("multiselected");
             }
 
             if ($el.is(".tree-folder-header")) {
@@ -300,7 +298,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
-            this.$el.find(".selected").removeClass("selected");
+            this.$el.find(".multiselected").removeClass("multiselected");
         }
     });
 
