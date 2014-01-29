@@ -159,6 +159,8 @@ class GroupResource(TreeLeafResourcePaginated):
         if make_cycles(self.collection, obj, old_obj):
             raise HTTPBadRequest('This groups combination can create cycles')
 
+        return obj
+
     def post_save(self, obj, old_obj=None):
         if self.request.method == 'DELETE':
             self.remove_relations(obj)
