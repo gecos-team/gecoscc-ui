@@ -382,7 +382,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         clearSelection: function (evt) {
-            evt.preventDefault();
+            if (evt) { evt.preventDefault(); }
             this.selection = [];
             App.tree.currentView.clearNodeSelection();
             this.render();
@@ -392,13 +392,25 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return _.clone(this.selection);
         },
 
+        _getModel: function (type) {
+            switch (type) {
+            case "user":
+                return App.User.Models.UserModel;
+            case "computer":
+                return App.Computer.Models.ComputerModel;
+            case "storage":
+                return App.Storage.Models.StorageModel;
+            }
+        },
+
         add2group: function (evt) {
             evt.preventDefault();
             var groupId = this.$el.find("select option:selected").val(),
                 groupModel = App.instances.groups.get(groupId),
                 nodes = this.getNodes(),
                 promises = [],
-                models = [];
+                models = [],
+                that = this;
 
             // 1. Add the model id to nodemembers of group
             _.each(this.selection, function (id) {
@@ -407,23 +419,22 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             // 2. Get the models
             _.each(nodes, function (n) {
-                var model;
+                var model = App.instances.cache.get(n.id),
+                    promise = $.Deferred(),
+                    Model;
 
-                switch (n.type) {
-                case "user":
-                    model = new App.User.Models.UserModel({ id: n.id });
-                    break;
-                case "computer":
-                    model = new App.Computer.Models.ComputerModel({ id: n.id });
-                    break;
-                case "storage":
-                    model = new App.Storage.Models.StorageModel({ id: n.id });
-                    break;
+                if (_.isUndefined(model)) {
+                    // Not cached
+                    Model = that._getModel(n.type);
+                    model = new Model({ id: n.id });
+                    promise = model.fetch();
+                    App.instances.cache.set(n.id, model);
+                } else {
+                    promise.resolve();
                 }
-
                 models.push(model);
                 // 3. Fetch them
-                promises.push(model.fetch());
+                promises.push(promise);
             });
 
             // 4. When fetched

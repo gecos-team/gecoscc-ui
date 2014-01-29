@@ -204,6 +204,29 @@ var App;
                 );
             },
 
+            _fetchModel: function (model, id) {
+                model.fetch().done(function () {
+                    // Item loaded, now we need to update the tree
+                    var node = App.instances.tree.get("tree").first(function (n) {
+                            return n.model.id === id;
+                        }),
+                        promise = $.Deferred();
+
+                    if (node && node.model.loaded) {
+                        promise.resolve();
+                    } else {
+                        promise = App.instances.tree.loadFromNode(
+                            model.get("path"),
+                            model.get("id"),
+                            true
+                        );
+                    }
+                    promise.done(function () {
+                        App.instances.tree.openAllContainersFrom(id);
+                    });
+                });
+            },
+
             _loadItemHelper: function (Model, View, id) {
                 var model, view, skipFetch;
 
@@ -216,8 +239,8 @@ var App;
                 } else {
                     skipFetch = true;
                 }
-                view = new View({ model: model });
 
+                view = new View({ model: model });
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
                 model
@@ -227,29 +250,11 @@ var App;
                     });
 
                 if (skipFetch) {
+                    // The object was cached
                     App.instances.tree.openAllContainersFrom(id);
                     model.trigger("change");
                 } else {
-                    model.fetch().done(function () {
-                        // Item loaded, now we need to update the tree
-                        var node = App.instances.tree.get("tree").first(function (n) {
-                                return n.model.id === id;
-                            }),
-                            promise = $.Deferred();
-
-                        if (node && node.model.loaded) {
-                            promise.resolve();
-                        } else {
-                            promise = App.instances.tree.loadFromNode(
-                                model.get("path"),
-                                model.get("id"),
-                                true
-                            );
-                        }
-                        promise.done(function () {
-                            App.instances.tree.openAllContainersFrom(id);
-                        });
-                    });
+                    this._fetchModel(model, id);
                 }
             },
 
