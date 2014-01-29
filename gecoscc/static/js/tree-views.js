@@ -115,6 +115,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             _.each(oids, function (id) {
                 var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
                 $checkbox.attr("checked", true);
+                $checkbox.parent().addClass("selected");
             });
 
             this.bindUIElements();
@@ -299,6 +300,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 checked = $el.is(":checked");
 
             $el = $el.parent();
+            if (checked) {
+                $el.addClass("selected");
+            } else {
+                $el.removeClass("selected");
+            }
+
             if ($el.is(".tree-folder-header")) {
                 $el = $el.parent();
             }
@@ -311,6 +318,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
+            this.$el.find(".selected").removeClass("selected");
         }
     });
 
@@ -378,7 +386,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         addIdToSelection: function (id) {
-            this.selection.push(id);
+            if (!_.contains(this.selection, id)) {
+                this.selection.push(id);
+            }
             this.render();
         },
 

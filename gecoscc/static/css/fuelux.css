@@ -64,7 +64,7 @@
 
 .fuelux .tree .tree-folder .tree-folder-content {
   margin-left: 23px;
-  border-left: solid 1px rgb(150, 150, 150);
+  border-left: solid 1px rgb(230, 230, 230);
 }
 
 .fuelux .tree .tree-item {
@@ -97,9 +97,20 @@
   display: block;
 }
 
+.fuelux .tree .tree-folder .tree-folder-header.selected,
+.fuelux .tree .tree-item.selected {
+  background-color: #FAF186;
+}
+
 .fuelux .tree .tree-folder .tree-folder-header .tree-selection,
 .fuelux .tree .tree-item .tree-selection {
-    margin-right: -25px;
+  margin-right: -25px;
+  display: none;
+}
+
+.fuelux .tree .tree-folder .tree-folder-header:hover .tree-selection,
+.fuelux .tree .tree-item:hover .tree-selection {
+  display: block;
 }
 
 .fuelux .tree .tree-selected {
