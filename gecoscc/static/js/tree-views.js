@@ -72,6 +72,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         iconClasses: {
+            ou: "group",
             user: "user",
             computer: "desktop",
             printer: "print",
@@ -92,9 +93,17 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function () {
+            var that = this,
+                $search = $("#tree-search");
             this.selectionInfoView = new Views.SelectionInfo({
                 el: $("#tree-selection-info")[0]
             });
+            $("#tree-search-btn")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    that.searchNodes($search.val().trim());
+                });
         },
 
         _loader: function (size) {
@@ -183,6 +192,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             if (node) {
                 App.instances.router.navigate("ou/" + parentId + "/" + node.model.type + "/" + this.activeNode, {
+                    trigger: true
+                });
+            } else {
+                App.instances.router.navigate("byid/" + this.activeNode, {
                     trigger: true
                 });
             }
@@ -299,6 +312,22 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
             this.$el.find(".multiselected").removeClass("multiselected");
+        },
+
+        searchNodes: function (keyword) {
+            var that = this;
+
+            $.ajax("/api/nodes/?pagesize=9999&iname=" + keyword)
+                .done(function (response) {
+                    var html = "";
+                    _.each(response.nodes, function (n) {
+                        n.id = n._id;
+                        n.icon = that.iconClasses[n.type];
+                        html += that.templates.item(n);
+                    });
+                    that.$el.html(html).find(".tree-item");
+                    that.bindUIElements();
+                });
         }
     });
 
