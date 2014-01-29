@@ -46,7 +46,21 @@ class ResourcePaginatedReadOnly(object):
         return self.schema_collection().serialize(collection)
 
     def get_objects_filter(self):
-        return {}
+        query = []
+        if not self.request.method == 'GET':
+            return []
+        if 'name' in self.request.GET:
+            query.append({
+                'name': self.request.GET.get('name')
+            })
+
+        if 'iname' in self.request.GET:
+            query.append({
+                'name': {'$regex': '.*{0}.*'.format(self.request.GET.get('iname'))},
+            })
+
+        return query
+
 
     def get_object_filter(self):
         return {}
@@ -70,16 +84,22 @@ class ResourcePaginatedReadOnly(object):
                 'limit': pagesize,
             })
 
+        objects_filter = self.get_objects_filter()
+        if self.mongo_filter:
+            objects_filter.append(self.mongo_filter)
+
+        mongo_query = {
+            '$and':  objects_filter
+        }
+
+        print mongo_query
+
         nodes_count = self.collection.find(
-            self.mongo_filter,
+            mongo_query,
             {'type': 1}
         ).count()
 
-        collection_filter = self.get_objects_filter()
-
-        collection_filter.update(self.mongo_filter)
-
-        objects = self.collection.find(collection_filter, **extraargs)
+        objects = self.collection.find(mongo_query, **extraargs)
         if pagesize > 0:
             pages = int(nodes_count / pagesize)
         else:

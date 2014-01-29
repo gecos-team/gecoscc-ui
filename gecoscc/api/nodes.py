@@ -100,20 +100,18 @@ class NodesResource(ResourcePaginatedReadOnly):
         # TODO
         # Implement permissions filter
         # permissions_filters = get_user_permissions(self.request)
+        filters = super(NodesResource, self).get_objects_filter()
+
         permissions_filters = []
 
         local_filters = get_filters(node_filters, self.request.GET)
 
-        filters = local_filters + permissions_filters
-
         if local_filters:
-            if len(local_filters) > 1:
-                return {
-                    '$and': filters,
-                }
-            else:
-                return filters[0]
-        return {}
+            filters += local_filters
+        if permissions_filters:
+            filters += permissions_filters
+
+        return filters
 
     def get_object_filter(self):
         # TODO

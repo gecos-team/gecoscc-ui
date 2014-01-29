@@ -39,9 +39,14 @@ class GroupResource(TreeLeafResourcePaginated):
     }
 
     def get_objects_filter(self):
+        filters = super(GroupResource, self).get_objects_filter()
+
         if 'oids' in self.request.GET:
-            return groups_oids_filter(self.request.GET)
-        return {}
+            oid_filters = groups_oids_filter(self.request.GET)
+            if oid_filters:
+                filters =+ (oid_filters)
+
+        return filters
 
     def remove_relations(self, obj):
         # Remove group from any other group or node where is defined

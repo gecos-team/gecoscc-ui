@@ -61,10 +61,7 @@ class MongoDB(object):
 
         db.nodes.ensure_index([
             ('name', pymongo.DESCENDING),
-        ], unique=True)
-
-        db.groups.ensure_index([
-            ('name', pymongo.DESCENDING),
+            ('type', pymongo.DESCENDING),
         ], unique=True)
 
         db.jobs.ensure_index([
