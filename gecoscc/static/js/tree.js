@@ -237,16 +237,21 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             });
         },
 
-        openAllContainersFrom: function (id) {
+        openAllContainersFrom: function (id, silent) {
             var node = this.get("tree").first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
-                });
+                }),
+                openedAtLeastOne = false;
 
             if (!node) { return; }
+
             while (node.parent) {
+                openedAtLeastOne = openedAtLeastOne || node.parent.model.closed;
                 node.parent.model.closed = false;
                 node = node.parent;
             }
+
+            if (openedAtLeastOne && !silent) { this.trigger("change"); }
         },
 
         findNodes: function (ids) {

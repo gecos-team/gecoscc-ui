@@ -207,6 +207,8 @@ var App;
             _loadItemHelper: function (Model, View, id) {
                 var model, view, skipFetch;
 
+                App.tree.currentView.activeNode = id;
+
                 model = App.instances.cache.get(id);
                 if (_.isUndefined(model)) {
                     model = new Model({ id: id });
@@ -225,8 +227,8 @@ var App;
                     });
 
                 if (skipFetch) {
+                    App.instances.tree.openAllContainersFrom(id);
                     model.trigger("change");
-                    App.tree.currentView.editLeafById(id);
                 } else {
                     model.fetch().done(function () {
                         // Item loaded, now we need to update the tree
@@ -245,7 +247,7 @@ var App;
                             );
                         }
                         promise.done(function () {
-                            App.tree.currentView.editLeafById(id);
+                            App.instances.tree.openAllContainersFrom(id);
                         });
                     });
                 }

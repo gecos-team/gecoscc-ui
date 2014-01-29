@@ -80,13 +80,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         selectionInfoView: undefined,
+        activeNode: null,
 
         events: {
-            "click .tree-folder-header": "editContainer",
+            "click .tree-folder-header": "editNode",
+            "click .tree-item": "editNode",
             "click .tree-folder-header .opener": "openContainer",
-            "click .tree-folder-header .tree-selection": "selectNode",
             "click .tree-folder-name .extra-opts": "showContainerMenu",
-            "click .tree-item": "editLeaf",
+            "click .tree-folder-header .tree-selection": "selectNode",
             "click .tree-item .tree-selection": "selectNode"
         },
 
@@ -94,6 +95,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.selectionInfoView = new Views.SelectionInfo({
                 el: $("#tree-selection-info")[0]
             });
+        },
+
+        _loader: function (size) {
+            size = size || 1;
+            return "<p style='font-size: " + size + "em;'><span class='fa " +
+                "fa-spinner fa-spin'></span> " + gettext("Loading") +
+                "...</p>";
         },
 
         render: function () {
@@ -108,7 +116,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else if (_.keys(tree).length > 0) {
                 html = this.recursiveRender(tree);
             } else {
-                html = this.loader(2.5);
+                html = this._loader(2.5);
             }
 
             this.$el.html(html);
@@ -117,6 +125,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $checkbox.attr("checked", true);
                 $checkbox.parent().addClass("selected");
             });
+
+            if (!_.isNull(this.activeNode)) {
+                this.highlightNodeById(this.activeNode);
+            }
 
             this.bindUIElements();
             return this;
@@ -145,35 +157,35 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return html;
         },
 
-        loader: function (size) {
-            size = size || 1;
-            return "<p style='font-size: " + size + "em;'><span class='fa " +
-                "fa-spinner fa-spin'></span> " + gettext("Loading") +
-                "...</p>";
-        },
-
-        editContainer: function (evt) {
+        editNode: function (evt) {
             var $el = $(evt.target),
-                $container,
-                parentId,
-                id;
-
-            if ($el.is(".opener") || $el.is(".extra-opts")) {
-                return;
-            }
+                that = this,
+                node,
+                parentId;
 
             this.hideContainerMenu();
-            $container = $el.parents(".tree-folder").first();
-            id = $container.attr("id");
-            parentId = $container.parents(".tree-folder").first().attr("id");
+
+            if ($el.is(".tree-folder-header") || $el.parent().is(".tree-folder-header")) {
+                // It's an OU
+                $el = $el.parents(".tree-folder").first();
+            } else if (!$el.is(".tree-item")) {
+                // It's a leaf
+                $el = $el.parents(".tree-item").first();
+            }
+            this.activeNode = $el.attr("id");
+            this.highlightNodeById(this.activeNode);
+
+            parentId = $el.parents(".tree-folder").first().attr("id");
             if (_.isUndefined(parentId)) { parentId = "root"; }
 
-            this.$el.find(".tree-selected").removeClass("tree-selected");
-            $container.find(".tree-folder-header").first().addClass("tree-selected");
-
-            App.instances.router.navigate("ou/" + parentId + "/ou/" + id, {
-                trigger: true
+            node = this.model.get("tree").first({ strategy: 'breadth' }, function (n) {
+                return n.model.id === that.activeNode;
             });
+            if (node) {
+                App.instances.router.navigate("ou/" + parentId + "/" + node.model.type + "/" + this.activeNode, {
+                    trigger: true
+                });
+            }
         },
 
         _openContainerAux: function ($el, $content, opened) {
@@ -184,12 +196,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             node.model.closed = !opened;
             if (opened && !(node.model.loaded && node.children.length > 0)) {
-                $content.html(this.loader());
+                $content.html(this._loader());
                 this.model.loadFromNode(node.model.path, node.model.id);
             }
         },
 
         openContainer: function (evt) {
+            evt.stopPropagation();
             var $el = $(evt.target).parents(".tree-folder").first(),
                 $treeFolderContent = $el.find('.tree-folder-content').first(),
                 classToTarget,
@@ -223,7 +236,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         showContainerMenu: function (evt) {
-            evt.preventDefault();
+            evt.stopPropagation();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-folder").first().attr("id"),
                 $html = $(this.templates.extraOpts({ ouId: ouId })),
@@ -251,40 +264,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                                                   .addClass("fa-caret-right");
         },
 
-        editLeaf: function (evt) {
-            var $el = $(evt.target),
-                containerId,
-                item,
-                id;
+        highlightNodeById: function (id) {
+            var $item = this.$el.find('#' + id);
 
-            if (!$el.is(".tree-item")) {
-                $el = $el.parents(".tree-item").first();
-            }
-            containerId = $el.parents(".tree-folder").first().attr("id");
-            id = $el.attr("id");
-
-            this.hideContainerMenu();
-            this.$el.find(".tree-selected").removeClass("tree-selected");
-            $el.addClass("tree-selected");
-
-            item = this.model.get("tree").first(function (node) {
-                return node.model.id === id;
-            });
-
-            if (item && item.model.type !== "ou") {
-                App.instances.router.navigate("ou/" + containerId + "/" + item.model.type + "/" + id, {
-                    trigger: true
-                });
-            }
-        },
-
-        editLeafById: function (id) {
-            var $item;
-
-            this.model.openAllContainersFrom(id);
-            this.render();
-
-            $item = this.$el.find('#' + id);
             this.$el.find(".tree-selected").removeClass("tree-selected");
             if ($item.is(".tree-folder")) {
                 // Is a container
