@@ -1,115 +1,112 @@
-/*!
- * Bootstrap v2.3.2
+/*
+ * Fuel UX Tree
+ * https://github.com/ExactTarget/fuelux
  *
- * Copyright 2012 Twitter, Inc
- * Licensed under the Apache License v2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Designed and built with all the love in the world @twitter by @mdo and @fat.
+ * Copyright (c) 2012 ExactTarget
+ * Licensed under the MIT license.
  */
 
-.fuelux {
-  /* Allow for input prepend/append in search forms */
-
-  /* White icons with optional class, or on hover/focus/active states of certain elements */
-
-  /* move down carets for tabs */
-
-}
-
 .fuelux .tree {
-  position: relative;
-  overflow-x: hidden;
-  overflow-y: auto;
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
-.fuelux .tree .tree-folder {
-  width: 100%;
-  min-height: 20px;
-  margin-top: 1px;
-  cursor: pointer;
+.fuelux .tree .tree-container {
+    width: 100%;
+    min-height: 20px;
+    margin-top: 1px;
+    cursor: pointer;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header {
-  position: relative;
-  height: 20px;
+/* tree-container-header */
+
+.fuelux .tree .tree-container .tree-container-header {
+    position: relative;
+    height: 20px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-highlight > span {
-  position: absolute;
-  top: 2px;
-  left: 20px;
-  float: left;
+.fuelux .tree .tree-container .tree-container-header .tree-highlight > span {
+    position: absolute;
+    top: 2px;
+    left: 20px;
+    float: left;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-highlight > span:first-child {
-  left: 5px;
+.fuelux .tree .tree-container .tree-container-header .tree-highlight > span:first-child {
+    left: 5px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-folder-name {
-  padding-left: 40px;
-  white-space: nowrap;
-  display: inline-block;
-  margin-right: 5px;
+.fuelux .tree .tree-container .tree-container-header .tree-name {
+    padding-left: 40px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-content {
-  margin-left: 23px;
-  border-left: solid 1px rgb(230, 230, 230);
+/* tree-container-content */
+
+.fuelux .tree .tree-container .tree-container-content {
+    margin-left: 23px;
+    border-left: solid 1px rgb(230, 230, 230);
 }
 
-.fuelux .tree .tree-item {
-  position: relative;
-  width: 100%;
-  height: 20px;
-  margin-top: 1px;
-  cursor: pointer;
+/* tree-leaf */
+
+.fuelux .tree .tree-leaf {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    margin-top: 1px;
+    cursor: pointer;
 }
 
-.fuelux .tree .tree-item .tree-item-name {
-  padding-left: 29px;
-  white-space: nowrap;
-  display: inline-block;
-  margin-right: 5px;
+.fuelux .tree .tree-leaf .tree-name {
+    padding-left: 29px;
 }
 
-.fuelux .tree .tree-item .fa {
-  position: absolute;
-  top: 3px;
-  left: 6px;
-  display: block;
+.fuelux .tree .tree-leaf .fa {
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    display: block;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-highlight,
-.fuelux .tree .tree-item .tree-highlight {
-  display: inline-block;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
+/* tree-name */
+
+.fuelux .tree .tree-name {
+    white-space: nowrap;
+    display: inline-block;
+    margin-right: 5px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-highlight:hover,
-.fuelux .tree .tree-item .tree-highlight:hover {
-  background-color: #dfeef5 !important;
+/* tree-highlight */
+
+.fuelux .tree .tree-highlight {
+    display: inline-block;
+    -webkit-border-radius: 6px;
+       -moz-border-radius: 6px;
+            border-radius: 6px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header .tree-selection,
-.fuelux .tree .tree-item .tree-selection {
-  display: none;
+.fuelux .tree .tree-highlight:hover {
+    background-color: #dfeef5 !important;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header:hover .tree-selection,
-.fuelux .tree .tree-item:hover .tree-selection {
-  display: inline-block;
-  margin-left: 15px;
-  margin-right: 3px;
-}
-
-.fuelux .tree .tree-folder .tree-folder-header.multiselected .tree-highlight,
-.fuelux .tree .tree-item.multiselected .tree-highlight {
-  background-color: #FAF186;
+.fuelux .tree .multiselected .tree-highlight {
+    background-color: #CEFA96;
 }
 
 .fuelux .tree .tree-selected .tree-highlight {
-  background-color: #b9dff1 !important;
+    background-color: #b9dff1 !important;
+}
+
+/* tree-selection */
+
+.fuelux .tree .tree-selection {
+    display: none;
+}
+
+.fuelux .tree .tree-container .tree-container-header:hover .tree-selection,
+.fuelux .tree .tree-leaf:hover .tree-selection {
+    display: inline-block;
+    margin-left: 15px;
+    margin-right: 3px;
 }

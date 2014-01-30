@@ -27,23 +27,23 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     var treeContainerPre =
-            '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
-            '    <div class="tree-folder-header">\n' +
+            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>">\n' +
+            '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
             '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
-            '            <div class="tree-folder-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
+            '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '            <input type="checkbox" class="tree-selection">\n' +
             '        </div>\n' +
             '    </div>\n' +
-            '    <div class="tree-folder-content" <% if (closed) { print(\'style="display: none;"\'); } %>>\n',
+            '    <div class="tree-container-content" <% if (closed) { print(\'style="display: none;"\'); } %>>\n',
         treeContainerPost =
             '    </div>\n' +
             '</div>\n',
         treeItem =
-            '<div class="tree-item" style="display: block;" id="<%= id %>">\n' +
+            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
             '        <span class="fa fa-<%= icon %>"></span>\n' +
-            '        <div class="tree-item-name"><%= name %></div>\n' +
+            '        <div class="tree-name"><%= name %></div>\n' +
             '        <input type="checkbox" class="tree-selection">\n' +
             '    </div>\n' +
             '</div>\n',
@@ -85,12 +85,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         activeNode: null,
 
         events: {
-            "click .tree-folder-header": "editNode",
-            "click .tree-item": "editNode",
-            "click .tree-folder-header .opener": "openContainer",
-            "click .tree-folder-name .extra-opts": "showContainerMenu",
-            "click .tree-folder-header .tree-selection": "selectNode",
-            "click .tree-item .tree-selection": "selectNode"
+            "click .tree-container-header": "editNode",
+            "click .tree-leaf": "editNode",
+            "click .tree-container-header .opener": "openContainer",
+            "click .tree-name .extra-opts": "showContainerMenu",
+            "click .tree-selection": "selectNode"
         },
 
         initialize: function () {
@@ -168,29 +167,20 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         editNode: function (evt) {
-            var $el = $(evt.target),
+            var $el = $(evt.target).parents(".tree-node").first(),
                 that = this,
                 node,
                 parentId;
 
             this.hideContainerMenu();
-
-            if ($el.is(".tree-folder-header") || $el.parent().parent().is(".tree-folder-header")) {
-                // It's an OU
-                $el = $el.parents(".tree-folder").first();
-            } else if (!$el.is(".tree-item")) {
-                // It's a leaf
-                $el = $el.parents(".tree-item").first();
-            }
             this.activeNode = $el.attr("id");
             this.highlightNodeById(this.activeNode);
-
-            parentId = $el.parents(".tree-folder").first().attr("id");
+            parentId = $el.parents(".tree-container").first().attr("id");
             if (_.isUndefined(parentId)) { parentId = "root"; }
-
             node = this.model.get("tree").first({ strategy: 'breadth' }, function (n) {
                 return n.model.id === that.activeNode;
             });
+
             if (node) {
                 App.instances.router.navigate("ou/" + parentId + "/" + node.model.type + "/" + this.activeNode, {
                     trigger: true
@@ -217,13 +207,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         openContainer: function (evt) {
             evt.stopPropagation();
-            var $el = $(evt.target).parents(".tree-folder").first(),
-                $treeFolderContent = $el.find('.tree-folder-content').first(),
+            var $el = $(evt.target).parents(".tree-container").first(),
+                $treeFolderContent = $el.find('.tree-container-content').first(),
                 classToTarget = '.fa-minus-square-o',
                 classToAdd = 'fa-plus-square-o';
 
             this.hideContainerMenu();
-            if ($el.find('.tree-folder-header').first().find('.fa-minus-square-o').length > 0) {
+            if ($el.find('.tree-container-header').first().find('.fa-minus-square-o').length > 0) {
                 this._openContainerAux($el, $treeFolderContent, false);
                 $treeFolderContent.hide();
             } else {
@@ -250,7 +240,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         showContainerMenu: function (evt) {
             evt.stopPropagation();
             var $el = $(evt.target),
-                ouId = $el.parents(".tree-folder").first().attr("id"),
+                ouId = $el.parents(".tree-container").first().attr("id"),
                 $html = $(this.templates.extraOpts({ ouId: ouId })),
                 closing = $el.is(".fa-caret-down"),
                 that = this;
@@ -258,7 +248,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.hideContainerMenu();
             if (closing) { return; }
             $el.removeClass("fa-caret-right").addClass("fa-caret-down");
-            $html.insertAfter($el.parents(".tree-folder-header").first());
+            $html.insertAfter($el.parents(".tree-container-header").first());
 
             $html.find("a.text-danger").click(function (evt) {
                 evt.preventDefault();
@@ -280,9 +270,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $item = this.$el.find('#' + id);
 
             this.$el.find(".tree-selected").removeClass("tree-selected");
-            if ($item.is(".tree-folder")) {
-                // Is a container
-                $item.find(".tree-folder-header").first().addClass("tree-selected");
+            if ($item.is(".tree-container")) {
+                // It's a container
+                $item.find(".tree-container-header").first().addClass("tree-selected");
             } else {
                 $item.addClass("tree-selected");
             }
@@ -291,22 +281,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectNode: function (evt) {
             evt.stopPropagation();
             var $el = $(evt.target),
-                checked = $el.is(":checked");
+                checked = $el.is(":checked"),
+                $container = $el.parents(".tree-node").first();
 
-            $el = $el.parent().parent();
+            if ($container.is(".tree-container")) {
+                $el = $container.find(".tree-container-header").first();
+            } else {
+                $el = $container;
+            }
+
             if (checked) {
                 $el.addClass("multiselected");
+                this.selectionInfoView.addIdToSelection($container.attr("id"));
             } else {
                 $el.removeClass("multiselected");
-            }
-
-            if ($el.is(".tree-folder-header")) {
-                $el = $el.parent();
-            }
-            if (checked) {
-                this.selectionInfoView.addIdToSelection($el.attr("id"));
-            } else {
-                this.selectionInfoView.removeIdFromSelection($el.attr("id"));
+                this.selectionInfoView.removeIdFromSelection($container.attr("id"));
             }
         },
 
@@ -329,7 +318,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                         n.icon = that.iconClasses[n.type];
                         html += that.templates.item(n);
                     });
-                    that.$el.html(html).find(".tree-item");
+                    that.$el.html(html);
                     that.bindUIElements();
                 });
         }
