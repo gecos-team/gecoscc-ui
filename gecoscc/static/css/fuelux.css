@@ -33,29 +33,24 @@
 .fuelux .tree .tree-folder .tree-folder-header {
   position: relative;
   height: 20px;
-  padding-right: 30px;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header > span {
+.fuelux .tree .tree-folder .tree-folder-header .tree-highlight > span {
   position: absolute;
   top: 2px;
   left: 20px;
   float: left;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header > span:first-child {
+.fuelux .tree .tree-folder .tree-folder-header .tree-highlight > span:first-child {
   left: 5px;
 }
 
 .fuelux .tree .tree-folder .tree-folder-header .tree-folder-name {
   padding-left: 40px;
-  padding-right: 5px;
-  margin-right: 5px;
   white-space: nowrap;
   display: inline-block;
+  margin-right: 5px;
 }
 
 .fuelux .tree .tree-folder .tree-folder-content {
@@ -69,15 +64,6 @@
   height: 20px;
   margin-top: 1px;
   cursor: pointer;
-  padding-right: 30px;
-  -webkit-border-radius: 6px;
-     -moz-border-radius: 6px;
-          border-radius: 6px;
-}
-
-.fuelux .tree .tree-folder .tree-folder-header:hover,
-.fuelux .tree .tree-item:hover {
-  background-color: #dfeef5 !important;
 }
 
 .fuelux .tree .tree-item .tree-item-name {
@@ -94,22 +80,36 @@
   display: block;
 }
 
+.fuelux .tree .tree-folder .tree-folder-header .tree-highlight,
+.fuelux .tree .tree-item .tree-highlight {
+  display: inline-block;
+  -webkit-border-radius: 6px;
+     -moz-border-radius: 6px;
+          border-radius: 6px;
+}
+
+.fuelux .tree .tree-folder .tree-folder-header .tree-highlight:hover,
+.fuelux .tree .tree-item .tree-highlight:hover {
+  background-color: #dfeef5 !important;
+}
+
 .fuelux .tree .tree-folder .tree-folder-header .tree-selection,
 .fuelux .tree .tree-item .tree-selection {
-  margin-right: -25px;
   display: none;
 }
 
 .fuelux .tree .tree-folder .tree-folder-header:hover .tree-selection,
 .fuelux .tree .tree-item:hover .tree-selection {
-  display: block;
+  display: inline-block;
+  margin-left: 15px;
+  margin-right: 3px;
 }
 
-.fuelux .tree .tree-folder .tree-folder-header.multiselected,
-.fuelux .tree .tree-item.multiselected {
+.fuelux .tree .tree-folder .tree-folder-header.multiselected .tree-highlight,
+.fuelux .tree .tree-item.multiselected .tree-highlight {
   background-color: #FAF186;
 }
 
-.fuelux .tree .tree-selected {
+.fuelux .tree .tree-selected .tree-highlight {
   background-color: #b9dff1 !important;
 }

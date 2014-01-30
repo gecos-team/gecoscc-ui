@@ -29,22 +29,23 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     var treeContainerPre =
             '<div class="tree-folder" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-folder-header">\n' +
-            '        <span class="opener fa fa-<%= controlIcon %>-square-o"></span> ' +
-            '<span class="fa fa-group"></span>\n' +
-            '        <div class="tree-folder-name"><%= name %> ' +
-            '<span class="extra-opts fa fa-caret-right"></span></div>' +
-            '<input type="checkbox" class="pull-right tree-selection">\n' +
+            '        <div class="tree-highlight">\n' +
+            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
+            '            <div class="tree-folder-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
+            '            <input type="checkbox" class="tree-selection">\n' +
+            '        </div>\n' +
             '    </div>\n' +
-            '    <div class="tree-folder-content" ' +
-            '<% if (closed) { print(\'style="display: none;"\'); } %>>\n',
+            '    <div class="tree-folder-content" <% if (closed) { print(\'style="display: none;"\'); } %>>\n',
         treeContainerPost =
             '    </div>\n' +
             '</div>\n',
         treeItem =
             '<div class="tree-item" style="display: block;" id="<%= id %>">\n' +
-            '    <span class="fa fa-<%= icon %>"></span>\n' +
-            '    <div class="tree-item-name"><%= name %></div>\n' +
-            '    <input type="checkbox" class="pull-right tree-selection">\n' +
+            '    <div class="tree-highlight">\n' +
+            '        <span class="fa fa-<%= icon %>"></span>\n' +
+            '        <div class="tree-item-name"><%= name %></div>\n' +
+            '        <input type="checkbox" class="tree-selection">\n' +
+            '    </div>\n' +
             '</div>\n',
         emptyTree =
             '<a href="#newroot">\n' +
@@ -132,7 +133,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             _.each(oids, function (id) {
                 var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
                 $checkbox.attr("checked", true);
-                $checkbox.parent().addClass("multiselected");
+                $checkbox.parent().parent().addClass("multiselected");
             });
 
             if (!_.isNull(this.activeNode)) {
@@ -174,7 +175,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.hideContainerMenu();
 
-            if ($el.is(".tree-folder-header") || $el.parent().is(".tree-folder-header")) {
+            if ($el.is(".tree-folder-header") || $el.parent().parent().is(".tree-folder-header")) {
                 // It's an OU
                 $el = $el.parents(".tree-folder").first();
             } else if (!$el.is(".tree-item")) {
@@ -292,7 +293,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target),
                 checked = $el.is(":checked");
 
-            $el = $el.parent();
+            $el = $el.parent().parent();
             if (checked) {
                 $el.addClass("multiselected");
             } else {
@@ -320,6 +321,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             $.ajax("/api/nodes/?pagesize=9999&iname=" + keyword)
                 .done(function (response) {
                     var html = "";
+                    if (response.nodes.length === 0) {
+                        html = gettext("No results.");
+                    }
                     _.each(response.nodes, function (n) {
                         n.id = n._id;
                         n.icon = that.iconClasses[n.type];
