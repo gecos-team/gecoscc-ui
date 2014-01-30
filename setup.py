@@ -23,6 +23,7 @@ requires = [
     'celery-with-mongodb==3.0',
     'pyramid_celery==1.3',
     'cornice==0.16.2',
+    'jsonschema==2.3.0',
 
     'gevent-websocket==0.3.6',
 ]
@@ -57,6 +58,8 @@ setup(name='gecoscc',
       main = gecoscc:main
       [console_scripts]
       pmanage = gecoscc.management:main
+      [gecoscc.policies]
+      remotestorage = gecoscc.policies.remotestorage:Policy
       """,
       paster_plugins=['pyramid'],
       )
