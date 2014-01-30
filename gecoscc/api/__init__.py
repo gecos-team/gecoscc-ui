@@ -56,11 +56,12 @@ class ResourcePaginatedReadOnly(object):
 
         if 'iname' in self.request.GET:
             query.append({
-                'name': {'$regex': '.*{0}.*'.format(self.request.GET.get('iname'))},
+                'name': {
+                    '$regex': '.*{0}.*'.format(self.request.GET.get('iname'))
+                },
             })
 
         return query
-
 
     def get_object_filter(self):
         return {}
@@ -328,7 +329,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             return True
 
         for group_id in obj['memberof']:
-            group = self.request.db.groups.find_one({'_id': group_id})
+            group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
                 self.request.errors.add(
                     unicode(obj[self.key]), 'memberof',
@@ -358,7 +359,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         removes = [n for n in oldmemberof if n not in newmemberof]
 
         for group_id in removes:
-            self.request.db.groups.update({
+            self.request.db.nodes.update({
                 '_id': group_id
             }, {
                 '$pull': {
@@ -369,7 +370,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         for group_id in adds:
 
             # Add newmember to new group
-            self.request.db.groups.update({
+            self.request.db.nodes.update({
                 '_id': group_id
             }, {
                 '$push': {
