@@ -93,8 +93,6 @@ class ResourcePaginatedReadOnly(object):
             '$and':  objects_filter
         }
 
-        print mongo_query
-
         nodes_count = self.collection.find(
             mongo_query,
             {'type': 1}
