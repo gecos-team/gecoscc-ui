@@ -1,8 +1,8 @@
 from pkg_resources import iter_entry_points
 import logging
-from jsonschema import validate
+from jsonschema import validate as json_validate
 
-logger = logging.get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class BasePolicy(object):
@@ -22,11 +22,11 @@ class BasePolicy(object):
     recipes = []
 
     def __init__(self, raw):
-        self.validate(raw, self.schema)
+        self.validate(raw)
         self._obj = raw
 
     def validate(self, raw):
-        return validate(raw, self.schema)
+        return json_validate(raw, self.schema)
 
     def change(self, raw):
         self.validate(raw, self.schema)

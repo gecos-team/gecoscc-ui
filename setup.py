@@ -59,7 +59,7 @@ setup(name='gecoscc',
       [console_scripts]
       pmanage = gecoscc.management:main
       [gecoscc.policies]
-      remotestorage = gecoscc.policies.remotestorage:Policy
+      remote-storage = gecoscc.policies.remote_storage:RemoteStoragePolicy
       """,
       paster_plugins=['pyramid'],
       )
