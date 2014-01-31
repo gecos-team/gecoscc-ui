@@ -163,26 +163,39 @@ class Computers(colander.SequenceSchema):
     computers = Computer()
 
 
+STORAGE_PROTOCOLS = {
+    'ftp': _('FTP'),
+    'sshfs': _('SSHFS'),
+    'nfs': _('NFS v 3'),
+    'nfs4': _('NFS v4'),
+    'smb': _('SAMBA v3'),
+    'smb4': _('SAMBA v4'),
+}
+
+STORAGE_MOUNT_TYPE = {
+    'fstab': _('System mounts (fstab)'),
+    'gvfs': _('User space mounts (gvfs)'),
+}
+
+
 class Storage(Node):
     memberof = ObjectIdList(missing=[], default=[])
-    server = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')
-    port = colander.SchemaNode(colander.String(),  # FIXME it's a number
-                               default='',
-                               missing='')
-    protocol = colander.SchemaNode(colander.String(),  # FIXME it's a choices
-                                   default='',
-                                   missing='')
-    localpath = colander.SchemaNode(colander.String(),
-                                    default='',
-                                    missing='')
+    server = colander.SchemaNode(colander.String())
+    port = colander.SchemaNode(colander.Integer(),
+                               validator=colander.Range(min=1, max=65535),
+                               missing=colander.drop)
+    protocol = colander.SchemaNode(colander.String(),
+                                   validator=colander.OneOf(
+                                       STORAGE_PROTOCOLS.keys()
+                                   ))
+    localpath = colander.SchemaNode(colander.String())
     mount = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
+                                validator=colander.OneOf(
+                                    STORAGE_MOUNT_TYPE.keys()
+                                ),
+                                default='gvfs')
     extraops = colander.SchemaNode(colander.String(),
-                                   default='',
-                                   missing='')
+                                   missing=colander.drop)
 
 
 class Storages(colander.SequenceSchema):
