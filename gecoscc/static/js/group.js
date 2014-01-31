@@ -252,8 +252,45 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
-    Views.MultiGroupWidget = Marionette.ItemView.extend({
+    Views.GroupTags = Marionette.ItemView.extend({
+        tagName: "p",
+
+        template: "<% _.each(items, function (group) { %>\n" +
+                  "    <span id='gt<%= group.id %>' class='label label-default'>\n" +
+                  "        <%= group.name %> <span class='fa fa-times'></span>\n" +
+                  "    </span>\n" +
+                  "<% }) %>\n",
+
+        events: {
+            "click span.label": "removeFromSelection"
+        },
+
+        initialize: function (options) {
+            this.widget = options.widget;
+        },
+
+        getTemplate: function () {
+            return _.template(this.template);
+        },
+
+        onRender: function () {
+            this.delegateEvents();
+        },
+
+        removeFromSelection: function (evt) {
+            evt.preventDefault();
+            var id = $(evt.target).attr("id"),
+                group = this.widget.checked.get(id.substring(2));
+            this.widget.checked.remove(group);
+        }
+    });
+
+    Views.MultiGroupWidget = Marionette.Layout.extend({
         template: "#groups-multi-widget-template",
+
+        regions: {
+            selected: "div.selected-groups"
+        },
 
         groupTpl: _.template("<li><label class='group checkbox-inline'>" +
                              "<input type='checkbox'" +
@@ -261,13 +298,32 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                              "       <%= checked %>>" +
                              "<%= name %></label></li>"),
 
-        checked: [],
+        checked: new App.Group.Models.GroupCollection(),
 
         initialize: function (options) {
-            var that = this;
-            if (_.has(options, "checked") && _.isArray(options.checked)) {
-                this.checked = options.checked;
+            var view = new Views.GroupTags({
+                    collection: this.checked,
+                    widget: this
+                }),
+                that = this,
+                checked = [];
+
+            if (_.isArray(options.checked)) {
+                checked = options.checked;
             }
+
+            this.checked.on("change", function () {
+                that.selected.show(view);
+            });
+            this.checked.on("remove", function () {
+                that.render();
+            });
+            _.each(checked, function (id) {
+                var group = new App.Group.Models.GroupModel({ id: id });
+                group.fetch();
+                that.checked.add(group);
+            });
+
             this.collection = new App.Group.Models.PaginatedGroupCollection();
             this.collection.goTo(0, {
                 success: function () { that.render(); }
@@ -311,15 +367,21 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         onRender: function () {
             var groups = this.collection.toJSON(),
                 lists = { 0: [], 1: [], 2: [], 3: [] },
-                that = this;
+                that = this,
+                checkedIds;
 
+            checkedIds = this.checked.map(function (g) {
+                return g.get("id");
+            });
             _.each(groups, function (g, idx) {
-                g.checked = _.contains(that.checked, g.id) ? "checked" : "";
+                g.checked = _.contains(checkedIds, g.id) ? "checked" : "";
                 lists[idx % 4].push(that.groupTpl(g));
             });
             this.$el.find("ul.group-column").each(function (idx, ul) {
                 $(ul).html(lists[idx].join(""));
             });
+
+            this.checked.trigger("change");
         },
 
         filterGroups: function (evt) {
@@ -367,19 +429,21 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         selectGroup: function (evt) {
             evt.preventDefault();
             var $el = $(evt.target),
-                nid = $el.attr("id");
+                nid = $el.attr("id"),
+                group;
 
             if ($el.is(":checked")) {
-                this.checked.push(nid);
+                group = new App.Group.Models.GroupModel({ id: nid });
+                group.fetch();
+                this.checked.add(group);
             } else {
-                this.checked = _.reject(this.checked, function (id) {
-                    return id === nid;
-                });
+                group = this.checked.get(nid);
+                this.checked.remove(group);
             }
         },
 
         getChecked: function () {
-            return this.checked;
+            return this.checked.map(function (g) { return g.get("id"); });
         }
     });
 });

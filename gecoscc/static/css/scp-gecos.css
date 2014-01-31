@@ -231,32 +231,13 @@ ul#new-policies li a {
 
 /* GROUP VIEWS */
 
-#groups.container {
-    padding-bottom: 30px;
+div.selected-groups {
+    overflow-x: auto;
 }
 
-#groups tr td:last-child {
-    width: 30%;
-}
-
-#groups tr td:last-child button:first-child {
-    margin-left: 8px;
-}
-
-#groups tr td:last-child button {
-    float: right;
-}
-
-ul.groups-widget {
-    margin: 0;
-    padding: 0;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-ul.groups-widget li {
-    display: inline-block;
-    padding-right: 15px;
+div.selected-groups span.label {
+    margin-right: 5px;
+    cursor: pointer;
 }
 
 div.groups-widget .chzn-container {
