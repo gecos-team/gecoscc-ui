@@ -299,6 +299,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                              "<%= name %></label></li>"),
 
         checked: new App.Group.Models.GroupCollection(),
+        filteredGroups: null,
+        currentFilter: "",
 
         initialize: function (options) {
             var view = new Views.GroupTags({
@@ -335,7 +337,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         events: {
-            "keyup @ui.filter": "filterGroups",
+            "keyup @ui.filter": "searchGroups",
             "click .group-filter-btn": "cleanFilter",
             "click ul.pagination a": "goToPage",
             "change label.group input": "selectGroup"
@@ -360,12 +362,20 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 prev: current !== 0,
                 next: current !== (total - 1),
                 pages: paginator,
-                showLoader: this.showLoader
+                showPaginator: _.isNull(this.filteredGroups),
+                currentFilter: this.currentFilter
             };
         },
 
+        getGroups: function () {
+            if (_.isNull(this.filteredGroups)) {
+                return this.collection;
+            }
+            return this.filteredGroups;
+        },
+
         onRender: function () {
-            var groups = this.collection.toJSON(),
+            var groups = this.getGroups().toJSON(),
                 lists = { 0: [], 1: [], 2: [], 3: [] },
                 that = this,
                 checkedIds;
@@ -384,26 +394,32 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.checked.trigger("change");
         },
 
-        filterGroups: function (evt) {
+        searchGroups: _.debounce(function (evt) {
             evt.preventDefault();
-            // TODO
-//             var filter = this.ui.filter.val();
-//
-//             this.$el.find("label.group").each(function (index, label) {
-//                 var $label = $(label),
-//                     filterReady = filter.trim().toLowerCase(),
-//                     text = $label.text().trim().toLowerCase();
-//                 if (filterReady.length === 0 || text.indexOf(filterReady) >= 0) {
-//                     $label.parent().show();
-//                 } else {
-//                     $label.parent().hide();
-//                 }
-//             });
-        },
+            var keyword = this.ui.filter.val().trim(),
+                that = this;
+
+            this.currentFilter = keyword;
+            if (keyword.length > 0) {
+                $.ajax("/api/groups/?iname=" + keyword).done(function (response) {
+                    that.filteredGroups = new App.Group.Models.GroupCollection();
+                    _.each(response.nodes, function (g) {
+                        var group;
+                        g = App.Group.Models.GroupModel.prototype.parse(g);
+                        group = new App.Group.Models.GroupModel(g);
+                        that.filteredGroups.add(group);
+                    });
+                    that.render();
+                });
+            } else {
+                this.filteredGroups = null;
+                this.render();
+            }
+        }, 500),
 
         cleanFilter: function (evt) {
             this.ui.filter.val("");
-            this.filterGroups(evt);
+            this.searchGroups(evt);
             this.ui.filter.focus();
         },
 
