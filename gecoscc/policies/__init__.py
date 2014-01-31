@@ -74,6 +74,7 @@ class PoliciesManager(object):
             'schema': policy.schema
         } for policy in self.policies.items() if getattr(policy, 'name', None)]
 
+
     def get_policy(self, name):
 
         policy = self.policies.get(name, None)
