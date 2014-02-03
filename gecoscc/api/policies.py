@@ -21,6 +21,7 @@ class PoliciesResource(ResourcePaginatedReadOnly):
     schema_detail = Policy
 
     objtype = 'policy'
+    collection_name = 'policies'
 
     def collection_get(self):
         page = int(self.request.GET.get('page', 0))

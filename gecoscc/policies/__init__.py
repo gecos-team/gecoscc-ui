@@ -67,12 +67,11 @@ class PoliciesManager(object):
     policies = PoliciesRegistry()
 
     def get_policies(self):
-
         return [{
             'name': policy.name,
             'screen_name': policy.screen_name,
             'schema': policy.schema
-        } for policy in self.policies.items() if getattr(policy, 'name', None)]
+        } for policy in self.policies.values() if getattr(policy, 'name', None)]
 
 
     def get_policy(self, name):
