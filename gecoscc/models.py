@@ -83,8 +83,6 @@ class Node(colander.MappingSchema):
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
 
-    # Group objects
-    memberof = colander.Seq(ObjectIdField())
 
 
 class Nodes(colander.SequenceSchema):
@@ -104,6 +102,8 @@ class Group(Node):
 
     # Node objects
     nodemembers = ObjectIdList(missing=[], default=[])
+
+    memberof = colander.SchemaNode(ObjectIdField())
 
 
 class Groups(colander.SequenceSchema):
@@ -186,6 +186,8 @@ class Computer(Node):
                                 default='',
                                 missing='')
 
+    # Group objects
+    memberof = colander.Seq(ObjectIdField())
 
 class Computers(colander.SequenceSchema):
     computers = Computer()
