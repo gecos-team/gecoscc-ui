@@ -215,11 +215,7 @@ var App;
                     if (node && node.model.loaded) {
                         promise.resolve();
                     } else {
-                        promise = App.instances.tree.loadFromNode(
-                            model.get("path"),
-                            model.get("id"),
-                            true
-                        );
+                        promise = App.instances.tree.loadFromPath(model.get("path"));
                     }
                     promise.done(function () {
                         App.instances.tree.openAllContainersFrom(id);

@@ -201,7 +201,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             node.model.closed = !opened;
             if (opened && !(node.model.loaded && node.children.length > 0)) {
                 $content.html(this._loader());
-                this.model.loadFromNode(node.model.path, node.model.id);
+                this.model.loadFromPath(node.model.path + ',' + node.model.id);
             }
         },
 

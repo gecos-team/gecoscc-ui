@@ -103,7 +103,7 @@
                     while (parent.children.length > 0) {
                         parent.children[0].drop();
                     }
-                    App.instances.tree.loadFromNode(parent);
+                    App.instances.tree.loadFromPath(parent);
                     App.instances.router.navigate("ou/" + parent.model.id + '/' + this.resourceType + '/' + resp._id, {
                         trigger: true
                     });

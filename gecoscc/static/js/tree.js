@@ -50,6 +50,30 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             tree: null
         },
 
+        ajaxDefaults: {
+            maxdepth: 0, // It must be zero for pagination to work because
+                         // in the answer there is no information about the
+                         // number of children in a container (OU)
+            pagesize: 3,
+            page: 0 // Pagination starts in zero
+        },
+
+        getUrl: function (options) {
+            var params;
+            options = _.defaults(options, this.ajaxDefaults);
+            params =  [
+                "pagesize=" + options.pagesize,
+                "maxdepth=" + options.maxdepth,
+                "page=" + options.page
+            ];
+            if (_.has(options, "path")) { params.push("path=" + options.path); }
+            if (_.has(options, "oids")) {
+                // This case is special, pagination and depth must be avoided
+                params = ["oids=" + options.oids, "pagesize=" + 99999];
+            }
+            return "/api/nodes/?" + params.join('&');
+        },
+
         initTree: function (data) {
             var preprocessed = {
                     path: "root",
@@ -61,6 +85,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             _.each(aux[0].children, function (n) {
                 if (n.model.type === "ou") {
                     n.model.closed = false; // Open top level containers
+                    // There should only be one, but just in case...
                 }
             });
             this.set("tree", aux[0]);
@@ -69,7 +94,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         reloadTree: function () {
             var that = this;
-            $.ajax("/api/nodes/?maxdepth=1", {
+            $.ajax(this.getUrl({ maxdepth: 1, pagesize: 99999, path: "root" }), {
                 success: function (response) {
                     var unknownIds = that.initTree(response);
                     that.resolveUnknownNodes(unknownIds);
@@ -87,7 +112,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
                 newNode.id = newNode._id;
                 delete newNode._id;
-                newNode.loaded = true;
+                newNode.status = "page0";
                 if (newNode.type === "ou") {
                     newNode.closed = true; // All container nodes start closed
                 }
@@ -105,7 +130,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                             id: step,
                             type: "ou",
                             name: gettext("unknown"),
-                            loaded: false,
+                            status: "unknown",
                             closed: true, // All container nodes start closed
                             children: []
                         };
@@ -141,11 +166,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return {};
         },
 
-        loadFromNode: function (nodePath, nodeId, loadHimself) {
-            var url = "/api/nodes/?maxdepth=1&path=" + nodePath,
+        loadFromPath: function (path) {
+            var url = this.getUrl({ path: path }),
                 that = this;
 
-            if (!loadHimself) { url += ',' + nodeId; }
             return $.ajax(url, {
                 success: function (response) {
                     var treeModel = new Models.TreeModel(),
@@ -225,7 +249,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (unknownIds.length === 0) { return; }
             oids = unknownIds.join(',');
 
-            return $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+            return $.ajax(this.getUrl({ oids: oids })).done(function (response) {
                 var tree = that.get("tree");
                 _.each(response.nodes, function (n) {
                     var node = tree.first(function (item) {
@@ -281,7 +305,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             node.model.name = "<span class='fa fa-spin fa-spinner'></span> " + gettext("Loading");
             if (!silent) { this.trigger("change"); }
-            $.ajax("/api/nodes/?oids=" + id).done(function (response) {
+            $.ajax(this.getUrl({ oids: id })).done(function (response) {
                 var data = response.nodes[0];
                 node.model.name = data.name;
                 node.model.type = data.type;
