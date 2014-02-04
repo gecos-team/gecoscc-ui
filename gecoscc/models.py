@@ -103,7 +103,7 @@ class Group(Node):
     # Node objects
     nodemembers = ObjectIdList(missing=[], default=[])
 
-    memberof = colander.SchemaNode(ObjectIdField())
+    memberof = colander.SchemaNode(ObjectIdField(), missing=colander.drop)
 
 
 class Groups(colander.SequenceSchema):
