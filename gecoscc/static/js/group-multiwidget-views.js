@@ -69,21 +69,24 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                              "       <%= checked %>>" +
                              "<%= name %></label></li>"),
 
-        checked: new App.Group.Models.GroupCollection(),
+        checked: undefined,
         filteredGroups: null,
         currentFilter: "",
 
         initialize: function (options) {
-            var view = new Views.GroupTags({
-                    collection: this.checked,
-                    widget: this
-                }),
-                that = this,
-                checked = [];
+            var that = this,
+                checked = [],
+                view;
 
             if (_.isArray(options.checked)) {
                 checked = options.checked;
             }
+
+            this.checked = new App.Group.Models.GroupCollection();
+            view = new Views.GroupTags({
+                collection: this.checked,
+                widget: this
+            });
 
             this.checked.on("change", function () {
                 that.selected.show(view);
