@@ -168,6 +168,7 @@
 
         _setPropInModel: function (prop, key) {
             var value;
+
             if (_.isString(key)) {
                 value = this.$el.find(key).val().trim();
             } else if (_.isFunction(key)) {
@@ -175,6 +176,17 @@
             } else {
                 value = key;
             }
+
+            if (prop === "memberof") {
+                // Uncache old and new referenced nodes
+                _.each([this.model.get("memberof"), value], function (ids) {
+                    if (!_.isArray(ids)) { ids = [ids]; }
+                    _.each(ids, function (id) {
+                        App.instances.cache.drop(id);
+                    });
+                });
+            }
+
             this.model.set(prop, value, { silent: true });
         },
 
