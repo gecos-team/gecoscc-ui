@@ -361,7 +361,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                 '_id': group_id
             }, {
                 '$pull': {
-                    'nodemembers': obj['_id']
+                    'members': obj['_id']
                 }
             }, multi=False)
 
@@ -372,7 +372,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                 '_id': group_id
             }, {
                 '$push': {
-                    'nodemembers': obj['_id']
+                    'members': obj['_id']
                 }
             }, multi=False)
 

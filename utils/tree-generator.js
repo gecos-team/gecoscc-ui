@@ -174,8 +174,8 @@
                 '_id': oid,
                 'path': path,
                 'name': 'group_' + counters.group,
-                'nodemembers': [],
-                'groupmembers': [],
+                'members': [],
+                'memberof': [],
                 'type': 'group',
                 'lock': false,
                 'source': 'gecos'
@@ -195,7 +195,7 @@
                 '_id': parent_oid
             }, {
                 '$push': {
-                    'groupmembers': oid
+                    'members': oid
                 }
             });
         }
@@ -206,7 +206,7 @@
         for (count; count < nodes_to_add; count += 1) {
             node_oid = random_int(potential_group_members.length);
             node_oid = potential_group_members[node_oid];
-            group.nodemembers.push(node_oid);
+            group.members.push(node_oid);
             db.nodes.update({
                 '_id': node_oid
             }, {

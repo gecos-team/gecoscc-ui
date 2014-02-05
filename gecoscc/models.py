@@ -98,10 +98,10 @@ class ObjectIdList(colander.SequenceSchema):
 class Group(Node):
 
     # Group object members
-    groupmembers = ObjectIdList(missing=[], default=[])
+    # groupmembers = ObjectIdList(missing=[], default=[])
 
     # Node objects
-    nodemembers = ObjectIdList(missing=[], default=[])
+    members = ObjectIdList(missing=[], default=[])
 
     memberof = ObjectIdList(missing=[], default=[])
 
