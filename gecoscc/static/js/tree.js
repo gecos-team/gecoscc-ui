@@ -74,87 +74,66 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return "/api/nodes/?" + params.join('&');
         },
 
-        initTree: function (data) {
-            var preprocessed = {
-                    path: "root",
-                    children: []
-                },
-                aux;
-
-            aux = this.parseTree(preprocessed, data.nodes);
-            _.each(aux[0].children, function (n) {
-                if (n.model.type === "ou") {
-                    n.model.closed = false; // Open top level containers
-                    // There should only be one, but just in case...
-                }
-            });
-            this.set("tree", aux[0]);
-            return aux[1]; // Return unknown ids
-        },
-
         reloadTree: function () {
             var that = this;
             $.ajax(this.getUrl({ maxdepth: 1, pagesize: 99999, path: "root" }), {
                 success: function (response) {
-                    var unknownIds = that.initTree(response);
-                    that.resolveUnknownNodes(unknownIds);
+                    var tree = that.parseNodesJSON(response.nodes);
+                    // TODO open first level node
+                    that.set("tree", tree);
                 }
             });
         },
 
-        parseTree: function (root, data) {
-            var unknownIds = [];
+        parseNodesJSON: function (data) {
+            var nodes, rootId, tree, that;
 
-            _.each(data, function (node) {
-                var newNode = _.clone(node),
-                    path = node.path.split(','),
-                    aux;
-
-                newNode.id = newNode._id;
-                delete newNode._id;
-                newNode.status = "page0";
-                if (newNode.type === "ou") {
-                    newNode.closed = true; // All container nodes start closed
-                }
-
-                aux = root.children;
-                _.each(path, function (step) {
-                    if (root.path.indexOf(step) >= 0) { return; }
-                    var obj = _.find(aux, function (child) {
-                        return child.id === step;
-                    });
-                    if (!obj) {
-                        // This path step is not present, lets create the
-                        // container
-                        obj = {
-                            id: step,
-                            type: "ou",
-                            name: gettext("unknown"),
-                            status: "unknown",
-                            closed: true, // All container nodes start closed
-                            children: []
-                        };
-                        unknownIds.push(step);
-                        aux.push(obj);
-                    }
-                    aux = obj.children;
-                });
-
-                // We have arrived to the parent of the newNode (aux),
-                // newNode may be already present if it was created as a
-                // container
-                node = _.find(aux, function (obj) {
-                    return obj.id === newNode.id;
-                });
-                if (node && !node.loaded) {
-                    _.extend(node, newNode);
-                } else {
-                    newNode.children = [];
-                    aux.push(newNode);
-                }
+            // Prepare the nodes to be part of the tree
+            nodes = _.map(data, function (n) {
+                return {
+                    id: n._id,
+                    path: n.path.split(','),
+                    type: n.type,
+                    name: n.name,
+                    children: []
+                };
+            });
+            nodes = _.sortBy(nodes, function (n) {
+                return n.path.length;
             });
 
-            return [this.parser.parse(root), unknownIds];
+            // Create the tree, with only an auxiliary root node
+            rootId = _.last(nodes[0].path);
+            tree = this.parser.parse({
+                id: rootId,
+                path: _.initial(nodes[0].path).join(','),
+                type: "AUXILIARY",
+                name: "AUXILIARY",
+                children: [],
+                closed: false,
+                status: "unknown"
+            });
+
+            that = this;
+            _.each(nodes, function (n) {
+                if (n.id === rootId) { return; }
+                // Add each node the tree, since they are ordered by path
+                // length the parent node should always be present in the tree
+                var parent, parentId;
+
+                parentId = _.last(n.path);
+                n.path = n.path.join(',');
+                if (n.type === "ou") { n.closed = true; }
+                n = that.parser.parse(n);
+
+                parent = tree.first(function (n) {
+                    return n.id === parentId;
+                });
+                if (_.isUndefined(parent)) { parent = tree; }
+                parent.addChild(n);
+            });
+
+            return tree;
         },
 
         toJSON: function () {
@@ -166,22 +145,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return {};
         },
 
-        loadFromPath: function (path) {
-            var url = this.getUrl({ path: path }),
+        loadFromPath: function (path, page) {
+            var url = this.getUrl({ path: path, page: page }),
                 that = this;
 
             return $.ajax(url, {
                 success: function (response) {
-                    var treeModel = new Models.TreeModel(),
-                        unknownIds = treeModel.initTree(response),
-                        promise;
-
-                    that.addTree(treeModel.get("tree"), true);
-                    promise = that.resolveUnknownNodes(unknownIds, true);
-                    if (_.isUndefined(promise)) {
-                        promise = $.Deferred();
-                        promise.resolve();
-                    }
+                    var tree = this.parseNodesJSON(response.nodes),
+                        promise = that.addSubTree(tree, true);
                     promise.done(function () { that.trigger("change"); });
                 }
             });
@@ -199,28 +170,61 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!silent) { this.trigger("change"); }
         },
 
-        addTree: function (root, silent) {
+        makePath: function (pathAsString) {
+            var path = pathAsString.split(','),
+                currentNode = this.get("tree"),
+                unknownIds = [];
+
+            _.each(path, function (step) {
+                if (step === "root") { return; }
+
+                var node = currentNode.first({ strategy: "breadth" }, function (n) {
+                        return n.model.id === step;
+                    }),
+                    that = this;
+
+                if (_.isUndefined(node)) {
+                    unknownIds.push(step);
+                    node = {
+                        id: step,
+                        type: "ou",
+                        name: "AUXILIARY",
+                        children: [],
+                        closed: false,
+                        status: "unknown"
+                    };
+                    node = that.parser.parse(node);
+                    currentNode.addChild(node);
+                }
+                currentNode = node;
+            });
+
+            return unknownIds;
+        },
+
+        addSubTree: function (subTree, silent) {
             var tree = this.get("tree"),
+                unknownIds = this.makePath(subTree.model.path),
                 that = this,
                 findNode;
 
-            findNode = function (root, id) {
-                return root.first({ strategy: 'breadth' }, function (node) {
+            findNode = function (id) {
+                return tree.first({ strategy: "breadth" }, function (node) {
                     return node.model.id === id;
                 });
             };
 
-            root.walk({ strategy: 'breadth' }, function (node) {
-                if (node.model.path === 'root') { return; }
+            subTree.walk({ strategy: "breadth" }, function (node) {
+                if (node.model.type === "AUXILIARY") { return; }
 
-                var reference = findNode(tree, node.model.id),
+                var reference = findNode(node.model.id),
                     model = _.clone(node.model),
                     newNode,
                     parent;
 
                 delete model.children;
 
-                if (reference && !reference.model.loaded && node.model.loaded) {
+                if (reference && reference.model.status === "unknown" && node.model.status !== "unknown") {
                     // The node already exists, load the data in it
                     model.children = reference.model.children;
                     model.closed = reference.model.closed;
@@ -230,7 +234,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     parent.addChild(newNode);
                 } else if (!reference) {
                     // We need to add a new node, let's find the parent
-                    reference = findNode(tree, node.parent.model.id);
+                    reference = findNode(node.parent.model.id);
                     if (reference) { // This should always eval to true
                         model.children = [];
                         newNode = that.parser.parse(model);
@@ -239,7 +243,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
             });
 
-            if (!silent) { this.trigger("change"); }
+            return this.resolveUnknownNodes(unknownIds, silent);
         },
 
         resolveUnknownNodes: function (unknownIds, silent) {
