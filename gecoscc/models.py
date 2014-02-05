@@ -19,7 +19,7 @@ def get_root(request):
 class ObjectIdField(object):
 
     def serialize(self, node, appstruct):
-        if appstruct is colander.null:
+        if not appstruct or appstruct is colander.null:
             if isinstance(node.missing, colander._drop):
                 return colander.drop
             return colander.null
@@ -29,7 +29,7 @@ class ObjectIdField(object):
         return unicode(appstruct)
 
     def deserialize(self, node, cstruct):
-        if cstruct is colander.null:
+        if not cstruct or cstruct is colander.null:
             if isinstance(node.missing, colander._drop):
                 return colander.drop
             return colander.null
@@ -103,7 +103,7 @@ class Group(Node):
     # Node objects
     nodemembers = ObjectIdList(missing=[], default=[])
 
-    memberof = colander.SchemaNode(ObjectIdField(), missing=colander.drop)
+    memberof = ObjectIdList(missing=[], default=[])
 
 
 class Groups(colander.SequenceSchema):

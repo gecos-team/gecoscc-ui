@@ -190,7 +190,7 @@
             // This group is going to be a child of another group
             parent_oid = random_int(existing_groups.length);
             parent_oid = existing_groups[parent_oid];
-            group.memberof = parent_oid;
+            group.memberof = [parent_oid];
             db.nodes.update({
                 '_id': parent_oid
             }, {
