@@ -143,21 +143,31 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return this;
         },
 
-        recursiveRender: function (node) {
+        recursiveRender: function (node, root) {
             var that = this,
                 json = _.pick(node, "name", "type", "id", "closed"),
+                containerNode,
                 html;
 
+
             if (json.type === "ou") {
-                if (node.children.length === 0) {
-                    json.closed = true;
-                }
-                json.controlIcon = json.closed ? "plus" : "minus";
-                html = this.templates.containerPre(json);
-                _.each(node.children, function (child) {
-                    html += that.recursiveRender(child);
+                if (_.isUndefined(root)) { root = that.model.get("tree"); }
+                containerNode = root.find({ strategy: 'breadth' }, function (n) {
+                    return n.id === json.id;
                 });
+                json = containerNode.model;
+
+                if (node.children.length === 0) { json.closed = true; }  // FIXME check out the paginated collection instead
+                json.controlIcon = json.closed ? "plus" : "minus";
+
+                html = this.templates.containerPre(json);
+                // TODO paint go to previous page?
+                _.each(node.model.paginatedChildren.toJSON(), function (child) {
+                    html += that.recursiveRender(child, containerNode);
+                });
+                // TODO paint go to next page?
                 html += this.templates.containerPost(json);
+
             } else {
                 json.icon = this.iconClasses[json.type];
                 html = this.templates.item(json);
