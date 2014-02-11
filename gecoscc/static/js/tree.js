@@ -48,6 +48,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             type: "AUXILIARY",
             name: "AUXILIARY",
             status: "unknown"
+        },
+
+        parse: function (response) {
+            response.id = response._id;
+            delete response._id;
+            response.status = "meta-only";
+            return response;
         }
     });
 
@@ -90,7 +97,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function (options) {
-            if (!_.isString(options, "path")) {
+            if (!_.isString(options.path)) {
                 throw "Container collections require a path attribute";
             }
             this.ajax.path = options.path;
@@ -147,8 +154,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         _addPaginatedChildrenToModel: function (node) {
-            var promise = $.Deferred();
-            node.paginatedChildren = new Models.Container({ path: node.path });
+            var promise = $.Deferred(),
+                path = node.path + ',' + node._id;
+            node.paginatedChildren = new Models.Container({ path: path });
             node.paginatedChildren.goTo(0, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
