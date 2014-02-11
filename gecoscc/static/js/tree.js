@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true */
-/*global App, TreeModel */
+/*global App, TreeModel, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -61,24 +61,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.Container = Backbone.Paginator.requestPager.extend({
         model: Models.Node,
 
-        ajax: {
-            maxdepth: 0, // It must be zero for pagination to work because
-                         // in the answer there is no information about the
-                         // number of children in a container (OU)
-            pagesize: 3,
-            path: "root"
-        },
-
         paginator_core: {
             type: "GET",
             dataType: "json",
             url: function () {
-                var params = [
-                    "pagesize=" + this.ajax.pagesize,
-                    "maxdepth=" + this.ajax.maxdepth,
-                    "path=" + this.ajax.path
-                ];
-                return "/api/nodes/?" + params.join('&');
+                // maxdepth must be zero for pagination to work because in the
+                // answer from the server there is no information about the
+                // number of children in a container (OU)
+                return "/api/nodes/?maxdepth=0&path=" + this.path;
             }
         },
 
@@ -100,7 +90,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.path)) {
                 throw "Container collections require a path attribute";
             }
-            this.ajax.path = options.path;
+            this.path = options.path;
         },
 
         parse: function (response) {
@@ -116,33 +106,19 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             tree: null
         },
 
-        ajaxDefaults: {
-            maxdepth: 0, // It must be zero for pagination to work because
-                         // in the answer there is no information about the
-                         // number of children in a container (OU)
-            pagesize: 3,
-            page: 0 // Pagination starts in zero
-        },
-
         getUrl: function (options) {
-            var params;
-            options = _.defaults(options, this.ajaxDefaults);
-            params =  [
-                "pagesize=" + options.pagesize,
-                "maxdepth=" + options.maxdepth,
-                "page=" + options.page
+            var params =  [
+                "pagesize=99999",
+                "maxdepth=0"
             ];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
-            if (_.has(options, "oids")) {
-                // This case is special, pagination and depth must be avoided
-                params = ["oids=" + options.oids, "pagesize=" + 99999];
-            }
+            if (_.has(options, "oids")) { params.push("oids=" + options.oids); }
             return "/api/nodes/?" + params.join('&');
         },
 
         reloadTree: function () {
             var that = this;
-            $.ajax(this.getUrl({ maxdepth: 1, pagesize: 99999, path: "root" }), {
+            $.ajax(this.getUrl({ path: "root" }), {
                 success: function (response) {
                     var aux = that.parseNodesJSON(response.nodes);
                     aux[0].children[0].model.closed = false;
@@ -155,7 +131,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         _addPaginatedChildrenToModel: function (node) {
             var promise = $.Deferred(),
-                path = node.path + ',' + node._id;
+                path = node.path + ',' + node.id;
             node.paginatedChildren = new Models.Container({ path: path });
             node.paginatedChildren.goTo(0, {
                 success: function () { promise.resolve(); },
@@ -219,40 +195,43 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return [tree, promises];
         },
 
-        loadFromPath: function (path, page) {
-            var url = this.getUrl({ path: path, page: page }),
-                that = this;
+        loadFromPath: function (pathAsString, silent) {
+            var pathAsArray = pathAsString.split(','),
+                id = _.last(pathAsArray),
+                unknownIds = this.makePath(_.initial(pathAsArray)),
+                parentId = _.last(_.initial(pathAsArray)),
+                that = this,
+                parentNode,
+                newNode,
+                promises;
 
-            return $.ajax(url, {
-                success: function (response) {
-                    var aux = that.parseNodesJSON(response.nodes),
-                        promises = that.addSubTree(aux[0], true);
-                    aux[1].push(promises);
-                    $.when.apply(that, _.flatten(aux[1])).done(function () {
-                        that.trigger("change");
-                    });
-                }
+            parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
+                return n.model.id === parentId;
             });
+            newNode = parentNode.model.paginatedChildren.get(id).toJSON();
+            newNode.status = "paginated";
+            promises = [this._addPaginatedChildrenToModel(newNode)];
+            newNode = this.parser.parse(newNode);
+            parentNode.addChild(newNode);
+            promises.push(this.resolveUnknownNodes(unknownIds, true));
+
+            if (!silent) {
+                $.when.apply($, promises).done(function () {
+                    that.trigger("change");
+                });
+            }
+
+            return promises;
         },
 
-        addNode: function (referenceID, obj, silent) {
-            var tree = this.get("tree"),
-                parent,
-                node;
-            node = this.parser.parse(obj);
-            parent = tree.first(function (n) {
-                return n.model.id === referenceID;
-            });
-            parent.addChild(node);
-            if (!silent) { this.trigger("change"); }
-        },
+        makePath: function (path) {
+            var currentNode = this.get("tree"),
+                unknownIds = [],
+                pathAsArray = path;
 
-        makePath: function (pathAsString) {
-            var path = pathAsString.split(','),
-                currentNode = this.get("tree"),
-                unknownIds = [];
+            if (_.isString(path)) { pathAsArray = path.split(','); }
 
-            _.each(path, function (step) {
+            _.each(pathAsArray, function (step) {
                 if (step === "root") { return; }
 
                 var node = currentNode.first({ strategy: "breadth" }, function (n) {
@@ -279,54 +258,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return unknownIds;
         },
 
-        addSubTree: function (subTree, silent) {
-            var tree = this.get("tree"),
-                unknownIds = this.makePath(subTree.model.path),
-                promises = [],
-                that = this,
-                findNode;
-
-            findNode = function (id) {
-                return tree.first({ strategy: "breadth" }, function (node) {
-                    return node.model.id === id;
-                });
-            };
-
-            subTree.walk({ strategy: "breadth" }, function (node) {
-                if (node.model.type === "AUXILIARY") { return; }
-
-                var reference = findNode(node.model.id),
-                    model = _.clone(node.model),
-                    newNode,
-                    parent;
-
-                delete model.children;
-
-                if (reference && reference.model.status === "unknown" && model.status !== "unknown") {
-                    // The node already exists, load the data in it
-                    model.children = reference.model.children;
-                    model.closed = reference.model.closed;
-                    parent = reference.parent;
-                    reference.drop();
-                    newNode = that.parser.parse(model);
-                    parent.addChild(newNode);
-                } else if (!reference || model.type === "ou") {
-                    // We need to add a new container, let's find the parent
-                    reference = findNode(node.parent.model.id);
-                    if (reference) { // This should always eval to true
-                        model.children = [];
-                        model.status = "paginated";
-                        promises.push(that._addPaginatedChildrenToModel(model));
-                        newNode = that.parser.parse(model);
-                        reference.addChild(newNode);
-                    }
-                }
-            });
-
-            promises.push(this.resolveUnknownNodes(unknownIds, silent));
-            return promises;
-        },
-
         resolveUnknownNodes: function (unknownIds, silent) {
             var that = this,
                 promise,
@@ -346,6 +277,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         return item.model.id === n._id;
                     });
                     node.model.name = n.name;
+                    node.model.status = "meta-only";
                 });
                 if (!silent) { that.trigger("change"); }
             });

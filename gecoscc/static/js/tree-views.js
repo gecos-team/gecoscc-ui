@@ -27,7 +27,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     var treeContainerPre =
-            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>">\n' +
+            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
             '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
@@ -145,7 +145,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         recursiveRender: function (node, root) {
             var that = this,
-                json = _.pick(node, "name", "type", "id"),
+                json = _.pick(node, "name", "type", "id", "path"),
                 treeNode,
                 children,
                 html;
@@ -156,9 +156,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 treeNode = root.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === json.id;
                 });
-                json.closed = treeNode.model.closed;
+                if (_.isUndefined(treeNode)) {
+                    children = [];  // Unloaded node, show it closed
+                } else {
+                    json.closed = treeNode.model.closed;
+                    children = treeNode.model.paginatedChildren.toJSON();
+                }
 
-                children = treeNode.model.paginatedChildren.toJSON();
                 if (children.length === 0) { json.closed = true; }
                 json.controlIcon = json.closed ? "plus" : "minus";
 
@@ -206,14 +210,18 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         _openContainerAux: function ($el, $content, opened) {
             var node = this.model.get("tree"),
-                id = $el.attr("id");
+                id = $el.attr("id"),
+                path = $el.data("path");
+
             node = node.first(function (obj) {
                 return obj.model.id === id;
             });
-            node.model.closed = !opened;
-            if (opened && !(node.model.loaded && node.children.length > 0)) {
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = !opened;
+            } else {
                 $content.html(this._loader());
-                this.model.loadFromPath(node.model.path + ',' + node.model.id);
+                this.model.loadFromPath(path + ',' + id);
             }
         },
 

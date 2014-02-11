@@ -210,14 +210,14 @@ var App;
                     var node = App.instances.tree.get("tree").first(function (n) {
                             return n.model.id === id;
                         }),
-                        promise = $.Deferred();
+                        promises = [$.Deferred()];
 
                     if (node && node.model.loaded) {
-                        promise.resolve();
+                        promises[0].resolve();
                     } else {
-                        promise = App.instances.tree.loadFromPath(model.get("path"));
+                        promises = App.instances.tree.loadFromPath(model.get("path"));
                     }
-                    promise.done(function () {
+                    $.when.apply($, promises).done(function () {
                         App.instances.tree.openAllContainersFrom(id);
                     });
                 });
