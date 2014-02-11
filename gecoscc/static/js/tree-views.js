@@ -47,6 +47,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <input type="checkbox" class="tree-selection">\n' +
             '    </div>\n' +
             '</div>\n',
+        paginationItem =
+            '<div class="tree-pagination tree-node" style="display: block;" data-pagination="<%= type %>">\n' +
+            '    <span class="fa fa-chevron-<%= type %>"></span>\n' +
+            '    <div class="tree-name">' + gettext('More') + '</div>\n' +
+            '</div>\n',
         emptyTree =
             '<a href="#newroot">\n' +
             '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
@@ -68,6 +73,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
             item: _.template(treeItem),
+            pagItem: _.template(paginationItem),
             emptyTree: _.template(emptyTree),
             extraOpts: _.template(extraOpts)
         },
@@ -87,6 +93,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click .tree-container-header": "editNode",
             "click .tree-leaf": "editNode",
+            "click .tree-pagination": "paginate",
             "click .tree-container-header .opener": "openContainer",
             "click .tree-name .extra-opts": "showContainerMenu",
             "click .tree-selection": "selectNode"
@@ -146,6 +153,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         recursiveRender: function (node, root) {
             var that = this,
                 json = _.pick(node, "name", "type", "id", "path"),
+                showPrev = false,
+                showNext = false,
+                paginatedChildren,
                 treeNode,
                 children,
                 html;
@@ -160,18 +170,29 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     children = [];  // Unloaded node, show it closed
                 } else {
                     json.closed = treeNode.model.closed;
-                    children = treeNode.model.paginatedChildren.toJSON();
+                    paginatedChildren = treeNode.model.paginatedChildren;
+                    children = paginatedChildren.toJSON();
+                    showPrev = paginatedChildren.currentPage > 0;
+                    showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
                 }
 
                 if (children.length === 0) { json.closed = true; }
                 json.controlIcon = json.closed ? "plus" : "minus";
 
                 html = this.templates.containerPre(json);
-                // TODO paint go to previous page?
-                _.each(children, function (child) {
-                    html += that.recursiveRender(child, treeNode);
-                });
-                // TODO paint go to next page?
+                if (children.length > 0) {
+                    if (showPrev) {
+                        html += this.templates.pagItem({ type: "up" });
+                    }
+                    _.each(children, function (child) {
+                        html += that.recursiveRender(child, treeNode);
+                    });
+                    if (showNext) {
+                        html += this.templates.pagItem({ type: "down" });
+                    }
+                } else {
+                    // TODO empty OU
+                }
                 html += this.templates.containerPost(json);
 
             } else {
@@ -206,6 +227,27 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     trigger: true
                 });
             }
+        },
+
+        paginate: function (evt) {
+            var $el = $(evt.target).parents(".tree-pagination").first(),
+                prev = $el.data("pagination") === "up",
+                that = this,
+                node,
+                page,
+                id;
+
+            $el = $el.parents(".tree-container").first();
+            id = $el.attr("id");
+            node = this.model.get("tree").first(function (obj) {
+                return obj.model.id === id;
+            });
+            page = node.model.paginatedChildren.currentPage;
+            page = prev ? page - 1 : page + 1;
+
+            node.model.paginatedChildren.goTo(page, {
+                success: function () { that.model.trigger("change"); }
+            });
         },
 
         _openContainerAux: function ($el, $content, opened) {

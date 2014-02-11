@@ -48,9 +48,10 @@
     border-left: solid 1px rgb(230, 230, 230);
 }
 
-/* tree-leaf */
+/* tree-leaf and tree-pagination */
 
-.fuelux .tree .tree-leaf {
+.fuelux .tree .tree-leaf,
+.fuelux .tree .tree-pagination {
     position: relative;
     width: 100%;
     height: 20px;
@@ -58,11 +59,13 @@
     cursor: pointer;
 }
 
-.fuelux .tree .tree-leaf .tree-name {
+.fuelux .tree .tree-leaf .tree-name,
+.fuelux .tree .tree-pagination .tree-name {
     padding-left: 29px;
 }
 
-.fuelux .tree .tree-leaf .fa {
+.fuelux .tree .tree-leaf .fa,
+.fuelux .tree .tree-pagination .fa {
     position: absolute;
     top: 3px;
     left: 6px;

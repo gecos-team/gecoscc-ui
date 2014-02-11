@@ -107,10 +107,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         getUrl: function (options) {
-            var params =  [
-                "pagesize=99999",
-                "maxdepth=0"
-            ];
+            var params =  ["pagesize=99999", "maxdepth=0"];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
             if (_.has(options, "oids")) { params.push("oids=" + options.oids); }
             return "/api/nodes/?" + params.join('&');
