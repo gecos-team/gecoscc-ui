@@ -305,7 +305,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 if (_.contains(ids, node.model.id)) {
                     nodes.push(node.model);
                 }
-                // TODO look into paginated collections too?
+
+                if (_.has(node.model, "paginatedChildren")) {
+                    node.model.paginatedChildren.each(function (n) {
+                        if (_.contains(ids, n.get("id"))) {
+                            nodes.push(n.toJSON());
+                        }
+                    });
+                }
+
                 if (ids.length === nodes.length) {
                     return false;
                 }
@@ -316,21 +324,37 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         updateNodeById: function (id, silent) {
             // It's safe to assume in this case that the node is already
-            // present in the tree
-
-            // FIXME reload pageof the proper paginated collection
-            // lookup parent, check if node in loaded page, reload then
+            // present in the tree (as container node or as child)
 
             var tree = this.get("tree"),
-                that = this,
                 node = tree.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
-                });
+                }),
+                that = this;
 
-            node.model.name = "<span class='fa fa-spin fa-spinner'></span> " + gettext("Loading");
-            if (!silent) { this.trigger("change"); }
+            if (!_.isUndefined(node)) {
+                node.model.name = "<span class='fa fa-spin fa-spinner'></span> " +
+                    gettext("Loading");
+                if (!silent) { this.trigger("change"); }
+            }
+
+            // Load the node new information
             $.ajax(this.getUrl({ oids: id })).done(function (response) {
-                var data = response.nodes[0];
+                var data = response.nodes[0],
+                    parent;
+
+                if (_.isUndefined(node)) {
+                    parent = _.last(data.path.split(','));
+                    node = tree.first({ strategy: 'breadth' }, function (n) {
+                        return n.model.id === parent;
+                    });
+                    node = node.model.paginatedChildren.get(id);
+                    if (_.isUndefined(node)) { // This should always be false,
+                        // but just in case the node is not in the loaded page
+                        return;
+                    }
+                }
+
                 node.model.name = data.name;
                 node.model.type = data.type;
                 if (!silent) { that.trigger("change"); }
