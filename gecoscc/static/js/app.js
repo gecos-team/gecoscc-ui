@@ -207,6 +207,7 @@ var App;
             _fetchModel: function (model, id) {
                 model.fetch().done(function () {
                     // Item loaded, now we need to update the tree
+                    // FIXME Do we? What if it is not a OU
                     var node = App.instances.tree.get("tree").first(function (n) {
                             return n.model.id === id;
                         }),
@@ -218,7 +219,7 @@ var App;
                         promises = App.instances.tree.loadFromPath(model.get("path"));
                     }
                     $.when.apply($, promises).done(function () {
-                        App.instances.tree.openAllContainersFrom(id);
+                        App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     });
                 });
             },
@@ -247,7 +248,7 @@ var App;
 
                 if (skipFetch) {
                     // The object was cached
-                    App.instances.tree.openAllContainersFrom(id);
+                    App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     model.trigger("change");
                 } else {
                     this._fetchModel(model, id);

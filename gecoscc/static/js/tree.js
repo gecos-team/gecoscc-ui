@@ -107,9 +107,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         getUrl: function (options) {
-            var params =  ["pagesize=99999", "maxdepth=0"];
+            var params =  ["pagesize=99999"];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
-            if (_.has(options, "oids")) { params.push("oids=" + options.oids); }
+            if (_.has(options, "oids")) {
+                params.push("oids=" + options.oids);
+            } else {
+                // maxdepth messes with oids-filtered petitions
+                params.push("maxdepth=0");
+            }
             return "/api/nodes/?" + params.join('&');
         },
 
@@ -205,7 +210,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
                 return n.model.id === parentId;
             });
-            newNode = parentNode.model.paginatedChildren.get(id).toJSON();
+            if (parentNode.model.status === "paginated") {
+                newNode = parentNode.model.paginatedChildren.get(id).toJSON();
+            } else if (parentNode.model.id === "root") {
+                newNode = _.find(parentNode.children, function (n) {
+                    return n.model.id === id;
+                });
+                newNode = newNode.model;
+            } else {
+                return;
+            }
+
             newNode.status = "paginated";
             promises = [this._addPaginatedChildrenToModel(newNode)];
             newNode = this.parser.parse(newNode);
@@ -281,13 +296,18 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         openAllContainersFrom: function (id, silent) {
+            // Id must reference a container (OU)
             var node = this.get("tree").first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
                 }),
-                openedAtLeastOne = false;
+                openedAtLeastOne;
 
             if (!node) { return; }
 
+            // Include the id passed
+            openedAtLeastOne = node.model.closed;
+            node.model.closed = false;
+            // All the ancestors
             while (node.parent) {
                 openedAtLeastOne = openedAtLeastOne || node.parent.model.closed;
                 node.parent.model.closed = false;
@@ -325,7 +345,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         updateNodeById: function (id, silent) {
             // It's safe to assume in this case that the node is already
             // present in the tree (as container node or as child)
-
             var tree = this.get("tree"),
                 node = tree.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
@@ -341,22 +360,18 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             // Load the node new information
             $.ajax(this.getUrl({ oids: id })).done(function (response) {
                 var data = response.nodes[0],
-                    parent;
-
-                if (_.isUndefined(node)) {
                     parent = _.last(data.path.split(','));
-                    node = tree.first({ strategy: 'breadth' }, function (n) {
-                        return n.model.id === parent;
-                    });
-                    node = node.model.paginatedChildren.get(id);
-                    if (_.isUndefined(node)) { // This should always be false,
-                        // but just in case the node is not in the loaded page
-                        return;
-                    }
-                }
 
-                node.model.name = data.name;
-                node.model.type = data.type;
+                node = tree.first({ strategy: 'breadth' }, function (n) {
+                    return n.model.id === parent;
+                });
+                node = node.model.paginatedChildren.get(id);
+                if (_.isUndefined(node)) {
+                    // Maybe the node is not in the loaded page
+                    return;
+                }
+                node.set("name", data.name);
+
                 if (!silent) { that.trigger("change"); }
             });
         },
