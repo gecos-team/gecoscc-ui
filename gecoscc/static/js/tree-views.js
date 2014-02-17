@@ -151,8 +151,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         recursiveRender: function (node, root) {
-            var that = this,
-                json = _.pick(node, "name", "type", "id", "path"),
+            var json = _.pick(node, "name", "type", "id", "path"),
                 showPrev = false,
                 showNext = false,
                 paginatedChildren,
@@ -162,45 +161,60 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
 
             if (json.type === "ou") {
-                if (_.isUndefined(root)) { root = that.model.get("tree"); }
+                if (_.isUndefined(root)) { root = this.model.get("tree"); }
                 treeNode = root.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === json.id;
                 });
+
                 if (_.isUndefined(treeNode)) {
                     children = [];  // Unloaded node, show it closed
-                } else {
+                } else if (treeNode.model.status === "paginated") {
                     json.closed = treeNode.model.closed;
                     paginatedChildren = treeNode.model.paginatedChildren;
                     children = paginatedChildren.toJSON();
                     showPrev = paginatedChildren.currentPage > 0;
                     showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
+                } else if (treeNode.model.status === "meta-only") {
+                    children = _.map(treeNode.children, function (child) {
+                        return child.model;
+                    });
+                    showNext = true;
+                } else {
+                    throw "The node has the invalid status: " + treeNode.model.status;
                 }
 
                 if (children.length === 0) { json.closed = true; }
                 json.controlIcon = json.closed ? "plus" : "minus";
 
-                html = this.templates.containerPre(json);
-                if (children.length > 0) {
-                    if (showPrev) {
-                        html += this.templates.pagItem({ type: "up" });
-                    }
-                    _.each(children, function (child) {
-                        html += that.recursiveRender(child, treeNode);
-                    });
-                    if (showNext) {
-                        html += this.templates.pagItem({ type: "down" });
-                    }
-                } else {
-                    // TODO empty OU
-                }
-                html += this.templates.containerPost(json);
-
+                html = this.renderOU(json, children, showPrev, showNext, treeNode);
             } else {
+                // It's a regular node
                 json.icon = this.iconClasses[json.type];
                 html = this.templates.item(json);
             }
 
             return html;
+        },
+
+        renderOU: function (json, children, showPrev, showNext, treeNode) {
+            var html = this.templates.containerPre(json),
+                that = this;
+
+            if (children.length > 0) {
+                if (showPrev) {
+                    html += this.templates.pagItem({ type: "up" });
+                }
+                _.each(children, function (child) {
+                    html += that.recursiveRender(child, treeNode);
+                });
+                if (showNext) {
+                    html += this.templates.pagItem({ type: "down" });
+                }
+            } else {
+                // TODO empty OU
+            }
+
+            return html + this.templates.containerPost(json);
         },
 
         editNode: function (evt) {
@@ -242,12 +256,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             node = this.model.get("tree").first(function (obj) {
                 return obj.model.id === id;
             });
-            page = node.model.paginatedChildren.currentPage;
-            page = prev ? page - 1 : page + 1;
 
-            node.model.paginatedChildren.goTo(page, {
-                success: function () { that.model.trigger("change"); }
-            });
+            if (node.model.status === "paginated") {
+                page = node.model.paginatedChildren.currentPage;
+                page = prev ? page - 1 : page + 1;
+                node.model.paginatedChildren.goTo(page, {
+                    success: function () { that.model.trigger("change"); }
+                });
+            } else {
+                this.model.loadFromPath(node.model.path + ',' + id);
+            }
         },
 
         _openContainerAux: function ($el, $content, opened) {

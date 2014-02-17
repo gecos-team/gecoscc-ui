@@ -204,20 +204,23 @@ var App;
                 );
             },
 
-            _fetchModel: function (model, id) {
+            _fetchModel: function (model) {
                 model.fetch().done(function () {
                     // Item loaded, now we need to update the tree
-                    // FIXME Do we? What if it is not a OU
-                    var node = App.instances.tree.get("tree").first(function (n) {
+                    var id = model.get("id"),
+                        node = App.instances.tree.get("tree").first(function (n) {
                             return n.model.id === id;
                         }),
                         promises = [$.Deferred()];
 
-                    if (node && node.model.loaded) {
+                    // FIXME is all this really necessary??
+
+                    if (!_.isUndefined(node) && node.model.status !== "unknown") {
                         promises[0].resolve();
                     } else {
                         promises = App.instances.tree.loadFromPath(model.get("path"));
                     }
+
                     $.when.apply($, promises).done(function () {
                         App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     });
@@ -251,7 +254,7 @@ var App;
                     App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     model.trigger("change");
                 } else {
-                    this._fetchModel(model, id);
+                    this._fetchModel(model);
                 }
             },
 
@@ -324,13 +327,10 @@ var App;
 
     App.instances.router = new Router();
 
-    App.on('initialize:after', function () {
-        var path = window.location.hash.substring(1);
-
+    App.instances.treePromise = $.Deferred();
+    App.instances.treePromise.done(function () {
         if (Backbone.history) {
             Backbone.history.start();
         }
-
-        App.instances.router.navigate(path, { trigger: true });
     });
 }(Backbone, jQuery, _, gettext));

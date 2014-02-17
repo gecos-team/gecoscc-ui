@@ -27,7 +27,9 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
         var treeView;
 
         App.instances.tree = new Tree.Models.TreeModel();
-        App.instances.tree.reloadTree();
+        App.instances.tree.reloadTree(function () {
+            App.instances.treePromise.resolve(); // tree is loaded!
+        });
 
         treeView = new Tree.Views.NavigationTree({
             model: App.instances.tree
@@ -45,7 +47,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.Node = Backbone.Model.extend({
         defaults: {
-            type: "AUXILIARY",
             name: "AUXILIARY",
             status: "unknown"
         },
@@ -118,14 +119,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return "/api/nodes/?" + params.join('&');
         },
 
-        reloadTree: function () {
+        reloadTree: function (callback) {
             var that = this;
-            $.ajax(this.getUrl({ path: "root" }), {
+            return $.ajax(this.getUrl({ path: "root" }), {
                 success: function (response) {
                     var aux = that.parseNodesJSON(response.nodes);
                     aux[0].children[0].model.closed = false;
                     $.when.apply(that, aux[1]).done(function () {
                         that.set("tree", aux[0]);
+                        if (callback) { callback(); }
                     });
                 }
             });
@@ -204,26 +206,45 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 parentId = _.last(_.initial(pathAsArray)),
                 that = this,
                 parentNode,
+                oldNode,
                 newNode,
                 promises;
 
             parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
                 return n.model.id === parentId;
             });
+            oldNode = _.find(parentNode.children, function (n) {
+                return n.model.id === id;
+            });
+
             if (parentNode.model.status === "paginated") {
                 newNode = parentNode.model.paginatedChildren.get(id).toJSON();
-            } else if (parentNode.model.id === "root") {
-                newNode = _.find(parentNode.children, function (n) {
-                    return n.model.id === id;
-                });
-                newNode = newNode.model;
-            } else {
-                return;
+            } else if (parentNode.model.id === "root" || parentNode.model.status === "meta-only") {
+                newNode = _.clone(oldNode.model);
+                delete newNode.children;
+            }
+
+            if (_.isUndefined(newNode)) {
+                // Parent unknown
+                newNode = {
+                    id: id,
+                    path: _.initial(pathAsArray).join(','),
+                    type: "ou",
+                    name: "AUXILIARY",
+                    children: [],
+                    closed: false
+                };
+                unknownIds.push(id);
             }
 
             newNode.status = "paginated";
             promises = [this._addPaginatedChildrenToModel(newNode)];
             newNode = this.parser.parse(newNode);
+            if (!_.isUndefined(oldNode)) {
+                newNode.children = oldNode.children;
+                newNode.model.children = oldNode.model.children;
+                oldNode.drop();
+            }
             parentNode.addChild(newNode);
             promises.push(this.resolveUnknownNodes(unknownIds, true));
 
@@ -239,22 +260,24 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         makePath: function (path) {
             var currentNode = this.get("tree"),
                 unknownIds = [],
-                pathAsArray = path;
+                pathAsArray = path,
+                that = this;
 
             if (_.isString(path)) { pathAsArray = path.split(','); }
 
+            path = "root";
             _.each(pathAsArray, function (step) {
                 if (step === "root") { return; }
 
                 var node = currentNode.first({ strategy: "breadth" }, function (n) {
                         return n.model.id === step;
-                    }),
-                    that = this;
+                    });
 
                 if (_.isUndefined(node)) {
                     unknownIds.push(step);
                     node = {
                         id: step,
+                        path: path,
                         type: "ou",
                         name: "AUXILIARY",
                         children: [],
@@ -264,6 +287,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     node = that.parser.parse(node);
                     currentNode.addChild(node);
                 }
+                path += ',' + step;
                 currentNode = node;
             });
 
@@ -289,7 +313,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         return item.model.id === n._id;
                     });
                     node.model.name = n.name;
-                    node.model.status = "meta-only";
+                    if (node.model.status !== "paginated") {
+                        node.model.status = "meta-only";
+                    }
                 });
                 if (!silent) { that.trigger("change"); }
             });
