@@ -39,6 +39,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         treeContainerPost =
             '    </div>\n' +
             '</div>\n',
+        emptyContainer =
+            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
+            '    <div class="tree-name">' + gettext('Empty container') + '</div>\n' +
+            '</div>',
         treeItem =
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
@@ -72,6 +76,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         templates: {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
+            emptyContainer: _.template(emptyContainer),
             item: _.template(treeItem),
             pagItem: _.template(paginationItem),
             emptyTree: _.template(emptyTree),
@@ -167,7 +172,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
 
                 if (_.isUndefined(treeNode)) {
-                    children = [];  // Unloaded node, show it closed
+                    children = [];
+                    json.closed = true; // Unloaded node, show it closed
                 } else if (treeNode.model.status === "paginated") {
                     json.closed = treeNode.model.closed;
                     paginatedChildren = treeNode.model.paginatedChildren;
@@ -183,7 +189,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     throw "The node has the invalid status: " + treeNode.model.status;
                 }
 
-                if (children.length === 0) { json.closed = true; }
                 json.controlIcon = json.closed ? "plus" : "minus";
 
                 html = this.renderOU(json, children, showPrev, showNext, treeNode);
@@ -211,7 +216,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     html += this.templates.pagItem({ type: "down" });
                 }
             } else {
-                // TODO empty OU
+                html += this.templates.emptyContainer(json);
             }
 
             return html + this.templates.containerPost(json);
