@@ -27,7 +27,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     var treeContainerPre =
-            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>">\n' +
+            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
             '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
@@ -39,6 +39,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         treeContainerPost =
             '    </div>\n' +
             '</div>\n',
+        emptyContainer =
+            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
+            '    <div class="tree-name">' + gettext('Empty container') + '</div>\n' +
+            '</div>',
         treeItem =
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
@@ -46,6 +50,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <div class="tree-name"><%= name %></div>\n' +
             '        <input type="checkbox" class="tree-selection">\n' +
             '    </div>\n' +
+            '</div>\n',
+        paginationItem =
+            '<div class="tree-pagination tree-node" style="display: block;" data-pagination="<%= type %>">\n' +
+            '    <span class="fa fa-chevron-<%= type %>"></span>\n' +
+            '    <div class="tree-name">' + gettext('More') + '</div>\n' +
             '</div>\n',
         emptyTree =
             '<a href="#newroot">\n' +
@@ -67,7 +76,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         templates: {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
+            emptyContainer: _.template(emptyContainer),
             item: _.template(treeItem),
+            pagItem: _.template(paginationItem),
             emptyTree: _.template(emptyTree),
             extraOpts: _.template(extraOpts)
         },
@@ -87,6 +98,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click .tree-container-header": "editNode",
             "click .tree-leaf": "editNode",
+            "click .tree-pagination": "paginate",
             "click .tree-container-header .opener": "openContainer",
             "click .tree-name .extra-opts": "showContainerMenu",
             "click .tree-selection": "selectNode"
@@ -143,27 +155,71 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return this;
         },
 
-        recursiveRender: function (node) {
-            var that = this,
-                json = _.pick(node, "name", "type", "id", "closed"),
+        recursiveRender: function (node, root) {
+            var json = _.pick(node, "name", "type", "id", "path"),
+                showPrev = false,
+                showNext = false,
+                paginatedChildren,
+                treeNode,
+                children,
                 html;
 
+
             if (json.type === "ou") {
-                if (node.children.length === 0) {
-                    json.closed = true;
-                }
-                json.controlIcon = json.closed ? "plus" : "minus";
-                html = this.templates.containerPre(json);
-                _.each(node.children, function (child) {
-                    html += that.recursiveRender(child);
+                if (_.isUndefined(root)) { root = this.model.get("tree"); }
+                treeNode = root.first({ strategy: 'breadth' }, function (n) {
+                    return n.model.id === json.id;
                 });
-                html += this.templates.containerPost(json);
+
+                if (_.isUndefined(treeNode)) {
+                    children = [];
+                    json.closed = true; // Unloaded node, show it closed
+                } else if (treeNode.model.status === "paginated") {
+                    json.closed = treeNode.model.closed;
+                    paginatedChildren = treeNode.model.paginatedChildren;
+                    children = paginatedChildren.toJSON();
+                    showPrev = paginatedChildren.currentPage > 0;
+                    showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
+                } else if (treeNode.model.status === "meta-only") {
+                    children = _.map(treeNode.children, function (child) {
+                        return child.model;
+                    });
+                    showNext = true;
+                } else {
+                    throw "The node has the invalid status: " + treeNode.model.status;
+                }
+
+                json.controlIcon = json.closed ? "plus" : "minus";
+
+                html = this.renderOU(json, children, showPrev, showNext, treeNode);
             } else {
+                // It's a regular node
                 json.icon = this.iconClasses[json.type];
                 html = this.templates.item(json);
             }
 
             return html;
+        },
+
+        renderOU: function (json, children, showPrev, showNext, treeNode) {
+            var html = this.templates.containerPre(json),
+                that = this;
+
+            if (children.length > 0) {
+                if (showPrev) {
+                    html += this.templates.pagItem({ type: "up" });
+                }
+                _.each(children, function (child) {
+                    html += that.recursiveRender(child, treeNode);
+                });
+                if (showNext) {
+                    html += this.templates.pagItem({ type: "down" });
+                }
+            } else {
+                html += this.templates.emptyContainer(json);
+            }
+
+            return html + this.templates.containerPost(json);
         },
 
         editNode: function (evt) {
@@ -192,16 +248,45 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        paginate: function (evt) {
+            var $el = $(evt.target).parents(".tree-pagination").first(),
+                prev = $el.data("pagination") === "up",
+                that = this,
+                node,
+                page,
+                id;
+
+            $el = $el.parents(".tree-container").first();
+            id = $el.attr("id");
+            node = this.model.get("tree").first(function (obj) {
+                return obj.model.id === id;
+            });
+
+            if (node.model.status === "paginated") {
+                page = node.model.paginatedChildren.currentPage;
+                page = prev ? page - 1 : page + 1;
+                node.model.paginatedChildren.goTo(page, {
+                    success: function () { that.model.trigger("change"); }
+                });
+            } else {
+                this.model.loadFromPath(node.model.path + ',' + id);
+            }
+        },
+
         _openContainerAux: function ($el, $content, opened) {
             var node = this.model.get("tree"),
-                id = $el.attr("id");
+                id = $el.attr("id"),
+                path = $el.data("path");
+
             node = node.first(function (obj) {
                 return obj.model.id === id;
             });
-            node.model.closed = !opened;
-            if (opened && !(node.model.loaded && node.children.length > 0)) {
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = !opened;
+            } else {
                 $content.html(this._loader());
-                this.model.loadFromNode(node.model.path, node.model.id);
+                this.model.loadFromPath(path + ',' + id);
             }
         },
 

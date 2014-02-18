@@ -204,25 +204,23 @@ var App;
                 );
             },
 
-            _fetchModel: function (model, id) {
+            _fetchModel: function (model) {
                 model.fetch().done(function () {
                     // Item loaded, now we need to update the tree
-                    var node = App.instances.tree.get("tree").first(function (n) {
-                            return n.model.id === id;
+                    var parentId = _.last(model.get("path").split()),
+                        parentNode = App.instances.tree.get("tree").first(function (n) {
+                            return n.model.id === parentId;
                         }),
-                        promise = $.Deferred();
+                        promises = [$.Deferred()];
 
-                    if (node && node.model.loaded) {
-                        promise.resolve();
+                    if (!_.isUndefined(parentNode) && parentNode.model.status === "paginated") {
+                        promises[0].resolve();
                     } else {
-                        promise = App.instances.tree.loadFromNode(
-                            model.get("path"),
-                            model.get("id"),
-                            true
-                        );
+                        promises = App.instances.tree.loadFromPath(model.get("path"));
                     }
-                    promise.done(function () {
-                        App.instances.tree.openAllContainersFrom(id);
+
+                    $.when.apply($, promises).done(function () {
+                        App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     });
                 });
             },
@@ -251,10 +249,10 @@ var App;
 
                 if (skipFetch) {
                     // The object was cached
-                    App.instances.tree.openAllContainersFrom(id);
+                    App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
                     model.trigger("change");
                 } else {
-                    this._fetchModel(model, id);
+                    this._fetchModel(model);
                 }
             },
 
@@ -327,13 +325,10 @@ var App;
 
     App.instances.router = new Router();
 
-    App.on('initialize:after', function () {
-        var path = window.location.hash.substring(1);
-
+    App.instances.treePromise = $.Deferred();
+    App.instances.treePromise.done(function () {
         if (Backbone.history) {
             Backbone.history.start();
         }
-
-        App.instances.router.navigate(path, { trigger: true });
     });
 }(Backbone, jQuery, _, gettext));

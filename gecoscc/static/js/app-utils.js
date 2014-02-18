@@ -94,17 +94,10 @@
 
             if (isNew) {
                 promise.done(function (resp) {
-                    var tree = App.instances.tree.get("tree"),
-                        parentId = _.last(resp.path.split(',')),
-                        parent = tree.first(function (n) {
-                            return n.model.id === parentId;
-                        });
-
-                    while (parent.children.length > 0) {
-                        parent.children[0].drop();
-                    }
-                    App.instances.tree.loadFromNode(parent);
-                    App.instances.router.navigate("ou/" + parent.model.id + '/' + this.resourceType + '/' + resp._id, {
+                    var url = "ou/" + _.last(resp.path.split(',')) + '/' +
+                        this.resourceType + '/' + resp._id;
+                    App.instances.tree.loadFromPath(resp.path);
+                    App.instances.router.navigate(url, {
                         trigger: true
                     });
                 });
