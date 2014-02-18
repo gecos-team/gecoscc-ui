@@ -199,6 +199,29 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return [tree, promises];
         },
 
+        getNodeModel: function (parentNode, oldNode, id) {
+            var newNode;
+
+            if (parentNode.model.status === "paginated") {
+                newNode = parentNode.model.paginatedChildren.get(id).toJSON();
+            } else if (parentNode.model.id === "root" || parentNode.model.status === "meta-only") {
+                newNode = _.clone(oldNode.model);
+                delete newNode.children;
+            } else {
+                // Parent unknown
+                newNode = {
+                    id: id,
+                    type: "ou",
+                    name: "AUXILIARY",
+                    children: [],
+                    closed: false,
+                    status: "unknown"
+                };
+            }
+
+            return newNode;
+        },
+
         loadFromPath: function (pathAsString, silent) {
             var pathAsArray = pathAsString.split(','),
                 id = _.last(pathAsArray),
@@ -217,24 +240,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 return n.model.id === id;
             });
 
-            if (parentNode.model.status === "paginated") {
-                newNode = parentNode.model.paginatedChildren.get(id).toJSON();
-            } else if (parentNode.model.id === "root" || parentNode.model.status === "meta-only") {
-                newNode = _.clone(oldNode.model);
-                delete newNode.children;
-            }
-
-            if (_.isUndefined(newNode)) {
-                // Parent unknown
-                newNode = {
-                    id: id,
-                    path: _.initial(pathAsArray).join(','),
-                    type: "ou",
-                    name: "AUXILIARY",
-                    children: [],
-                    closed: false
-                };
+            newNode = this.getNodeModel(parentNode, oldNode, id);
+            if (newNode.status === "unknown") {
                 unknownIds.push(id);
+                newNode.path = _.initial(pathAsArray).join(',');
             }
 
             newNode.status = "paginated";
