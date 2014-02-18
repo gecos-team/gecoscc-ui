@@ -28,8 +28,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         defaults: {
             name: "",
-            groupmembers: [],
-            nodemembers: []
+            members: [],
+            memberof: []
         }
     });
 

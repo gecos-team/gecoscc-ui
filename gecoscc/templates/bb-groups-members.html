@@ -1,0 +1,11 @@
+<label>Nodos pertenecientes al grupo</label>
+<% if (members.length > 0) { %>
+    <ul>
+    <% _.each(members, function (m) { %>
+        <li><a href="/#byid/<%= m[0] %>"><%= m[1] %></a></li>
+    <% }); %>
+    </ul>
+<% } else { %>
+    <p class="text-muted">No hay.</p>
+<% }%>
+

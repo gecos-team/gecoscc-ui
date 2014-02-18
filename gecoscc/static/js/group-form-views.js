@@ -23,30 +23,16 @@
 App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.GroupMembers = Marionette.ItemView.extend({
-        template: "#groupmembers-template",
+    Views.Members = Marionette.ItemView.extend({
+        template: "#groups-members-template",
 
         initialize: function (options) {
-            this.groupmembers = options.groupmembers;
+            this.members = options.members;
         },
 
         serializeData: function () {
             return {
-                groupmembers: _.pairs(this.groupmembers)
-            };
-        }
-    });
-
-    Views.NodeMembers = Marionette.ItemView.extend({
-        template: "#nodemembers-template",
-
-        initialize: function (options) {
-            this.nodemembers = options.nodemembers;
-        },
-
-        serializeData: function () {
-            return {
-                nodemembers: _.pairs(this.nodemembers)
+                members: _.pairs(this.members)
             };
         }
     });
@@ -58,8 +44,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         regions: {
             memberof: "#memberof",
-            groupmembers: "#groupmembers",
-            nodemembers: "#nodemembers"
+            members: "#members"
         },
 
         events: {
@@ -106,6 +91,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onRender: function () {
             var that = this,
+                memberof = this.model.get("memberof"),
                 groups,
                 widget,
                 promise;
@@ -119,16 +105,16 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 promise = groups.fetch();
             }
 
+            memberof = memberof.length > 0 ? memberof[0] : "";
             widget = new Views.GroupWidget({
                 collection: groups,
-                checked: this.model.get("memberof")
+                checked: memberof
             });
             promise.done(function () {
                 that.memberof.show(widget);
             });
 
-            this.renderMembers("groupmembers", Views.GroupMembers);
-            this.renderMembers("nodemembers", Views.NodeMembers);
+            this.renderMembers("members", Views.Members);
         },
 
         deleteModel: function (evt) {
