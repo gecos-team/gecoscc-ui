@@ -207,15 +207,13 @@ var App;
             _fetchModel: function (model) {
                 model.fetch().done(function () {
                     // Item loaded, now we need to update the tree
-                    var id = model.get("id"),
-                        node = App.instances.tree.get("tree").first(function (n) {
-                            return n.model.id === id;
+                    var parentId = _.last(model.get("path").split()),
+                        parentNode = App.instances.tree.get("tree").first(function (n) {
+                            return n.model.id === parentId;
                         }),
                         promises = [$.Deferred()];
 
-                    // FIXME is all this really necessary??
-
-                    if (!_.isUndefined(node) && node.model.status !== "unknown") {
+                    if (!_.isUndefined(parentNode) && parentNode.model.status === "paginated") {
                         promises[0].resolve();
                     } else {
                         promises = App.instances.tree.loadFromPath(model.get("path"));
