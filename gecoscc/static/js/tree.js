@@ -199,6 +199,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return [tree, promises];
         },
 
+        parsePath: function (path) {
+            var parsed = {
+                string: path,
+                array: path.split(',')
+            };
+            parsed.last = _.last(parsed.array);
+            parsed.parentPath = _.initial(parsed.array);
+            parsed.parentId = _.last(parsed.parentPath);
+            return parsed;
+        },
+
         getNodeModel: function (parentNode, oldNode, id) {
             var newNode;
 
@@ -222,28 +233,24 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return newNode;
         },
 
-        loadFromPath: function (pathAsString, silent) {
-            var pathAsArray = pathAsString.split(','),
-                id = _.last(pathAsArray),
-                unknownIds = this.makePath(_.initial(pathAsArray)),
-                parentId = _.last(_.initial(pathAsArray)),
-                that = this,
-                parentNode,
-                oldNode,
-                newNode,
-                promises;
+        loadFromPath: function (path, silent) {
+            var that, parentNode, oldNode, newNode, promises, unknownIds;
+
+            that = this;
+            path = this.parsePath(path);
+            unknownIds = this.makePath(path.parentPath);
 
             parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
-                return n.model.id === parentId;
+                return n.model.id === path.parentId;
             });
             oldNode = _.find(parentNode.children, function (n) {
-                return n.model.id === id;
+                return n.model.id === path.last;
             });
 
-            newNode = this.getNodeModel(parentNode, oldNode, id);
+            newNode = this.getNodeModel(parentNode, oldNode, path.last);
             if (newNode.status === "unknown") {
-                unknownIds.push(id);
-                newNode.path = _.initial(pathAsArray).join(',');
+                unknownIds.push(path.last);
+                newNode.path = path.parentPath.join(',');
             }
 
             newNode.status = "paginated";
