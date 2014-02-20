@@ -1,0 +1,4 @@
+<button class='btn btn-warning' <% if (changes === 0) { print('disabled="disabled"'); } %>>
+    Ejecutar cambios
+    <% if (changes > 0) { %> (<%= changes %>) <% } %>
+</button>

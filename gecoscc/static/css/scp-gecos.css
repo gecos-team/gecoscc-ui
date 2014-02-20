@@ -45,6 +45,28 @@ footer {
     }
 }
 
+/* STAGING AREA */
+
+#commit-changes {
+    text-align: right;
+}
+
+#staging-modal li.model {
+    border-bottom: 1px solid #DDD;
+    line-height: 1.2em;
+    margin-bottom: 0.5em;
+    clear: both;
+    min-height: 26px;
+}
+
+#staging-modal li.model button {
+    margin-top: -3px;
+}
+
+#staging-modal li.model:last-child {
+    border: none;
+}
+
 /* NAVIGATION TREE */
 
 #tree-selection-info div.info {

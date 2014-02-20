@@ -88,22 +88,17 @@
             return result;
         },
 
-        save: function (key, val, options) {
-            var isNew = this.isNew(),
-                promise = Backbone.Model.prototype.save.call(this, key, val, options);
+        save: function () {
+            var promises = App.instances.staging.add(this, { arguments: arguments });
 
-            if (isNew) {
-                promise.done(function (resp) {
-                    var url = "ou/" + _.last(resp.path.split(',')) + '/' +
-                        this.resourceType + '/' + resp._id;
+            if (this.isNew()) {
+                // New node, need to reload parent information
+                $.when.apply($, promises).done(function (resp) {
                     App.instances.tree.loadFromPath(resp.path);
-                    App.instances.router.navigate(url, {
-                        trigger: true
-                    });
                 });
             }
 
-            return promise;
+            return promises;
         }
     });
 
@@ -188,7 +183,7 @@
             case "progress":
                 $button.attr("disabled", "disabled");
                 $button.html("<span class='fa fa-spin fa-spinner'></span> " +
-                             gettext("Saving") + "...");
+                             gettext("Staging") + "...");
                 break;
             case "success":
                 $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
@@ -196,10 +191,6 @@
                     $button.html(gettext("Save"));
                     $button.attr("disabled", false);
                 }, 2000);
-                break;
-            case "failure":
-                $button.html(gettext("Save"));
-                $button.attr("disabled", false);
                 break;
             }
         },
@@ -224,15 +215,18 @@
             });
 
             promise = this.model.save();
-            promise.done(function () {
+            setTimeout(function () {
                 that._showSavingProcess($button, "success");
+            }, 1000);
+
+            promise.done(function () {
                 App.instances.tree.updateNodeById(that.model.get("id"));
             });
             promise.fail(function () {
-                that._showSavingProcess($button, "failure");
+                // FIXME the message should be adapted to the staging process
                 App.showAlert(
                     "error",
-                    gettext("Saving the " + that.model.resourceType + " failed."),
+                    gettext("Saving the " + that.model.resourceType + " failed."), // FIXME use interpolation, no concatenation
                     gettext("Something went wrong, please try again in a few moments.")
                 );
             });
@@ -254,7 +248,7 @@
                     error: function () {
                         App.showAlert(
                             "error",
-                            gettext("Couldn't delete the " + that.model.resourceType + "."),
+                            gettext("Couldn't delete the " + that.model.resourceType + "."), // FIXME use interpolation, no concatenation
                             gettext("Something went wrong, please try again in a few moments.")
                         );
                     }
@@ -264,7 +258,7 @@
             GecosUtils.askConfirmation({
                 callback: cb,
                 message: gettext("Deleting a " + that.model.resourceType +
-                    " is a permanent action. You won't be able to undo it.")
+                    " is a permanent action. You won't be able to undo it.") // FIXME use interpolation, no concatenation
             });
         }
     });
