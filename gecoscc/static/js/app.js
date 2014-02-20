@@ -243,7 +243,7 @@ var App;
                 App.main.show(App.instances.loaderView);
                 model
                     .off("change")
-                    .on("change", function () {
+                    .once("change", function () {
                         App.main.show(view);
                     });
 

@@ -71,8 +71,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 var id = model.get("id");
                 delete that.promiseIndex[id];
                 delete that.argumentsIndex[id];
-                Backbone.Collection.prototype.remove.call(this, model, options);
+                Backbone.Collection.prototype.remove.call(that, model, options);
                 model.fetch();
+                // TODO update node in tree
             });
 
             this.trigger("change");
@@ -130,6 +131,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var $el = $(evt.target).parents("li").first(),
                 model = this.collection.get($el.attr("id"));
+            $el.hide();
             this.collection.remove(model);
         }
     });
