@@ -23,9 +23,10 @@
 (function (ObjectId, db, print) {
     "use strict";
 
-    var MAX_LEVELS = 10,
-        MAX_OBJECTS = 1000,
-        MAX_NODES_PER_GROUP = 12,
+    var MAX_LEVELS = 6,
+        MAX_CHILDS = 40,
+        MAX_OBJECTS = 10000,
+        MAX_NODES_PER_GROUP = 15,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.7,
@@ -114,7 +115,7 @@
 
         if (db.nodes.count() >= MAX_OBJECTS ||
                 (new_object_type === 'ou' && path.split(SEPARATOR).length >= MAX_LEVELS)) {
-            return;
+            return; // Abort
         }
 
         constructors[new_object_type](path);
@@ -149,7 +150,7 @@
                 'policies': [],
                 'extra': ''
             }),
-            new_children = random_int(MAX_LEVELS) + 1,
+            new_children = random_int(MAX_CHILDS) + 1,
             h;
 
         path = path + SEPARATOR + oid;
@@ -186,10 +187,9 @@
 
         counters.group += 1;
 
-        if (Math.random() > GROUP_NESTED_PROBABILITY) {
+        if (existing_groups.length > 0 && Math.random() > GROUP_NESTED_PROBABILITY) {
             // This group is going to be a child of another group
-            parent_oid = random_int(existing_groups.length);
-            parent_oid = existing_groups[parent_oid];
+            parent_oid = choice(existing_groups);
             group.memberof = [parent_oid];
             db.nodes.update({
                 '_id': parent_oid
@@ -204,8 +204,7 @@
 
         // Add some nodes to this group
         for (count; count < nodes_to_add; count += 1) {
-            node_oid = random_int(potential_group_members.length);
-            node_oid = potential_group_members[node_oid];
+            node_oid = choice(potential_group_members);
             group.members.push(node_oid);
             db.nodes.update({
                 '_id': node_oid
