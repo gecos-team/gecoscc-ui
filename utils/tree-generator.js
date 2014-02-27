@@ -48,7 +48,7 @@
         defaults,
         object_creator,
         rootId,
-        user_template,
+        admin_user,
         limit,
         user,
         ous,
@@ -278,25 +278,26 @@
 
     // Admin user generation
 
-    user_template = {
-        "_id": new ObjectId("527a325cbd4d720d3ab11025"),
+    admin_user = {
+        "_id": new ObjectId(),
         "username": "admin",
         "password": "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu",
         "email": "admin@example.com",
-        "permissions": ["root,"]
+        "permissions": [rootId]
     };
 
     db.adminusers.drop();
-    db.adminusers.insert(user_template);
+    db.adminusers.insert(admin_user);
 
     ous = db.nodes.find({ 'type': 'ou' });
 
     // Make the first 10 users admins of some OUs
     for (i = 0; i < 10; i += 1) {
-        user = user_template;
-        user.username = 'user_' + i;
+        user = {};
+        user.username = 'admin_user_' + i;
         user.email = 'user' + i + '@example.com';
         user.permissions = [];
+        user.password = "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu";
         user._id = new ObjectId();
 
         limit = random_int(10);
