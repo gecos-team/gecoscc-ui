@@ -49,8 +49,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button#delete": "deleteModel",
-            "click button#save": "save",
-            "click button#goback": "go2table"
+            "click button#save": "save"
         },
 
         helperView: undefined,
@@ -127,11 +126,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 memberof: _.bind(this.memberof.currentView.getChecked, this),
                 name: "#name"
             });
-        },
-
-        go2table: function (evt) {
-            evt.preventDefault();
-            App.instances.router.navigate("", { trigger: true });
         }
     });
 
