@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true */
-/*global App, Backbone, jQuery, _, gettext, GecosUtils */
+/*global App, Backbone, jQuery, _, gettext, GecosUtils, interpolate */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -226,7 +226,7 @@
                 // FIXME the message should be adapted to the staging process
                 App.showAlert(
                     "error",
-                    gettext("Saving the " + that.model.resourceType + " failed."), // FIXME use interpolation, no concatenation
+                    interpolate(gettext("Saving the %s failed."), [that.model.resourceType]),
                     gettext("Something went wrong, please try again in a few moments.")
                 );
             });
@@ -248,7 +248,7 @@
                     error: function () {
                         App.showAlert(
                             "error",
-                            gettext("Couldn't delete the " + that.model.resourceType + "."), // FIXME use interpolation, no concatenation
+                            interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
                             gettext("Something went wrong, please try again in a few moments.")
                         );
                     }
@@ -257,8 +257,8 @@
 
             GecosUtils.askConfirmation({
                 callback: cb,
-                message: gettext("Deleting a " + that.model.resourceType +
-                    " is a permanent action. You won't be able to undo it.") // FIXME use interpolation, no concatenation
+                message: interpolate(gettext("Deleting a %s is a permanent " +
+                    "action. You won't be able to undo it."), [that.model.resourceType])
             });
         }
     });

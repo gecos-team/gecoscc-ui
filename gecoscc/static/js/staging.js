@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true, unparam: true */
-/*global App, gettext */
+/*global App */
 
 // Copyright 2014 Junta de Andalucia
 //
