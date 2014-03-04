@@ -425,6 +425,29 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 return _.clone(tree.model.children[0]);
             }
             return {};
+        },
+
+        findNodeById: function (id) {
+            var tree = this.get("tree"),
+                node = tree.first(function (n) {
+                    return n.model.id === id;
+                });
+
+            if (node) { return node.model; }
+
+            // Node wasn't a loaded container, let's look in the paginated
+            // children collections
+            tree.walk(function (n) {
+                if (n.model.status === "paginated") {
+                    node = n.model.paginatedChildren.get(id);
+                }
+                if (node) {
+                    node = node.toJSON();
+                    return false;
+                }
+            });
+
+            return node;
         }
     });
 });

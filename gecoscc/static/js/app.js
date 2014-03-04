@@ -130,10 +130,8 @@ var App;
                     App.instances.router.navigate("", { trigger: true });
                     return;
                 }
-                parent = App.instances.tree.get("tree").first(function (n) {
-                    return n.model.id === containerid;
-                });
-                path = parent.model.path + ',' + parent.model.id;
+                parent = App.instances.tree.findNodeById(containerid);
+                path = parent.path + ',' + parent.id;
                 model.set("path", path);
 
                 App.main.show(view);

@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true */
-/*global App, Backbone, jQuery, _, gettext, GecosUtils, interpolate */
+/*global App, Backbone, jQuery, _, gettext, interpolate */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -89,16 +89,16 @@
         },
 
         save: function () {
-            var promises = App.instances.staging.add(this, { arguments: arguments });
+            var promise = App.instances.staging.add(this, { arguments: arguments });
 
             if (this.isNew()) {
                 // New node, need to reload parent information
-                $.when.apply($, promises).done(function (resp) {
+                promise.done(function (resp) {
                     App.instances.tree.loadFromPath(resp.path);
                 });
             }
 
-            return promises;
+            return promise;
         },
 
         destroy: function () {
@@ -218,7 +218,8 @@
 
         saveModel: function ($button, mapping) {
             var that = this,
-                promise = $.Deferred();
+                promise = $.Deferred(),
+                isNew = this.model.isNew();
 
             if (!(this.validate() && this.customValidate())) {
                 App.showAlert(
@@ -241,7 +242,11 @@
             }, 1000);
 
             promise.done(function () {
-                App.instances.tree.updateNodeById(that.model.get("id"));
+                if (isNew) {
+                    App.instances.tree.loadFromPath(that.model.get("path"));
+                } else {
+                    App.instances.tree.updateNodeById(that.model.get("id"));
+                }
             });
             promise.fail(function (response) {
                 if (response !== "avoid alert") {
@@ -269,8 +274,7 @@
             }, 1000);
 
             promise.done(function () {
-                App.instances.tree.reloadTree(); // FIXME reload completely?
-                // App.instances.router.navigate("", { trigger: true });
+                App.instances.tree.loadFromPath(that.model.get("path"));
             });
             promise.fail(function (response) {
                 if (response !== "avoid alert") {
