@@ -203,6 +203,19 @@
             }, 2000);
         },
 
+        _errorMessage: function (id, response) {
+            var message = [
+                gettext("Something went wrong, please try again in a few moments."),
+                interpolate(gettext("Resource ID: %s"), [id])
+            ];
+
+            if (_.has(response, "status") && _.has(response, "statusText")) {
+                message.push("- " + gettext("Status") + response.status +
+                             ": " + response.statusText);
+            }
+            return message.join(' ');
+        },
+
         saveModel: function ($button, mapping) {
             var that = this,
                 promise = $.Deferred();
@@ -230,13 +243,14 @@
             promise.done(function () {
                 App.instances.tree.updateNodeById(that.model.get("id"));
             });
-            promise.fail(function () {
-                // FIXME the message should be adapted to the staging process
-                App.showAlert(
-                    "error",
-                    interpolate(gettext("Saving the %s failed."), [that.model.resourceType]),
-                    gettext("Something went wrong, please try again in a few moments.")
-                );
+            promise.fail(function (response) {
+                if (response !== "avoid alert") {
+                    App.showAlert(
+                        "error",
+                        interpolate(gettext("Saving the %s failed."), [that.model.resourceType]),
+                        that._errorMessage(that.model.get("id"), response)
+                    );
+                }
             });
 
             return promise;
@@ -258,13 +272,14 @@
                 App.instances.tree.reloadTree(); // FIXME reload completely?
                 // App.instances.router.navigate("", { trigger: true });
             });
-            promise.fail(function () {
-                // FIXME the message should be adapted to the staging process
-                App.showAlert(
-                    "error",
-                    interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
-                    gettext("Something went wrong, please try again in a few moments.")
-                );
+            promise.fail(function (response) {
+                if (response !== "avoid alert") {
+                    App.showAlert(
+                        "error",
+                        interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
+                        that._errorMessage(that.model.get("id"), response)
+                    );
+                }
             });
         }
     });

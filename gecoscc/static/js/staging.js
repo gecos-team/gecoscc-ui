@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true, unparam: true */
-/*global App */
+/*global App, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -19,7 +19,6 @@
 // express or implied.
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
-
 
 App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
@@ -46,16 +45,26 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 var id = model.get("id"),
                     promise = $.Deferred();
 
-                that.promiseIndex[id] = promise;
-                if (_.has(options, "arguments")) {
-                    that.argumentsIndex[id] = options.arguments;
-                }
-                if (options.destroy) {
-                    that.toDelete.push(id);
-                }
-
                 promises.push(promise);
-                Backbone.Collection.prototype.add.call(that, model, options);
+
+                if (_.contains(that.toDelete, id)) {
+                    App.showAlert(
+                        "error",
+                        gettext("Resource marked for deletion."),
+                        gettext("Your latest changes in this resource will be ignored.")
+                    );
+                    promise.reject("avoid alert");
+                } else {
+                    that.promiseIndex[id] = promise;
+                    if (_.has(options, "arguments")) {
+                        that.argumentsIndex[id] = options.arguments;
+                    }
+                    if (options.destroy) {
+                        that.toDelete.push(id);
+                    }
+
+                    Backbone.Collection.prototype.add.call(that, model, options);
+                }
             });
             this.trigger("change");
 
@@ -123,6 +132,10 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             });
 
             return promises;
+        },
+
+        isPendingOfDeletion: function (id) {
+            return _.contains(this.toDelete, id);
         }
     });
 });
