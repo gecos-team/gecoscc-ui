@@ -186,20 +186,21 @@
         },
 
         _showSavingProcess: function ($button, phase) {
-            switch (phase) {
-            case "progress":
+            var text;
+
+            if (phase === "progress") {
                 $button.attr("disabled", "disabled");
                 $button.html("<span class='fa fa-spin fa-spinner'></span> " +
                              gettext("Staging") + "...");
-                break;
-            case "success":
-                $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
-                setTimeout(function () {
-                    $button.html(gettext("Save"));
-                    $button.attr("disabled", false);
-                }, 2000);
-                break;
+                return;
             }
+
+            text = phase === "saved" ? gettext("Save") : gettext("Delete");
+            $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
+            setTimeout(function () {
+                $button.html(text);
+                $button.attr("disabled", false);
+            }, 2000);
         },
 
         saveModel: function ($button, mapping) {
@@ -223,7 +224,7 @@
 
             promise = this.model.save();
             setTimeout(function () {
-                that._showSavingProcess($button, "success");
+                that._showSavingProcess($button, "saved");
             }, 1000);
 
             promise.done(function () {

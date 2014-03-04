@@ -59,12 +59,16 @@ footer {
     min-height: 26px;
 }
 
+#staging-modal li.model:last-child {
+    border: none;
+}
+
 #staging-modal li.model button {
     margin-top: -3px;
 }
 
-#staging-modal li.model:last-child {
-    border: none;
+#staging-modal li.model span.label {
+    margin-right: 10px;
 }
 
 /* NAVIGATION TREE */

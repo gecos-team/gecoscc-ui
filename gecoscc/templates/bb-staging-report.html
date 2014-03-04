@@ -9,7 +9,15 @@
                 <ul class="list-unstyled">
                     <% _.each(items, function (model) { %>
                         <li id="<%= model.id %>" title="ID: <%= model.id %>" class="model">
-                            <%= model.name %> <button class="btn btn-danger btn-xs pull-right"><span class="fa fa-times"></span></button>
+                            <% if (_.contains(deletions, model.id)) { %>
+                                <span class="label label-danger">Borrado</span>
+                            <% } else { %>
+                                <span class="label label-warning">Modificado</span>
+                            <% } %>
+                            <%= model.name %>
+                            <button class="discard btn btn-info btn-xs pull-right" title="Descartar cambios">
+                                <span class="fa fa-times"></span>
+                            </button>
                         </li>
                     <% }); %>
                 </ul>

@@ -142,11 +142,18 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button.btn-primary": "commitChanges",
-            "click button.btn-danger": "removeModel"
+            "click button.discard": "removeModel"
         },
 
         initialize: function (options) {
             this.commitChangesButtonView = options.commitChangesButtonView;
+        },
+
+        serializeData: function () {
+            return {
+                items: this.collection.toJSON(),
+                deletions: this.collection.toDelete
+            };
         },
 
         commitChanges: function (evt) {
@@ -160,8 +167,12 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             var $el = $(evt.target).parents("li").first(),
                 model = this.collection.get($el.attr("id"));
+
             $el.hide();
             this.collection.dropModel(model);
+            if (this.collection.length === 0) {
+                this.$el.find("#staging-modal").modal("hide");
+            }
         }
     });
 
