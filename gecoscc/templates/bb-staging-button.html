@@ -1,4 +1,10 @@
-<button class='btn btn-warning' <% if (changes === 0) { print('disabled="disabled"'); } %>>
-    Ejecutar cambios
-    <% if (changes > 0) { %> (<%= changes %>) <% } %>
+<button
+    class='btn btn-warning'
+    <% if (inProgress || changes === 0) { print('disabled="disabled"'); } %>
+>
+    <% if (inProgress) { %>
+        <span class="fa fa-spin fa-spinner"></span> En progreso
+    <% } else { %>
+        Ejecutar cambios<% if (changes > 0) { print(": " + changes); } %>
+    <% } %>
 </button>

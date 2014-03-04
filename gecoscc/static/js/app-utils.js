@@ -99,6 +99,13 @@
             }
 
             return promises;
+        },
+
+        destroy: function () {
+            return App.instances.staging.add(this, {
+                arguments: arguments,
+                destroy: true
+            });
         }
     });
 
@@ -237,28 +244,26 @@
         deleteModel: function (evt) {
             evt.preventDefault();
             var that = this,
-                cb;
+                $button = $(evt.target),
+                promise;
 
-            cb = function () {
-                that.model.destroy({
-                    success: function () {
-                        App.instances.tree.reloadTree();
-                        App.instances.router.navigate("", { trigger: true });
-                    },
-                    error: function () {
-                        App.showAlert(
-                            "error",
-                            interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
-                            gettext("Something went wrong, please try again in a few moments.")
-                        );
-                    }
-                });
-            };
+            this._showSavingProcess($button, "progress");
+            promise = this.model.destroy();
+            setTimeout(function () {
+                that._showSavingProcess($button, "success");
+            }, 1000);
 
-            GecosUtils.askConfirmation({
-                callback: cb,
-                message: interpolate(gettext("Deleting a %s is a permanent " +
-                    "action. You won't be able to undo it."), [that.model.resourceType])
+            promise.done(function () {
+                App.instances.tree.reloadTree(); // FIXME reload completely?
+                // App.instances.router.navigate("", { trigger: true });
+            });
+            promise.fail(function () {
+                // FIXME the message should be adapted to the staging process
+                App.showAlert(
+                    "error",
+                    interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
+                    gettext("Something went wrong, please try again in a few moments.")
+                );
             });
         }
     });

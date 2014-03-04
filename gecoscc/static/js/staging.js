@@ -28,11 +28,14 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
         initialize: function (options) {
             this.promiseIndex = {};
             this.argumentsIndex = {};
+            this.toDelete = [];
         },
 
         add: function (models, options) {
             var that = this,
                 promises = [];
+
+            options = options || {};
 
             models = _.flatten([models]);
             _.each(models, function (model) {
@@ -47,6 +50,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 if (_.has(options, "arguments")) {
                     that.argumentsIndex[id] = options.arguments;
                 }
+                if (options.destroy) {
+                    that.toDelete.push(id);
+                }
 
                 promises.push(promise);
                 Backbone.Collection.prototype.add.call(that, model, options);
@@ -59,9 +65,11 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             return promises[0];
         },
 
-        remove: function (models, options) {
+        dropModel: function (models, options) {
             var aux = _.flatten([models]),
                 that = this;
+
+            options = options || {};
 
             _.each(aux, function (model) {
                 if (!(model instanceof Backbone.Model)) {
@@ -71,34 +79,50 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 var id = model.get("id");
                 delete that.promiseIndex[id];
                 delete that.argumentsIndex[id];
-                Backbone.Collection.prototype.remove.call(that, model, options);
-                model.fetch();
-                // TODO update node in tree
+                that.toDelete = _.reject(that.toDelete, function (objId) {
+                    return objId === id;
+                });
+                that.remove(model, options); // Actually remove it from the collection
+
+                if (!options.avoidRestore) {
+                    model.fetch();
+                    // TODO update node in tree
+                }
             });
 
             this.trigger("change");
         },
 
         saveAll: function () {
-            var that = this;
+            var that = this,
+                promises = [];
 
             this.each(function (model) {
                 var id = model.get("id"),
-                    args = [];
+                    action = Backbone.Model.prototype.save,
+                    args = [],
+                    promise;
 
                 if (_.has(that.argumentsIndex, id)) {
                     args = that.argumentsIndex[id];
                 }
+                if (_.contains(that.toDelete, id)) {
+                    action = Backbone.Model.prototype.destroy;
+                }
 
-                Backbone.Model.prototype.save.apply(model, args)
+                promise = action.apply(model, args);
+                promises.push(promise);
+                promise
                     .done(function (response) {
                         that.promiseIndex[id].resolve(response);
                     }).fail(function (response) {
                         that.promiseIndex[model.get("id")].reject(response);
                     }).always(function () {
-                        that.remove(model);
+                        that.dropModel(model, { avoidRestore: true });
                     });
             });
+
+            return promises;
         }
     });
 });
@@ -121,9 +145,14 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.btn-danger": "removeModel"
         },
 
+        initialize: function (options) {
+            this.commitChangesButtonView = options.commitChangesButtonView;
+        },
+
         commitChanges: function (evt) {
             evt.preventDefault();
-            this.collection.saveAll();
+            var promises = this.collection.saveAll();
+            this.commitChangesButtonView.showInProgress(promises);
             this.$el.find("#staging-modal").modal("hide");
         },
 
@@ -132,7 +161,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             var $el = $(evt.target).parents("li").first(),
                 model = this.collection.get($el.attr("id"));
             $el.hide();
-            this.collection.remove(model);
+            this.collection.dropModel(model);
         }
     });
 
@@ -143,7 +172,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         serializeData: function () {
             return {
-                changes: this.reportView.collection.length
+                changes: this.reportView.collection.length,
+                inProgress: this.inProgress
             };
         },
 
@@ -156,8 +186,10 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.reportView = new Views.Report({
                 collection: App.instances.staging,
-                el: "#staging-modal-viewport"
+                el: "#staging-modal-viewport",
+                commitChangesButtonView: this
             });
+            this.inProgress = false;
 
             App.instances.staging.on("change", function () {
                 that.render();
@@ -168,6 +200,18 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.preventDefault();
             this.reportView.render();
             this.reportView.$el.find("#staging-modal").modal();
+        },
+
+        showInProgress: function (promises) {
+            var that = this;
+            this.inProgress = true;
+            $.when.apply($, promises)
+                .done(function () {
+                    App.instances.router.navigate("", { trigger: true });
+                }).always(function () {
+                    that.inProgress = false;
+                    that.render();
+                });
         }
     });
 });
