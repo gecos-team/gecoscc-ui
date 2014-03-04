@@ -115,6 +115,15 @@
         //
         // resourceType: "user",
 
+        refresh: function (evt) {
+            evt.preventDefault();
+            var that = this;
+
+            this.model.fetch().done(function () {
+                that.render();
+            });
+        },
+
         validate: function (evt) {
             var valid = true,
                 $elems;

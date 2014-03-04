@@ -49,7 +49,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button#delete": "deleteModel",
-            "click button#save": "save"
+            "click button#save": "save",
+            "click button.refresh": "refresh"
         },
 
         helperView: undefined,

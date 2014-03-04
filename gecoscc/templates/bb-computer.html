@@ -1,4 +1,4 @@
-<div id="<% if (typeof id !== 'undefined') { print(id); } %>">
+<div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>">
     <ul class="nav nav-tabs">
         <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
         <li><a href="#ohai" data-toggle="tab">Características del puesto</a></li>
@@ -9,6 +9,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">Puesto de Trabajo</div>
+                    <button class="btn btn-default btn-xs pull-right refresh">
+                        <span class="fa fa-refresh"></span>
+                    </button>
                 </div>
                 <div class="bootstrap-admin-panel-content dashboard">
                     <form role="form">

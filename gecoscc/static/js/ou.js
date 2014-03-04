@@ -61,7 +61,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
-            "change input": "validate"
+            "change input": "validate",
+            "click button.refresh": "refresh"
         },
 
         saveForm: function (evt) {
