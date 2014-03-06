@@ -41,7 +41,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '</div>\n',
         emptyContainer =
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
-            '    <div class="tree-name">' + gettext('Empty container') + '</div>\n' +
+            '    <div class="tree-name"><a href="#ou/<%= id %>/new">\n' +
+            '        <span class="fa fa-plus"></span> ' + gettext('Add new') + '\n' +
+            '    </a></div>\n' +
             '</div>',
         treeItem =
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
@@ -96,6 +98,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         activeNode: null,
 
         events: {
+            "click a": "stopPropagation",
             "click .tree-container-header": "editNode",
             "click .tree-leaf": "editNode",
             "click .tree-pagination": "paginate",
@@ -220,6 +223,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             return html + this.templates.containerPost(json);
+        },
+
+        stopPropagation: function (evt) {
+            evt.stopPropagation();
         },
 
         editNode: function (evt) {
