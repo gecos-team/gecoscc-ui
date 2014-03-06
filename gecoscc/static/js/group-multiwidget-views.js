@@ -129,7 +129,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             for (i; i < pages; i += 1) {
                 page = current - inRange + i;
                 if (page >= 0 && page < total) {
-                    paginator.push([page, page === current]);
+                    paginator.push([page + 1, page === current]);
+                    // + 1 so the paginator doesn't start with 0
                 }
             }
             return {
@@ -209,7 +210,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else if ($el.is(".next")) {
                 page = this.collection.currentPage + 1;
             } else {
-                page = parseInt($el.text(), 10);
+                page = parseInt($el.text(), 10) - 1;
+                // - 1 because the paginator internally starts in 0
             }
             this.collection.goTo(page, {
                 success: function () { that.render(); }
