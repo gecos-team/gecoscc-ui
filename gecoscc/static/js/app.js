@@ -68,6 +68,8 @@ var App;
             "ou/:containerid/group/:groupid": "loadGroup",
             "ou/:containerid/computer": "newComputer",
             "ou/:containerid/computer/:computerid": "loadComputer",
+            "ou/:containerid/printer": "newPrinter",
+            "ou/:containerid/printer/:printerid": "loadPrinter",
             "ou/:containerid/storage": "newStorage",
             "ou/:containerid/storage/:storageid": "loadStorage"
         },
@@ -189,6 +191,19 @@ var App;
                 );
             },
 
+            newPrinter: function (containerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/printer",
+                    text: gettext("Printer")
+                }]);
+                this._newItemHelper(
+                    App.Printer.Models.PrinterModel,
+                    App.Printer.Views.PrinterForm,
+                    containerid
+                );
+            },
+
             newStorage: function (containerid) {
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
@@ -303,6 +318,19 @@ var App;
                     App.Computer.Models.ComputerModel,
                     App.Computer.Views.ComputerForm,
                     computerid
+                );
+            },
+
+            loadPrinter: function (containerid, printerid) {
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + "/printer/" + printerid,
+                    text: gettext("Printer")
+                }]);
+                this._loadItemHelper(
+                    App.Printer.Models.PrinterModel,
+                    App.Printer.Views.PrinterForm,
+                    printerid
                 );
             },
 

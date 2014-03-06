@@ -84,7 +84,6 @@ class Node(colander.MappingSchema):
     name = colander.SchemaNode(colander.String())
 
 
-
 class Nodes(colander.SequenceSchema):
     nodes = Node()
 
@@ -189,8 +188,51 @@ class Computer(Node):
     # Group objects
     memberof = colander.Seq(ObjectIdField())
 
+
 class Computers(colander.SequenceSchema):
     computers = Computer()
+
+
+class Printer(Node):
+    memberof = ObjectIdList(missing=[], default=[])
+    identifier = colander.SchemaNode(colander.String(),
+                                     default='',
+                                     missing='')
+    brand = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
+    model = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
+
+    serial = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    registry = colander.SchemaNode(colander.String(),
+                                   default='',
+                                   missing='')
+    description = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')
+    location = colander.SchemaNode(colander.String(),
+                                   default='',
+                                   missing='')
+    # TODO: choice options auto, manual
+    driverinstallation = colander.SchemaNode(colander.String(),
+                                             default='auto',
+                                             missing='')
+    duplex = colander.SchemaNode(colander.Boolean(),
+                                 default=False)
+    extra = colander.SchemaNode(colander.String(),
+                                default='',
+                                missing='')
+
+    # Group objects
+    memberof = colander.Seq(ObjectIdField())
+
+
+class Printers(colander.SequenceSchema):
+    printers = Printer()
 
 
 STORAGE_PROTOCOLS = {

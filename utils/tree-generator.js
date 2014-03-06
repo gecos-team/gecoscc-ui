@@ -242,7 +242,23 @@
     };
 
     constructors.printer = function (path) {
-        var oid = constructors.default(path, 'printer', {});
+        var brands = ["hp", "epson", "lexmark", "samsung", "canon", "brother"],
+            brand,
+            oid;
+
+        brand = choice(brands);
+        oid = constructors.default(path, 'printer', {
+            'brand': brand,
+            'model': random_int(256),
+            'serial': brand.slice(0, 2).toUpperCase() + random_int(100000),
+            'registry': 'JDA' + random_int(10000),
+            'description': 'A pretty printer',
+            'location': 'Dep' +  random_int(999),
+            'driverinstallation': choice(['auto', 'manual']),
+            // 'ppdfile': , TODO: Add some files
+            'duplex': choice([true, false])
+
+        });
         potential_group_members.push(oid);
         return oid;
     };
