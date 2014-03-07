@@ -1,14 +1,14 @@
 # Translations template for gecoscc.
-# Copyright (C) 2013 ORGANIZATION
+# Copyright (C) 2014 ORGANIZATION
 # This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 0.0\n"
+"Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-11-14 10:23+0100\n"
+"POT-Creation-Date: 2014-03-07 13:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,83 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/views/portal.py:67
-msgid "The requested username doesn't exists"
+#: gecoscc/models.py:155
+msgid "Desktop"
+msgstr ""
+
+#: gecoscc/models.py:156
+msgid "Laptop"
+msgstr ""
+
+#: gecoscc/models.py:157
+msgid "Netbook"
+msgstr ""
+
+#: gecoscc/models.py:158
+msgid "Tablet"
+msgstr ""
+
+#: gecoscc/models.py:239
+msgid "FTP"
+msgstr ""
+
+#: gecoscc/models.py:240
+msgid "SSHFS"
+msgstr ""
+
+#: gecoscc/models.py:241
+msgid "NFS v 3"
+msgstr ""
+
+#: gecoscc/models.py:242
+msgid "NFS v4"
+msgstr ""
+
+#: gecoscc/models.py:243
+msgid "SAMBA v3"
+msgstr ""
+
+#: gecoscc/models.py:244
+msgid "SAMBA v4"
+msgstr ""
+
+#: gecoscc/models.py:248
+msgid "System mounts (fstab)"
+msgstr ""
+
+#: gecoscc/models.py:249
+msgid "User space mounts (gvfs)"
+msgstr ""
+
+#: gecoscc/models.py:279
+msgid "Processing"
+msgstr ""
+
+#: gecoscc/models.py:282
+msgid "Applying changes"
+msgstr ""
+
+#: gecoscc/models.py:285
+msgid "Changes applied"
+msgstr ""
+
+#: gecoscc/models.py:288
+msgid "There was errors"
+msgstr ""
+
+#: gecoscc/policies/remote_storage.py:8
+msgid "Remote Storage"
 msgstr ""
 
 #: gecoscc/views/portal.py:73
+msgid "The requested username doesn't exists"
+msgstr ""
+
+#: gecoscc/views/portal.py:79
 msgid "The password doesn't match"
 msgstr ""
 
-#: gecoscc/views/portal.py:78
+#: gecoscc/views/portal.py:84
 msgid "welcome ${username}"
 msgstr ""
 
