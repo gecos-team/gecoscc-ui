@@ -15,11 +15,7 @@ class MongoDB(object):
                  connection_factory=None, **kwargs):
 
         self.db_uri = db_uri
-
-        if db_uri == "mongodb://":
-            db_uri = DEFAULT_MONGODB_URI
-
-        self.parsed_uri = pymongo.uri_parser.parse_uri(db_uri)
+        self.parsed_uri = pymongo.uri_parser.parse_uri(self.db_uri)
 
         if 'replicaSet' in kwargs:
             connection_factory = pymongo.MongoReplicaSetClient
