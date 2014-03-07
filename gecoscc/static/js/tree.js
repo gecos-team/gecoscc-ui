@@ -47,6 +47,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.Node = Backbone.Model.extend({
         defaults: {
+            id: -1,
             name: "AUXILIARY",
             status: "unknown"
         },
