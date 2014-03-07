@@ -23,15 +23,15 @@ msgstr ""
 
 #: gecoscc/static/js/app-utils.js:207
 msgid "Save"
-msgstr ""
+msgstr "Guardar"
 
 #: gecoscc/static/js/app-utils.js:207 gecoscc/static/js/tree-views.js:72
 msgid "Delete"
-msgstr ""
+msgstr "Borrar"
 
 #: gecoscc/static/js/app-utils.js:208
 msgid "Done"
-msgstr ""
+msgstr "Hecho"
 
 #: gecoscc/static/js/app-utils.js:217
 msgid "Something went wrong, please try again in a few moments."
