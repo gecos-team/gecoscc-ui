@@ -27,6 +27,7 @@ def route_config(config):
     config.add_route('admins', '/admins/', factory=LoggedFactory)
     config.add_route('groups', '/groups/', factory=LoggedFactory)
     config.add_route('reports', '/reports/', factory=LoggedFactory)
+    config.add_route('i18n_catalog', '/i18n-catalog/', factory=LoggedFactory)
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
     config.add_sockjs_route('sockjs', prefix='/sockjs',
