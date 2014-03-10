@@ -9,7 +9,7 @@ from pyramid.view import view_config
              permission='edit')
 def i18n_catalog(context, request):
     # Inspirated by https://github.com/django/django/blob/master/django/views/i18n.py#L192
-    t = gettext_module.translation('gecoscc_js', '/home/pmartin/git-projects/gecoscc-ui/gecoscc/locale/', ['es'])._catalog
+    t = gettext_module.translation('gecoscc_js', 'gecoscc/locale/', ['es'])._catalog
     plural = None
     if '' in t:
         for l in t[''].split('\n'):
