@@ -60,18 +60,8 @@ var App;
             "byid/:id": "loadById",
             "newroot": "newRoot",
             "ou/:containerid/new": "newItemDashboard",
-            "ou/:containerid/user": "newUser",
-            "ou/:containerid/user/:userid": "loadUser",
-            "ou/:containerid/ou": "newOU",
-            "ou/:containerid/ou/:ouid": "loadOU",
-            "ou/:containerid/group": "newGroup",
-            "ou/:containerid/group/:groupid": "loadGroup",
-            "ou/:containerid/computer": "newComputer",
-            "ou/:containerid/computer/:computerid": "loadComputer",
-            "ou/:containerid/printer": "newPrinter",
-            "ou/:containerid/printer/:printerid": "loadPrinter",
-            "ou/:containerid/storage": "newStorage",
-            "ou/:containerid/storage/:storageid": "loadStorage"
+            "ou/:containerid/:type": "newItem",
+            "ou/:containerid/:type/:userid": "loadItem"
         },
 
         controller: {
@@ -120,11 +110,46 @@ var App;
                 App.main.show(App.instances.newElementView);
             },
 
-            _newItemHelper: function (Model, View, containerid) {
-                var model = new Model(),
-                    view = new View({ model: model }),
-                    parent,
-                    path;
+            supportedTypes: {
+                user: gettext("User"),
+                ou: gettext("Organisational Unit"),
+                group: gettext("Group"),
+                computer: gettext("Computer"),
+                printer: gettext("Printer"),
+                storage: gettext("Remote Storage")
+            },
+
+            _typeClasses: function (type) {
+                // This is a function so it doesn't try to access to the User,
+                // OU, etc modules before they are loaded
+                return {
+                    user: [App.User.Models.UserModel, App.User.Views.UserForm],
+                    ou: [App.OU.Models.OUModel, App.OU.Views.OUForm],
+                    group: [App.Group.Models.GroupModel, App.Group.Views.GroupForm],
+                    computer: [App.Computer.Models.ComputerModel, App.Computer.Views.ComputerForm],
+                    printer: [App.Printer.Models.PrinterModel, App.Printer.Views.PrinterForm],
+                    storage: [App.Storage.Models.StorageModel, App.Storage.Views.StorageForm]
+                }[type];
+            },
+
+            newItem: function (containerid, type) {
+                var Model, model, View, view, parent, path;
+
+                if (!_.has(this.supportedTypes, type)) {
+                    App.instances.router.navigate("", { trigger: true });
+                    throw "Unknown resource type: " + type;
+                }
+
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + '/' + type,
+                    text: this.supportedTypes[type]
+                }]);
+
+                Model = this._typeClasses(type)[0];
+                model = new Model();
+                View = this._typeClasses(type)[1];
+                view = new View({ model: model });
 
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
@@ -137,84 +162,6 @@ var App;
                 model.set("path", path);
 
                 App.main.show(view);
-            },
-
-            newUser: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/user",
-                    text: gettext("User")
-                }]);
-                this._newItemHelper(
-                    App.User.Models.UserModel,
-                    App.User.Views.UserForm,
-                    containerid
-                );
-            },
-
-            newOU: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/",
-                    text: gettext("Organisational Unit")
-                }]);
-                this._newItemHelper(
-                    App.OU.Models.OUModel,
-                    App.OU.Views.OUForm,
-                    containerid
-                );
-            },
-
-            newGroup: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/group",
-                    text: gettext("Group")
-                }]);
-                this._newItemHelper(
-                    App.Group.Models.GroupModel,
-                    App.Group.Views.GroupForm,
-                    containerid
-                );
-            },
-
-            newComputer: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/computer",
-                    text: gettext("Computer")
-                }]);
-                this._newItemHelper(
-                    App.Computer.Models.ComputerModel,
-                    App.Computer.Views.ComputerForm,
-                    containerid
-                );
-            },
-
-            newPrinter: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/printer",
-                    text: gettext("Printer")
-                }]);
-                this._newItemHelper(
-                    App.Printer.Models.PrinterModel,
-                    App.Printer.Views.PrinterForm,
-                    containerid
-                );
-            },
-
-            newStorage: function (containerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/storage",
-                    text: gettext("Remote storage")
-                }]);
-                this._newItemHelper(
-                    App.Storage.Models.StorageModel,
-                    App.Storage.Views.StorageForm,
-                    containerid
-                );
             },
 
             _fetchModel: function (model) {
@@ -238,19 +185,32 @@ var App;
                 });
             },
 
-            _loadItemHelper: function (Model, View, id) {
-                var model, view, skipFetch;
+            loadItem: function (containerid, type, itemid) {
+                var Model, model, View, view, skipFetch;
 
-                App.tree.currentView.activeNode = id;
+                if (!_.has(this.supportedTypes, type)) {
+                    App.instances.router.navigate("", { trigger: true });
+                    throw "Unknown resource type: " + type;
+                }
 
-                model = App.instances.cache.get(id);
+                App.alerts.close();
+                App.instances.breadcrumb.setSteps([{
+                    url: "ou/" + containerid + '/' + type + '/' + itemid,
+                    text: this.supportedTypes[type]
+                }]);
+
+                App.tree.currentView.activeNode = itemid;
+
+                model = App.instances.cache.get(itemid);
                 if (_.isUndefined(model)) {
-                    model = new Model({ id: id });
-                    App.instances.cache.set(id, model);
+                    Model = this._typeClasses(type)[0];
+                    model = new Model({ id: itemid });
+                    App.instances.cache.set(itemid, model);
                 } else {
                     skipFetch = true;
                 }
 
+                View = this._typeClasses(type)[1];
                 view = new View({ model: model });
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
@@ -267,84 +227,6 @@ var App;
                 } else {
                     this._fetchModel(model);
                 }
-            },
-
-            loadUser: function (containerid, userid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/user/" + userid,
-                    text: gettext("User")
-                }]);
-                this._loadItemHelper(
-                    App.User.Models.UserModel,
-                    App.User.Views.UserForm,
-                    userid
-                );
-            },
-
-            loadOU: function (containerid, ouid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/ou" + ouid,
-                    text: gettext("Organisational Unit")
-                }]);
-                this._loadItemHelper(
-                    App.OU.Models.OUModel,
-                    App.OU.Views.OUForm,
-                    ouid
-                );
-            },
-
-            loadGroup: function (containerid, groupid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/group/" + groupid,
-                    text: gettext("Group")
-                }]);
-                this._loadItemHelper(
-                    App.Group.Models.GroupModel,
-                    App.Group.Views.GroupForm,
-                    groupid
-                );
-            },
-
-            loadComputer: function (containerid, computerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/computer/" + computerid,
-                    text: gettext("Computer")
-                }]);
-                this._loadItemHelper(
-                    App.Computer.Models.ComputerModel,
-                    App.Computer.Views.ComputerForm,
-                    computerid
-                );
-            },
-
-            loadPrinter: function (containerid, printerid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/printer/" + printerid,
-                    text: gettext("Printer")
-                }]);
-                this._loadItemHelper(
-                    App.Printer.Models.PrinterModel,
-                    App.Printer.Views.PrinterForm,
-                    printerid
-                );
-            },
-
-            loadStorage: function (containerid, storageid) {
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + "/storage/" + storageid,
-                    text: gettext("Remote storage")
-                }]);
-                this._loadItemHelper(
-                    App.Storage.Models.StorageModel,
-                    App.Storage.Views.StorageForm,
-                    storageid
-                );
             }
         }
     });
