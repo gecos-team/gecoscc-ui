@@ -1,0 +1,20 @@
+<% if (showPrev) { %>
+    <div class="tree-pagination tree-node" style="display: block;" data-pagination="up">
+        <span class="fa fa-chevron-up"></span>
+        <div class="tree-name">More</div>
+    </div>
+<% } %>
+<% _.each(items, function (item) { %>
+    <div class="tree-leaf tree-node" style="display: block;" id="<%= item.id %>">
+        <div class="tree-highlight">
+            <span class="fa fa-<%= item.icon %>"></span>
+            <div class="tree-name"><%= item.name %></div>
+        </div>
+    </div>
+<% }); %>
+<% if (showNext) { %>
+    <div class="tree-pagination tree-node" style="display: block;" data-pagination="down">
+        <span class="fa fa-chevron-down"></span>
+        <div class="tree-name">More</div>
+    </div>
+<% } %>

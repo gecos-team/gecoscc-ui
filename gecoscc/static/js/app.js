@@ -61,7 +61,8 @@ var App;
             "newroot": "newRoot",
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/:type": "newItem",
-            "ou/:containerid/:type/:userid": "loadItem"
+            "ou/:containerid/:type/:userid": "loadItem",
+            "search/:keyword": "search"
         },
 
         controller: {
@@ -110,7 +111,7 @@ var App;
                 App.main.show(App.instances.newElementView);
             },
 
-            supportedTypes: {
+            _supportedTypes: {
                 user: gettext("User"),
                 ou: gettext("Organisational Unit"),
                 group: gettext("Group"),
@@ -132,20 +133,29 @@ var App;
                 }[type];
             },
 
-            newItem: function (containerid, type) {
-                var Model, model, View, view, parent, path;
+            _prepare: function (containerid, type, itemid) {
+                var url;
 
-                if (!_.has(this.supportedTypes, type)) {
+                if (!_.has(this._supportedTypes, type)) {
                     App.instances.router.navigate("", { trigger: true });
                     throw "Unknown resource type: " + type;
                 }
 
                 App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + '/' + type,
-                    text: this.supportedTypes[type]
-                }]);
 
+                url = "ou/" + containerid + '/' + type;
+                if (itemid) { url += '/' + itemid; }
+
+                App.instances.breadcrumb.setSteps([{
+                    url: url,
+                    text: this._supportedTypes[type]
+                }]);
+            },
+
+            newItem: function (containerid, type) {
+                var Model, model, View, view, parent, path;
+
+                this._prepare(containerid, type);
                 Model = this._typeClasses(type)[0];
                 model = new Model();
                 View = this._typeClasses(type)[1];
@@ -188,19 +198,8 @@ var App;
             loadItem: function (containerid, type, itemid) {
                 var Model, model, View, view, skipFetch;
 
-                if (!_.has(this.supportedTypes, type)) {
-                    App.instances.router.navigate("", { trigger: true });
-                    throw "Unknown resource type: " + type;
-                }
-
-                App.alerts.close();
-                App.instances.breadcrumb.setSteps([{
-                    url: "ou/" + containerid + '/' + type + '/' + itemid,
-                    text: this.supportedTypes[type]
-                }]);
-
+                this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
-
                 model = App.instances.cache.get(itemid);
                 if (_.isUndefined(model)) {
                     Model = this._typeClasses(type)[0];
@@ -209,9 +208,9 @@ var App;
                 } else {
                     skipFetch = true;
                 }
-
                 View = this._typeClasses(type)[1];
                 view = new View({ model: model });
+
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
                 model
@@ -227,6 +226,20 @@ var App;
                 } else {
                     this._fetchModel(model);
                 }
+            },
+
+            search: function (keyword) {
+                var data = new App.Tree.Models.Search({ keyword: keyword }),
+                    view = new App.Tree.Views.SearchResults({
+                        collection: data,
+                        treeView: App.tree.currentView
+                    });
+
+                data.goTo(0, {
+                    success: function () {
+                        App.tree.show(view);
+                    }
+                });
             }
         }
     });
