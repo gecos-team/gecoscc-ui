@@ -86,7 +86,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            var height = this.$el.height();
             this.$el.find("select").chosen();
+            $("#ex-tree").css("margin-top", height + "px");
         },
 
         addIdToSelection: function (id) {
