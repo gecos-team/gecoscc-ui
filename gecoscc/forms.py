@@ -50,4 +50,3 @@ class AdminUserForm(GecosTwoColumnsForm):
         username_field = schema.children.pop(-2)
         schema.children = [username_field, password_field] + schema.children
         super(AdminUserForm, self).__init__(schema, *args, **kwargs)
-        import ipdb; ipdb.set_trace()
