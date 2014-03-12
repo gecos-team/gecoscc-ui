@@ -77,16 +77,6 @@ class JsonSchemaField(object):
         return []
 
 
-class PasswordType(colander.String):
-
-    def deserialize(self, node, cstruct):
-        value = super(PasswordType, self).deserialize(node, cstruct)
-        from gecoscc.userdb import create_password
-        if bool(value):
-            value = create_password(value)
-        return value
-
-
 class Unique(object):
     err_msg = _('There is some object with this value: ${val}')
 
@@ -96,12 +86,26 @@ class Unique(object):
             self.err_msg = err_msg
 
     def __call__(self, node, value):
+        ignore_unique = getattr(node, 'ignore_unique', False)
+        if ignore_unique:
+            return
         request = pyramid.threadlocal.get_current_request()
         from gecoscc.db import get_db
         mongodb = get_db(request)
         if mongodb.adminusers.find({node.name: value}).count() > 0:
             err_msg = _(self.err_msg, mapping={'val': value})
-            raise colander.Invalid(node, err_msg)
+            node.raise_invalid(err_msg)
+
+
+class AdminUserValidator(object):
+
+    def __call__(self, node, value):
+        if value['password'] != value['repeat_password']:
+            node.raise_invalid(_('The passwords do not match'))
+        from gecoscc.userdb import create_password
+        if bool(value['password']):
+            value['password'] = create_password(value['password'])
+            del value['repeat_password']
 
 
 class Node(colander.MappingSchema):
@@ -141,15 +145,18 @@ class Groups(colander.SequenceSchema):
 
 class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
+                                     title=_('First name'),
                                      default='',
                                      missing='')
     last_name = colander.SchemaNode(colander.String(),
+                                    title=_('Last name'),
                                     default='',
                                     missing='')
 
 
 class User(Node, BaseUser):
-    email = colander.SchemaNode(colander.String(), validator=colander.Email())
+    email = colander.SchemaNode(colander.String(),
+                                validator=colander.Email())
     phone = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
@@ -164,12 +171,19 @@ class Users(colander.SequenceSchema):
 
 
 class AdminUser(BaseUser):
+    validator = AdminUserValidator()
     username = colander.SchemaNode(colander.String(),
+                                   title=_('Username'),
                                    validator=Unique('adminusers',
                                                     _('There is an user with this username: ${val}')))
-    password = colander.SchemaNode(PasswordType(),
+    password = colander.SchemaNode(colander.String(),
+                                   title=_('Password'),
                                    widget=deform.widget.PasswordWidget())
+    repeat_password = colander.SchemaNode(colander.String(),
+                                          title=_('Repeat password'),
+                                          widget=deform.widget.PasswordWidget())
     email = colander.SchemaNode(colander.String(),
+                                title=_('Email'),
                                 validator=colander.All(
                                     colander.Email(),
                                     Unique('adminusers',

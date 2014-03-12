@@ -6,6 +6,6 @@
 {% block inner_content %}
     <div class="container">
         <h1>{{ gettext('Administrators') }}</h1>
-        {{ admin_user_form.render()|safe }}
+        {{ admin_user_form|safe }}
     </div>
 {% endblock %}

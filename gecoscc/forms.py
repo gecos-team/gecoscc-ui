@@ -1,7 +1,7 @@
+import deform
+
 from pkg_resources import resource_filename
 
-from deform import Button as DeButton
-from deform import Form as DeForm
 from deform.template import ZPTRendererFactory
 
 from gecoscc.i18n import TranslationString as _
@@ -12,18 +12,22 @@ gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
 gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
 
 
-class GecosForm(DeForm):
+class GecosForm(deform.Form):
 
     template = 'form'
     item_template = 'mapping_item'
     css_class = 'deform'
     default_renderer = gecos_renderer
+    sorted_fields = None
 
     def __init__(self, schema, action='', method='POST', buttons=(),
                  formid='deform', use_ajax=False, ajax_options='{}',
                  autocomplete=None, **kw):
         if not buttons:
-            buttons = (DeButton(title=_('Submit'), css_class='pull-right'),)
+            buttons = (deform.Button(title=_('Submit'),
+                                     css_class='pull-right'),)
+        if self.sorted_fields:
+            schema.children.sort(key=lambda item: self.sorted_fields.index(item.name))
         super(GecosForm, self).__init__(schema, action=action,
                                         method=method,
                                         buttons=buttons,
@@ -43,10 +47,31 @@ class GecosTwoColumnsForm(GecosForm):
     css_class = 'deform form-horizontal'
 
 
-class AdminUserForm(GecosTwoColumnsForm):
+class BaseAdminUserForm(GecosTwoColumnsForm):
 
-    def __init__(self, schema, *args, **kwargs):
-        password_field = schema.children.pop(-2)
-        username_field = schema.children.pop(-2)
-        schema.children = [username_field, password_field] + schema.children
-        super(AdminUserForm, self).__init__(schema, *args, **kwargs)
+    sorted_fields = ('username', 'email', 'password',
+                     'repeat_password', 'first_name', 'last_name')
+
+    def __init__(self, schema, collection, *args, **kwargs):
+        self.collection = collection
+        super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
+        schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
+
+
+class AdminUserAddForm(BaseAdminUserForm):
+
+    ignore_unique = False
+
+    def save(self, admin_user):
+        self.collection.insert(admin_user)
+
+
+class AdminUserEditForm(BaseAdminUserForm):
+
+    ignore_unique = True
+
+    def __init__(self, schema, collection, *args, **kwargs):
+        super(AdminUserEditForm, self).__init__(schema, collection, *args, **kwargs)
+        schema.children[self.sorted_fields.index('password')].missing = ''
+        schema.children[self.sorted_fields.index('repeat_password')].missing = ''
