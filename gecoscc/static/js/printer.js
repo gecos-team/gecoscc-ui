@@ -66,7 +66,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onChangePPDFile: function (evt) {
             var $file = $(evt.target),
-                $container = $("#driver");
+                $container = this.$el.find("#driver");
 
             if ($file.val() !== "") {
                 $container.find("select").attr("disabled", true);
@@ -95,7 +95,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         cleanFile: function (evt) {
             evt.preventDefault();
-            $("#ppdfile").val("").trigger("change");
+            this.$el.find("#ppdfile").val("").trigger("change");
         },
 
         onRender: function () {
