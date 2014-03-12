@@ -29,7 +29,7 @@
         MAX_NODES_PER_GROUP = 15,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
-        GROUP_NESTED_PROBABILITY = 0.7,
+        GROUP_NESTED_PROBABILITY = 0.4,
         counters = {
             ou: 0,
             user: 0,
@@ -45,6 +45,7 @@
         choice,
         keys,
         each,
+        contains,
         defaults,
         object_creator,
         rootId,
@@ -92,6 +93,14 @@
                 if (iterator.call(context, obj[keysAux[idx]], keysAux[idx], obj) === breaker) { return; }
             }
         }
+    };
+
+    contains = function (array, item) {
+        var result = false;
+        each(array, function (el) {
+            result = result || el === item;
+        });
+        return result;
     };
 
     defaults = function (obj) {
@@ -170,16 +179,16 @@
 
     constructors.group = function (path) {
         var oid = new ObjectId(),
-            nodes_to_add = random_int(MAX_NODES_PER_GROUP),
+            max_nodes_to_add = random_int(MAX_NODES_PER_GROUP),
             group = {
                 '_id': oid,
                 'path': path,
                 'name': 'group_' + counters.group,
-                'members': [],
-                'memberof': [],
                 'type': 'group',
                 'lock': false,
-                'source': 'gecos'
+                'source': 'gecos',
+                'members': [],
+                'memberof': []
             },
             count = 0,
             node_oid,
@@ -187,7 +196,7 @@
 
         counters.group += 1;
 
-        if (existing_groups.length > 0 && Math.random() > GROUP_NESTED_PROBABILITY) {
+        if (existing_groups.length > 0 && Math.random() < GROUP_NESTED_PROBABILITY) {
             // This group is going to be a child of another group
             parent_oid = choice(existing_groups);
             group.memberof = [parent_oid];
@@ -203,16 +212,18 @@
         existing_groups.push(oid);
 
         // Add some nodes to this group
-        for (count; count < nodes_to_add; count += 1) {
+        for (count; count < max_nodes_to_add; count += 1) {
             node_oid = choice(potential_group_members);
-            group.members.push(node_oid);
-            db.nodes.update({
-                '_id': node_oid
-            }, {
-                '$push': {
-                    'memberof': oid
-                }
-            });
+            if (!contains(group.members, node_oid)) {
+                group.members.push(node_oid);
+                db.nodes.update({
+                    '_id': node_oid
+                }, {
+                    '$push': {
+                        'memberof': oid
+                    }
+                });
+            }
         }
 
         db.nodes.insert(group, function (err, inserted) {
