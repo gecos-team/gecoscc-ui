@@ -21,12 +21,6 @@ def home(context, request):
     return {}
 
 
-@view_config(route_name='admins', renderer='templates/admins.jinja2',
-             permission='edit')
-def admins(context, request):
-    return {}
-
-
 @view_config(route_name='groups', renderer='templates/groups.jinja2',
              permission='edit')
 def groups(context, request):

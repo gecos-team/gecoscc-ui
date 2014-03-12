@@ -25,6 +25,7 @@ def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('admins', '/admins/', factory=LoggedFactory)
+    config.add_route('admins_add', '/admins/add/', factory=LoggedFactory)
     config.add_route('groups', '/groups/', factory=LoggedFactory)
     config.add_route('reports', '/reports/', factory=LoggedFactory)
     config.add_route('i18n_catalog', '/i18n-catalog/', factory=LoggedFactory)
@@ -76,7 +77,6 @@ def userdb_config(config):
     # * Organization Users
     # * Mixed users
     from .userdb import MongoUserDB
-
     userdb = MongoUserDB(config.registry.settings['mongodb'], 'adminusers')
     config.registry.settings['userdb'] = userdb
     config.set_request_property(get_userdb, 'userdb', reify=True)
@@ -135,7 +135,6 @@ def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
     settings = dict(settings)
-
     config = Configurator(root_factory=get_root, settings=settings)
 
     database_config(config)

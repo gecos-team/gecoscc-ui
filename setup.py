@@ -13,6 +13,7 @@ requires = [
     'pyramid_beaker==0.7',
     'pyramid_tm==0.7',
     'colander==1.0b1',
+    'deform==2.0a2',
     'Babel==1.3',
     'lingua==1.5',
     'pymongo==2.6.3',

@@ -1,4 +1,4 @@
-import json
+import simplejson as json
 import six
 import gettext as gettext_module
 

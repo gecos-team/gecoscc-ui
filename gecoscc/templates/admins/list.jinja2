@@ -1,0 +1,85 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block extraheader %}
+<!-- Tree CSS -->
+<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+
+<style>
+    .container {
+        padding-bottom: 30px;
+    }
+
+    #tree > div {
+        padding: 15px 30px;
+    }
+
+    #tree > div > .panel {
+        height: 350px;
+        margin-bottom: 0;
+    }
+
+    #tree #ex-tree {
+        height: 307px;
+    }
+</style>
+{% endblock %}
+
+{% block inner_content %}
+<div class="container">
+    <h1>{{ gettext('Administrators') }}</h1>
+    <div class="row" id="users"><div class="col-sm-12">
+        <table class="table">
+             <thead>
+                <tr>
+                    <th>{{ gettext('E-mail') }}</th>
+                    <th>{{ gettext('First name') }}</th>
+                    <th>{{ gettext('Last name') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin_user in admin_users %}
+                    <tr>
+                        <td>{% if 'email' in admin_user %}{{ admin_user.email }}{% endif %}</td>
+                        <td>{% if 'first_name' in admin_user %}{{ admin_user.first_name }}{% endif %}</td>
+                        <td>{% if 'last_name' in admin_user %}{{ admin_user.last_name }}{% endif %}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{request.application_url}}/admins/add/" class="btn btn-primary"><span class="fa fa-plus"></span> Añadir administrador</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script src="{{request.application_url}}/static/js/datasourceTree.js"></script>
+<script src="{{request.application_url}}/static/js/libs/underscore-1.6.0.min.js"></script>
+<script src="{{request.application_url}}/static/js/libs/backbone-1.1.2.min.js"></script>
+<script src="{{request.application_url}}/static/js/libs/backbone.marionette-1.5.1.min.js"></script>
+<script src="{{request.application_url}}/static/js/app.js"></script>
+<script src="{{request.application_url}}/static/js/tree.js"></script>
+
+<script>
+    $(document).ready(function () {
+        // Navigation tree
+        var dataSourceTree = new DataSourceTree({
+            data: [
+                { name: 'OU 1', type: 'folder', additionalParameters: { id: 'F1' } },
+                { name: 'OU 2', type: 'folder', additionalParameters: { id: 'F2' } },
+                { name: 'OU 3', type: 'folder', additionalParameters: { id: 'F3' } }
+            ],
+            delay: 400
+        });
+
+        $('#ex-tree').tree({
+            dataSource: dataSourceTree,
+            loadingHTML: '<div class="static-loader">Loading...</div>',
+            multiSelect: true,
+            cacheItems: true
+        });
+    });
+</script>
+{% endblock %}

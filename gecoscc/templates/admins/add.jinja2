@@ -1,0 +1,11 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container">
+        <h1>{{ gettext('Administrators') }}</h1>
+        {{ admin_user_form.render()|safe }}
+    </div>
+{% endblock %}

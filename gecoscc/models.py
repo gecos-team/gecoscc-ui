@@ -1,7 +1,10 @@
+import colander
+import deform
+import pyramid
+import simplejson as json
+
 from bson import ObjectId
 from bson.objectid import InvalidId
-from simplejson import loads, dumps
-import colander
 
 from gecoscc.i18n import TranslationString as _
 
@@ -57,7 +60,7 @@ class JsonSchemaField(object):
         if not isinstance(appstruct, dict):
             raise colander.Invalid(node, '{0} is not a json schema'.format(
                 appstruct))
-        return dumps(appstruct)
+        return json.dumps(appstruct)
 
     def deserialize(self, node, cstruct):
         if cstruct is colander.null:
@@ -65,13 +68,40 @@ class JsonSchemaField(object):
                 return colander.drop
             return colander.null
         try:
-            return loads(cstruct)
+            return json.loads(cstruct)
         except:
             raise colander.Invalid(node, '{0} is not a valid json '
                                    'object'.format(cstruct))
 
     def cstruct_children(self, node, cstruct):
         return []
+
+
+class PasswordType(colander.String):
+
+    def deserialize(self, node, cstruct):
+        value = super(PasswordType, self).deserialize(node, cstruct)
+        from gecoscc.userdb import create_password
+        if bool(value):
+            value = create_password(value)
+        return value
+
+
+class Unique(object):
+    err_msg = _('There is some object with this value: ${val}')
+
+    def __init__(self, collection, err_msg=None):
+        self.collection = collection
+        if err_msg:
+            self.err_msg = err_msg
+
+    def __call__(self, node, value):
+        request = pyramid.threadlocal.get_current_request()
+        from gecoscc.db import get_db
+        mongodb = get_db(request)
+        if mongodb.adminusers.find({node.name: value}).count() > 0:
+            err_msg = _(self.err_msg, mapping={'val': value})
+            raise colander.Invalid(node, err_msg)
 
 
 class Node(colander.MappingSchema):
@@ -109,14 +139,17 @@ class Groups(colander.SequenceSchema):
     groups = Group()
 
 
-class User(Node):
-    email = colander.SchemaNode(colander.String())
+class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
                                      default='',
                                      missing='')
     last_name = colander.SchemaNode(colander.String(),
                                     default='',
                                     missing='')
+
+
+class User(Node, BaseUser):
+    email = colander.SchemaNode(colander.String(), validator=colander.Email())
     phone = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
@@ -128,6 +161,23 @@ class User(Node):
 
 class Users(colander.SequenceSchema):
     users = User()
+
+
+class AdminUser(BaseUser):
+    username = colander.SchemaNode(colander.String(),
+                                   validator=Unique('adminusers',
+                                                    _('There is an user with this username: ${val}')))
+    password = colander.SchemaNode(PasswordType(),
+                                   widget=deform.widget.PasswordWidget())
+    email = colander.SchemaNode(colander.String(),
+                                validator=colander.All(
+                                    colander.Email(),
+                                    Unique('adminusers',
+                                           _('There is an user with this email: ${val}'))))
+
+
+class AdminUsers(colander.SequenceSchema):
+    adminusers = AdminUser()
 
 
 class Policy(colander.MappingSchema):
