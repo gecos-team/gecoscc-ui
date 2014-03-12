@@ -12,6 +12,10 @@
     overflow-y: auto;
 }
 
+.fuelux .tree .tree-node {
+    white-space: nowrap;
+}
+
 .fuelux .tree .tree-container {
     width: 100%;
     min-height: 20px;
