@@ -87,6 +87,7 @@ var App;
                     parent,
                     url;
 
+                App.main.show(App.instances.loaderView);
                 if (_.isUndefined(model)) {
                     $.ajax("/api/nodes/" + id + '/').done(function (response) {
                         parent = _.last(response.path.split(','));
@@ -177,7 +178,7 @@ var App;
             _fetchModel: function (model) {
                 model.fetch().done(function () {
                     // Item loaded, now we need to update the tree
-                    var parentId = _.last(model.get("path").split()),
+                    var parentId = _.last(model.get("path").split(',')),
                         parentNode = App.instances.tree.get("tree").first(function (n) {
                             return n.model.id === parentId;
                         }),
@@ -190,7 +191,11 @@ var App;
                     }
 
                     $.when.apply($, promises).done(function () {
-                        App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
+                        App.instances.tree.openAllContainersFrom(
+                            _.last(model.get("path").split(',')),
+                            true
+                        );
+                        App.instances.tree.trigger("change");
                     });
                 });
             },
@@ -221,7 +226,11 @@ var App;
 
                 if (skipFetch) {
                     // The object was cached
-                    App.instances.tree.openAllContainersFrom(_.last(model.get("path").split(',')));
+                    App.instances.tree.openAllContainersFrom(
+                        _.last(model.get("path").split(',')),
+                        true
+                    );
+                    App.instances.tree.trigger("change");
                     model.trigger("change");
                 } else {
                     this._fetchModel(model);
