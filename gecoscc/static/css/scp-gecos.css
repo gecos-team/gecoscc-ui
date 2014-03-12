@@ -73,9 +73,17 @@ footer {
 
 /* NAVIGATION TREE */
 
+#tree-selection-info {
+    position: fixed;
+    padding: 0 30px 0 0;
+    z-index: 9;
+}
+
 #tree-selection-info div.info {
+    margin-right: 17px;
     padding: 5px 15px;
     border-bottom: 1px solid #DDD;
+    background-color: white;
 }
 
 #nav-tree {
@@ -92,6 +100,7 @@ footer {
 
 #ex-tree {
     width: auto;
+    z-index: 1;
 }
 
 #nav-tree .tree-extra-options ul.nav {

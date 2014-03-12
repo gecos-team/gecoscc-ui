@@ -86,7 +86,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            var height = this.$el.height();
             this.$el.find("select").chosen();
+            $("#ex-tree").css("margin-top", height + "px");
         },
 
         addIdToSelection: function (id) {
@@ -171,6 +173,57 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.clearSelection();
+        }
+    });
+
+    Views.SearchResults = Marionette.ItemView.extend({
+        template: "#tree-search-results-template",
+
+        events: {
+            "click .tree-leaf": "editNode",
+            "click .tree-pagination": "paginate"
+        },
+
+        serializeData: function () {
+            var nodes = this.collection.toJSON(),
+                showPrev = this.collection.currentPage > 0,
+                showNext = this.collection.currentPage < this.collection.totalPages - 1;
+
+            _.each(nodes, function (n) {
+                n.icon = Views.iconClasses[n.type];
+            });
+
+            return {
+                items: nodes,
+                showPrev: showPrev,
+                showNext: showNext
+            };
+        },
+
+        initialize: function (options) {
+            this.treeView = options.treeView;
+        },
+
+        editNode: function (evt) {
+            evt.preventDefault();
+            var id = $(evt.target).parents(".tree-node").first().attr("id");
+
+            $("#tree-search").val("");
+            App.tree.show(this.treeView);
+            App.instances.router.navigate("byid/" + id, { trigger: true });
+        },
+
+        paginate: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target).parents(".tree-pagination").first(),
+                prev = $el.data("pagination") === "up",
+                page = this.collection.currentPage,
+                that = this;
+
+            page = prev ? page - 1 : page + 1;
+            this.collection.goTo(page, {
+                success: function () { that.render(); }
+            });
         }
     });
 });

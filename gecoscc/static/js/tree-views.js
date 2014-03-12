@@ -74,6 +74,15 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    </ul>\n' +
             '</div>\n';
 
+    Views.iconClasses = {
+        ou: "group",
+        user: "user",
+        computer: "desktop",
+        printer: "print",
+        group: "link",
+        storage: "hdd-o"
+    };
+
     Views.NavigationTree = Marionette.ItemView.extend({
         templates: {
             containerPre: _.template(treeContainerPre),
@@ -83,15 +92,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             pagItem: _.template(paginationItem),
             emptyTree: _.template(emptyTree),
             extraOpts: _.template(extraOpts)
-        },
-
-        iconClasses: {
-            ou: "group",
-            user: "user",
-            computer: "desktop",
-            printer: "print",
-            group: "link",
-            storage: "hdd-o"
         },
 
         selectionInfoView: undefined,
@@ -108,8 +108,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function () {
-            var that = this,
-                $search = $("#tree-search");
+            var $search = $("#tree-search");
+
             this.selectionInfoView = new Views.SelectionInfo({
                 el: $("#tree-selection-info")[0]
             });
@@ -117,7 +117,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    that.searchNodes($search.val().trim());
+                    var keyword = $search.val().trim();
+                    App.instances.router.navigate("search/" + keyword,
+                                                  { trigger: true });
                 });
         },
 
@@ -129,6 +131,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         render: function () {
+            this.isClosed = false;
+            this.triggerMethod("before:render", this);
+            this.triggerMethod("item:before:render", this);
+
             var tree = this.model.toJSON(),
                 oids = this.selectionInfoView.getSelection(),
                 that = this,
@@ -144,17 +150,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             this.$el.html(html);
+
             _.each(oids, function (id) {
                 var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
                 $checkbox.attr("checked", true);
                 $checkbox.parent().parent().addClass("multiselected");
             });
-
             if (!_.isNull(this.activeNode)) {
                 this.highlightNodeById(this.activeNode);
             }
 
             this.bindUIElements();
+            this.delegateEvents(this.events);
+            this.triggerMethod("render", this);
+            this.triggerMethod("item:rendered", this);
+
             return this;
         },
 
@@ -197,7 +207,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 html = this.renderOU(json, children, showPrev, showNext, treeNode);
             } else {
                 // It's a regular node
-                json.icon = this.iconClasses[json.type];
+                json.icon = Views.iconClasses[json.type];
                 html = this.templates.item(json);
             }
 
@@ -394,25 +404,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
             this.$el.find(".multiselected").removeClass("multiselected");
-        },
-
-        searchNodes: function (keyword) {
-            var that = this;
-
-            $.ajax("/api/nodes/?pagesize=9999&iname=" + keyword)
-                .done(function (response) {
-                    var html = "";
-                    if (response.nodes.length === 0) {
-                        html = gettext("No results.");
-                    }
-                    _.each(response.nodes, function (n) {
-                        n.id = n._id;
-                        n.icon = that.iconClasses[n.type];
-                        html += that.templates.item(n);
-                    });
-                    that.$el.html(html);
-                    that.bindUIElements();
-                });
         }
     });
 });

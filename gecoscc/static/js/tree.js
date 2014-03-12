@@ -101,6 +101,23 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         }
     });
 
+    Models.Search = Models.Container.extend({
+        initialize: function (options) {
+            if (!_.isString(options.keyword)) {
+                throw "Search collections require a keyword attribute";
+            }
+            this.keyword = options.keyword;
+        },
+
+        paginator_core: {
+            type: "GET",
+            dataType: "json",
+            url: function () {
+                return "/api/nodes/?iname=" + this.keyword;
+            }
+        }
+    });
+
     Models.TreeModel = Backbone.Model.extend({
         parser: new TreeModel(),
 

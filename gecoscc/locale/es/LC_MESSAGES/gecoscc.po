@@ -1,15 +1,15 @@
-# Spanish translations for gecoscc.
-# Copyright (C) 2013 ORGANIZATION
+# Spanish translations for GECOSCC-UI.
+# Copyright (C) 2014 Junta de Andalucia
 # This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2013.
-#
+# Alejandro Blanco <ablanco@yaco.es>, 2014.
+
 msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-07 13:26+0100\n"
+"Report-Msgid-Bugs-To: pmartin@yaco.es\n"
+"POT-Creation-Date: 2014-03-11 12:37+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
@@ -19,81 +19,80 @@ msgstr ""
 
 #: gecoscc/models.py:155
 msgid "Desktop"
-msgstr ""
+msgstr "Escritorio"
 
 #: gecoscc/models.py:156
 msgid "Laptop"
-msgstr ""
+msgstr "Portátil"
 
 #: gecoscc/models.py:157
 msgid "Netbook"
-msgstr ""
+msgstr "Netbook"
 
 #: gecoscc/models.py:158
 msgid "Tablet"
-msgstr ""
+msgstr "Tableta"
 
 #: gecoscc/models.py:239
 msgid "FTP"
-msgstr ""
+msgstr "FTP"
 
 #: gecoscc/models.py:240
 msgid "SSHFS"
-msgstr ""
+msgstr "SSHFS"
 
 #: gecoscc/models.py:241
 msgid "NFS v 3"
-msgstr ""
+msgstr "NFS v3"
 
 #: gecoscc/models.py:242
 msgid "NFS v4"
-msgstr ""
+msgstr "NFS v4"
 
 #: gecoscc/models.py:243
 msgid "SAMBA v3"
-msgstr ""
+msgstr "SAMBA v3"
 
 #: gecoscc/models.py:244
 msgid "SAMBA v4"
-msgstr ""
+msgstr "SAMBA v4"
 
 #: gecoscc/models.py:248
 msgid "System mounts (fstab)"
-msgstr ""
+msgstr "En el arranque del sistema (fstab)"
 
 #: gecoscc/models.py:249
 msgid "User space mounts (gvfs)"
-msgstr ""
+msgstr "En espacio de usuario (gvfs)"
 
 #: gecoscc/models.py:279
 msgid "Processing"
-msgstr ""
+msgstr "Procesando"
 
 #: gecoscc/models.py:282
 msgid "Applying changes"
-msgstr ""
+msgstr "Aplicando cambios"
 
 #: gecoscc/models.py:285
 msgid "Changes applied"
-msgstr ""
+msgstr "Cambios aplicados"
 
 #: gecoscc/models.py:288
 msgid "There was errors"
-msgstr ""
+msgstr "Se produjeron errores"
 
 #: gecoscc/policies/remote_storage.py:8
 msgid "Remote Storage"
-msgstr ""
+msgstr "Almacenamiento Remoto"
 
 #: gecoscc/views/portal.py:73
 msgid "The requested username doesn't exists"
-msgstr ""
+msgstr "El nombre de usuario solicitado no existe"
 
 #: gecoscc/views/portal.py:79
 msgid "The password doesn't match"
-msgstr ""
+msgstr "La contraseña no concuerda"
 
 #: gecoscc/views/portal.py:84
 msgid "welcome ${username}"
-msgstr ""
-
+msgstr "bienvenido ${username}"

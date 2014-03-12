@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-07 13:26+0100\n"
+"POT-Creation-Date: 2014-03-11 12:37+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -64,39 +64,39 @@ msgstr ""
 msgid "Couldn't delete the %s."
 msgstr ""
 
-#: gecoscc/static/js/app.js:116
+#: gecoscc/static/js/app.js:107
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:146 gecoscc/static/js/app.js:276
+#: gecoscc/static/js/app.js:115
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:159 gecoscc/static/js/app.js:289
+#: gecoscc/static/js/app.js:116
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:172 gecoscc/static/js/app.js:302
+#: gecoscc/static/js/app.js:117
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:185 gecoscc/static/js/app.js:315
+#: gecoscc/static/js/app.js:118
 msgid "Computer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:198 gecoscc/static/js/app.js:328
+#: gecoscc/static/js/app.js:119
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:211 gecoscc/static/js/app.js:341
-msgid "Remote storage"
+#: gecoscc/static/js/app.js:120
+msgid "Remote Storage"
 msgstr ""
 
 #: gecoscc/static/js/breadcrumb.js:30
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/i18n.js:65 gecoscc/static/js/i18n.js:73
+#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 msgid "x04"
 msgid_plural "x04"
 msgstr[0] ""
@@ -122,11 +122,7 @@ msgstr ""
 msgid "Add new root OU"
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:127 gecoscc/static/js/tree.js:398
+#: gecoscc/static/js/tree-views.js:129 gecoscc/static/js/tree.js:416
 msgid "Loading"
-msgstr ""
-
-#: gecoscc/static/js/tree-views.js:406
-msgid "No results."
 msgstr ""
 

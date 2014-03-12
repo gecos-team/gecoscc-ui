@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div id="tree-container">
-                <div id="tree-selection-info"></div>
+                <div id="tree-selection-info" class="col-sm-3"></div>
                 <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in"></div>
             </div>
         </div>
@@ -201,7 +201,7 @@
     <script src="{{request.application_url}}/static/js/storage.js"></script>
     <script src="{{request.application_url}}/static/js/tree.js"></script>
     <script src="{{request.application_url}}/static/js/tree-views.js"></script>
-    <script src="{{request.application_url}}/static/js/tree-selection-views.js"></script>
+    <script src="{{request.application_url}}/static/js/tree-extra-views.js"></script>
     <script src="{{request.application_url}}/static/js/user.js"></script>
 
     <script type="text/html" id="alert-template">{% include "bb-alert.html" %}</script>
@@ -218,6 +218,7 @@
     <script type="text/html" id="staging-button-template">{% include "bb-staging-button.html" %}</script>
     <script type="text/html" id="staging-report-template">{% include "bb-staging-report.html" %}</script>
     <script type="text/html" id="storage-template">{% include "bb-storage.html" %}</script>
+    <script type="text/html" id="tree-search-results-template">{% include "bb-tree-search.html" %}</script>
     <script type="text/html" id="tree-selection-template">{% include "bb-tree-selection.html" %}</script>
     <script type="text/html" id="user-template">{% include "bb-user.html" %}</script>
 

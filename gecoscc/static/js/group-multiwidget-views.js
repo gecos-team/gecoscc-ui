@@ -176,7 +176,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.currentFilter = keyword;
             if (keyword.length > 0) {
-                $.ajax("/api/groups/?iname=" + keyword).done(function (response) {
+                $.ajax("/api/groups/?pagesize=99999&iname=" + keyword).done(function (response) {
                     that.filteredGroups = new App.Group.Models.GroupCollection();
                     _.each(response.nodes, function (g) {
                         var group;
@@ -185,6 +185,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                         that.filteredGroups.add(group);
                     });
                     that.render();
+                    that.ui.filter.focus().val(that.ui.filter.val()); // Set
+                    // the cursor at the end of the filter input field
                 });
             } else {
                 this.filteredGroups = null;
