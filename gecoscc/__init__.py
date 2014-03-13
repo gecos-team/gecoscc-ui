@@ -45,10 +45,6 @@ def route_config_auxiliary(config, route_prefix):
     config.add_route('sockjs_message', '%smessage/' % route_prefix)
 
 
-def to_delete_route_config(config):
-    config.add_route('printers', '/printers/', factory=LoggedFactory)
-
-
 def database_config(config):
     settings = config.registry.settings
     mongo_uri = read_setting_from_env(settings, 'mongo_uri', None)
@@ -154,7 +150,6 @@ def main(global_config, **settings):
     config.include('cornice')
 
     route_config(config)
-    to_delete_route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')
 
     config.set_request_property(is_logged, 'is_logged', reify=True)

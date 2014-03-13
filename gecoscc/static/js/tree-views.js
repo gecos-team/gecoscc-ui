@@ -26,74 +26,8 @@
 App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    var treeContainerPre =
-            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
-            '    <div class="tree-container-header">\n' +
-            '        <div class="tree-highlight">\n' +
-            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
-            '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
-            '            <input type="checkbox" class="tree-selection">\n' +
-            '        </div>\n' +
-            '    </div>\n' +
-            '    <div class="tree-container-content" <% if (closed) { print(\'style="display: none;"\'); } %>>\n',
-        treeContainerPost =
-            '    </div>\n' +
-            '</div>\n',
-        emptyContainer =
-            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
-            '    <div class="tree-name"><a href="#ou/<%= id %>/new">\n' +
-            '        <span class="fa fa-plus"></span> ' + gettext('Add new') + '\n' +
-            '    </a></div>\n' +
-            '</div>',
-        treeItem =
-            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
-            '    <div class="tree-highlight">\n' +
-            '        <span class="fa fa-<%= icon %>"></span>\n' +
-            '        <div class="tree-name"><%= name %></div>\n' +
-            '        <input type="checkbox" class="tree-selection">\n' +
-            '    </div>\n' +
-            '</div>\n',
-        paginationItem =
-            '<div class="tree-pagination tree-node" style="display: block;" data-pagination="<%= type %>">\n' +
-            '    <span class="fa fa-chevron-<%= type %>"></span>\n' +
-            '    <div class="tree-name">' + gettext('More') + '</div>\n' +
-            '</div>\n',
-        emptyTree =
-            '<a href="#newroot">\n' +
-            '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
-            '</a>\n',
-        extraOpts =
-            '<div class="tree-extra-options">\n' +
-            '    <ul class="nav nav-pills nav-stacked">\n' +
-            '        <li><a href="#ou/<%= ouId %>/new">\n' +
-            '            <span class="fa fa-plus"></span> ' + gettext('Add new') + '\n' +
-            '        </a></li>\n' +
-            '        <li><a href="#" class="text-danger">\n' +
-            '            <span class="fa fa-times"></span> ' + gettext('Delete') + '\n' +
-            '        </a></li>\n' +
-            '    </ul>\n' +
-            '</div>\n';
-
-    Views.iconClasses = {
-        ou: "group",
-        user: "user",
-        computer: "desktop",
-        printer: "print",
-        group: "link",
-        storage: "hdd-o"
-    };
-
     Views.NavigationTree = Marionette.ItemView.extend({
-        templates: {
-            containerPre: _.template(treeContainerPre),
-            containerPost: _.template(treeContainerPost),
-            emptyContainer: _.template(emptyContainer),
-            item: _.template(treeItem),
-            pagItem: _.template(paginationItem),
-            emptyTree: _.template(emptyTree),
-            extraOpts: _.template(extraOpts)
-        },
-
+        rendered: undefined,
         selectionInfoView: undefined,
         activeNode: null,
 
@@ -110,6 +44,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         initialize: function () {
             var $search = $("#tree-search");
 
+            this.renderer = new Views.Renderer({
+                $el: this.$el,
+                model: this.model
+            });
             this.selectionInfoView = new Views.SelectionInfo({
                 el: $("#tree-selection-info")[0]
             });
@@ -123,42 +61,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
         },
 
-        _loader: function (size) {
-            size = size || 1;
-            return "<p style='font-size: " + size + "em;'><span class='fa " +
-                "fa-spinner fa-spin'></span> " + gettext("Loading") +
-                "...</p>";
-        },
-
         render: function () {
             this.isClosed = false;
             this.triggerMethod("before:render", this);
             this.triggerMethod("item:before:render", this);
 
-            var tree = this.model.toJSON(),
-                oids = this.selectionInfoView.getSelection(),
-                that = this,
-                html;
-
-            if (_.isUndefined(tree)) {
-                // Empty tree
-                html = this.templates.emptyTree({});
-            } else if (_.keys(tree).length > 0) {
-                html = this.recursiveRender(tree);
-            } else {
-                html = this._loader(2.5);
-            }
-
-            this.$el.html(html);
-
-            _.each(oids, function (id) {
-                var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
-                $checkbox.attr("checked", true);
-                $checkbox.parent().parent().addClass("multiselected");
-            });
-            if (!_.isNull(this.activeNode)) {
-                this.highlightNodeById(this.activeNode);
-            }
+            this.renderer.render(this);
 
             this.bindUIElements();
             this.delegateEvents(this.events);
@@ -166,73 +74,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:rendered", this);
 
             return this;
-        },
-
-        recursiveRender: function (node, root) {
-            var json = _.pick(node, "name", "type", "id", "path"),
-                showPrev = false,
-                showNext = false,
-                paginatedChildren,
-                treeNode,
-                children,
-                html;
-
-
-            if (json.type === "ou") {
-                if (_.isUndefined(root)) { root = this.model.get("tree"); }
-                treeNode = root.first({ strategy: 'breadth' }, function (n) {
-                    return n.model.id === json.id;
-                });
-
-                if (_.isUndefined(treeNode)) {
-                    children = [];
-                    json.closed = true; // Unloaded node, show it closed
-                } else if (treeNode.model.status === "paginated") {
-                    json.closed = treeNode.model.closed;
-                    paginatedChildren = treeNode.model.paginatedChildren;
-                    children = paginatedChildren.toJSON();
-                    showPrev = paginatedChildren.currentPage > 0;
-                    showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
-                } else if (treeNode.model.status === "meta-only") {
-                    children = _.map(treeNode.children, function (child) {
-                        return child.model;
-                    });
-                    showNext = true;
-                } else {
-                    throw "The node has the invalid status: " + treeNode.model.status;
-                }
-
-                json.controlIcon = json.closed ? "plus" : "minus";
-
-                html = this.renderOU(json, children, showPrev, showNext, treeNode);
-            } else {
-                // It's a regular node
-                json.icon = Views.iconClasses[json.type];
-                html = this.templates.item(json);
-            }
-
-            return html;
-        },
-
-        renderOU: function (json, children, showPrev, showNext, treeNode) {
-            var html = this.templates.containerPre(json),
-                that = this;
-
-            if (children.length > 0) {
-                if (showPrev) {
-                    html += this.templates.pagItem({ type: "up" });
-                }
-                _.each(children, function (child) {
-                    html += that.recursiveRender(child, treeNode);
-                });
-                if (showNext) {
-                    html += this.templates.pagItem({ type: "down" });
-                }
-            } else {
-                html += this.templates.emptyContainer(json);
-            }
-
-            return html + this.templates.containerPost(json);
         },
 
         stopPropagation: function (evt) {
@@ -266,14 +107,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         paginate: function (evt) {
-            var $el = $(evt.target).parents(".tree-pagination").first(),
-                prev = $el.data("pagination") === "up",
-                that = this,
-                node,
-                page,
-                searchId,
-                id;
+            var that, $el, prev, node, page, searchId, id;
 
+            that = this;
+            $el = $(evt.target);
+            if (!$el.is(".tree-pagination")) {
+                $el = $el.parents(".tree-pagination").first();
+            }
+            prev = $el.data("pagination") === "up";
             $el = $el.parents(".tree-container").first();
             id = $el.attr("id");
             node = this.model.get("tree").first(function (obj) {
@@ -304,32 +145,34 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!_.isUndefined(node)) {
                 node.model.closed = !opened;
             } else {
-                $content.html(this._loader());
+                $content.html(this.renderer._loader());
                 this.model.loadFromPath(path + ',' + id);
             }
         },
 
         openContainer: function (evt) {
             evt.stopPropagation();
-            var $el = $(evt.target).parents(".tree-container").first(),
-                $treeFolderContent = $el.find('.tree-container-content').first(),
-                classToTarget = '.fa-minus-square-o',
-                classToAdd = 'fa-plus-square-o';
+            var $el, $content, $header, $icon, opened, cssclass;
 
-            this.hideContainerMenu();
-            if ($el.find('.tree-container-header').first().find('.fa-minus-square-o').length > 0) {
-                this._openContainerAux($el, $treeFolderContent, false);
-                $treeFolderContent.hide();
+            $el = $(evt.target).parents(".tree-container").first();
+            $content = $el.find(".tree-container-content").first();
+            $header = $el.find(".tree-container-header").first();
+            opened = $header.find(".fa-plus-square-o").length > 0;
+
+            this._openContainerAux($el, $content, opened);
+            if (opened) {
+                $icon = $header.find(".fa-plus-square-o");
+                $content.show();
+                cssclass = "fa-minus-square-o";
             } else {
-                classToTarget = '.fa-plus-square-o';
-                classToAdd = 'fa-minus-square-o';
-                this._openContainerAux($el, $treeFolderContent, true);
-                $treeFolderContent.show();
+                $icon = $header.find(".fa-minus-square-o");
+                $content.hide();
+                cssclass = "fa-plus-square-o";
             }
 
-            $el.find(classToTarget).first()
-                .removeClass('fa-plus-square-o fa-minus-square-o')
-                .addClass(classToAdd);
+            $icon
+                .removeClass("fa-plus-square-o fa-minus-square-o")
+                .addClass(cssclass);
         },
 
         _deleteOU: function () {
@@ -345,7 +188,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             evt.stopPropagation();
             var $el = $(evt.target),
                 ouId = $el.parents(".tree-container").first().attr("id"),
-                $html = $(this.templates.extraOpts({ ouId: ouId })),
+                $html = $(this.renderer._templates.extraOpts({ ouId: ouId })),
                 closing = $el.is(".fa-caret-down"),
                 that = this;
 

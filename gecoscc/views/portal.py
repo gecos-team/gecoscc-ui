@@ -33,18 +33,6 @@ def reports(context, request):
     return {}
 
 
-#;;;;;;;;;;;
-# TO DELETE
-#;;;;;;;;;;;
-@view_config(route_name='printers',
-             renderer='templates/to_delete/printers.jinja2')
-def printers(context, request):
-    return {}
-#;;;;;;;;;;;;;;;
-# END TO DELETE
-#;;;;;;;;;;;;;;;
-
-
 @view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2',
              permission='edit')
 def sockjs_home(context, request):
