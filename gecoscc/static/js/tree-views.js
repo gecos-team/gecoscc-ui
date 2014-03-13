@@ -107,14 +107,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         paginate: function (evt) {
-            var $el = $(evt.target).parents(".tree-pagination").first(),
-                prev = $el.data("pagination") === "up",
-                that = this,
-                node,
-                page,
-                searchId,
-                id;
+            var that, $el, prev, node, page, searchId, id;
 
+            that = this;
+            $el = $(evt.target);
+            if (!$el.is(".tree-pagination")) {
+                $el = $el.parents(".tree-pagination").first();
+            }
+            prev = $el.data("pagination") === "up";
             $el = $el.parents(".tree-container").first();
             id = $el.attr("id");
             node = this.model.get("tree").first(function (obj) {

@@ -215,10 +215,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         paginate: function (evt) {
             evt.preventDefault();
-            var $el = $(evt.target).parents(".tree-pagination").first(),
-                prev = $el.data("pagination") === "up",
-                page = this.collection.currentPage,
-                that = this;
+            var page = this.collection.currentPage,
+                that = this,
+                $el,
+                prev;
+
+            $el = $(evt.target);
+            if (!$el.is(".tree-pagination")) {
+                $el = $el.parents(".tree-pagination").first();
+            }
+            prev = $el.data("pagination") === "up";
 
             page = prev ? page - 1 : page + 1;
             this.collection.goTo(page, {
