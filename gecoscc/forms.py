@@ -60,6 +60,11 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
 
+    def created_msg(self, msg):
+        if not 'messages' in self.request.session:
+            self.request.session['messages'] = []
+        self.request.session['messages'].append(('success', msg))
+
 
 class AdminUserAddForm(BaseAdminUserForm):
 
@@ -67,6 +72,7 @@ class AdminUserAddForm(BaseAdminUserForm):
 
     def save(self, admin_user):
         self.collection.insert(admin_user)
+        self.created_msg(_('User created successfully'))
 
 
 class AdminUserEditForm(BaseAdminUserForm):
@@ -75,6 +81,8 @@ class AdminUserEditForm(BaseAdminUserForm):
 
     def __init__(self, schema, collection, *args, **kwargs):
         super(AdminUserEditForm, self).__init__(schema, collection, *args, **kwargs)
+        schema.children[self.sorted_fields.index('password')] = schema.children[self.sorted_fields.index('password')].clone()
+        schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
 
@@ -85,3 +93,4 @@ class AdminUserEditForm(BaseAdminUserForm):
                                {'$set': admin_user})
         if admin_user['username'] != self.username and self.request.session['auth.userid'] == self.username:
             self.request.session['auth.userid'] = admin_user['username']
+        self.created_msg(_('User edited successfully'))

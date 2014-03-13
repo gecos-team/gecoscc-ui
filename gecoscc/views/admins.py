@@ -1,4 +1,5 @@
 from pyramid.view import view_config
+from pyramid.httpexceptions import HTTPFound
 
 from deform import ValidationFailure
 
@@ -39,6 +40,7 @@ def _admin_edit(request, form_class, username=None):
         try:
             admin_user = admin_user_form.validate(data)
             admin_user_form.save(admin_user)
+            return HTTPFound(location='%s/admins/' % request.application_url)
         except ValidationFailure, e:
             admin_user_form = e
     if instance and not data:

@@ -64,13 +64,13 @@ class LoginViews(BaseView):
                 return {
                     'username': username,
                     'message': self.translate(
-                        _("The requested username doesn't exists")),
+                        _("Please enter the correct username and password")),
                 }
 
             if user is False:
                 return {
                     'username': username,
-                    'message': self.translate(_("The password doesn't match")),
+                    'message': self.translate(_("Please enter the correct username and password ")),
                 }
 
             headers = remember(self.request, username)

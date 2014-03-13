@@ -38,7 +38,15 @@
             </div><!-- /.navbar-collapse -->
         </div>
     </nav>
-
+    {% if request.session.messages %}
+        {% for index in range(request.session.messages|count) %}
+            {% set msg_type, msg = request.session.messages.pop() %}
+            <div class="alert alert-{{ msg_type }}">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ msg }}
+            </div>
+        {% endfor %}
+    {% endif %}
     {% block inner_content %}{% endblock %}
 </div>
 {% endblock %}
