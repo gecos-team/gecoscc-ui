@@ -136,8 +136,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:before:render", this);
 
             var tree = this.model.toJSON(),
-                oids = this.selectionInfoView.getSelection(),
-                that = this,
                 html;
 
             if (_.isUndefined(tree)) {
@@ -148,17 +146,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 html = this._loader(2.5);
             }
-
             this.$el.html(html);
-
-            _.each(oids, function (id) {
-                var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
-                $checkbox.attr("checked", true);
-                $checkbox.parent().parent().addClass("multiselected");
-            });
-            if (!_.isNull(this.activeNode)) {
-                this.highlightNodeById(this.activeNode);
-            }
+            this.renderSelection();
 
             this.bindUIElements();
             this.delegateEvents(this.events);
@@ -168,15 +157,25 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return this;
         },
 
+        renderSelection: function () {
+            var oids = this.selectionInfoView.getSelection(),
+                that = this;
+
+            _.each(oids, function (id) {
+                var $checkbox = that.$el.find('#' + id).find("input.tree-selection").first();
+                $checkbox.attr("checked", true);
+                $checkbox.parent().parent().addClass("multiselected");
+            });
+            if (!_.isNull(this.activeNode)) {
+                this.highlightNodeById(this.activeNode);
+            }
+        },
+
         recursiveRender: function (node, root) {
             var json = _.pick(node, "name", "type", "id", "path"),
-                showPrev = false,
-                showNext = false,
-                paginatedChildren,
+                ouData,
                 treeNode,
-                children,
                 html;
-
 
             if (json.type === "ou") {
                 if (_.isUndefined(root)) { root = this.model.get("tree"); }
@@ -185,26 +184,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
 
                 if (_.isUndefined(treeNode)) {
-                    children = [];
                     json.closed = true; // Unloaded node, show it closed
-                } else if (treeNode.model.status === "paginated") {
-                    json.closed = treeNode.model.closed;
-                    paginatedChildren = treeNode.model.paginatedChildren;
-                    children = paginatedChildren.toJSON();
-                    showPrev = paginatedChildren.currentPage > 0;
-                    showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
-                } else if (treeNode.model.status === "meta-only") {
-                    children = _.map(treeNode.children, function (child) {
-                        return child.model;
-                    });
-                    showNext = true;
                 } else {
-                    throw "The node has the invalid status: " + treeNode.model.status;
+                    json.closed = treeNode.model.closed;
                 }
-
+                ouData = this.prepareRenderOUData(treeNode);
                 json.controlIcon = json.closed ? "plus" : "minus";
 
-                html = this.renderOU(json, children, showPrev, showNext, treeNode);
+                html = this.renderOU(json, ouData, treeNode);
             } else {
                 // It's a regular node
                 json.icon = Views.iconClasses[json.type];
@@ -214,18 +201,45 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             return html;
         },
 
-        renderOU: function (json, children, showPrev, showNext, treeNode) {
+        prepareRenderOUData: function (treeNode) {
+            var data = {
+                    showPrev: false,
+                    showNext: false,
+                    children: []
+                },
+                paginatedChildren;
+
+            if (_.isUndefined(treeNode)) { return data; }
+
+            if (treeNode.model.status === "paginated") {
+                paginatedChildren = treeNode.model.paginatedChildren;
+                data.children = paginatedChildren.toJSON();
+                data.showPrev = paginatedChildren.currentPage > 0;
+                data.showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
+            } else if (treeNode.model.status === "meta-only") {
+                data.children = _.map(treeNode.children, function (child) {
+                    return child.model;
+                });
+                data.showNext = true;
+            } else {
+                throw "The node has the invalid status: " + treeNode.model.status;
+            }
+
+            return data;
+        },
+
+        renderOU: function (json, data, treeNode) {
             var html = this.templates.containerPre(json),
                 that = this;
 
-            if (children.length > 0) {
-                if (showPrev) {
+            if (data.children.length > 0) {
+                if (data.showPrev) {
                     html += this.templates.pagItem({ type: "up" });
                 }
-                _.each(children, function (child) {
+                _.each(data.children, function (child) {
                     html += that.recursiveRender(child, treeNode);
                 });
-                if (showNext) {
+                if (data.showNext) {
                     html += this.templates.pagItem({ type: "down" });
                 }
             } else {
