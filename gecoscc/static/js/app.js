@@ -187,7 +187,11 @@ var App;
                     if (!_.isUndefined(parentNode) && parentNode.model.status === "paginated") {
                         promises[0].resolve();
                     } else {
-                        promises = App.instances.tree.loadFromPath(model.get("path"));
+                        promises = App.instances.tree.loadFromPath(
+                            model.get("path"),
+                            model.get("id"),
+                            true
+                        );
                     }
 
                     $.when.apply($, promises).done(function () {

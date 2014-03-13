@@ -271,6 +271,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 node,
                 page,
+                searchId,
                 id;
 
             $el = $el.parents(".tree-container").first();
@@ -286,7 +287,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     success: function () { that.model.trigger("change"); }
                 });
             } else {
-                this.model.loadFromPath(node.model.path + ',' + id);
+                searchId = $el.find(".tree-container").first().attr("id");
+                this.model.loadFromPath(node.model.path + ',' + id, searchId);
             }
         },
 
