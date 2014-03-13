@@ -5,12 +5,16 @@ from deform import ValidationFailure
 
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm
 from gecoscc.models import AdminUser
+from gecoscc.pagination import create_pagination_mongo_collection
 
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='edit')
 def admins(context, request):
-    return {'admin_users': request.userdb.list_users()}
+    admin_users = request.userdb.list_users()
+    page = create_pagination_mongo_collection(request, admin_users)
+    return {'admin_users': admin_users,
+            'page': page}
 
 
 @view_config(route_name='admins_add', renderer='templates/admins/add.jinja2',
@@ -40,7 +44,7 @@ def _admin_edit(request, form_class, username=None):
         try:
             admin_user = admin_user_form.validate(data)
             admin_user_form.save(admin_user)
-            return HTTPFound(location='%s/admins/' % request.application_url)
+            return HTTPFound(location=request.route_url('admins'))
         except ValidationFailure, e:
             admin_user_form = e
     if instance and not data:

@@ -20,9 +20,9 @@
             </div>
             <div class="collapse navbar-collapse main-navbar-collapse">
                 <ul class="nav navbar-nav pull-right">
-                    <li class="{% block nav_bar_home %}active{% endblock %}"><a href="/">Inicio</a></span></li>
-                    <li class="{% block nav_bar_admins %}{% endblock %}"><a href="/admins/">Administradores</a></li>
-                    <li class="{% block nav_bar_reports %}{% endblock %}"><a href="/reports/">Informes</a></li>
+                    <li class="{% block nav_bar_home %}active{% endblock %}"><a href="{{ request.route_url('home') }}">Inicio</a></span></li>
+                    <li class="{% block nav_bar_admins %}{% endblock %}"><a href="{{ request.route_url('admins') }}">Administradores</a></li>
+                    <li class="{% block nav_bar_reports %}{% endblock %}"><a href="{{ request.route_url('reports') }}">Informes</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">{{ request.user['username'] }}<b class="caret"></b></a>
                         <ul class="dropdown-menu">
@@ -31,7 +31,7 @@
                             <li><a href="#"><span class="fa fa-cog"></span> Another action</a></li>
                             <li><a href="#"><span class="fa fa-cog"></span> Something else here</a></li>
                             <li role="presentation" class="divider"></li>
-                            <li><a href="/logout/"><span class="fa fa-beer"></span> Cerrar sesión</a></li>
+                            <li><a href="{{ request.route_url('logout') }}"><span class="fa fa-beer"></span> Cerrar sesión</a></li>
                         </ul>
                     </li>
                 </ul>

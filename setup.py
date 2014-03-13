@@ -25,8 +25,8 @@ requires = [
     'pyramid_celery==1.3',
     'cornice==0.16.2',
     'jsonschema==2.3.0',
-
     'gevent-websocket==0.3.6',
+    'WebHelpers==1.3',
 ]
 
 setup(name='gecoscc',

@@ -7,17 +7,17 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <!-- Bootstrap -->
-        <link href="{{request.application_url}}/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
-        <link href="{{request.application_url}}/static/css/font-awesome.min.css" rel="stylesheet">
+        <link href="{{ request.application_url }}/static/css/bootstrap.min.css" rel="stylesheet" media="screen">
+        <link href="{{ request.application_url }}/static/css/font-awesome.min.css" rel="stylesheet">
 
         <!-- Bootstrap Admin Theme -->
-        <link href="{{request.application_url}}/static/css/bootstrap-admin-theme.css" rel="stylesheet" media="screen">
-        <link href="{{request.application_url}}/static/css/scp-gecos.css" rel="stylesheet" media="screen">
+        <link href="{{ request.application_url }}/static/css/bootstrap-admin-theme.css" rel="stylesheet" media="screen">
+        <link href="{{ request.application_url }}/static/css/scp-gecos.css" rel="stylesheet" media="screen">
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
-           <script type="text/javascript" async src="{{request.application_url}}/static/js/libs/html5shiv-3.6.2.min.js"></script>
-           <script type="text/javascript" async src="{{request.application_url}}/static/js/libs/respond-1.1.0.min.js"></script>
+           <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/html5shiv-3.6.2.min.js"></script>
+           <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/respond-1.1.0.min.js"></script>
         <![endif]-->
 
         {% block extraheader %}{% endblock %}
@@ -46,13 +46,13 @@
         </footer>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-        <script src="{{request.application_url}}/static/js/libs/jquery-1.10.2.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/jquery-1.10.2.min.js"></script>
 
         <!-- Include all compiled plugins (below), or include individual files as needed -->
-        <script src="/i18n-catalog/"></script>
-        <script src="{{request.application_url}}/static/js/i18n.js"></script>
-        <script src="{{request.application_url}}/static/js/libs/bootstrap-3.0.2.min.js"></script>
-        <script async src="{{request.application_url}}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
+        <script src="{{ request.route_url('i18n_catalog') }}"></script>
+        <script src="{{ request.application_url }}/static/js/i18n.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/bootstrap-3.0.2.min.js"></script>
+        <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
 
         <script>
             $(document).ready(function () {
