@@ -232,11 +232,16 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var newNode;
 
             if (parentNode.model.status === "paginated") {
-                newNode = parentNode.model.paginatedChildren.get(id).toJSON();
+                newNode = parentNode.model.paginatedChildren.get(id);
+                if (!_.isUndefined(newNode)) {
+                    newNode = newNode.toJSON();
+                }
             } else if (parentNode.model.id === "root" || parentNode.model.status === "meta-only") {
                 newNode = _.clone(oldNode.model);
                 delete newNode.children;
-            } else {
+            }
+
+            if (_.isUndefined(newNode)) {
                 // Parent unknown
                 newNode = {
                     id: id,

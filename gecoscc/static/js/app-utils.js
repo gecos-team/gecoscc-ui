@@ -89,16 +89,7 @@
         },
 
         save: function () {
-            var promise = App.instances.staging.add(this, { arguments: arguments });
-
-            if (this.isNew()) {
-                // New node, need to reload parent information
-                promise.done(function (resp) {
-                    App.instances.tree.loadFromPath(resp.path);
-                });
-            }
-
-            return promise;
+            return App.instances.staging.add(this, { arguments: arguments });
         },
 
         destroy: function () {
