@@ -7,10 +7,22 @@
 <div class="container" id="admin-container">
     <h1>{{ gettext('Administrators') }}</h1>
     {% block breadcrumbs %}
-        <ol class="breadcrumb">
+        <ol class="breadcrumb" class="pull-right">
             <li class="active">{{ gettext('Administrators') }}</li>
         </ol>
     {% endblock %}
+    <div class="row"> 
+        <div class="col-sm-6 col-sm-offset-6 col-lg-4 col-lg-offset-8">
+            <form method="GET" role="form">
+                <div class="input-group  item-username" title="" id="item-deformField1">
+                    <input type="text" name="q" value="{{ request.GET.get('q', '') }}" class="form-control" placeholder="{{ gettext('Search for username') }}">
+                    <span class="input-group-btn">
+                        <button id="tree-search-btn" class="btn btn-primary" type="submit"><span class="fa fa-search"></span></button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
     <div class="row" id="users">
         <div class="col-sm-12">
             <table class="table">

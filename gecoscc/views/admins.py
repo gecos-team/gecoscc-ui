@@ -11,7 +11,11 @@ from gecoscc.pagination import create_pagination_mongo_collection
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='edit')
 def admins(context, request):
-    admin_users = request.userdb.list_users()
+    filters = None
+    q = request.GET.get('q', None)
+    if q:
+        filters = {'username': {'$regex': '.*%s.*' % q}}
+    admin_users = request.userdb.list_users(filters)
     page = create_pagination_mongo_collection(request, admin_users)
     return {'admin_users': admin_users,
             'page': page}
