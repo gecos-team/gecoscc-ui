@@ -4,8 +4,16 @@
 {% block nav_bar_admins %}active{% endblock %}
 
 {% block inner_content %}
-    <div class="container">
+    <div class="container" id="admin-container">
         <h1>{{ gettext('Administrators') }}</h1>
-        {{ admin_user_form|safe }}
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                <li><a href="{{request.application_url}}/admins/">{{ gettext('Administrators') }}</a></li>
+                <li class="active">{{ gettext('Add Administrator') }}</li>
+            </ol>
+        {% endblock %}
+        {% block form_content %}
+            {{ admin_user_form|safe }}
+        {% endblock %}
     </div>
 {% endblock %}

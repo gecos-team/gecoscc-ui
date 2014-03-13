@@ -1,0 +1,18 @@
+{% extends "admins/add.jinja2" %}
+
+
+{% block form_content %}
+    <div class="alert alert-info">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        {{ gettext("If you don't fill the password fields, these won't be updated") }}
+    </div>
+    {{ super() }}
+{% endblock %}
+
+
+{% block breadcrumbs %}
+    <ol class="breadcrumb">
+        <li><a href="{{request.application_url}}/admins/">{{ gettext('Administrators') }}</a></li>
+        <li class="active">{{ gettext('Edit %(username)s', username=username) }}</li>
+    </ol>
+{% endblock %}

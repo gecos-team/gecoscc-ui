@@ -4,30 +4,36 @@
 {% block nav_bar_admins %}active{% endblock %}
 
 {% block inner_content %}
-<div class="container">
+<div class="container" id="admin-container">
     <h1>{{ gettext('Administrators') }}</h1>
-    <div class="row" id="users"><div class="col-sm-12">
-        <table class="table">
-             <thead>
-                <tr>
-                    <th>{{ gettext('Username') }}</th>
-                    <th>{{ gettext('E-mail') }}</th>
-                    <th>{{ gettext('First name') }}</th>
-                    <th>{{ gettext('Last name') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for admin_user in admin_users %}
+    {% block breadcrumbs %}
+        <ol class="breadcrumb">
+            <li class="active">{{ gettext('Administrators') }}</li>
+        </ol>
+    {% endblock %}
+    <div class="row" id="users">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td><a href="{{request.application_url}}/admins/edit/{{ admin_user.username }}/">{{ admin_user.username }}</td>
-                        <td>{% if 'email' in admin_user %}{{ admin_user.email }}{% endif %}</td>
-                        <td>{% if 'first_name' in admin_user %}{{ admin_user.first_name }}{% endif %}</td>
-                        <td>{% if 'last_name' in admin_user %}{{ admin_user.last_name }}{% endif %}</td>
+                        <th>{{ gettext('Username') }}</th>
+                        <th>{{ gettext('E-mail') }}</th>
+                        <th>{{ gettext('First name') }}</th>
+                        <th>{{ gettext('Last name') }}</th>
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <a href="{{request.application_url}}/admins/add/" class="btn btn-primary"><span class="fa fa-plus"></span> Añadir administrador</a>
+                </thead>
+                <tbody>
+                    {% for admin_user in admin_users %}
+                        <tr>
+                            <td><a href="{{request.application_url}}/admins/edit/{{ admin_user.username }}/">{{ admin_user.username }}</td>
+                            <td>{% if 'email' in admin_user %}{{ admin_user.email }}{% endif %}</td>
+                            <td>{% if 'first_name' in admin_user %}{{ admin_user.first_name }}{% endif %}</td>
+                            <td>{% if 'last_name' in admin_user %}{{ admin_user.last_name }}{% endif %}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <a href="{{request.application_url}}/admins/add/" class="btn btn-primary"><span class="fa fa-plus"></span> Añadir administrador</a>
+        </div>
     </div>
-</div>
 {% endblock %}
