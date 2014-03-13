@@ -18,19 +18,22 @@ def admin_add(context, request):
     return _admin_edit(request, AdminUserAddForm)
 
 
-@view_config(route_name='admins_edit', renderer='templates/admins/add.jinja2',
+@view_config(route_name='admins_edit', renderer='templates/admins/edit.jinja2',
              permission='edit')
 def admin_edit(context, request):
-    return _admin_edit(request, AdminUserEditForm, username=request.matchdict['username'])
+    return _admin_edit(request, AdminUserEditForm,
+                       username=request.matchdict['username'])
 
 
 def _admin_edit(request, form_class, username=None):
     admin_user_schema = AdminUser()
     admin_user_form = form_class(schema=admin_user_schema,
-                                 collection=request.db['adminusers'])
+                                 collection=request.db['adminusers'],
+                                 username=username,
+                                 request=request)
     instance = data = {}
     if username:
-        instance = request.userdb.list_users({'username': username})[0]
+        instance = request.userdb.get_user(username)
     if 'submit' in request.POST:
         data = request.POST.items()
         try:
@@ -42,4 +45,5 @@ def _admin_edit(request, form_class, username=None):
         form_render = admin_user_form.render(instance)
     else:
         form_render = admin_user_form.render()
-    return {'admin_user_form': form_render}
+    return {'admin_user_form': form_render,
+            'username': username}

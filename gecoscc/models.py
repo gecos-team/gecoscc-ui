@@ -105,7 +105,7 @@ class AdminUserValidator(object):
         from gecoscc.userdb import create_password
         if bool(value['password']):
             value['password'] = create_password(value['password'])
-            del value['repeat_password']
+        del value['repeat_password']
 
 
 class Node(colander.MappingSchema):

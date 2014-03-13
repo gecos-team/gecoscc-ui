@@ -52,8 +52,10 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
     sorted_fields = ('username', 'email', 'password',
                      'repeat_password', 'first_name', 'last_name')
 
-    def __init__(self, schema, collection, *args, **kwargs):
+    def __init__(self, schema, collection, username, request, *args, **kwargs):
         self.collection = collection
+        self.username = username
+        self.request = request
         super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
@@ -75,3 +77,11 @@ class AdminUserEditForm(BaseAdminUserForm):
         super(AdminUserEditForm, self).__init__(schema, collection, *args, **kwargs)
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
+
+    def save(self, admin_user):
+        if admin_user['password'] == '':
+            del admin_user['password']
+        self.collection.update({'username': self.username},
+                               {'$set': admin_user})
+        if admin_user['username'] != self.username and self.request.session['auth.userid'] == self.username:
+            self.request.session['auth.userid'] = admin_user['username']
