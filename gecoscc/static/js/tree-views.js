@@ -152,25 +152,27 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         openContainer: function (evt) {
             evt.stopPropagation();
-            var $el = $(evt.target).parents(".tree-container").first(),
-                $treeFolderContent = $el.find('.tree-container-content').first(),
-                classToTarget = '.fa-minus-square-o',
-                classToAdd = 'fa-plus-square-o';
+            var $el, $content, $header, $icon, opened, cssclass;
 
-            this.hideContainerMenu();
-            if ($el.find('.tree-container-header').first().find('.fa-minus-square-o').length > 0) {
-                this._openContainerAux($el, $treeFolderContent, false);
-                $treeFolderContent.hide();
+            $el = $(evt.target).parents(".tree-container").first();
+            $content = $el.find(".tree-container-content").first();
+            $header = $el.find(".tree-container-header").first();
+            opened = $header.find(".fa-plus-square-o").length > 0;
+
+            this._openContainerAux($el, $content, opened);
+            if (opened) {
+                $icon = $header.find(".fa-plus-square-o");
+                $content.show();
+                cssclass = "fa-minus-square-o";
             } else {
-                classToTarget = '.fa-plus-square-o';
-                classToAdd = 'fa-minus-square-o';
-                this._openContainerAux($el, $treeFolderContent, true);
-                $treeFolderContent.show();
+                $icon = $header.find(".fa-minus-square-o");
+                $content.hide();
+                cssclass = "fa-plus-square-o";
             }
 
-            $el.find(classToTarget).first()
-                .removeClass('fa-plus-square-o fa-minus-square-o')
-                .addClass(classToAdd);
+            $icon
+                .removeClass("fa-plus-square-o fa-minus-square-o")
+                .addClass(cssclass);
         },
 
         _deleteOU: function () {
