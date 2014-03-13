@@ -243,7 +243,10 @@
 
             promise.done(function () {
                 if (isNew) {
-                    App.instances.tree.loadFromPath(that.model.get("path"));
+                    App.instances.tree.loadFromPath(
+                        that.model.get("path"),
+                        that.model.get("id")
+                    );
                 } else {
                     App.instances.tree.updateNodeById(that.model.get("id"));
                 }
@@ -274,6 +277,8 @@
             }, 1000);
 
             promise.done(function () {
+                // FIXME should it try to make it show the page where this node
+                // (the one being deleted) was?
                 App.instances.tree.loadFromPath(that.model.get("path"));
             });
             promise.fail(function (response) {

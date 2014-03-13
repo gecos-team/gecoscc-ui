@@ -256,7 +256,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return newNode;
         },
 
-        loadFromPath: function (path, silent) {
+        loadFromPath: function (path, childToShow, silent) {
             var that, parentNode, oldNode, newNode, promises, unknownIds;
 
             that = this;
@@ -286,6 +286,15 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             }
             parentNode.addChild(newNode);
             promises.push(this.resolveUnknownNodes(unknownIds, true));
+
+            if (!_.isUndefined(childToShow)) {
+                promises[0].done(function () {
+                    that.searchPageForNode(
+                        newNode.model.paginatedChildren,
+                        childToShow
+                    );
+                });
+            }
 
             if (!silent) {
                 $.when.apply($, promises).done(function () {
@@ -358,6 +367,27 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 });
                 if (!silent) { that.trigger("change"); }
             });
+        },
+
+        searchPageForNode: function (paginatedCollection, nodeId) {
+            var originalPage = paginatedCollection.currentPage,
+                that = this,
+                search;
+
+            search = function () {
+                var node = paginatedCollection.get(nodeId),
+                    page = paginatedCollection.currentPage + 1;
+
+                if (_.isUndefined(node) && page < paginatedCollection.totalPages) {
+                    paginatedCollection.goTo(page, {
+                        success: function () { search(); }
+                    });
+                } else if (!_.isUndefined(node) && originalPage !== paginatedCollection.currentPage) {
+                    that.trigger("change");
+                }
+            };
+
+            search();
         },
 
         openAllContainersFrom: function (id, silent) {
