@@ -38,7 +38,7 @@
             </div><!-- /.navbar-collapse -->
         </div>
     </nav>
-    {% if request.session.messages %}
+    {% if 'messages' in request.session%}
         {% for index in range(request.session.messages|count) %}
             {% set msg_type, msg = request.session.messages.pop() %}
             <div class="alert alert-{{ msg_type }}">
