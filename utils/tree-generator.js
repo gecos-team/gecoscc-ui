@@ -308,6 +308,8 @@
     admin_user = {
         "_id": new ObjectId(),
         "username": "admin",
+        "first_name": "Ad",
+        "last_name": "Min",
         "password": "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu",
         "email": "admin@example.com",
         "permissions": [rootId]
@@ -322,6 +324,8 @@
     for (i = 0; i < 10; i += 1) {
         user = {};
         user.username = 'admin_user_' + i;
+        user.first_name = 'admin first name' + i;
+        user.last_name = 'admin last name' + i;
         user.email = 'user' + i + '@example.com';
         user.permissions = [];
         user.password = "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu";

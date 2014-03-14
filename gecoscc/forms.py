@@ -5,11 +5,20 @@ from pkg_resources import resource_filename
 from deform.template import ZPTRendererFactory
 
 from gecoscc.i18n import TranslationString as _
-
+from gecoscc import messages
 
 default_dir = resource_filename('deform', 'templates/')
 gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
 gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
+
+
+class GecosButton(deform.Button):
+
+    def __init__(self, name='submit', title=None, type='submit', value=None,
+                 disabled=False, css_class=None, attrs=None):
+        super(GecosButton, self).__init__(name=name, title=title, type=type, value=value,
+                                          disabled=False, css_class=css_class)
+        self.attrs = attrs or {}
 
 
 class GecosForm(deform.Form):
@@ -24,8 +33,8 @@ class GecosForm(deform.Form):
                  formid='deform', use_ajax=False, ajax_options='{}',
                  autocomplete=None, **kw):
         if not buttons:
-            buttons = (deform.Button(title=_('Submit'),
-                                     css_class='pull-right'),)
+            buttons = (GecosButton(title=_('Submit'),
+                                   css_class='pull-right'),)
         if self.sorted_fields:
             schema.children.sort(key=lambda item: self.sorted_fields.index(item.name))
         super(GecosForm, self).__init__(schema, action=action,
@@ -61,9 +70,7 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
 
     def created_msg(self, msg):
-        if not 'messages' in self.request.session:
-            self.request.session['messages'] = []
-        self.request.session['messages'].append(('success', msg))
+        messages.created_msg(self.request, msg, 'success')
 
 
 class AdminUserAddForm(BaseAdminUserForm):
@@ -80,7 +87,14 @@ class AdminUserEditForm(BaseAdminUserForm):
     ignore_unique = True
 
     def __init__(self, schema, collection, *args, **kwargs):
-        super(AdminUserEditForm, self).__init__(schema, collection, *args, **kwargs)
+        buttons = (GecosButton(title=_('Submit'),
+                               css_class='pull-right',
+                               name='_submit'),
+                   GecosButton(title=_('Delete'),
+                               name='_delete',
+                               css_class='pull-right',
+                               type='button'))
+        super(AdminUserEditForm, self).__init__(schema, collection, buttons=buttons, *args, **kwargs)
         schema.children[self.sorted_fields.index('password')] = schema.children[self.sorted_fields.index('password')].clone()
         schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''

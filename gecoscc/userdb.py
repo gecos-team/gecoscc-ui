@@ -127,11 +127,11 @@ class MongoUserDB(object):
             }
         })
 
-    def list_users(self, filter={}):
-        if not filter:
-            return self.collection.find()
-        else:
-            return self.collection.find(filter)
+    def list_users(self, filters=None):
+        return self.collection.find(filters)
+
+    def delete_users(self, filters=None):
+        return self.collection.remove(filters)
 
 
 def get_userdb(request):

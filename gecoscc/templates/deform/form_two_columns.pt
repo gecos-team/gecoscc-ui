@@ -61,7 +61,8 @@
                     name="${button.name}"
                     type="${button.type}"
                     class="btn ${btn_disposition} ${button.css_class}"
-                    value="${button.value}">
+                    value="${button.value}"
+                    tal:attributes="button.attrs">
                 <i tal:condition="btn_icon" class="${btn_icon}"> </i>
                 ${button.title}
                 </button>

@@ -12,7 +12,31 @@
 
 {% block breadcrumbs %}
     <ol class="breadcrumb">
-        <li><a href="{{request.application_url}}/admins/">{{ gettext('Administrators') }}</a></li>
+        <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
         <li class="active">{{ gettext('Edit %(username)s', username=username) }}</li>
     </ol>
+{% endblock %}
+
+{% block inner_content %}
+    {{ super() }}
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function () {
+                $("#deform_delete").click(function(){
+                    GecosUtils.askConfirmation({
+                        'message': "{{ gettext('Are you sure that you want to delete this user?') }}",
+                        'callback': function () {
+                            $.ajax("{{ request.route_url('admin_delete') }}?username={{ username }}",
+                                   {"type": "DELETE"}).done(function() {
+                                window.location = "{{ request.route_url('admins') }}";
+                            });
+                        }
+                    });
+                });
+            });
+        })(jQuery);
+    </script>
 {% endblock %}

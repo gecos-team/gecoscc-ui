@@ -1,9 +1,12 @@
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound
+from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
+from pyramid.security import forget
 
 from deform import ValidationFailure
 
+from gecoscc import messages
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm
+from gecoscc.i18n import TranslationString as _
 from gecoscc.models import AdminUser
 from gecoscc.pagination import create_pagination_mongo_collection
 
@@ -32,6 +35,18 @@ def admin_add(context, request):
 def admin_edit(context, request):
     return _admin_edit(request, AdminUserEditForm,
                        username=request.matchdict['username'])
+
+
+@view_config(route_name='admin_delete', permission='edit',  xhr=True, renderer='json')
+def admin_delete(context, request):
+    if request.method != 'DELETE':
+        raise HTTPMethodNotAllowed("Only delete mthod is accepted")
+    username = request.GET.get('username')
+    if request.session['auth.userid'] == username:
+        forget(request)
+    request.userdb.delete_users({'username': username})
+    messages.created_msg(request, _('User deleted successfully'), 'success')
+    return {'ok': 'ok'}
 
 
 def _admin_edit(request, form_class, username=None):
