@@ -75,22 +75,20 @@ class ResourcePaginatedReadOnly(object):
         return self.request.db[collection]
 
     def collection_get(self):
-        page = int(self.request.GET.get('page', 0))
+        page = int(self.request.GET.get('page', 1))
         pagesize = int(self.request.GET.get('pagesize', self.default_pagesize))
-
-        extraargs = {}
-        if pagesize > 0:
-            extraargs.update({
-                'skip': page * pagesize,
-                'limit': pagesize,
-            })
+        if pagesize <= 0 or page <= 0:
+            raise HTTPBadRequest()
+        extraargs = {
+            'skip': (page - 1) * pagesize,
+            'limit': pagesize,
+        }
 
         objects_filter = self.get_objects_filter()
         if self.mongo_filter:
             objects_filter.append(self.mongo_filter)
-
         mongo_query = {
-            '$and':  objects_filter
+            '$and':  objects_filter,
         }
 
         nodes_count = self.collection.find(
@@ -98,12 +96,10 @@ class ResourcePaginatedReadOnly(object):
             {'type': 1}
         ).count()
 
-        objects = self.collection.find(mongo_query, **extraargs)
-        if pagesize > 0:
-            pages = int(nodes_count / pagesize)
-        else:
-            pagesize = 1
+        objects = self.collection.find(mongo_query, **extraargs).sort("_id", 1)
+        pages = int(nodes_count / pagesize) + 1
         parsed_objects = self.parse_collection(list(objects))
+
         return {
             'pagesize': pagesize,
             'pages': pages,

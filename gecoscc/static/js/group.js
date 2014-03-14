@@ -55,8 +55,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         paginator_ui: {
-            firstPage: 0,
-            currentPage: 0,
+            firstPage: 1,
+            currentPage: 1,
             perPage: 16,
             pagesInRange: 2,
             // 10 as a default in case your service doesn't return the total

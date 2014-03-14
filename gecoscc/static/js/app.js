@@ -248,7 +248,7 @@ var App;
                         treeView: App.tree.currentView
                     });
 
-                data.goTo(0, {
+                data.goTo(1, {
                     success: function () {
                         App.tree.show(view);
                     }

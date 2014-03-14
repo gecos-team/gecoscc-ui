@@ -186,8 +186,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         serializeData: function () {
             var nodes = this.collection.toJSON(),
-                showPrev = this.collection.currentPage > 0,
-                showNext = this.collection.currentPage < this.collection.totalPages - 1;
+                showPrev = this.collection.currentPage > 1,
+                showNext = this.collection.currentPage < this.collection.totalPages;
 
             _.each(nodes, function (n) {
                 n.icon = Views.iconClasses[n.type];

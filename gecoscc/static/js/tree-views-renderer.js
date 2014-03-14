@@ -179,8 +179,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (treeNode.model.status === "paginated") {
                 paginatedChildren = treeNode.model.paginatedChildren;
                 data.children = paginatedChildren.toJSON();
-                data.showPrev = paginatedChildren.currentPage > 0;
-                data.showNext = paginatedChildren.currentPage < paginatedChildren.totalPages - 1;
+                data.showPrev = paginatedChildren.currentPage > 1;
+                data.showNext = paginatedChildren.currentPage < paginatedChildren.totalPages;
             } else if (treeNode.model.status === "meta-only") {
                 data.children = _.map(treeNode.children, function (child) {
                     return child.model;

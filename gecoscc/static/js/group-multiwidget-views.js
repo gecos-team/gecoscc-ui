@@ -101,7 +101,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.collection = new App.Group.Models.PaginatedGroupCollection();
-            this.collection.goTo(0, {
+            this.collection.goTo(1, {
                 success: function () { that.render(); }
             });
         },
@@ -129,8 +129,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             for (i; i < pages; i += 1) {
                 page = current - inRange + i;
                 if (page >= 0 && page < total) {
-                    paginator.push([page + 1, page === current]);
-                    // + 1 so the paginator doesn't start with 0
+                    paginator.push([page, page === current]);
                 }
             }
             return {
@@ -212,8 +211,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else if ($el.is(".next")) {
                 page = this.collection.currentPage + 1;
             } else {
-                page = parseInt($el.text(), 10) - 1;
-                // - 1 because the paginator internally starts in 0
+                page = parseInt($el.text(), 10);
             }
             this.collection.goTo(page, {
                 success: function () { that.render(); }

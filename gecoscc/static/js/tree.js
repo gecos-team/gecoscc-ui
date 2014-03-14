@@ -75,8 +75,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         paginator_ui: {
-            firstPage: 0,
-            currentPage: 0,
+            firstPage: 1,
+            currentPage: 1,
             perPage: 10,
             pagesInRange: 1,
             // 10 as a default in case your service doesn't return the total
@@ -155,7 +155,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
             node.paginatedChildren = new Models.Container({ path: path });
-            node.paginatedChildren.goTo(0, {
+            node.paginatedChildren.goTo(1, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
             });
