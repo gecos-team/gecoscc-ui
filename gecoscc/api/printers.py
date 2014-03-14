@@ -1,7 +1,7 @@
 from cornice.resource import resource
 
 from gecoscc.api import TreeLeafResourcePaginated
-from gecoscc.models import Computer, Computers
+from gecoscc.models import Printer, Printers
 from gecoscc.permissions import api_login_required
 
 
@@ -9,10 +9,10 @@ from gecoscc.permissions import api_login_required
           path='/api/printers/{oid}/',
           description='Printers resource',
           validators=(api_login_required,))
-class ComputerResource(TreeLeafResourcePaginated):
+class PrinterResource(TreeLeafResourcePaginated):
 
-    schema_collection = Computers
-    schema_detail = Computer
+    schema_collection = Printers
+    schema_detail = Printer
     objtype = 'printer'
 
     mongo_filter = {
