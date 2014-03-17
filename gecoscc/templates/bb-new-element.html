@@ -1,20 +1,20 @@
 <div class="col-sm-12">
     <div class="panel panel-default">
         <div class="panel-heading">
-            <div class="text-muted bootstrap-admin-box-title">Añadir nuevo elemento</div>
+            <div class="text-muted bootstrap-admin-box-title">{{ gettext('Add new element') }}</div>
         </div>
         <div class="bootstrap-admin-panel-content" id="new-element-view">
             <div class="row bootstrap-admin-light-padding-bottom">
                 <div class="col-xs-12 col-sm-6">
                     <a id="new-user" href="#ou/<%= ouID %>/user" class="thumbnail">
                         <span class="fa fa-user"></span>
-                        <p>Usuario</p>
+                        <p>{{ gettext('User') }}</p>
                     </a>
                 </div>
                 <div class="col-xs-12 col-sm-6">
                     <a id="new-ou" href="#ou/<%= ouID %>/ou" class="thumbnail">
                         <span class="fa fa-group"></span>
-                        <p>Unidad Organizativa</p>
+                        <p>{{ gettext('Organisational Unit') }}</p>
                     </a>
                 </div>
             </div>
@@ -22,19 +22,19 @@
                 <div class="col-xs-12 col-sm-4">
                     <a id="new-group" href="#ou/<%= ouID %>/group" class="thumbnail">
                         <span class="fa fa-link"></span>
-                        <p>Grupo</p>
+                        <p>{{ gettext('Group') }}</p>
                     </a>
                 </div>
                 <div id="new-computer" class="col-xs-12 col-sm-4">
                     <a id="new-computer" href="#ou/<%= ouID %>/computer" class="thumbnail">
                         <span class="fa fa-desktop"></span>
-                        <p>Puesto de Trabajo</p>
+                        <p>{{ gettext('Computer') }}</p>
                     </a>
                 </div>
                 <div id="new-printer" class="col-xs-12 col-sm-4">
-                    <a href="/printers/" class="thumbnail">
+                    <a id="new-printer" href="#ou/<%= ouID %>/printer" class="thumbnail">
                         <span class="fa fa-print"></span>
-                        <p>Impresora</p>
+                        <p>{{ gettext('Printer') }}</p>
                     </a>
                 </div>
             </div>

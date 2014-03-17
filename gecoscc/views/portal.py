@@ -58,7 +58,7 @@ class LoginViews(BaseView):
             if user is False:
                 return {
                     'username': username,
-                    'message': self.translate(_("Please enter the correct username and password ")),
+                    'message': self.translate(_("Please enter the correct username and password")),
                 }
 
             headers = remember(self.request, username)

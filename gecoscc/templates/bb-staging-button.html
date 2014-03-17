@@ -3,8 +3,8 @@
     <% if (inProgress || changes === 0) { print('disabled="disabled"'); } %>
 >
     <% if (inProgress) { %>
-        <span class="fa fa-spin fa-spinner"></span> En progreso
+        <span class="fa fa-spin fa-spinner"></span> {{ gettext('In progress') }}
     <% } else { %>
-        Ejecutar cambios<% if (changes > 0) { print(": " + changes); } %>
+        {{ gettext('Execute changes') }}<% if (changes > 0) { print(": " + changes); } %>
     <% } %>
 </button>

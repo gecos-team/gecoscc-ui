@@ -1,4 +1,4 @@
-<label>Nodos pertenecientes al grupo</label>
+<label>{{ gettext('Nodes that belong to this group') }}</label>
 <% if (members.length > 0) { %>
     <ul>
     <% _.each(members, function (m) { %>
@@ -6,6 +6,6 @@
     <% }); %>
     </ul>
 <% } else { %>
-    <p class="text-muted">No hay.</p>
+    <p class="text-muted">{{ gettext('None') }}</p>
 <% }%>
 

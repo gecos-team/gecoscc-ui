@@ -175,19 +175,19 @@ class AdminUser(BaseUser):
     username = colander.SchemaNode(colander.String(),
                                    title=_('Username'),
                                    validator=Unique('adminusers',
-                                                    _('There is an user with this username: ${val}')))
+                                                    _('There is a user with this username: ${val}')))
     password = colander.SchemaNode(colander.String(),
                                    title=_('Password'),
                                    widget=deform.widget.PasswordWidget())
     repeat_password = colander.SchemaNode(colander.String(),
-                                          title=_('Repeat password'),
+                                          title=_('Repeat the password'),
                                           widget=deform.widget.PasswordWidget())
     email = colander.SchemaNode(colander.String(),
                                 title=_('Email'),
                                 validator=colander.All(
                                     colander.Email(),
                                     Unique('adminusers',
-                                           _('There is an user with this email: ${val}'))))
+                                           _('There is a user with this email: ${val}'))))
 
 
 class AdminUsers(colander.SequenceSchema):
@@ -302,7 +302,7 @@ class Printers(colander.SequenceSchema):
 STORAGE_PROTOCOLS = {
     'ftp': _('FTP'),
     'sshfs': _('SSHFS'),
-    'nfs': _('NFS v 3'),
+    'nfs': _('NFS v3'),
     'nfs4': _('NFS v4'),
     'smb': _('SAMBA v3'),
     'smb4': _('SAMBA v4'),

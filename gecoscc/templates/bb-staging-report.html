@@ -3,19 +3,19 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Cambios propuestos para ejecutar</h4>
+                <h4 class="modal-title">{{ gettext('Staged changes pending of execution') }}
             </div>
             <div class="modal-body">
                 <ul class="list-unstyled">
                     <% _.each(items, function (model) { %>
                         <li id="<%= model.id %>" title="ID: <%= model.id %>" class="model">
                             <% if (_.contains(deletions, model.id)) { %>
-                                <span class="label label-danger">Borrado</span>
+                                <span class="label label-danger">{{ gettext('Deleted') }}</span>
                             <% } else { %>
-                                <span class="label label-warning">Modificado</span>
+                                <span class="label label-warning">{{ gettext('Modified') }}</span>
                             <% } %>
                             <%= model.name %>
-                            <button class="discard btn btn-info btn-xs pull-right" title="Descartar cambios">
+                            <button class="discard btn btn-info btn-xs pull-right" title="{{ gettext('Discard changes') }}">
                                 <span class="fa fa-times"></span>
                             </button>
                         </li>
@@ -23,8 +23,8 @@
                 </ul>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary">Ejecutar los cambios</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Close') }}</button>
+                <button type="button" class="btn btn-primary">{{ gettext('Execute changes') }}</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

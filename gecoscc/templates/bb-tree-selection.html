@@ -1,16 +1,16 @@
 <% if (number > 0) { %>
     <div class="info">
         <div>
-            Selección: <%= number %>
+            {{ gettext('Selection:') }} <%= number %>
             <button id="selection-info-clear" class="btn btn-default btn-xs pull-right">
                 <span class="fa fa-eraser"></span>
             </button>
         </div>
         <% if (noGroups) { %>
             <div>
-                Añadir a:
+                {{ gettext('Add to:') }}
                 <select class="chzn-select">
-                    <option value="">Ninguno</option>
+                    <option value="">{{ gettext('None') }}</option>
                     <% _.each(groups, function (item) { %>
                         <option value="<%= item.id %>">
                             <%= item.name %>
@@ -18,7 +18,7 @@
                     <% }); %>
                 </select>
                 <button id="selection-info-add2group" class="btn btn-default btn-xs">
-                    Guardar
+                    {{ gettext('Save') }}
                 </button>
             </div>
         <% } %>

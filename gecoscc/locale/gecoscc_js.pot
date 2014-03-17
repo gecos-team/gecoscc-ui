@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-11 12:37+0100\n"
+"POT-Creation-Date: 2014-03-17 11:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,78 +17,78 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:203
+#: gecoscc/static/js/app-utils.js:194
 msgid "Staging"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:207
+#: gecoscc/static/js/app-utils.js:198
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:207 gecoscc/static/js/tree-views.js:72
+#: gecoscc/static/js/app-utils.js:198 gecoscc/static/js/tree-views-renderer.js:72
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:208
+#: gecoscc/static/js/app-utils.js:199
 msgid "Done"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:217
+#: gecoscc/static/js/app-utils.js:208
 msgid "Something went wrong, please try again in a few moments."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:218
+#: gecoscc/static/js/app-utils.js:209
 #, python-format
 msgid "Resource ID: %s"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:222
+#: gecoscc/static/js/app-utils.js:213
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:236
+#: gecoscc/static/js/app-utils.js:227
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:237
+#: gecoscc/static/js/app-utils.js:228
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:264
+#: gecoscc/static/js/app-utils.js:258
 #, python-format
 msgid "Saving the %s failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:292
+#: gecoscc/static/js/app-utils.js:288
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr ""
 
-#: gecoscc/static/js/app.js:107
+#: gecoscc/static/js/app.js:108
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:115
+#: gecoscc/static/js/app.js:116
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:116
+#: gecoscc/static/js/app.js:117
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:117
+#: gecoscc/static/js/app.js:118
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:118
+#: gecoscc/static/js/app.js:119
 msgid "Computer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:119
+#: gecoscc/static/js/app.js:120
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:120
+#: gecoscc/static/js/app.js:121
 msgid "Remote Storage"
 msgstr ""
 
@@ -110,19 +110,20 @@ msgstr ""
 msgid "Your latest changes in this resource will be ignored."
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:45 gecoscc/static/js/tree-views.js:69
+#: gecoscc/static/js/tree-views-renderer.js:45
+#: gecoscc/static/js/tree-views-renderer.js:69
 msgid "Add new"
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:59
+#: gecoscc/static/js/tree-views-renderer.js:59
 msgid "More"
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:63
+#: gecoscc/static/js/tree-views-renderer.js:63
 msgid "Add new root OU"
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:129 gecoscc/static/js/tree.js:416
+#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:451
 msgid "Loading"
 msgstr ""
 

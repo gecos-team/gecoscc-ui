@@ -1,7 +1,7 @@
 <% if (showPrev) { %>
     <div class="tree-pagination tree-node" style="display: block;" data-pagination="up">
         <span class="fa fa-chevron-up"></span>
-        <div class="tree-name">More</div>
+        <div class="tree-name">{{ gettext('More') }}</div>
     </div>
 <% } %>
 <% _.each(items, function (item) { %>
@@ -15,6 +15,6 @@
 <% if (showNext) { %>
     <div class="tree-pagination tree-node" style="display: block;" data-pagination="down">
         <span class="fa fa-chevron-down"></span>
-        <div class="tree-name">More</div>
+        <div class="tree-name">{{ gettext('More') }}</div>
     </div>
 <% } %>

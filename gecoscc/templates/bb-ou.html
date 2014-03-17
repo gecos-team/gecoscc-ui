@@ -1,14 +1,14 @@
 <!-- Nav tabs -->
 <ul class="nav nav-tabs">
-    <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
-    <li><a href="#policies" data-toggle="tab">Políticas</a></li>
+    <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
+    <li><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
 </ul>
 
 <div class="tab-content">
     <div class="tab-pane fade in active" id="info">
         <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
             <div class="panel-heading">
-                <div class="text-muted bootstrap-admin-box-title">Unidad Organizativa</div>
+                <div class="text-muted bootstrap-admin-box-title">{{ gettext('Organisational Unit') }}</div>
                 <button class="btn btn-default btn-xs pull-right refresh">
                     <span class="fa fa-refresh"></span>
                 </button>
@@ -18,24 +18,24 @@
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <label for="name">Nombre</label>
-                                <input id="name" type="text" class="form-control" placeholder="Ej: Departamento de Testing" required value="<%= name %>">
+                                <label for="name">{{ gettext('Name') }}</label>
+                                <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Testing department') }}" required value="<%= name %>">
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <label for="extra">Información extra</label>
+                                <label for="extra">{{ gettext('Extra information') }}</label>
                                 <textarea id="extra" class="form-control" rows="6"><%= extra %></textarea>
                             </div>
                         </div>
                     </div>
                     <div class="row"><div class="col-sm-12">
-                        <a href="#" class="btn btn-default">Cancelar</a>
-                        <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                        <a href="#" class="btn btn-default">{{ gettext ('Cancel') }}</a>
+                        <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                         <% if (typeof id !== "undefined") { %>
-                            <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                            <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                         <% } %>
                     </div></div>
                 </form>
@@ -46,9 +46,10 @@
     <div class="tab-pane fade" id="policies">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <div class="text-muted bootstrap-admin-box-title">Políticas</div>
+                <div class="text-muted bootstrap-admin-box-title">{{ gettext('Policies') }}</div>
             </div>
             <div class="bootstrap-admin-panel-content">
+                <!-- TODO This is a mockup -->
                 <table class="table table-striped table-bordered mb10" id="policies-table">
                     <thead>
                         <tr>

@@ -1,14 +1,14 @@
 <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#info" data-toggle="tab">Información</a></li>
-        <li><a href="#ohai" data-toggle="tab">Características del puesto</a></li>
+        <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
+        <li><a href="#ohai" data-toggle="tab">{{ gettext('Computer specifications') }}</a></li>
     </ul>
 
     <div class="tab-content" id="computers">
         <div class="tab-pane fade in active" id="info">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="text-muted bootstrap-admin-box-title">Puesto de Trabajo</div>
+                    <div class="text-muted bootstrap-admin-box-title">{{ gettext('Computer') }}</div>
                     <button class="btn btn-default btn-xs pull-right refresh">
                         <span class="fa fa-refresh"></span>
                     </button>
@@ -23,17 +23,17 @@
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
-                                            <dt>Usuarios que han entrado</dt>
-                                            <dd>juan, anabel</dd>
-                                            <dt>Uptime</dt>
+                                            <dt>{{ gettext('Users that have logged in') }}</dt>
+                                            <dd>juan, anabel</dd> <!-- TODO this is a mockup -->
+                                            <dt>{{ gettext('Uptime') }}</dt>
                                             <dd>7h 12m</dd>
                                         </dl>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
-                                            <dt>Última ejecución</dt>
+                                            <dt>{{ gettext('Last execution') }}</dt>
                                             <dd><span class="text-warning">Hoy, 9:23:12</span></dd>
-                                            <dt>Marca y modelo</dt>
+                                            <dt>{{ gettext('Manufacturer and model') }}</dt>
                                             <dd>HP Pavilion 14-b100</dd>
                                         </dl>
                                     </div>
@@ -43,74 +43,74 @@
                         <div class="row">
                             <div class="col-sm-6 col-xs-12">
                                 <div class="form-group">
-                                    <label for="name">Nombre</label>
-                                    <input id="name" type="text" class="form-control" placeholder="Ej: Portátil de Juan" required value="<%= name %>">
+                                    <label for="name">{{ gettext('Name') }}</label>
+                                    <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('John\'s laptop') }}" required value="<%= name %>">
                                 </div>
                             </div>
                             <div class="col-sm-6 col-xs-12">
                                 <div class="form-group">
-                                    <label for="identifier">Identificador</label>
-                                    <input id="identifier" type="text" class="form-control" placeholder="Ej: juan-laptop" required value="<%= identifier %>">
+                                    <label for="identifier">{{ gettext('Identifier') }}</label>
+                                    <input id="identifier" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john') }}-laptop" required value="<%= identifier %>">
                                 </div>
                             </div>
                         </div><div class="row">
                             <div class="col-md-4 col-sm-4 col-xs-12">
                                 <div class="form-group">
-                                    <label for="ip">IP</label>
-                                    <input id="ip" type="text" class="form-control ip" placeholder="Ej: 192.168.210.134" value="<%= ip %>">
+                                    <label for="ip">{{ gettext('IP') }}</label>
+                                    <input id="ip" type="text" class="form-control ip" placeholder="{{ gettext('e.g.') }} 192.168.210.134" value="<%= ip %>">
                                 </div>
                             </div>
                             <div class="col-md-4 col-sm-4 col-xs-12">
                                 <div class="form-group">
-                                    <label for="mac">MAC</label>
-                                    <input id="mac" type="text" class="form-control" placeholder="Ej: 98:5C:29:31:CF:07" value="<%= mac %>">
+                                    <label for="mac">{{ gettext('MAC') }}</label>
+                                    <input id="mac" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} 98:5C:29:31:CF:07" value="<%= mac %>">
                                 </div>
                             </div>
                             <div class="col-md-3 col-md-offset-1 col-sm-4 col-xs-12">
                                 <div class="form-group">
-                                    <label for="family">Tipo</label>
+                                    <label for="family">{{ gettext('Type') }}</label>
                                     <select id="family" class="form-control">
-                                        <option value="desktop" <% if (family === "desktop") { print("selected"); } %>>Sobremesa</option>
-                                        <option value="laptop" <% if (family === "laptop") { print("selected"); } %>>Portátil</option>
-                                        <option value="netbook" <% if (family === "netbook") { print("selected"); } %>>Netbook</option>
-                                        <option value="tablet" <% if (family === "tablet") { print("selected"); } %>>Tableta</option>
+                                        <option value="desktop" <% if (family === "desktop") { print("selected"); } %>>{{ gettext('Desktop') }}</option>
+                                        <option value="laptop" <% if (family === "laptop") { print("selected"); } %>>{{ gettext('Laptop') }}</option>
+                                        <option value="netbook" <% if (family === "netbook") { print("selected"); } %>>{{ gettext('Netbook') }}</option>
+                                        <option value="tablet" <% if (family === "tablet") { print("selected"); } %>>{{ gettext('Tablet') }}</option>
                                     </select>
                                 </div>
                             </div>
                         </div><div class="row">
                             <div class="col-sm-6 col-xs-12">
                                 <div class="form-group">
-                                    <label for="serial">Nº de Serie</label>
-                                    <input id="serial" type="text" class="form-control" placeholder="Ej: SN1234567890ABC" value="<%= serial %>">
+                                    <label for="serial">{{ gettext('Serial number') }}</label>
+                                    <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} SN1234567890ABC" value="<%= serial %>">
                                 </div>
                             </div>
                             <div class="col-sm-6 col-xs-12">
                                 <div class="form-group">
-                                    <label for="registry">Nº de Registro</label>
-                                    <input id="registry" type="text" class="form-control" placeholder="Ej: JDA123DEP03" value="<%= registry %>">
+                                    <label for="registry">{{ gettext('Registry number') }}</label>
+                                    <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA123DEP03" value="<%= registry %>">
                                 </div>
                             </div>
                         </div>
                         <div class="bootstrap-admin-light-padding-bottom">
                             <div id="groups-widget">
                                 <p style="font-size: 1.5em;">
-                                    <span class="fa fa-spin fa-spinner"></span> Cargando...
+                                    <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                                 </p>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-xs-12">
                                 <div class="form-group">
-                                    <label for="extra">Información extra</label>
+                                    <label for="extra">{{ gettext('Extra information') }}</label>
                                     <textarea id="extra" class="form-control" rows="6"><%= extra %></textarea>
                                 </div>
                             </div>
                         </div>
                         <div class="row"><div class="col-sm-12">
-                            <a href="#" class="btn btn-default">Cancelar</a>
-                            <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                            <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
+                            <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                             <% if (typeof id !== "undefined") { %>
-                                <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                                <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                             <% } %>
                         </div></div>
                     </form>
@@ -121,40 +121,40 @@
         <div class="tab-pane fade" id="ohai">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <div class="text-muted bootstrap-admin-box-title">Características del puesto (Ohai)</div>
+                    <div class="text-muted bootstrap-admin-box-title">{{ gettext('Computer specifications (Ohai)') }}</div>
                 </div>
                 <div class="bootstrap-admin-panel-content dashboard">
                     <form role="form">
                         <div class="row">
                             <div class="col-xs-12 col-sm-4"><div class="form-group">
-                                <label>CPU</label>
+                                <label>{{ gettext('CPU') }}</label>
                                 <p class="form-control-static">Intel i5 4200H (2 cores)</p>
                             </div></div>
                             <div class="col-xs-12 col-sm-4"><div class="form-group">
-                                <label>RAM</label>
+                                <label>{{ gettext('RAM') }}</label>
                                 <p class="form-control-static">Kingston DDR3 1333 (4GB, 1 slot)</p>
                             </div></div>
                             <div class="col-xs-12 col-sm-4"><div class="form-group">
-                                <label>Tarjeta Gráfica</label>
+                                <label>{{ gettext('Graphics card') }}</label>
                                 <p class="form-control-static">Intel HD 4600</p>
                             </div></div>
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-6"><div class="form-group">
-                                <label>Disco Duro 1</label>
+                                <label>{{ gettext('Hard disk') }} 1</label>
                                 <p class="form-control-static mb10">Samsung 840 (250GB)</p>
                                 <div class="progress">
                                     <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
-                                        <span>60% usado</span>
+                                        <span>60% {{ gettext('used') }}</span>
                                     </div>
                                 </div>
                             </div></div>
                             <div class="col-xs-12 col-sm-6"><div class="form-group">
-                                <label>Disco Duro 2</label>
+                                <label>{{ gettext('Hard disk') }} 2</label>
                                 <p class="form-control-static mb10">Seagate 7200 SATA3 (1TB)</p>
                                 <div class="progress">
                                     <div class="progress-bar" role="progressbar" aria-valuenow="23" aria-valuemin="0" aria-valuemax="100" style="width: 23%;">
-                                        <span>23% usado</span>
+                                        <span>23% {{ gettext('used') }}</span>
                                     </div>
                                 </div>
                             </div></div>
@@ -165,7 +165,7 @@
                             <div class="panel-heading">
                                 <h4 class="panel-title">
                                     <a id="ohai-json" data-toggle="collapse" href="#collapseOne">
-                                        <span class="fa fa-caret-right"></span> JSON completo devuelto por OHAI
+                                        <span class="fa fa-caret-right"></span> {{ gettext('Complete JSON returned by Ohai') }}
                                     </a>
                                 </h4>
                             </div>

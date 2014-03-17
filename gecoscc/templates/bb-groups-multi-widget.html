@@ -1,10 +1,10 @@
 <div class="row mb10">
     <div class="col-sm-6">
-        <label>Grupos</label>
+        <label>{{ gettext('Groups') }}</label>
     </div>
     <div class="col-sm-6">
         <div class="input-group">
-            <input type="text" class="form-control group-filter" placeholder="Buscar" value="<%= currentFilter %>">
+            <input type="text" class="form-control group-filter" placeholder="{{ gettext('Search') }}" value="<%= currentFilter %>">
             <span class="input-group-btn">
                 <button class="btn btn-default group-filter-btn" type="button"><span class="fa fa-eraser"></span></button>
             </span>

@@ -1,46 +1,46 @@
 <div id="<% if (typeof id !== 'undefined') { print(id); } %>" class="panel panel-default">
     <div class="panel-heading">
-        <div class="text-muted bootstrap-admin-box-title">Impresora</div>
+        <div class="text-muted bootstrap-admin-box-title">{{ gettext('Printer') }}</div>
     </div>
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form">
             <fieldset>
-                <legend>Inventario</legend>
+                <legend>{{ gettext('Inventory') }}</legend>
                 <div class="row">
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label for="type">Tipo</label>
+                            <label for="type">{{ gettext('Type') }}</label>
                             <select id="type" class="form-control" style="background-color:yellow">
-                                <option selected="" value="LASER">Láser</option>
-                                <option value="INK">Tinta</option>
-                                <option value="MATRIX">Matricial</option>
+                                <option selected="" value="LASER">{{ gettext('Laser') }}</option>
+                                <option value="INK">{{ gettext('Ink') }}</option>
+                                <option value="MATRIX">{{ gettext('Dot matrix') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label for="brand">Fabricante</label>
-                            <input id="brand" type="text" class="form-control" placeholder="Ej: HP" style="background-color:yellow">
+                            <label for="brand">{{ gettext('Manufacturer') }}</label>
+                            <input id="brand" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP" style="background-color:yellow">
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label for="model">Modelo</label>
-                            <input id="model" type="text" class="form-control" placeholder="Ej: Deskjet 123"  requiyellow value="<%= model %>">
+                            <label for="model">{{ gettext('Model') }}</label>
+                            <input id="model" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Deskjet 123"  requiyellow value="<%= model %>">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="form-group">
-                            <label for="serial">Número de serie</label>
-                            <input id="serial" type="text" class="form-control" placeholder="Ej: HP123QWERTY456"  requiyellow value="<%= serial %>">
+                            <label for="serial">{{ gettext('Serial number') }}</label>
+                            <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456"  requiyellow value="<%= serial %>">
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="form-group">
-                            <label for="registry">Número de registro</label>
-                            <input id="registry" type="text" class="form-control" placeholder="Ej: JDA0009ZXC"  requiyellow value="<%= registry %>">
+                            <label for="registry">{{ gettext('Registry number') }}</label>
+                            <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC"  requiyellow value="<%= registry %>">
                         </div>
                     </div>
                 </div>
@@ -50,49 +50,49 @@
                 <div class="row">
                     <div class="col-md-4 col-sm-12 col-xs-12">
                         <div class="form-group">
-                            <label for="name">Nombre</label>
-                            <input id="name" type="text" class="form-control" placeholder="Ej: HP LaserJet 3000"  requiyellow value="<%= name %>">
+                            <label for="name">{{ gettext('Name') }}</label>
+                            <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000"  requiyellow value="<%= name %>">
                         </div>
                     </div>
                     <div class="col-md-4 col-sm-12 col-xs-12">
                         <div class="form-group">
-                            <label for="description">Descripción</label>
-                            <input id="description" type="text" class="form-control" placeholder="Ej: La del departamento de cuentas" value="<%= description %>">
+                            <label for="description">{{ gettext('Description') }}</label>
+                            <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('The one of the accounting deparment') }}" value="<%= description %>">
                         </div>
                     </div>
                     <div class="col-md-4 col-sm-12 col-xs-12">
                         <div class="form-group">
-                            <label for="location">Ubicación</label>
-                            <input id="location" type="text" class="form-control" placeholder="Ej: Dep002" style="background-color:yellow">
+                            <label for="location">{{ gettext('Location') }}</label>
+                            <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" style="background-color:yellow">
                         </div>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3 col-sm-4 col-xs-12">
                         <div class="form-group">
-                            <label>Tipo de conexión</label>
+                            <label>{{ gettext('Connection type') }}</label>
                             <select id="network" class="form-control" style="background-color:yellow">
-                                <option>En Red</option>
-                                <option>Local</option>
+                                <option>{{ gettext('Network') }}</option>
+                                <option>{{ gettext('Local') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-9 col-sm-8 col-xs-12">
                         <div class="form-group">
-                            <label for="path">Ruta a la impresora</label>
-                            <input id="path" type="text" class="form-control" placeholder="Ej: http://nombre_ordenador:631/ipp/puerto1" style="background-color:yellow">
+                            <label for="path">{{ gettext('Printer path') }}</label>
+                            <input id="path" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://computer_name:631/ipp/port1') }}" style="background-color:yellow">
                         </div>
                     </div>
                 </div>
-                <label>Controlador</label>
+                <label>{{ gettext('Controller') }}</label>
                 <div class="row">
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-group" id="installation">
                             <label class="radio-inline">
-                                <input name="driverinstallation" type="radio" value="auto" checked style="background-color:yellow"> Instalación automática
+                                <input name="driverinstallation" type="radio" value="auto" checked style="background-color:yellow"> {{ gettext('Automatic installation') }}
                             </label>
                             <label class="radio-inline">
-                                <input name="driverinstallation" id="nodriver" type="radio" value="manual" style="background-color:yellow"> Instalación manual
+                                <input name="driverinstallation" id="nodriver" type="radio" value="manual" style="background-color:yellow"> {{ gettext('Manual installation') }}
                             </label>
                         </div>
                     </div>
@@ -134,13 +134,13 @@
                     <div class="col-lg-7 col-md-8 col-sm-9 col-xs-12">
                         <div class="form-group">
                             <input type="file" id="ppdfile" value="<%= ppdfile %>">
-                            <p class="help-block">También es posible subir un archivo PPD en vez de escoger un controlador</p>
+                            <p class="help-block">{{ gettext('It is also possible to upload a PPD file, instead of choosing a controller') }}</p>
                         </div>
                     </div>
                     <div class="col-lg-5 col-md-4 col-sm-3 col-xs-12">
                         <div class="form-group">
-                            <button id="cleanfile" title="Limpiar fichero seleccionado" class="btn btn-default">
-                                <span class="fa fa-times-circle"></span> Limpiar
+                            <button id="cleanfile" title="{{ gettext('Clear the selected file') }}" class="btn btn-default">
+                                <span class="fa fa-times-circle"></span> {{ gettext('Clear') }}
                             </button>
                         </div>
                     </div>
@@ -148,18 +148,19 @@
                 <div class="bootstrap-admin-light-padding-bottom">
                     <div id="groups-widget">
                         <p style="font-size: 1.5em;">
-                            <span class="fa fa-spin fa-spinner"></span> Cargando...
+                            <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                         </p>
                     </div>
                 </div>
             </fieldset>
             <fielset>
-                <legend>Preferencias pyelloweterminadas</legend>
+                <legend>{{ gettext('Default preferences') }}</legend>
                 <div class="row">
                     <div class="col-sm-6 col-md-3">
                         <div class="form-group">
-                            <label for="pageSize">Tamaño de papel</label>
+                            <label for="pageSize">{{ gettext('Paper size') }}</label>
                             <select id="pageSize" class="form-control">
+                                <!-- TODO translate this options? -->
                                 <option value="Letter">Carta</option><option value="Executive">Ejecutivo</option><option value="Legal">Legal</option><option value="w612h935">8.5x13</option><option selected="" value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option><option value="ISOB5">B5 (ISO)</option>
                                 <option value="B5">JIS B5</option><option value="ISOB6">B6 (ISO)</option><option value="w612h936">Ejecutivo (JIS)</option><option value="Postcard">Tarjeta postal (JIS)</option><option value="DoublePostcard">Tarjeta postal doble (JIS)</option><option value="w558h774">16K</option><option value="w553h765">16K (195x270 mm)</option>
                                 <option value="w522h737">16K (184x260 mm)</option><option value="Env10">Sobre Comm10</option><option value="EnvMonarch">Sobre Monarch</option><option value="EnvDL">Sobre DL</option><option value="EnvC5">Sobre C5</option><option value="EnvISOB5">Sobre ISO B5</option><option value="Custom">Custom</option>
@@ -168,19 +169,20 @@
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <div class="form-group">
-                            <label for="resolution">Calidad de impresión</label>
+                            <label for="resolution">{{ gettext('Print quality') }}</label>
                             <select id="resolution" class="form-control">
-                                <option value="low">Ahorro</option>
-                                <option selected="" value="medium">Media</option>
-                                <option value="high">Alta</option>
-                                <option value="ultra">Muy alta</option>
+                                <option value="low">{{ gettext('Low') }}</option>
+                                <option selected="" value="medium">{{ gettext('Medium') }}</option>
+                                <option value="high">{{ gettext('High') }}</option>
+                                <option value="ultra">{{ gettext('Very high') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">
                         <div class="form-group">
-                            <label for="paper">Bandeja de papel</label>
+                            <label for="paper">{{ gettext('Paper tray') }}</label>
                             <select id="paper" class="form-control">
+                                <!-- TODO translate this options? -->
                                 <option selected="" value="1">Bandeja 1</option>
                                 <option value="2">Bandeja 2</option>
                                 <option value="3">Bandeja 3</option>
@@ -188,21 +190,21 @@
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-3">
-                        <label>Modo duplex</label>
+                        <label>{{ gettext('Duplex mode') }}</label>
                         <div class="checkbox">
                             <label for="duplex">
                                 <input type="checkbox" value="" id="duplex">
-                                Impresión a doble cara
+                                {{ gettext('Duplex printing') }}
                             </label>
                         </div>
                     </div>
                 </div>
             </fieldset>
             <div class="row"><div class="col-sm-12">
-                <a href="/" class="btn btn-default">Cancelar</a>
-                <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                <a href="/" class="btn btn-default">{{ gettext('Cancel') }}</a>
+                <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                 <% if (typeof id !== "undefined") { %>
-                    <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                    <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                 <% } %>
             </div></div>
         </form>

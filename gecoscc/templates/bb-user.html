@@ -1,6 +1,6 @@
 <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
     <div class="panel-heading">
-        <div class="text-muted bootstrap-admin-box-title">Usuario</div>
+        <div class="text-muted bootstrap-admin-box-title">{{ gettext('User') }}</div>
         <button class="btn btn-default btn-xs pull-right refresh">
             <span class="fa fa-refresh"></span>
         </button>
@@ -10,54 +10,54 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group <% if (!name) { print('has-error'); } %>">
-                        <label for="username">Nombre de usuario</label>
-                        <input id="username" type="text" class="form-control" placeholder="Ej: juan" required value="<%= name %>">
+                        <label for="username">{{ gettext('Username') }}</label>
+                        <input id="username" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john') }}" required value="<%= name %>">
                     </div>
                     <div class="form-group">
-                        <label for="passwd1">Contraseña</label>
+                        <label for="passwd1">{{ gettext('Password') }}</label>
                         <div class="row"><div class="col-sm-12 col-md-6">
                             <input id="passwd1" type="password" class="form-control" disabled>
                         </div><div class="col-sm-12 col-md-6">
-                            <input id="passwd2" type="password" class="form-control" placeholder="Repita la contraseña" disabled>
+                            <input id="passwd2" type="password" class="form-control" placeholder="{{ gettext('Repeat the password') }}" disabled>
                         </div></div>
                     </div>
                     <div class="form-group">
-                        <label for="phone">Teléfono</label>
-                        <input id="phone" type="tel" class="form-control" placeholder="Ej: 654 99 88 77" value="<%= phone %>">
+                        <label for="phone">{{ gettext('Phone number') }}</label>
+                        <input id="phone" type="tel" class="form-control" placeholder="{{ gettext('e.g.') }} 654 99 88 77" value="<%= phone %>">
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group <% if (!email) { print('has-error'); } %>">
-                        <label for="email">Email</label>
-                        <input id="email" type="email" class="form-control" placeholder="Ej: juan.nadie@gmail.com" required value="<%= email %>">
+                        <label for="email">{{ gettext('Email') }}</label>
+                        <input id="email" type="email" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john.doe') }}@example.com" required value="<%= email %>">
                     </div>
                     <div class="row"><div class="col-sm-12 col-md-6">
                         <div class="form-group">
-                            <label for="firstname">Nombre</label>
-                            <input id="firstname" type="text" class="form-control" placeholder="Ej: Juan" value="<%= first_name %>">
+                            <label for="firstname">{{ gettext('First name') }}</label>
+                            <input id="firstname" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('John') }}" value="<%= first_name %>">
                         </div>
                     </div><div class="col-sm-12 col-md-6">
                         <div class="form-group">
-                            <label for="lastname">Apellidos</label>
-                            <input id="lastname" type="text" class="form-control" placeholder="Ej: Nadie" value="<%= last_name %>">
+                            <label for="lastname">{{ gettext('Last name') }}</label>
+                            <input id="lastname" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Doe') }}" value="<%= last_name %>">
                         </div>
                     </div></div>
                     <div class="form-group">
-                        <label for="address">Dirección</label>
-                        <input id="address" type="text" class="form-control" placeholder="Ej: C/ Principal, num 123" value="<%= address %>">
+                        <label for="address">{{ gettext('Address') }}</label>
+                        <input id="address" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('123, Main Street, Bigtown') }}" value="<%= address %>">
                     </div>
                 </div>
             </div>
             <div id="groups-widget">
                 <p style="font-size: 1.5em;">
-                    <span class="fa fa-spin fa-spinner"></span> Cargando...
+                    <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                 </p>
             </div>
             <div class="row"><div class="col-sm-12">
-                <a href="#" class="btn btn-default">Cancelar</a>
-                <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
+                <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                 <% if (typeof id !== "undefined") { %>
-                    <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                    <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                 <% } %>
             </div></div>
         </form>

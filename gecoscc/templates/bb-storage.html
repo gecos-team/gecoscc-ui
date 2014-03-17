@@ -1,6 +1,6 @@
 <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
     <div class="panel-heading">
-        <div class="text-muted bootstrap-admin-box-title">Almacenamiento remoto</div>
+        <div class="text-muted bootstrap-admin-box-title">{{ gettext('Remote Storage') }}</div>
         <button class="btn btn-default btn-xs pull-right refresh">
             <span class="fa fa-refresh"></span>
         </button>
@@ -9,14 +9,14 @@
         <form role="form">
             <div class="row"><div class="col-sm-12">
                 <div class="form-group">
-                    <label for="name">Nombre</label>
-                    <input id="name" type="text" class="form-control" placeholder="Ej: Acceso al almacenamiento en red A01" value="<%= name %>">
+                    <label for="name">{{ gettext('Name') }}</label>
+                    <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Access to the network storage S01') }}" value="<%= name %>">
                 </div>
             </div></div>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="form-group">
-                        <label for="connect">Cadena de conexión</label>
+                        <label for="connect">{{ gettext('Connection string') }}</label>
                         <input id="connect" type="text" class="form-control" disabled>
                     </div>
                 </div>
@@ -24,19 +24,19 @@
             <div class="row">
                 <div class="col-sm-5 col-xs-12">
                     <div class="form-group">
-                        <label for="server">Servidor</label>
-                        <input id="server" type="text" class="form-control ip" placeholder="Ej: 192.168.12.078" value="<%= server %>">
+                        <label for="server">{{ gettext('Server') }}</label>
+                        <input id="server" type="text" class="form-control ip" placeholder="{{ gettext('e.g.') }} 192.168.12.078" value="<%= server %>">
                     </div>
                 </div>
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
-                        <label for="port">Puerto</label>
-                        <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="Ej: 9100" value="<%= port %>">
+                        <label for="port">{{ gettext('Port') }}</label>
+                        <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="{{ gettext('e.g.') }} 9100" value="<%= port %>">
                     </div>
                 </div>
                 <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
-                        <label for="extraops">Opciones Extra</label>
+                        <label for="extraops">{{ gettext('Extra options') }}</label>
                         <input id="extraops" type="text" class="form-control" value="<%= extraops %>">
                     </div>
                 </div>
@@ -44,7 +44,7 @@
             <div class="row">
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
-                        <label for="protocol">Tipo de servidor</label>
+                        <label for="protocol">{{ gettext('Connection protocol') }}</label>
                         <select id="protocol" class="form-control">
                             <option value="ftp" <% if (protocol === 'ftp') { print('selected'); } %>>FTP</option>
                             <option value="ssh" <% if (protocol === 'ssh') { print('selected'); } %>>SSHFS</option>
@@ -56,16 +56,16 @@
                 </div>
                 <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
-                        <label for="localpath">Nombre de directorio local</label>
-                        <input id="localpath" type="text" class="form-control" placeholder="Ej: /ruta/al/directorio" value="<%= localpath %>">
+                        <label for="localpath">{{ gettext('Path of local directory') }}</label>
+                        <input id="localpath" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('/path/to/the/directory') }}" value="<%= localpath %>">
                     </div>
                 </div>
                 <div class="col-sm-3 col-xs-12">
                     <div class="form-group">
-                        <label for="mount">Montaje</label>
+                        <label for="mount">{{ gettext('Mount') }}</label>
                         <select id="mount" class="form-control">
-                            <option value="fstab" <% if (mount === 'fstab') { print('selected'); } %>>En arranque (fstab)</option>
-                            <option value="gvfs" <% if (mount === 'gvfs') { print('selected'); } %>>En entorno usuario (gvfs)</option>
+                            <option value="fstab" <% if (mount === 'fstab') { print('selected'); } %>>{{ gettext('When booting (fstab)') }}</option>
+                            <option value="gvfs" <% if (mount === 'gvfs') { print('selected'); } %>>{{ gettext('In user space (gvfs)') }}</option>
                         </select>
                     </div>
                 </div>
@@ -73,27 +73,27 @@
             <!--<div class="row">
                 <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
-                        <label for="user">Usuario</label>
-                        <input id="user" type="text" class="form-control" placeholder="Ej: juan">
+                        <label for="user">{{ gettext('Username') }}</label>
+                        <input id="user" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john') }}">
                     </div>
                 </div>
                 <div class="col-sm-6 col-xs-12">
                     <div class="form-group">
-                        <label for="passwd">Contraseña</label>
+                        <label for="passwd">{{ gettext('Password') }}</label>
                         <input id="passwd" type="password" class="form-control">
                     </div>
                 </div>
             </div>-->
             <div id="groups-widget">
                 <p style="font-size: 1.5em;">
-                    <span class="fa fa-spin fa-spinner"></span> Cargando...
+                    <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                 </p>
             </div>
             <div class="row"><div class="col-sm-12">
-                <a href="#" class="btn btn-default">Cancelar</a>
-                <button id="submit" type="submit" class="btn btn-primary">Guardar</button>
+                <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
+                <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                 <% if (typeof id !== "undefined") { %>
-                    <button id="delete" class="pull-right btn btn-danger">Borrar</button>
+                    <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                 <% } %>
             </div></div>
         </form>
