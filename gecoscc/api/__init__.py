@@ -97,7 +97,9 @@ class ResourcePaginatedReadOnly(object):
         ).count()
 
         objects = self.collection.find(mongo_query, **extraargs).sort("_id", 1)
-        pages = int(nodes_count / pagesize) + 1
+        pages = int(nodes_count / pagesize)
+        if nodes_count % pagesize > 0:
+            pages += 1
         parsed_objects = self.parse_collection(list(objects))
 
         return {
