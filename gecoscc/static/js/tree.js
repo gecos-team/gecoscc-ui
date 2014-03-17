@@ -369,7 +369,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             });
         },
 
-        searchPageForNode: function (paginatedCollection, nodeId) {
+        searchPageForNode: function (paginatedCollection, nodeId, silent) {
             var originalPage = paginatedCollection.currentPage,
                 that = this,
                 search;
@@ -382,7 +382,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     paginatedCollection.goTo(page, {
                         success: function () { search(); }
                     });
-                } else if (!_.isUndefined(node) && originalPage !== paginatedCollection.currentPage) {
+                } else if (!silent && !_.isUndefined(node) &&
+                        originalPage !== paginatedCollection.currentPage
+                        ) {
                     that.trigger("change");
                 }
             };
@@ -395,6 +397,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var node = this.get("tree").first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
                 }),
+                paginatedChildren,
                 openedAtLeastOne;
 
             if (!node) { return; }
@@ -404,8 +407,16 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             node.model.closed = false;
             // All the ancestors
             while (node.parent) {
+                // Open the container
                 openedAtLeastOne = openedAtLeastOne || node.parent.model.closed;
                 node.parent.model.closed = false;
+
+                // Show the right page
+                if (node.parent.model.status === "paginated") {
+                    paginatedChildren = node.parent.model.paginatedChildren;
+                    this.searchPageForNode(paginatedChildren, node.model.id);
+                }
+
                 node = node.parent;
             }
 
