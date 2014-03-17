@@ -30,7 +30,7 @@ requires = [
 ]
 
 setup(name='gecoscc',
-      version='0.2.1',
+      version='0.2.2',
       description='gecoscc',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
@@ -47,7 +47,7 @@ setup(name='gecoscc',
       include_package_data=True,
       zip_safe=False,
       package_data={
-          'templates': ['*.jinja2'],
+          'templates': ['*.jinja2', '*.html'],
           'locale': ['*.pot', '*.po', '*.mo'],
           'static': ['*.js', '*.css', '*.jpg', '*.png'],
       },
