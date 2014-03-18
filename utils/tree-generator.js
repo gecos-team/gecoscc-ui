@@ -27,6 +27,7 @@
         MAX_CHILDS = 40,
         MAX_OBJECTS = 10000,
         MAX_NODES_PER_GROUP = 15,
+        // TODO MAX_GROUPS_PER_NODE
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.4,
