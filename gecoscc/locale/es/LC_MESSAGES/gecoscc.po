@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-03-17 11:33+0100\n"
+"POT-Creation-Date: 2014-03-18 11:09+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -146,6 +146,39 @@ msgstr "Se produjeron errores"
 #: gecoscc/policies/remote_storage.py:8 gecoscc/templates/bb-storage.html:3
 msgid "Remote Storage"
 msgstr "Almacenamiento Remoto"
+
+#: gecoscc/templates/base_navbar.jinja2:13
+msgid "Control Center"
+msgstr "Centro de Control"
+
+#: gecoscc/templates/base_navbar.jinja2:18
+msgid "Home"
+msgstr "Inicio"
+
+#: gecoscc/templates/base_navbar.jinja2:21
+#: gecoscc/templates/bb-groups-form.html:14
+#: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
+#: gecoscc/templates/admins/edit.jinja2:15
+#: gecoscc/templates/admins/list.jinja2:8
+#: gecoscc/templates/admins/list.jinja2:11
+msgid "Administrators"
+msgstr "Administradores"
+
+#: gecoscc/templates/base_navbar.jinja2:24
+msgid "Reports"
+msgstr "Informes"
+
+#: gecoscc/templates/base_navbar.jinja2:29
+msgid "User options"
+msgstr "Opciones de usuario"
+
+#: gecoscc/templates/base_navbar.jinja2:32
+msgid "Change password"
+msgstr "Cambiar contraseña"
+
+#: gecoscc/templates/base_navbar.jinja2:38
+msgid "Log out"
+msgstr "Salir"
 
 #: gecoscc/templates/bb-computer.html:3 gecoscc/templates/bb-ou.html:3
 msgid "Information"
@@ -293,14 +326,6 @@ msgstr "JSON completo devuelto por Ohai"
 #: gecoscc/templates/bb-new-element.html:25
 msgid "Group"
 msgstr "Grupo"
-
-#: gecoscc/templates/bb-groups-form.html:14
-#: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
-#: gecoscc/templates/admins/edit.jinja2:15
-#: gecoscc/templates/admins/list.jinja2:8
-#: gecoscc/templates/admins/list.jinja2:11
-msgid "Administrators"
-msgstr "Administradores"
 
 #: gecoscc/templates/bb-groups-members.html:1
 msgid "Nodes that belong to this group"
@@ -533,7 +558,7 @@ msgstr "Puerto"
 
 #: gecoscc/templates/bb-storage.html:39
 msgid "Extra options"
-msgstr "Optiones extra"
+msgstr "Opciones extra"
 
 #: gecoscc/templates/bb-storage.html:47
 msgid "Connection protocol"
@@ -633,3 +658,4 @@ msgstr "Por favor, introduzca el nombre de usuario y contraseña correctos"
 #: gecoscc/views/portal.py:66
 msgid "welcome ${username}"
 msgstr "bienvenido ${username}"
+

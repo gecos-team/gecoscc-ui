@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 0.2.1\n"
+"Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-17 11:33+0100\n"
+"POT-Creation-Date: 2014-03-18 11:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,6 +148,37 @@ msgstr ""
 msgid "Remote Storage"
 msgstr ""
 
+#: gecoscc/templates/base_navbar.jinja2:13
+msgid "Control Center"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:18
+msgid "Home"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:21 gecoscc/templates/bb-groups-form.html:14
+#: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
+#: gecoscc/templates/admins/edit.jinja2:15 gecoscc/templates/admins/list.jinja2:8
+#: gecoscc/templates/admins/list.jinja2:11
+msgid "Administrators"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:24
+msgid "Reports"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:29
+msgid "User options"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:32
+msgid "Change password"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:38
+msgid "Log out"
+msgstr ""
+
 #: gecoscc/templates/bb-computer.html:3 gecoscc/templates/bb-ou.html:3
 msgid "Information"
 msgstr ""
@@ -285,12 +316,6 @@ msgstr ""
 
 #: gecoscc/templates/bb-groups-form.html:3 gecoscc/templates/bb-new-element.html:25
 msgid "Group"
-msgstr ""
-
-#: gecoscc/templates/bb-groups-form.html:14 gecoscc/templates/admins/add.jinja2:8
-#: gecoscc/templates/admins/add.jinja2:11 gecoscc/templates/admins/edit.jinja2:15
-#: gecoscc/templates/admins/list.jinja2:8 gecoscc/templates/admins/list.jinja2:11
-msgid "Administrators"
 msgstr ""
 
 #: gecoscc/templates/bb-groups-members.html:1

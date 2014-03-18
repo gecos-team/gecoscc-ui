@@ -140,7 +140,7 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
 
-    config.add_translation_dirs('locale/')
+    config.add_translation_dirs('gecoscc:locale/')
 
     jinja2_config(config)
 
@@ -149,6 +149,9 @@ def main(global_config, **settings):
     config.include('pyramid_sockjs')
     config.include('pyramid_celery')
     config.include('cornice')
+
+    config.add_subscriber('gecoscc.i18n.setAcceptedLanguagesLocale',
+                          'pyramid.events.NewRequest')
 
     route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')

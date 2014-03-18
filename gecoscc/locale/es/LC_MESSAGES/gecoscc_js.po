@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-03-17 11:33+0100\n"
+"POT-Creation-Date: 2014-03-18 11:09+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -123,7 +123,7 @@ msgstr "Más"
 msgid "Add new root OU"
 msgstr "Añadir nueva UO raíz"
 
-#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:451
+#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:462
 msgid "Loading"
 msgstr "Cargando"
 
