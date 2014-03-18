@@ -27,7 +27,7 @@ var App;
 (function (Backbone, $, _, gettext) {
     "use strict";
 
-    var HomeView, Router;
+    var HomeView, NewElementView, LoaderView, Router;
 
     App = new Backbone.Marionette.Application();
 
@@ -54,6 +54,29 @@ var App;
         }
     });
 
+    NewElementView = Backbone.Marionette.ItemView.extend({
+        template: "#new-element-template",
+
+        serializeData: function () {
+            // This view needs no model
+            return {
+                ouID: this.containerId
+            };
+        }
+    });
+
+    App.instances.newElementView = new NewElementView();
+
+    LoaderView = Backbone.Marionette.ItemView.extend({
+        template: "#loader-template",
+
+        serializeData: function () {
+            return {}; // This view needs no model
+        }
+    });
+
+    App.instances.loaderView = new LoaderView();
+
     Router = Backbone.Marionette.AppRouter.extend({
         appRoutes: {
             "": "loadHome",
@@ -67,13 +90,12 @@ var App;
 
         controller: {
             loadHome: function () {
-                var view = new HomeView();
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
                 App.tree.$el
                     .find(".tree-selected")
                     .removeClass("tree-selected");
-                App.main.show(view);
+                App.main.show(new HomeView());
             },
 
             newRoot: function () {

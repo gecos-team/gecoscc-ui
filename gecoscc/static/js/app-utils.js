@@ -23,14 +23,7 @@
 (function (App, Backbone, $, _) {
     "use strict";
 
-    var NewElementView,
-        LoaderView,
-        AlertView,
-        numericRegex,
-        emailRegex,
-        ipRegex,
-        urlRegex,
-        applyRegex;
+    var AlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex;
 
     /*
     * Regular expressions taken from:
@@ -292,29 +285,6 @@
             });
         }
     });
-
-    NewElementView = Backbone.Marionette.ItemView.extend({
-        template: "#new-element-template",
-
-        serializeData: function () {
-            // This view needs no model
-            return {
-                ouID: this.containerId
-            };
-        }
-    });
-
-    App.instances.newElementView = new NewElementView();
-
-    LoaderView = Backbone.Marionette.ItemView.extend({
-        template: "#loader-template",
-
-        serializeData: function () {
-            return {}; // This view needs no model
-        }
-    });
-
-    App.instances.loaderView = new LoaderView();
 
     AlertView = Backbone.Marionette.ItemView.extend({
         template: "#alert-template",
