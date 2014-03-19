@@ -249,9 +249,6 @@ class Computer(Node):
                                 default='',
                                 missing='')
 
-    # Group objects
-    memberof = colander.Seq(ObjectIdField())
-
 
 class Computers(colander.SequenceSchema):
     computers = Computer()
@@ -290,9 +287,6 @@ class Printer(Node):
     extra = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
-
-    # Group objects
-    memberof = colander.Seq(ObjectIdField())
 
 
 class Printers(colander.SequenceSchema):

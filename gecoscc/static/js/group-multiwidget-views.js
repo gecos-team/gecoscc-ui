@@ -123,18 +123,18 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 pages = inRange * 2 + 1,
                 current = this.collection.currentPage,
                 total = this.collection.totalPages,
-                i = 0,
+                i = 1,
                 page;
 
             for (i; i < pages; i += 1) {
                 page = current - inRange + i;
-                if (page >= 0 && page < total) {
+                if (page > 0 && page <= total) {
                     paginator.push([page, page === current]);
                 }
             }
             return {
-                prev: current !== 0,
-                next: current !== (total - 1),
+                prev: current !== 1,
+                next: current !== total,
                 pages: paginator,
                 showPaginator: _.isNull(this.filteredGroups),
                 currentFilter: this.currentFilter

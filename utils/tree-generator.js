@@ -21,7 +21,7 @@
 // permissions and limitations under the Licence.
 
 (function (ObjectId, db, print) {
-    "use strict";
+    'use strict';
 
     var MAX_LEVELS = 6,
         MAX_CHILDS = 40,
@@ -139,12 +139,12 @@
 
         counters[type] += 1;
         defs = {
-            '_id': oid,
-            'path': path,
-            'name': name,
-            'type': type,
-            'lock': false,
-            'source': 'gecos'
+            _id: oid,
+            path: path,
+            name: name,
+            type: type,
+            lock: false,
+            source: 'gecos'
         };
         values = defaults(extraValues, defs);
 
@@ -157,8 +157,8 @@
 
     constructors.ou = function (path) {
         var oid = constructors.default(path, 'ou', {
-                'policies': [],
-                'extra': ''
+                policies: [],
+                extra: ''
             }),
             new_children = random_int(MAX_CHILDS) + 1,
             h;
@@ -173,7 +173,10 @@
 
     constructors.user = function (path) {
         var email = 'user_' + counters.user + '@example.com',
-            oid = constructors.default(path, 'user', { 'email': email });
+            oid = constructors.default(path, 'user', {
+                email: email,
+                memberof: []
+            });
         potential_group_members.push(oid);
         return oid;
     };
@@ -182,14 +185,14 @@
         var oid = new ObjectId(),
             max_nodes_to_add = random_int(MAX_NODES_PER_GROUP),
             group = {
-                '_id': oid,
-                'path': path,
-                'name': 'group_' + counters.group,
-                'type': 'group',
-                'lock': false,
-                'source': 'gecos',
-                'members': [],
-                'memberof': []
+                _id: oid,
+                path: path,
+                name: 'group_' + counters.group,
+                type: 'group',
+                lock: false,
+                source: 'gecos',
+                members: [],
+                memberof: []
             },
             count = 0,
             node_oid,
@@ -202,10 +205,10 @@
             parent_oid = choice(existing_groups);
             group.memberof = [parent_oid];
             db.nodes.update({
-                '_id': parent_oid
+                _id: parent_oid
             }, {
-                '$push': {
-                    'members': oid
+                $push: {
+                    members: oid
                 }
             });
         }
@@ -215,13 +218,13 @@
         // Add some nodes to this group
         for (count; count < max_nodes_to_add; count += 1) {
             node_oid = choice(potential_group_members);
-            if (!contains(group.members, node_oid)) {
+            if (node_oid && !contains(group.members, node_oid)) {
                 group.members.push(node_oid);
                 db.nodes.update({
-                    '_id': node_oid
+                    _id: node_oid
                 }, {
-                    '$push': {
-                        'memberof': oid
+                    $push: {
+                        memberof: oid
                     }
                 });
             }
@@ -241,33 +244,35 @@
             oid;
 
         oid = constructors.default(path, 'computer', {
-            'identifier': 'id_computer_' + counters.computer,
-            'ip': ip,
-            'mac': '98:5C:29:31:CF:07',
-            'family': choice(types),
-            'serial': 'SN' + random_int(100000),
-            'registry': 'JDA' + random_int(10000),
-            'extra': ''
+            identifier: 'id_computer_' + counters.computer,
+            ip: ip,
+            mac: '98:5C:29:31:CF:07',
+            family: choice(types),
+            serial: 'SN' + random_int(100000),
+            registry: 'JDA' + random_int(10000),
+            extra: '',
+            memberof: []
         });
         potential_group_members.push(oid);
         return oid;
     };
 
     constructors.printer = function (path) {
-        var brands = ["HP", "Epson", "Lexmark", "Samsung", "Canon", "Brother"],
+        var brands = ['HP', 'Epson', 'Lexmark', 'Samsung', 'Canon', 'Brother'],
             brand,
             oid;
 
         brand = choice(brands);
-        oid = constructors.default(path, "printer", {
+        oid = constructors.default(path, 'printer', {
             brand: brand,
             model: brand.slice(0, 2).toUpperCase() + random_int(256),
             serial: brand.slice(0, 2).toUpperCase() + random_int(100000),
-            registry: "JDA" + random_int(10000),
-            location: "Dep" + random_int(999),
-            printerpath: "http://servidorimpresion:631/ipp/port" + random_int(65000),
-            driver: "auto",
-            duplex: choice([true, false])
+            registry: 'JDA' + random_int(10000),
+            location: 'Dep' + random_int(999),
+            printerpath: 'http://servidorimpresion:631/ipp/port' + random_int(65000),
+            driver: 'auto',
+            duplex: choice([true, false]),
+            memberof: []
         });
         potential_group_members.push(oid);
         return oid;
@@ -276,16 +281,17 @@
     constructors.storage = function (path) {
         var ip = random_int(256) + '.' + random_int(256) + '.' +
                 random_int(256) + '.' + random_int(256),
-            protocols = ["ftp", "ssh", "nfs", "smb", "smb4"],
+            protocols = ['ftp', 'ssh', 'nfs', 'smb', 'smb4'],
             oid;
 
         oid = constructors.default(path, 'storage', {
             server: ip,
             port: random_int(65535) + 1,
             protocol: choice(protocols),
-            localpath: "/some/path/",
-            mount: choice(["fstab", "gvfs"]),
-            extraops: ""
+            localpath: '/some/path/',
+            mount: choice(['fstab', 'gvfs']),
+            extraops: '',
+            memberof: []
         });
         potential_group_members.push(oid);
         return oid;
@@ -299,19 +305,19 @@
         constructors.ou('root,' + rootId);
     }
 
-    db.nodes.ensureIndex({ 'path': 1 });
-    db.nodes.ensureIndex({ 'type': 1 });
+    db.nodes.ensureIndex({ path: 1 });
+    db.nodes.ensureIndex({ type: 1 });
 
     // Admin user generation
 
     admin_user = {
-        "_id": new ObjectId(),
-        "username": "admin",
-        "first_name": "Ad",
-        "last_name": "Min",
-        "password": "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu",
-        "email": "admin@example.com",
-        "permissions": [rootId]
+        _id: new ObjectId(),
+        username: 'admin',
+        first_name: 'Ad',
+        last_name: 'Min',
+        password: '$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu',
+        email: 'admin@example.com',
+        permissions: [rootId]
     };
 
     db.adminusers.drop();
@@ -327,7 +333,7 @@
         user.last_name = 'admin last name' + i;
         user.email = 'user' + i + '@example.com';
         user.permissions = [];
-        user.password = "$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu";
+        user.password = '$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu';
         user._id = new ObjectId();
 
         limit = random_int(10);

@@ -71,6 +71,14 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #cleanfile": "cleanFile"
         },
 
+        onRender: function () {
+            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
+                el: this.$el.find("div#groups-widget")[0],
+                checked: this.model.get("memberof")
+            });
+            this.groupsWidget.render();
+        },
+
         onChangePPDFile: function (evt) {
             var $file = $(evt.target),
                 $container = this.$el.find("#driver");
@@ -103,14 +111,6 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
         cleanFile: function (evt) {
             evt.preventDefault();
             this.$el.find("#ppdfile").val("").trigger("change");
-        },
-
-        onRender: function () {
-            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                el: this.$el.find("div#groups-widget")[0],
-                checked: this.model.get("memberof")
-            });
-            this.groupsWidget.render();
         },
 
         saveForm: function (evt) {
