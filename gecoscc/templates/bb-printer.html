@@ -10,23 +10,23 @@
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label for="type">{{ gettext('Type') }}</label>
-                            <select id="type" class="form-control" style="background-color:yellow">
-                                <option selected="" value="LASER">{{ gettext('Laser') }}</option>
-                                <option value="INK">{{ gettext('Ink') }}</option>
-                                <option value="MATRIX">{{ gettext('Dot matrix') }}</option>
+                            <select id="type" class="form-control">
+                                <option value="laser" <% if (printtype === "laser") { print("selected"); } %>>{{ gettext('Laser') }}</option>
+                                <option value="ink" <% if (printtype === "ink") { print("selected"); } %>>{{ gettext('Ink') }}</option>
+                                <option value="matrix" <% if (printtype === "matrix") { print("selected"); } %>>{{ gettext('Dot matrix') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label for="brand">{{ gettext('Manufacturer') }}</label>
-                            <input id="brand" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP" style="background-color:yellow">
+                            <input id="brand" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP" value="<%= brand %>">
                         </div>
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label for="model">{{ gettext('Model') }}</label>
-                            <input id="model" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Deskjet 123"  requiyellow value="<%= model %>">
+                            <input id="model" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Deskjet 123" value="<%= model %>">
                         </div>
                     </div>
                 </div>
@@ -34,13 +34,13 @@
                     <div class="col-sm-6">
                         <div class="form-group">
                             <label for="serial">{{ gettext('Serial number') }}</label>
-                            <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456"  requiyellow value="<%= serial %>">
+                            <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456" value="<%= serial %>">
                         </div>
                     </div>
                     <div class="col-sm-6">
                         <div class="form-group">
                             <label for="registry">{{ gettext('Registry number') }}</label>
-                            <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC"  requiyellow value="<%= registry %>">
+                            <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC" value="<%= registry %>">
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                     <div class="col-md-4 col-sm-12 col-xs-12">
                         <div class="form-group">
                             <label for="name">{{ gettext('Name') }}</label>
-                            <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000"  requiyellow value="<%= name %>">
+                            <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000" value="<%= name %>">
                         </div>
                     </div>
                     <div class="col-md-4 col-sm-12 col-xs-12">
@@ -63,7 +63,7 @@
                     <div class="col-md-4 col-sm-12 col-xs-12">
                         <div class="form-group">
                             <label for="location">{{ gettext('Location') }}</label>
-                            <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" style="background-color:yellow">
+                            <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" value="<%= location %>">
                         </div>
                     </div>
                 </div>
@@ -71,16 +71,16 @@
                     <div class="col-md-3 col-sm-4 col-xs-12">
                         <div class="form-group">
                             <label>{{ gettext('Connection type') }}</label>
-                            <select id="network" class="form-control" style="background-color:yellow">
-                                <option>{{ gettext('Network') }}</option>
-                                <option>{{ gettext('Local') }}</option>
+                            <select id="connection" class="form-control" required>
+                                <option value="network" <% if (connection === "network") { print("selected"); } %>>{{ gettext('Network') }}</option>
+                                <option value="local" <% if (connection === "local") { print("selected"); } %>>{{ gettext('Local') }}</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-md-9 col-sm-8 col-xs-12">
                         <div class="form-group">
                             <label for="path">{{ gettext('Printer path') }}</label>
-                            <input id="path" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://computer_name:631/ipp/port1') }}" style="background-color:yellow">
+                            <input id="path" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://computer_name:631/ipp/port1') }}" value="<%= printerpath %>">
                         </div>
                     </div>
                 </div>
@@ -89,10 +89,10 @@
                     <div class="col-sm-12 col-xs-12">
                         <div class="form-group" id="installation">
                             <label class="radio-inline">
-                                <input name="driverinstallation" type="radio" value="auto" checked style="background-color:yellow"> {{ gettext('Automatic installation') }}
+                                <input name="driverinstallation" type="radio" value="auto" <% if (driver === "auto") { print("checked"); } %>> {{ gettext('Automatic installation') }}
                             </label>
                             <label class="radio-inline">
-                                <input name="driverinstallation" id="nodriver" type="radio" value="manual" style="background-color:yellow"> {{ gettext('Manual installation') }}
+                                <input name="driverinstallation" id="nodriver" type="radio" value="manual"  <% if (driver === "manual") { print("checked"); } %>> {{ gettext('Manual installation') }}
                             </label>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                 <div class="row" id="driver">
                     <div class="col-md-4 col-sm-5 col-xs-12">
                         <div class="form-group">
-                            <select id="printerBrand" class="form-control" style="background-color:yellow" >
+                            <select id="printerBrand" class="form-control">
                                 <option value="Alps">Alps</option>
                                 <option value="Anitech">Anitech</option><option value="Apollo">Apollo</option><option value="Apple">Apple</option><option value="Brother">Brother</option><option value="Canon">Canon</option><option value="Citizen">Citizen</option><option value="CItoh">CItoh</option><option value="Compaq">Compaq</option><option value="DEC">DEC</option>
                                 <option value="Dell">Dell</option><option value="DNP">DNP</option><option value="Dymo">Dymo</option><option value="Epson">Epson</option><option value="Fujifilm">Fujifilm</option><option value="Fujitsu">Fujitsu</option><option value="Generic">Generic</option><option value="Genicom">Genicom</option><option value="Gestetner">Gestetner</option><option value="Heidelberg">Heidelberg</option><option value="Hitachi">Hitachi</option><option value="HP" selected="">HP</option><option value="IBM">IBM</option><option value="Imagen">Imagen</option>
@@ -113,7 +113,7 @@
                     </div>
                     <div class="col-md-8 col-sm-7 col-xs-12">
                         <div class="form-group">
-                            <select id="printersA" class="form-control" style="background-color:yellow" >
+                            <select id="printersA" class="form-control">
                                 <option value="manufacturer-PPDs/hplip/hp-color_laserjet_2600n-hpijs.ppd.gz" selected="">HP Color LaserJet 2600n hpijs, 3.12.11, requires proprietary plugin (en, en)</option><option value="manufacturer-PPDs/hplip/hp-color_laserjet_2600n.ppd.gz">HP Color LaserJet 2600n, hpcups 3.12.11, requires proprietary plugin (en, en)</option><option value="manufacturer-PPDs/hplip/hp-910-hpijs.ppd.gz">HP 910 hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-910.ppd.gz">HP 910, hpcups 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-915-hpijs.ppd.gz">HP 915 hpijs, 3.12.11 (en, en)</option>
                                 <option value="manufacturer-PPDs/hplip/hp-915.ppd.gz">HP 915, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2000C.pcl3.ppd.gz">HP 2000C Foomatic/pcl3 (en)</option><option value="manufacturer-PPDs/hplip/hp-2000c-hpijs.ppd.gz">HP 2000c hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-2000c.ppd.gz">HP 2000c, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2500C.pcl3.ppd.gz">HP 2500C Foomatic/pcl3 (en)</option>
                                 <option value="manufacturer-PPDs/hplip/hp-2500c-hpijs.ppd.gz">HP 2500c hpijs, 3.12.11 (en, en)</option><option value="manufacturer-PPDs/hplip/hp-2500c.ppd.gz">HP 2500c, hpcups 3.12.11 (en, en)</option><option value="OpenPrintingPPDs/postscript/HP-2500CM.Postscript.ppd.gz">HP 2500CM Foomatic/Postscript (recommended) (en)</option><option value="OpenPrintingPPDs/ghostscript/HP-2563.lp2563.ppd.gz">HP 2563 Foomatic/lp2563 (recommended) (en)</option><option value="manufacturer-PPDs/hplip/hp-business_inkjet_1000-hpijs.ppd.gz">HP Business Inkjet 1000 hpijs, 3.12.11 (en, en)</option>
@@ -133,7 +133,7 @@
                 <div class="row">
                     <div class="col-lg-7 col-md-8 col-sm-9 col-xs-12">
                         <div class="form-group">
-                            <input type="file" id="ppdfile" value="<%= ppdfile %>">
+                            <input type="file" id="ppdfile" value="<%= driverFile %>">
                             <p class="help-block">{{ gettext('It is also possible to upload a PPD file, instead of choosing a controller') }}</p>
                         </div>
                     </div>
@@ -171,10 +171,10 @@
                         <div class="form-group">
                             <label for="resolution">{{ gettext('Print quality') }}</label>
                             <select id="resolution" class="form-control">
-                                <option value="low">{{ gettext('Low') }}</option>
-                                <option selected="" value="medium">{{ gettext('Medium') }}</option>
-                                <option value="high">{{ gettext('High') }}</option>
-                                <option value="ultra">{{ gettext('Very high') }}</option>
+                                <option value="low" <% if (quality === "low") { print("selected"); } %>>{{ gettext('Low') }}</option>
+                                <option value="medium" <% if (quality === "medium") { print("selected"); } %>>{{ gettext('Medium') }}</option>
+                                <option value="high" <% if (quality === "high") { print("selected"); } %>>{{ gettext('High') }}</option>
+                                <option value="ultra" <% if (quality === "ultra") { print("selected"); } %>>{{ gettext('Very high') }}</option>
                             </select>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                         <label>{{ gettext('Duplex mode') }}</label>
                         <div class="checkbox">
                             <label for="duplex">
-                                <input type="checkbox" value="" id="duplex">
+                                <input type="checkbox" value="" id="duplex" <% if (duplex) { print("checked"); } %>>
                                 {{ gettext('Duplex printing') }}
                             </label>
                         </div>

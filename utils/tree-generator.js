@@ -254,22 +254,20 @@
     };
 
     constructors.printer = function (path) {
-        var brands = ["hp", "epson", "lexmark", "samsung", "canon", "brother"],
+        var brands = ["HP", "Epson", "Lexmark", "Samsung", "Canon", "Brother"],
             brand,
             oid;
 
         brand = choice(brands);
-        oid = constructors.default(path, 'printer', {
-            'brand': brand,
-            'model': random_int(256),
-            'serial': brand.slice(0, 2).toUpperCase() + random_int(100000),
-            'registry': 'JDA' + random_int(10000),
-            'description': 'A pretty printer',
-            'location': 'Dep' +  random_int(999),
-            'driverinstallation': choice(['auto', 'manual']),
-            // 'ppdfile': , TODO: Add some files
-            'duplex': choice([true, false])
-
+        oid = constructors.default(path, "printer", {
+            brand: brand,
+            model: brand.slice(0, 2).toUpperCase() + random_int(256),
+            serial: brand.slice(0, 2).toUpperCase() + random_int(100000),
+            registry: "JDA" + random_int(10000),
+            location: "Dep" + random_int(999),
+            printerpath: "http://servidorimpresion:631/ipp/port" + random_int(65000),
+            driver: "auto",
+            duplex: choice([true, false])
         });
         potential_group_members.push(oid);
         return oid;
