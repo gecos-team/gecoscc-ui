@@ -123,7 +123,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 pages = inRange * 2 + 1,
                 current = this.collection.currentPage,
                 total = this.collection.totalPages,
-                i = 1,
+                i = 0,
                 page;
 
             for (i; i < pages; i += 1) {

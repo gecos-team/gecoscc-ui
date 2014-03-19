@@ -26,8 +26,9 @@
     var MAX_LEVELS = 6,
         MAX_CHILDS = 40,
         MAX_OBJECTS = 10000,
+        MAX_GROUPS = 150,
         MAX_NODES_PER_GROUP = 15,
-        // TODO MAX_GROUPS_PER_NODE
+        MAX_GROUPS_PER_NODE = 8,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.4,
@@ -182,6 +183,8 @@
     };
 
     constructors.group = function (path) {
+        if (counters.group >= MAX_GROUPS) { return; }
+
         var oid = new ObjectId(),
             max_nodes_to_add = random_int(MAX_NODES_PER_GROUP),
             group = {
@@ -196,7 +199,8 @@
             },
             count = 0,
             node_oid,
-            parent_oid;
+            parent_oid,
+            l;
 
         counters.group += 1;
 
@@ -218,15 +222,18 @@
         // Add some nodes to this group
         for (count; count < max_nodes_to_add; count += 1) {
             node_oid = choice(potential_group_members);
-            if (node_oid && !contains(group.members, node_oid)) {
-                group.members.push(node_oid);
-                db.nodes.update({
-                    _id: node_oid
-                }, {
-                    $push: {
-                        memberof: oid
-                    }
-                });
+            if (node_oid) {
+                l = db.nodes.findOne({ _id: node_oid }).memberof.length;
+                if (l < MAX_GROUPS_PER_NODE && !contains(group.members, node_oid)) {
+                    group.members.push(node_oid);
+                    db.nodes.update({
+                        _id: node_oid
+                    }, {
+                        $push: {
+                            memberof: oid
+                        }
+                    });
+                }
             }
         }
 
