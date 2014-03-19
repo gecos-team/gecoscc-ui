@@ -27,6 +27,7 @@ requires = [
     'jsonschema==2.3.0',
     'gevent-websocket==0.3.6',
     'WebHelpers==1.3',
+    'Paste==1.7.5.1',
 ]
 
 setup(name='gecoscc',
