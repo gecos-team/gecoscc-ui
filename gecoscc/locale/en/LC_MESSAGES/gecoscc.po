@@ -1,0 +1,660 @@
+# English translations for gecoscc.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the gecoscc project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gecoscc 0.2.2\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-03-18 11:09+0100\n"
+"PO-Revision-Date: 2014-03-19 11:03+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: gecoscc/forms.py:36 gecoscc/forms.py:90
+msgid "Submit"
+msgstr ""
+
+#: gecoscc/forms.py:82
+msgid "User created successfully"
+msgstr ""
+
+#: gecoscc/forms.py:93 gecoscc/templates/bb-computer.html:113
+#: gecoscc/templates/bb-groups-form.html:33 gecoscc/templates/bb-ou.html:38
+#: gecoscc/templates/bb-printer.html:207 gecoscc/templates/bb-storage.html:96
+#: gecoscc/templates/bb-user.html:60
+msgid "Delete"
+msgstr ""
+
+#: gecoscc/forms.py:110
+msgid "User edited successfully"
+msgstr ""
+
+#: gecoscc/models.py:81
+msgid "There is some object with this value: ${val}"
+msgstr ""
+
+#: gecoscc/models.py:104
+msgid "The passwords do not match"
+msgstr ""
+
+#: gecoscc/models.py:148 gecoscc/templates/bb-user.html:36
+#: gecoscc/templates/admins/list.jinja2:33
+msgid "First name"
+msgstr ""
+
+#: gecoscc/models.py:152 gecoscc/templates/bb-user.html:41
+#: gecoscc/templates/admins/list.jinja2:34
+msgid "Last name"
+msgstr ""
+
+#: gecoscc/models.py:176 gecoscc/templates/bb-storage.html:76
+#: gecoscc/templates/bb-user.html:13 gecoscc/templates/admins/list.jinja2:31
+msgid "Username"
+msgstr ""
+
+#: gecoscc/models.py:178
+msgid "There is a user with this username: ${val}"
+msgstr ""
+
+#: gecoscc/models.py:180 gecoscc/templates/bb-storage.html:82
+#: gecoscc/templates/bb-user.html:17
+msgid "Password"
+msgstr ""
+
+#: gecoscc/models.py:183 gecoscc/templates/bb-user.html:21
+msgid "Repeat the password"
+msgstr ""
+
+#: gecoscc/models.py:186 gecoscc/templates/bb-user.html:31
+msgid "Email"
+msgstr ""
+
+#: gecoscc/models.py:190
+msgid "There is a user with this email: ${val}"
+msgstr ""
+
+#: gecoscc/models.py:219 gecoscc/templates/bb-computer.html:73
+msgid "Desktop"
+msgstr ""
+
+#: gecoscc/models.py:220 gecoscc/templates/bb-computer.html:74
+msgid "Laptop"
+msgstr ""
+
+#: gecoscc/models.py:221 gecoscc/templates/bb-computer.html:75
+msgid "Netbook"
+msgstr ""
+
+#: gecoscc/models.py:222 gecoscc/templates/bb-computer.html:76
+msgid "Tablet"
+msgstr ""
+
+#: gecoscc/models.py:303
+msgid "FTP"
+msgstr ""
+
+#: gecoscc/models.py:304
+msgid "SSHFS"
+msgstr ""
+
+#: gecoscc/models.py:305
+msgid "NFS v3"
+msgstr ""
+
+#: gecoscc/models.py:306
+msgid "NFS v4"
+msgstr ""
+
+#: gecoscc/models.py:307
+msgid "SAMBA v3"
+msgstr ""
+
+#: gecoscc/models.py:308
+msgid "SAMBA v4"
+msgstr ""
+
+#: gecoscc/models.py:312
+msgid "System mounts (fstab)"
+msgstr ""
+
+#: gecoscc/models.py:313
+msgid "User space mounts (gvfs)"
+msgstr ""
+
+#: gecoscc/models.py:343
+msgid "Processing"
+msgstr ""
+
+#: gecoscc/models.py:346
+msgid "Applying changes"
+msgstr ""
+
+#: gecoscc/models.py:349
+msgid "Changes applied"
+msgstr ""
+
+#: gecoscc/models.py:352
+msgid "There was errors"
+msgstr ""
+
+#: gecoscc/policies/remote_storage.py:8 gecoscc/templates/bb-storage.html:3
+msgid "Remote Storage"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:13
+msgid "Control Center"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:18
+msgid "Home"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:21
+#: gecoscc/templates/bb-groups-form.html:14
+#: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
+#: gecoscc/templates/admins/edit.jinja2:15
+#: gecoscc/templates/admins/list.jinja2:8
+#: gecoscc/templates/admins/list.jinja2:11
+msgid "Administrators"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:24
+msgid "Reports"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:29
+msgid "User options"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:32
+msgid "Change password"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:38
+msgid "Log out"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:3 gecoscc/templates/bb-ou.html:3
+msgid "Information"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:4
+msgid "Computer specifications"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:11
+#: gecoscc/templates/bb-new-element.html:31
+msgid "Computer"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:26
+msgid "Users that have logged in"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:28
+msgid "Uptime"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:34
+msgid "Last execution"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:36
+msgid "Manufacturer and model"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:46
+#: gecoscc/templates/bb-groups-form.html:13 gecoscc/templates/bb-ou.html:21
+#: gecoscc/templates/bb-printer.html:53 gecoscc/templates/bb-storage.html:12
+msgid "Name"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:47 gecoscc/templates/bb-computer.html:53
+#: gecoscc/templates/bb-computer.html:60 gecoscc/templates/bb-computer.html:66
+#: gecoscc/templates/bb-computer.html:84 gecoscc/templates/bb-computer.html:90
+#: gecoscc/templates/bb-groups-form.html:14 gecoscc/templates/bb-ou.html:22
+#: gecoscc/templates/bb-printer.html:23 gecoscc/templates/bb-printer.html:29
+#: gecoscc/templates/bb-printer.html:37 gecoscc/templates/bb-printer.html:43
+#: gecoscc/templates/bb-printer.html:54 gecoscc/templates/bb-printer.html:60
+#: gecoscc/templates/bb-printer.html:66 gecoscc/templates/bb-printer.html:83
+#: gecoscc/templates/bb-storage.html:13 gecoscc/templates/bb-storage.html:28
+#: gecoscc/templates/bb-storage.html:34 gecoscc/templates/bb-storage.html:60
+#: gecoscc/templates/bb-storage.html:77 gecoscc/templates/bb-user.html:14
+#: gecoscc/templates/bb-user.html:26 gecoscc/templates/bb-user.html:32
+#: gecoscc/templates/bb-user.html:37 gecoscc/templates/bb-user.html:42
+#: gecoscc/templates/bb-user.html:47
+msgid "e.g."
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:47
+msgid "John's laptop"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:52
+msgid "Identifier"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:53 gecoscc/templates/bb-storage.html:77
+#: gecoscc/templates/bb-user.html:14
+msgid "john"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:59
+msgid "IP"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:65
+msgid "MAC"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:71 gecoscc/templates/bb-printer.html:12
+msgid "Type"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:83 gecoscc/templates/bb-printer.html:36
+msgid "Serial number"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:89 gecoscc/templates/bb-printer.html:42
+msgid "Registry number"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:97
+#: gecoscc/templates/bb-groups-form.html:19
+#: gecoscc/templates/bb-groups-form.html:25
+#: gecoscc/templates/bb-printer.html:151 gecoscc/templates/bb-storage.html:89
+#: gecoscc/templates/bb-user.html:53
+msgid "Loading"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:104 gecoscc/templates/bb-ou.html:29
+msgid "Extra information"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:110
+#: gecoscc/templates/bb-groups-form.html:30 gecoscc/templates/bb-ou.html:35
+#: gecoscc/templates/bb-printer.html:204 gecoscc/templates/bb-storage.html:93
+#: gecoscc/templates/bb-user.html:57
+msgid "Cancel"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:111
+#: gecoscc/templates/bb-groups-form.html:31 gecoscc/templates/bb-ou.html:36
+#: gecoscc/templates/bb-printer.html:205 gecoscc/templates/bb-storage.html:94
+#: gecoscc/templates/bb-tree-selection.html:21
+#: gecoscc/templates/bb-user.html:58
+msgid "Save"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:124
+msgid "Computer specifications (Ohai)"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:130
+msgid "CPU"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:134
+msgid "RAM"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:138
+msgid "Graphics card"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:144
+#: gecoscc/templates/bb-computer.html:153
+msgid "Hard disk"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:148
+#: gecoscc/templates/bb-computer.html:157
+msgid "used"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:168
+msgid "Complete JSON returned by Ohai"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-form.html:3
+#: gecoscc/templates/bb-new-element.html:25
+msgid "Group"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-members.html:1
+msgid "Nodes that belong to this group"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-members.html:9
+#: gecoscc/templates/bb-groups-widget.html:3
+#: gecoscc/templates/bb-tree-selection.html:13
+msgid "None"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-multi-widget.html:3
+msgid "Groups"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-multi-widget.html:7
+msgid "Search"
+msgstr ""
+
+#: gecoscc/templates/bb-home.html:4
+msgid "Service and tasks status"
+msgstr ""
+
+#: gecoscc/templates/bb-home.html:12 gecoscc/templates/bb-home.html:14
+msgid "Running"
+msgstr ""
+
+#: gecoscc/templates/bb-home.html:16
+msgid "Down"
+msgstr ""
+
+#: gecoscc/templates/bb-home.html:22
+msgid "Failed tasks (26 out of 200)"
+msgstr ""
+
+#: gecoscc/templates/bb-home.html:26
+msgid "Completed tasks (166 out of 200)"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:4
+msgid "Add new element"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:11 gecoscc/templates/bb-user.html:3
+msgid "User"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:17 gecoscc/templates/bb-ou.html:11
+msgid "Organisational Unit"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:37 gecoscc/templates/bb-printer.html:3
+msgid "Printer"
+msgstr ""
+
+#: gecoscc/templates/bb-ou.html:4 gecoscc/templates/bb-ou.html:49
+msgid "Policies"
+msgstr ""
+
+#: gecoscc/templates/bb-ou.html:22
+msgid "Testing department"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:8
+msgid "Inventory"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:14
+msgid "Laser"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:15
+msgid "Ink"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:16
+msgid "Dot matrix"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:22
+msgid "Manufacturer"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:28
+msgid "Model"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:59
+msgid "Description"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:60
+msgid "The one of the accounting deparment"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:65
+msgid "Location"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:73
+msgid "Connection type"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:75
+msgid "Network"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:76
+msgid "Local"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:82
+msgid "Printer path"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:83
+msgid "http://computer_name:631/ipp/port1"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:87
+msgid "Controller"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:92
+msgid "Automatic installation"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:95
+msgid "Manual installation"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:137
+msgid "It is also possible to upload a PPD file, instead of choosing a controller"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:142
+msgid "Clear the selected file"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:143
+msgid "Clear"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:157
+msgid "Default preferences"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:161
+msgid "Paper size"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:172
+msgid "Print quality"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:174
+msgid "Low"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:175
+msgid "Medium"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:176
+msgid "High"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:177
+msgid "Very high"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:183
+msgid "Paper tray"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:193
+msgid "Duplex mode"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:197
+msgid "Duplex printing"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-button.html:6
+msgid "In progress"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-button.html:8
+#: gecoscc/templates/bb-staging-report.html:27
+msgid "Execute changes"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-report.html:6
+msgid "Staged changes pending of execution"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-report.html:13
+msgid "Deleted"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-report.html:15
+msgid "Modified"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-report.html:18
+msgid "Discard changes"
+msgstr ""
+
+#: gecoscc/templates/bb-staging-report.html:26
+msgid "Close"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:13
+msgid "Access to the network storage S01"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:19
+msgid "Connection string"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:27
+msgid "Server"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:33
+msgid "Port"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:39
+msgid "Extra options"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:47
+msgid "Connection protocol"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:59
+msgid "Path of local directory"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:60
+msgid "/path/to/the/directory"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:65
+msgid "Mount"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:67
+msgid "When booting (fstab)"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:68
+msgid "In user space (gvfs)"
+msgstr ""
+
+#: gecoscc/templates/bb-tree-search.html:4
+#: gecoscc/templates/bb-tree-search.html:18
+msgid "More"
+msgstr ""
+
+#: gecoscc/templates/bb-tree-selection.html:4
+msgid "Selection:"
+msgstr ""
+
+#: gecoscc/templates/bb-tree-selection.html:11
+msgid "Add to:"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:25
+msgid "Phone number"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:32
+msgid "john.doe"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:37
+msgid "John"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:42
+msgid "Doe"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:46
+msgid "Address"
+msgstr ""
+
+#: gecoscc/templates/bb-user.html:47
+msgid "123, Main Street, Bigtown"
+msgstr ""
+
+#: gecoscc/templates/admins/add.jinja2:12
+#: gecoscc/templates/admins/list.jinja2:52
+msgid "Add Administrator"
+msgstr ""
+
+#: gecoscc/templates/admins/edit.jinja2:7
+msgid "If you don't fill the password fields, these won't be updated"
+msgstr ""
+
+#: gecoscc/templates/admins/edit.jinja2:16
+#, python-format
+msgid "Edit %(username)s"
+msgstr ""
+
+#: gecoscc/templates/admins/edit.jinja2:30
+msgid "Are you sure that you want to delete this user?"
+msgstr ""
+
+#: gecoscc/templates/admins/list.jinja2:18
+msgid "Search for username"
+msgstr ""
+
+#: gecoscc/templates/admins/list.jinja2:32
+msgid "E-mail"
+msgstr ""
+
+#: gecoscc/views/admins.py:48
+msgid "User deleted successfully"
+msgstr ""
+
+#: gecoscc/views/portal.py:55 gecoscc/views/portal.py:61
+msgid "Please enter the correct username and password"
+msgstr ""
+
+#: gecoscc/views/portal.py:66
+msgid "welcome ${username}"
+msgstr ""
+

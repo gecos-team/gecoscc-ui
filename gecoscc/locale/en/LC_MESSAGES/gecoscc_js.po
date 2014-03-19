@@ -1,0 +1,130 @@
+# English translations for gecoscc.
+# Copyright (C) 2014 ORGANIZATION
+# This file is distributed under the same license as the gecoscc project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gecoscc 0.2.2\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2014-03-18 11:09+0100\n"
+"PO-Revision-Date: 2014-03-19 11:03+0100\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 1.3\n"
+
+#: gecoscc/static/js/app-utils.js:194
+msgid "Staging"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:198
+msgid "Save"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:198
+#: gecoscc/static/js/tree-views-renderer.js:72
+msgid "Delete"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:199
+msgid "Done"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:208
+msgid "Something went wrong, please try again in a few moments."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:209
+#, python-format
+msgid "Resource ID: %s"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:213
+msgid "Status"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:227
+msgid "Invalid data."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:228
+msgid "Please, fix the errors in the fields below and try again."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:258
+#, python-format
+msgid "Saving the %s failed."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:288
+#, python-format
+msgid "Couldn't delete the %s."
+msgstr ""
+
+#: gecoscc/static/js/app.js:108
+msgid "New element"
+msgstr ""
+
+#: gecoscc/static/js/app.js:116
+msgid "User"
+msgstr ""
+
+#: gecoscc/static/js/app.js:117
+msgid "Organisational Unit"
+msgstr ""
+
+#: gecoscc/static/js/app.js:118
+msgid "Group"
+msgstr ""
+
+#: gecoscc/static/js/app.js:119
+msgid "Computer"
+msgstr ""
+
+#: gecoscc/static/js/app.js:120
+msgid "Printer"
+msgstr ""
+
+#: gecoscc/static/js/app.js:121
+msgid "Remote Storage"
+msgstr ""
+
+#: gecoscc/static/js/breadcrumb.js:30
+msgid "Home"
+msgstr ""
+
+#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
+msgid "x04"
+msgid_plural "x04"
+msgstr[0] ""
+msgstr[1] ""
+
+#: gecoscc/static/js/staging.js:53
+msgid "Resource marked for deletion."
+msgstr ""
+
+#: gecoscc/static/js/staging.js:54
+msgid "Your latest changes in this resource will be ignored."
+msgstr ""
+
+#: gecoscc/static/js/tree-views-renderer.js:45
+#: gecoscc/static/js/tree-views-renderer.js:69
+msgid "Add new"
+msgstr ""
+
+#: gecoscc/static/js/tree-views-renderer.js:59
+msgid "More"
+msgstr ""
+
+#: gecoscc/static/js/tree-views-renderer.js:63
+msgid "Add new root OU"
+msgstr ""
+
+#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:462
+msgid "Loading"
+msgstr ""
+
