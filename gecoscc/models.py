@@ -313,7 +313,8 @@ class Storage(Node):
     server = colander.SchemaNode(colander.String())
     port = colander.SchemaNode(colander.Integer(),
                                validator=colander.Range(min=1, max=65535),
-                               missing=colander.drop)
+                               default='',
+                               missing='')
     protocol = colander.SchemaNode(colander.String(),
                                    validator=colander.OneOf(
                                        STORAGE_PROTOCOLS.keys()
@@ -325,7 +326,8 @@ class Storage(Node):
                                 ),
                                 default='gvfs')
     extraops = colander.SchemaNode(colander.String(),
-                                   missing=colander.drop)
+                                   default='',
+                                   missing='')
 
 
 class Storages(colander.SequenceSchema):
