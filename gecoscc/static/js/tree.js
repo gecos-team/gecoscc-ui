@@ -256,41 +256,48 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return newNode;
         },
 
+        _getNodesToLoad: function (path, unknownIds) {
+            var nodes = {};
+
+            nodes.parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
+                return n.model.id === path.parentId;
+            });
+            nodes.oldNode = _.find(nodes.parentNode.children, function (n) {
+                return n.model.id === path.last;
+            });
+
+            nodes.newNode = this.getNodeModel(nodes.parentNode, nodes.oldNode, path.last);
+            if (nodes.newNode.status === "unknown") {
+                unknownIds.push(path.last);
+                nodes.newNode.path = path.parentPath.join(',');
+            }
+
+            return nodes;
+        },
+
         loadFromPath: function (path, childToShow, silent) {
-            var that, parentNode, oldNode, newNode, promises, unknownIds;
+            var that, nodes, promises, unknownIds;
 
             that = this;
             path = this.parsePath(path);
             unknownIds = this.makePath(path.parentPath);
+            nodes = this._getNodesToLoad(path, unknownIds);
 
-            parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
-                return n.model.id === path.parentId;
-            });
-            oldNode = _.find(parentNode.children, function (n) {
-                return n.model.id === path.last;
-            });
-
-            newNode = this.getNodeModel(parentNode, oldNode, path.last);
-            if (newNode.status === "unknown") {
-                unknownIds.push(path.last);
-                newNode.path = path.parentPath.join(',');
+            nodes.newNode.status = "paginated";
+            promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            nodes.newNode = this.parser.parse(nodes.newNode);
+            if (!_.isUndefined(nodes.oldNode)) {
+                nodes.newNode.children = nodes.oldNode.children;
+                nodes.newNode.model.children = nodes.oldNode.model.children;
+                nodes.oldNode.drop();
             }
-
-            newNode.status = "paginated";
-            promises = [this._addPaginatedChildrenToModel(newNode)];
-            newNode = this.parser.parse(newNode);
-            if (!_.isUndefined(oldNode)) {
-                newNode.children = oldNode.children;
-                newNode.model.children = oldNode.model.children;
-                oldNode.drop();
-            }
-            parentNode.addChild(newNode);
+            nodes.parentNode.addChild(nodes.newNode);
             promises.push(this.resolveUnknownNodes(unknownIds, true));
 
             if (!_.isUndefined(childToShow)) {
                 promises[0].done(function () {
                     that.searchPageForNode(
-                        newNode.model.paginatedChildren,
+                        nodes.newNode.model.paginatedChildren,
                         childToShow
                     );
                 });
