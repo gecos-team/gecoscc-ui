@@ -201,7 +201,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 evt.preventDefault();
                 GecosUtils.askConfirmation({
                     callback: _.bind(that._deleteOU, ouId),
-                    message: "Deleting an OU is a permanent action. It will also delete all its children."
+                    message: gettext("Deleting an OU is a permanent action. " +
+                                     "It will also delete all its children.")
                 });
             });
         },

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-18 11:09+0100\n"
+"POT-Creation-Date: 2014-03-20 13:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,7 +27,7 @@ msgstr ""
 
 #: gecoscc/forms.py:93 gecoscc/templates/bb-computer.html:113
 #: gecoscc/templates/bb-groups-form.html:33 gecoscc/templates/bb-ou.html:38
-#: gecoscc/templates/bb-printer.html:207 gecoscc/templates/bb-storage.html:96
+#: gecoscc/templates/bb-printer.html:210 gecoscc/templates/bb-storage.html:96
 #: gecoscc/templates/bb-user.html:60
 msgid "Delete"
 msgstr ""
@@ -96,56 +96,111 @@ msgstr ""
 msgid "Tablet"
 msgstr ""
 
-#: gecoscc/models.py:303
+#: gecoscc/models.py:258 gecoscc/templates/bb-printer.html:17
+msgid "Laser"
+msgstr ""
+
+#: gecoscc/models.py:259 gecoscc/templates/bb-printer.html:18
+msgid "Ink"
+msgstr ""
+
+#: gecoscc/models.py:260 gecoscc/templates/bb-printer.html:19
+msgid "Dot matrix"
+msgstr ""
+
+#: gecoscc/models.py:264 gecoscc/templates/bb-printer.html:78
+msgid "Network"
+msgstr ""
+
+#: gecoscc/models.py:265 gecoscc/templates/bb-printer.html:79
+msgid "Local"
+msgstr ""
+
+#: gecoscc/models.py:269 gecoscc/templates/bb-printer.html:95
+msgid "Automatic installation"
+msgstr ""
+
+#: gecoscc/models.py:270 gecoscc/templates/bb-printer.html:98
+msgid "Manual installation"
+msgstr ""
+
+#: gecoscc/models.py:274 gecoscc/templates/bb-printer.html:177
+msgid "Low"
+msgstr ""
+
+#: gecoscc/models.py:275 gecoscc/templates/bb-printer.html:178
+msgid "Medium"
+msgstr ""
+
+#: gecoscc/models.py:276 gecoscc/templates/bb-printer.html:179
+msgid "High"
+msgstr ""
+
+#: gecoscc/models.py:277 gecoscc/templates/bb-printer.html:180
+msgid "Very high"
+msgstr ""
+
+#: gecoscc/models.py:351
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:304
+#: gecoscc/models.py:352
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:305
-msgid "NFS v3"
+#: gecoscc/models.py:353
+msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:306
-msgid "NFS v4"
-msgstr ""
-
-#: gecoscc/models.py:307
+#: gecoscc/models.py:354
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:308
+#: gecoscc/models.py:355
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:312
+#: gecoscc/models.py:359
 msgid "System mounts (fstab)"
 msgstr ""
 
-#: gecoscc/models.py:313
+#: gecoscc/models.py:360
 msgid "User space mounts (gvfs)"
 msgstr ""
 
-#: gecoscc/models.py:343
+#: gecoscc/models.py:392
 msgid "Processing"
 msgstr ""
 
-#: gecoscc/models.py:346
+#: gecoscc/models.py:395
 msgid "Applying changes"
 msgstr ""
 
-#: gecoscc/models.py:349
+#: gecoscc/models.py:398
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:352
+#: gecoscc/models.py:401
 msgid "There was errors"
 msgstr ""
 
 #: gecoscc/policies/remote_storage.py:8 gecoscc/templates/bb-storage.html:3
 msgid "Remote Storage"
+msgstr ""
+
+#: gecoscc/templates/base.jinja2:33
+msgid "Are you sure?"
+msgstr ""
+
+#: gecoscc/templates/base.jinja2:37 gecoscc/templates/bb-computer.html:110
+#: gecoscc/templates/bb-groups-form.html:30 gecoscc/templates/bb-ou.html:35
+#: gecoscc/templates/bb-printer.html:207 gecoscc/templates/bb-storage.html:93
+#: gecoscc/templates/bb-user.html:57
+msgid "Cancel"
+msgstr ""
+
+#: gecoscc/templates/base.jinja2:38
+msgid "Yes, continue"
 msgstr ""
 
 #: gecoscc/templates/base_navbar.jinja2:13
@@ -179,6 +234,53 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
+#: gecoscc/templates/base_tree.jinja2:18
+#: gecoscc/templates/bb-groups-multi-widget.html:7
+msgid "Search"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:32
+msgid "Events and queue"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:33
+msgid "Maximize"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:34
+msgid "Minimize"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:35 gecoscc/templates/bb-computer.html:12
+#: gecoscc/templates/bb-groups-form.html:4 gecoscc/templates/bb-ou.html:12
+#: gecoscc/templates/bb-printer.html:4 gecoscc/templates/bb-storage.html:4
+#: gecoscc/templates/bb-user.html:4
+msgid "Reload"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:41
+msgid "Filter"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:47
+msgid "Users"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:48
+msgid "Organisational units"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:49
+msgid "Anything"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:227 gecoscc/templates/bb-computer.html:97
+#: gecoscc/templates/bb-groups-form.html:19
+#: gecoscc/templates/bb-groups-form.html:25 gecoscc/templates/bb-printer.html:154
+#: gecoscc/templates/bb-storage.html:89 gecoscc/templates/bb-user.html:53
+msgid "Loading"
+msgstr ""
+
 #: gecoscc/templates/bb-computer.html:3 gecoscc/templates/bb-ou.html:3
 msgid "Information"
 msgstr ""
@@ -208,7 +310,7 @@ msgid "Manufacturer and model"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:46 gecoscc/templates/bb-groups-form.html:13
-#: gecoscc/templates/bb-ou.html:21 gecoscc/templates/bb-printer.html:53
+#: gecoscc/templates/bb-ou.html:21 gecoscc/templates/bb-printer.html:56
 #: gecoscc/templates/bb-storage.html:12
 msgid "Name"
 msgstr ""
@@ -217,10 +319,10 @@ msgstr ""
 #: gecoscc/templates/bb-computer.html:60 gecoscc/templates/bb-computer.html:66
 #: gecoscc/templates/bb-computer.html:84 gecoscc/templates/bb-computer.html:90
 #: gecoscc/templates/bb-groups-form.html:14 gecoscc/templates/bb-ou.html:22
-#: gecoscc/templates/bb-printer.html:23 gecoscc/templates/bb-printer.html:29
-#: gecoscc/templates/bb-printer.html:37 gecoscc/templates/bb-printer.html:43
-#: gecoscc/templates/bb-printer.html:54 gecoscc/templates/bb-printer.html:60
-#: gecoscc/templates/bb-printer.html:66 gecoscc/templates/bb-printer.html:83
+#: gecoscc/templates/bb-printer.html:26 gecoscc/templates/bb-printer.html:32
+#: gecoscc/templates/bb-printer.html:40 gecoscc/templates/bb-printer.html:46
+#: gecoscc/templates/bb-printer.html:57 gecoscc/templates/bb-printer.html:63
+#: gecoscc/templates/bb-printer.html:69 gecoscc/templates/bb-printer.html:86
 #: gecoscc/templates/bb-storage.html:13 gecoscc/templates/bb-storage.html:28
 #: gecoscc/templates/bb-storage.html:34 gecoscc/templates/bb-storage.html:60
 #: gecoscc/templates/bb-storage.html:77 gecoscc/templates/bb-user.html:14
@@ -251,36 +353,24 @@ msgstr ""
 msgid "MAC"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:71 gecoscc/templates/bb-printer.html:12
+#: gecoscc/templates/bb-computer.html:71 gecoscc/templates/bb-printer.html:15
 msgid "Type"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:83 gecoscc/templates/bb-printer.html:36
+#: gecoscc/templates/bb-computer.html:83 gecoscc/templates/bb-printer.html:39
 msgid "Serial number"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:89 gecoscc/templates/bb-printer.html:42
+#: gecoscc/templates/bb-computer.html:89 gecoscc/templates/bb-printer.html:45
 msgid "Registry number"
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:97 gecoscc/templates/bb-groups-form.html:19
-#: gecoscc/templates/bb-groups-form.html:25 gecoscc/templates/bb-printer.html:151
-#: gecoscc/templates/bb-storage.html:89 gecoscc/templates/bb-user.html:53
-msgid "Loading"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:104 gecoscc/templates/bb-ou.html:29
 msgid "Extra information"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:110 gecoscc/templates/bb-groups-form.html:30
-#: gecoscc/templates/bb-ou.html:35 gecoscc/templates/bb-printer.html:204
-#: gecoscc/templates/bb-storage.html:93 gecoscc/templates/bb-user.html:57
-msgid "Cancel"
-msgstr ""
-
 #: gecoscc/templates/bb-computer.html:111 gecoscc/templates/bb-groups-form.html:31
-#: gecoscc/templates/bb-ou.html:36 gecoscc/templates/bb-printer.html:205
+#: gecoscc/templates/bb-ou.html:36 gecoscc/templates/bb-printer.html:208
 #: gecoscc/templates/bb-storage.html:94 gecoscc/templates/bb-tree-selection.html:21
 #: gecoscc/templates/bb-user.html:58
 msgid "Save"
@@ -332,10 +422,6 @@ msgstr ""
 msgid "Groups"
 msgstr ""
 
-#: gecoscc/templates/bb-groups-multi-widget.html:7
-msgid "Search"
-msgstr ""
-
 #: gecoscc/templates/bb-home.html:4
 msgid "Service and tasks status"
 msgstr ""
@@ -380,123 +466,79 @@ msgstr ""
 msgid "Testing department"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:8
+#: gecoscc/templates/bb-printer.html:11
 msgid "Inventory"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:14
-msgid "Laser"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:15
-msgid "Ink"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:16
-msgid "Dot matrix"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:22
+#: gecoscc/templates/bb-printer.html:25
 msgid "Manufacturer"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:28
+#: gecoscc/templates/bb-printer.html:31
 msgid "Model"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:59
+#: gecoscc/templates/bb-printer.html:62
 msgid "Description"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:60
+#: gecoscc/templates/bb-printer.html:63
 msgid "The one of the accounting deparment"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:65
+#: gecoscc/templates/bb-printer.html:68
 msgid "Location"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:73
+#: gecoscc/templates/bb-printer.html:76
 msgid "Connection type"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:75
-msgid "Network"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:76
-msgid "Local"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:82
+#: gecoscc/templates/bb-printer.html:85
 msgid "Printer path"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:83
+#: gecoscc/templates/bb-printer.html:86
 msgid "http://computer_name:631/ipp/port1"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:87
+#: gecoscc/templates/bb-printer.html:90
 msgid "Controller"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:92
-msgid "Automatic installation"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:95
-msgid "Manual installation"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:137
+#: gecoscc/templates/bb-printer.html:140
 msgid "It is also possible to upload a PPD file, instead of choosing a controller"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:142
+#: gecoscc/templates/bb-printer.html:145
 msgid "Clear the selected file"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:143
+#: gecoscc/templates/bb-printer.html:146
 msgid "Clear"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:157
+#: gecoscc/templates/bb-printer.html:160
 msgid "Default preferences"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:161
+#: gecoscc/templates/bb-printer.html:164
 msgid "Paper size"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:172
+#: gecoscc/templates/bb-printer.html:175
 msgid "Print quality"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:174
-msgid "Low"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:175
-msgid "Medium"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:176
-msgid "High"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:177
-msgid "Very high"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:183
+#: gecoscc/templates/bb-printer.html:186
 msgid "Paper tray"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:193
+#: gecoscc/templates/bb-printer.html:196
 msgid "Duplex mode"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:197
+#: gecoscc/templates/bb-printer.html:200
 msgid "Duplex printing"
 msgstr ""
 
