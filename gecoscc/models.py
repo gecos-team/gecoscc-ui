@@ -234,7 +234,7 @@ class Computer(Node):
     mac = colander.SchemaNode(colander.String(),
                               default='',
                               missing='')
-    family = colander.SchemaNode(colander.String(),  # FIXME it's a choices
+    family = colander.SchemaNode(colander.String(),
                                  default='desktop',
                                  validator=colander.OneOf(
                                      COMPUTER_FAMILY.keys()
@@ -254,39 +254,93 @@ class Computers(colander.SequenceSchema):
     computers = Computer()
 
 
+PRINTER_TYPE = {
+    'laser': _('Laser'),
+    'ink': _('Ink'),
+    'matrix': _('Dot matrix'),
+}
+
+PRINTER_CONN_TYPE = {
+    'network': _('Network'),
+    'local': _('Local'),
+}
+
+PRINTER_DRIVER = {
+    'auto': _('Automatic installation'),
+    'manual': _('Manual installation'),
+}
+
+PRINTER_QUALITIES = {
+    'low': _('Low'),
+    'medium': _('Medium'),
+    'high': _('High'),
+    'ultra': _('Very high'),
+}
+
+
 class Printer(Node):
-    memberof = ObjectIdList(missing=[], default=[])
-    identifier = colander.SchemaNode(colander.String(),
-                                     default='',
-                                     missing='')
+    printtype = colander.SchemaNode(colander.String(),
+                                    default='laser',
+                                    validator=colander.OneOf(
+                                        PRINTER_TYPE.keys()
+                                    ))
     brand = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
     model = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
-
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
+    name = colander.SchemaNode(colander.String(),
+                               default='',
+                               missing='')
     description = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
     location = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
-    # TODO: choice options auto, manual
-    driverinstallation = colander.SchemaNode(colander.String(),
-                                             default='auto',
-                                             missing='')
+    connection = colander.SchemaNode(colander.String(),
+                                     default='network',
+                                     validator=colander.OneOf(
+                                         PRINTER_CONN_TYPE.keys()
+                                     ))
+    printerpath = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')
+    driver = colander.SchemaNode(colander.String(),
+                                 default='auto',
+                                 validator=colander.OneOf(
+                                     PRINTER_DRIVER.keys()
+                                 ))
+    driverBrand = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')  # TODO choices?
+    driverModel = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')  # TODO choices?
+    driverFile = colander.SchemaNode(colander.String(),
+                                     default='',
+                                     missing='')  # TODO url? host the file?
+    memberof = ObjectIdList(missing=[], default=[])
+    pageSize = colander.SchemaNode(colander.String(),
+                                   default='',
+                                   missing='')  # TODO choices?
+    quality = colander.SchemaNode(colander.String(),
+                                  default='auto',
+                                  validator=colander.OneOf(
+                                      PRINTER_QUALITIES.keys()
+                                  ))
+    paperTray = colander.SchemaNode(colander.String(),
+                                    default='',
+                                    missing='')  # TODO remove this field?
     duplex = colander.SchemaNode(colander.Boolean(),
                                  default=False)
-    extra = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
 
 
 class Printers(colander.SequenceSchema):
@@ -296,8 +350,7 @@ class Printers(colander.SequenceSchema):
 STORAGE_PROTOCOLS = {
     'ftp': _('FTP'),
     'sshfs': _('SSHFS'),
-    'nfs': _('NFS v3'),
-    'nfs4': _('NFS v4'),
+    'nfs': _('NFS'),
     'smb': _('SAMBA v3'),
     'smb4': _('SAMBA v4'),
 }

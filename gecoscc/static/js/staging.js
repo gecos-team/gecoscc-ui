@@ -231,6 +231,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.inProgress = true;
             $.when.apply($, promises)
                 .done(function () {
+                    App.tree.currentView.activeNode = null;
                     App.instances.router.navigate("", { trigger: true });
                 }).always(function () {
                     that.inProgress = false;

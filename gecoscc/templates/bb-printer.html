@@ -193,7 +193,7 @@
                         <label>{{ gettext('Duplex mode') }}</label>
                         <div class="checkbox">
                             <label for="duplex">
-                                <input type="checkbox" value="" id="duplex" <% if (duplex) { print("checked"); } %>>
+                                <input type="checkbox" value="" id="duplex" <% if (duplex === "true") { print("checked"); } %>>
                                 {{ gettext('Duplex printing') }}
                             </label>
                         </div>
