@@ -16,6 +16,6 @@ class PrinterResource(TreeLeafResourcePaginated):
     objtype = 'printer'
 
     mongo_filter = {
-        'type': 'printer',
+        'type': objtype,
     }
     collection_name = 'nodes'

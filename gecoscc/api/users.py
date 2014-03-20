@@ -16,6 +16,6 @@ class UserResource(TreeLeafResourcePaginated):
     objtype = 'user'
 
     mongo_filter = {
-        'type': 'user',
+        'type': objtype,
     }
     collection_name = 'nodes'

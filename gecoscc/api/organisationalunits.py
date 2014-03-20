@@ -16,7 +16,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     objtype = 'ou'
 
     mongo_filter = {
-        'type': 'ou',
+        'type': objtype,
     }
     collection_name = 'nodes'
 

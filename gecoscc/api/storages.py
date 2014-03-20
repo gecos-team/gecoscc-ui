@@ -16,6 +16,6 @@ class StorageResource(TreeLeafResourcePaginated):
     objtype = 'storage'
 
     mongo_filter = {
-        'type': 'storage',
+        'type': objtype,
     }
     collection_name = 'nodes'

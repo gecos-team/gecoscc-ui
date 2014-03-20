@@ -16,6 +16,6 @@ class ComputerResource(TreeLeafResourcePaginated):
     objtype = 'computer'
 
     mongo_filter = {
-        'type': 'computer',
+        'type': objtype,
     }
     collection_name = 'nodes'

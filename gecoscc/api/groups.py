@@ -36,8 +36,9 @@ class GroupResource(TreeLeafResourcePaginated):
     objtype = 'group'
 
     mongo_filter = {
-        'type': 'group',
+        'type': objtype,
     }
+    collection_name = 'nodes'
 
     def get_objects_filter(self):
         filters = super(GroupResource, self).get_objects_filter()
@@ -45,7 +46,7 @@ class GroupResource(TreeLeafResourcePaginated):
         if 'oids' in self.request.GET:
             oid_filters = groups_oids_filter(self.request.GET)
             if oid_filters:
-                filters =+ (oid_filters)
+                filters = + (oid_filters)
 
         return filters
 
@@ -84,14 +85,11 @@ class GroupResource(TreeLeafResourcePaginated):
         merge_lists(self.collection, obj, old_obj, 'memberof', 'nodemembers')
 
     def modify_node_relations(self, obj, old_obj):
-
         if old_obj is None:
             return
         merge_lists(self.collection, obj, old_obj, 'nodemembers', 'memberof')
 
-
     def pre_save(self, obj, old_obj):
-
         if make_cycles(self.collection, obj, old_obj):
             raise HTTPBadRequest('This groups combination can create cycles')
 

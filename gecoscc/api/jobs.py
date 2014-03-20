@@ -17,7 +17,7 @@ class JobResource(ResourcePaginatedReadOnly):
 
     mongo_filter = {}
 
-    collection_name = 'jobs'
+    collection_name = objtype
 
     def get_oid_filter(self, oid):
         return {self.key: oid}
