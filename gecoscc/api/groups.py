@@ -45,7 +45,7 @@ class GroupResource(TreeLeafResourcePaginated):
         if 'oids' in self.request.GET:
             oid_filters = groups_oids_filter(self.request.GET)
             if oid_filters:
-                filters =+ (oid_filters)
+                filters += (oid_filters)
 
         return filters
 
@@ -89,8 +89,7 @@ class GroupResource(TreeLeafResourcePaginated):
             return
         merge_lists(self.collection, obj, old_obj, 'nodemembers', 'memberof')
 
-
-    def pre_save(self, obj, old_obj):
+    def pre_save(self, obj, old_obj=None):
 
         if make_cycles(self.collection, obj, old_obj):
             raise HTTPBadRequest('This groups combination can create cycles')
