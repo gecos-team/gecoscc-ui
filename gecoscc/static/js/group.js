@@ -27,6 +27,9 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         resourceType: "group",
 
         defaults: {
+            type: "group",
+            lock: false,
+            source: "gecos",
             name: "",
             members: [],
             memberof: []

@@ -288,7 +288,7 @@
     constructors.storage = function (path) {
         var ip = random_int(256) + '.' + random_int(256) + '.' +
                 random_int(256) + '.' + random_int(256),
-            protocols = ['ftp', 'ssh', 'nfs', 'smb', 'smb4'],
+            protocols = ['ftp', 'sshfs', 'nfs', 'smb', 'smb4'],
             oid;
 
         oid = constructors.default(path, 'storage', {

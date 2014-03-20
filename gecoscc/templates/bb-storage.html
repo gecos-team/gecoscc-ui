@@ -47,7 +47,7 @@
                         <label for="protocol">{{ gettext('Connection protocol') }}</label>
                         <select id="protocol" class="form-control">
                             <option value="ftp" <% if (protocol === 'ftp') { print('selected'); } %>>FTP</option>
-                            <option value="ssh" <% if (protocol === 'ssh') { print('selected'); } %>>SSHFS</option>
+                            <option value="sshfs" <% if (protocol === 'sshfs') { print('selected'); } %>>SSHFS</option>
                             <option value="nfs" <% if (protocol === 'nfs') { print('selected'); } %>>NFS</option>
                             <option value="smb" <% if (protocol === 'smb') { print('selected'); } %>>SAMBA v3</option>
                             <option value="smb4" <% if (protocol === 'smb4') { print('selected'); } %>>SAMBA v4</option>
