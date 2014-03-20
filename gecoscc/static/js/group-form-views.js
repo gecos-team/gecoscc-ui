@@ -123,8 +123,17 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         save: function (evt) {
             evt.preventDefault();
+            var that = this,
+                memberof;
+
+            memberof = function () {
+                var parent = that.memberof.currentView.getChecked();
+                parent = _.isNull(parent) ? [] : [parent];
+                return parent;
+            };
+
             this.helperView.saveModel($(evt.target), {
-                memberof: _.bind(this.memberof.currentView.getChecked, this),
+                memberof: memberof,
                 name: "#name"
             });
         }
