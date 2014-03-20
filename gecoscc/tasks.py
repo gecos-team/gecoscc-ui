@@ -25,33 +25,37 @@ class ChefTask(Task):
             self.jid = unicode(ObjectId())
 
     def get_related_computers_of_computer(self, obj, related_computers, related_objects):
+        if related_objects is not None:
+            if not obj in related_objects:
+                related_objects.append(obj)
+            else:
+                return related_computers
         related_computers.append(obj)
-        if related_objects is not None and not obj in related_objects:
-            related_objects.append(obj)
         return related_computers
 
     def get_related_computers_of_group(self, obj, related_computers, related_objects):
-        if obj in related_objects:
-            return related_objects
-        else:
+        if not obj in related_objects:
             related_objects.append(obj)
+        else:
+            return related_computers
         for node_id in obj['members']:
             node = self.db.nodes.find_one({'_id': node_id})
-            self.get_related_computers(node, related_computers, related_objects)
+            if not node in related_objects:
+                self.get_related_computers(node, related_computers, related_objects)
         return related_computers
 
     def get_related_computers_of_ou(self, ou, related_computers, related_objects):
         if related_objects is not None:
-            if ou not in related_objects:
+            if not ou in related_objects:
                 related_objects.append(ou)
             else:
                 return related_computers
         computers = self.db.nodes.find({'path': {'$regex': '.*,%s.*' % ou['_id']},
                                         'type': 'computer'})
         for computer in computers:
-            related_computers.append(computer)
-            if related_objects is not None:
-                related_objects.append(computer)
+            self.get_related_computers_of_computer(computer,
+                                                   related_computers,
+                                                   related_objects)
         return related_computers
 
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
