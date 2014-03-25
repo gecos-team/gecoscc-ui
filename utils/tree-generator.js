@@ -29,7 +29,8 @@
         MAX_GROUPS = 150,
         MAX_NODES_PER_GROUP = 15,
         MAX_GROUPS_PER_NODE = 8,
-        TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage'],
+        TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage',
+                 'repository'],
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.4,
         counters = {
@@ -38,7 +39,8 @@
             group: 0,
             computer: 0,
             printer: 0,
-            storage: 0
+            storage: 0,
+            repository: 0
         },
         potential_group_members = [],
         existing_groups = [],
@@ -301,6 +303,18 @@
             memberof: []
         });
         potential_group_members.push(oid);
+        return oid;
+    };
+
+    constructors.repository = function (path) {
+        var urls = ['http://packages.linuxmint.com/pool/main/',
+                    'http://packages.linuxmint.com/pool/upstream/',
+                    'http://packages.linuxmint.com/pool/import/'],
+            oid;
+
+        oid = constructors.default(path, 'repository', {
+            url: choice(urls)
+        });
         return oid;
     };
 
