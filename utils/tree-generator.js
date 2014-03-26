@@ -283,7 +283,6 @@
             duplex: choice([true, false]),
             memberof: []
         });
-        potential_group_members.push(oid);
         return oid;
     };
 
@@ -302,7 +301,6 @@
             extraops: '',
             memberof: []
         });
-        potential_group_members.push(oid);
         return oid;
     };
 
