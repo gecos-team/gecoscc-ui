@@ -1,0 +1,23 @@
+<table class="table table-striped table-bordered mb10" id="policies-table">
+    <thead>
+        <tr>
+            <th>{{ gettext('Name') }}</th>
+            <th>{{ gettext('Actions') }}</th>
+        </tr>
+    </thead>
+
+<% _.each(items, function (policy, idx) { %>
+    <tr id="<%= policy.id %>" class="
+        <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
+    ">
+        <td><%= policy.name %></td>
+        <td>
+            <button class="btn btn-danger btn-xs">
+                <span class="fa fa-times"></span> {{ gettext('Delete') }}
+            </button>
+            <button class="btn btn-default btn-xs">
+                <span class="fa fa-edit"></span> {{ gettext('Edit') }}
+            </button>
+        </td>
+    </tr>
+<% }); %>

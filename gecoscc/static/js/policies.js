@@ -22,6 +22,32 @@
 
 App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
+
+    Models.PolicyModel = Backbone.Model.extend({
+        defaults: {
+            name: "",
+            schema: {},
+            values: {}
+        },
+
+        url: function () {
+            var url = "/api/policies/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
+        },
+
+        parse: function (response) {
+            var result = _.clone(response);
+            result.id = response._id;
+            return result;
+        }
+    });
+
+    Models.PolicyCollection = Backbone.Collection.extend({
+        model: Models.PolicyModel
+    });
 });
 
 App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {

@@ -42,12 +42,6 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             return result;
         }
     });
-
-    Models.PolicyModel = Backbone.Model.extend({});
-
-    Models.PolicyCollection = Backbone.Collection.extend({
-        model: Models.PolicyModel
-    });
 });
 
 App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
