@@ -28,6 +28,8 @@ requires = [
     'gevent-websocket==0.3.6',
     'WebHelpers==1.3',
     'Paste==1.7.5.1',
+    'PyChef==0.2.3',
+    'jsonschema==2.3.0'
 ]
 
 setup(name='gecoscc',

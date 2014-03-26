@@ -1,4 +1,5 @@
 from bson import ObjectId
+from chef import autoconfigure, Node, ChefAPI
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -76,14 +77,49 @@ class ChefTask(Task):
             raise NotImplementedError
         return self.get_related_computers_of_ou(ou, related_computers, related_objects)
 
+    def get_related_name_of_cookbooks(self, api, obj):
+        cookbooks = api['/cookbooks/']
+        # TODO: Now always return the gecos-network-management cookbook
+        return [cookbook for cookbook in cookbooks.keys() if 'gecos-ws-mgmt' in cookbook]
+
+    def get_related_cookbooks(self, obj):
+        api = ChefAPI(self.app.conf.get('chef.url'),
+                      self.app.conf.get('chef.pem'),
+                      self.app.conf.get('chef.username'))
+        related_cookbooks_names = self.get_related_name_of_cookbooks(api, obj)
+        related_cookbooks = []
+        for cookbook_name in related_cookbooks_names:
+            cookbook = api['/cookbooks/' + cookbook_name]
+            cookbook[cookbook_name]['versions'].sort(key=lambda s: map(int, s['version'].split('.')),
+                                                     reverse=True)
+            last_cookbook = cookbook[cookbook_name]['versions'][0]
+            cookbook_version = api['/cookbooks/%s/%s' % (cookbook_name,
+                                                         last_cookbook['version'])]
+            related_cookbooks.append(cookbook_version)
+        return related_cookbooks
+
+    def validate_data(self, obj, cookbooks):
+        for cookbook in cookbooks:
+            from jsonschema import validate, Draft3Validator, Draft4Validator
+            schema = cookbook['metadata']['attributes']['json_schema']['object']
+            data = {'gecos_network_management': {'default_recipe': {'setup_connection_resource': {'gateway': 2}}}}
+            validate(data, schema, Draft3Validator)
+            [x for x in Draft3Validator(schema).iter_errors(data)]
+            [x for x in Draft4Validator(schema).iter_errors(data)]
+
+    def objects_action(self, obj):
+        computers = self.get_related_computers(obj)
+        cookbooks = self.get_related_cookbooks(obj)
+        self.validate_data(obj, cookbooks)
+
     def object_created(self, objnew):
-        computers = self.get_related_computers(objnew)
+        self.objects_action(objnew)
 
     def object_changed(self, objnew, objold):
-        computers = self.get_related_computers(objnew)
+        self.objects_action(objnew)
 
     def object_deleted(self, obj):
-        computers = self.get_related_computers(obj)
+        self.objects_action(obj)
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
