@@ -2,6 +2,7 @@
     <ul class="nav nav-tabs">
         <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
         <li><a href="#ohai" data-toggle="tab">{{ gettext('Computer specifications') }}</a></li>
+        <li><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
     </ul>
 
     <div class="tab-content" id="computers">
@@ -9,7 +10,7 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Computer') }}</div>
-                    <button class="btn btn-default btn-xs pull-right refresh">
+                    <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
                         <span class="fa fa-refresh"></span>
                     </button>
                 </div>
@@ -305,6 +306,11 @@
                     </div></div>
                 </div>
             </div>
+        </div>
+
+        <div class="tab-pane fade in" id="policies">
+            <p>Here be policies</p>
+            <!-- TODO -->
         </div>
     </div>
 </div>

@@ -46,7 +46,7 @@ class GroupResource(TreeLeafResourcePaginated):
         if 'oids' in self.request.GET:
             oid_filters = groups_oids_filter(self.request.GET)
             if oid_filters:
-                filters = + (oid_filters)
+                filters += (oid_filters)
 
         return filters
 

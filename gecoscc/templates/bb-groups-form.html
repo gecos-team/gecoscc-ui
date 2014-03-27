@@ -1,38 +1,53 @@
-<div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
-    <div class="panel-heading">
-        <div class="text-muted bootstrap-admin-box-title">{{ gettext('Group') }}</div>
-        <button class="btn btn-default btn-xs pull-right refresh">
-            <span class="fa fa-refresh"></span>
-        </button>
-    </div>
-    <div class="bootstrap-admin-panel-content dashboard">
-        <form role="form">
-            <div class="row">
-                <div class="col-sm-6 col-xs-12">
-                    <div class="form-group">
-                        <label for="name">{{ gettext('Name') }}</label>
-                        <input type="text" class="form-control" id="name" placeholder="{{ gettext('e.g.') }} {{ gettext('Administrators') }}" required value="<%= name %>">
-                    </div>
-                    <label>Pertenece a</label>
-                    <div id="memberof">
-                        <p style="font-size: 1.5em;">
-                            <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
-                        </p>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xs-12" id="members">
-                    <p style="font-size: 1.5em;">
-                        <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
-                    </p>
-                </div>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
+    <li><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade in active" id="info">
+        <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
+            <div class="panel-heading">
+                <div class="text-muted bootstrap-admin-box-title">{{ gettext('Group') }}</div>
+                <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
+                    <span class="fa fa-refresh"></span>
+                </button>
             </div>
-            <div class="row"><div class="col-sm-12">
-                <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
-                <button class="btn btn-primary" type="submit" id="save">{{ gettext('Save') }}</button>
-                <% if (typeof id !== "undefined") { %>
-                    <button class="btn btn-danger pull-right" id="delete">{{ gettext('Delete') }}</button>
-                <% } %>
-            </div></div>
-        </form>
+            <div class="bootstrap-admin-panel-content dashboard">
+                <form role="form">
+                    <div class="row">
+                        <div class="col-sm-6 col-xs-12">
+                            <div class="form-group">
+                                <label for="name">{{ gettext('Name') }}</label>
+                                <input type="text" class="form-control" id="name" placeholder="{{ gettext('e.g.') }} {{ gettext('Administrators') }}" required value="<%= name %>">
+                            </div>
+                            <label>Pertenece a</label>
+                            <div id="memberof">
+                                <p style="font-size: 1.5em;">
+                                    <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-xs-12" id="members">
+                            <p style="font-size: 1.5em;">
+                                <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
+                            </p>
+                        </div>
+                    </div>
+                    <div class="row"><div class="col-sm-12">
+                        <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
+                        <button class="btn btn-primary" type="submit" id="save">{{ gettext('Save') }}</button>
+                        <% if (typeof id !== "undefined") { %>
+                            <button class="btn btn-danger pull-right" id="delete">{{ gettext('Delete') }}</button>
+                        <% } %>
+                    </div></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade in" id="policies">
+        <p>Here be policies</p>
+        <!-- TODO -->
     </div>
 </div>

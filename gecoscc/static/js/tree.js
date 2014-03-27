@@ -141,8 +141,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var that = this;
             return $.ajax(this.getUrl({ path: "root" }), {
                 success: function (response) {
-                    var aux = that.parseNodesJSON(response.nodes);
-                    aux[0].children[0].model.closed = false;
+                    var aux = that.parseNodesJSON(response.nodes),
+                        root = aux[0];
+                    if (root.children.length > 0) {
+                        root.children[0].model.closed = false;
+                    }
                     $.when.apply(that, aux[1]).done(function () {
                         that.set("tree", aux[0]);
                         if (callback) { callback(); }
@@ -163,7 +166,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         parseNodesJSON: function (data) {
-            var nodes, rootId, tree, promises, that;
+            var nodes, rootId, rootPath, tree, promises, that;
 
             // Prepare the nodes to be part of the tree
             nodes = _.map(data, function (n) {
@@ -180,10 +183,16 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             });
 
             // Create the tree, with only an auxiliary root node
-            rootId = _.last(nodes[0].path);
+            try {
+                rootId = _.last(nodes[0].path);
+                rootPath = _.initial(nodes[0].path).join(',');
+            } catch (error) {
+                rootId = "root";
+                rootPath = "";
+            }
             tree = this.parser.parse({
                 id: rootId,
-                path: _.initial(nodes[0].path).join(','),
+                path: rootPath,
                 type: "AUXILIARY",
                 name: "AUXILIARY",
                 children: [],
@@ -277,6 +286,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         loadFromPath: function (path, childToShow, silent) {
             var that, nodes, promises, unknownIds;
+
+            if (path === "root") { return [this.reloadTree()]; }
 
             that = this;
             path = this.parsePath(path);

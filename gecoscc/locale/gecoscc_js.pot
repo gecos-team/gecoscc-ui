@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-18 11:09+0100\n"
+"POT-Creation-Date: 2014-03-20 13:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,78 +17,78 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:194
+#: gecoscc/static/js/app-utils.js:187
 msgid "Staging"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:198
+#: gecoscc/static/js/app-utils.js:191
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:198 gecoscc/static/js/tree-views-renderer.js:72
+#: gecoscc/static/js/app-utils.js:191 gecoscc/static/js/tree-views-renderer.js:72
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:199
+#: gecoscc/static/js/app-utils.js:192
 msgid "Done"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:208
+#: gecoscc/static/js/app-utils.js:201
 msgid "Something went wrong, please try again in a few moments."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:209
+#: gecoscc/static/js/app-utils.js:202
 #, python-format
 msgid "Resource ID: %s"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:213
+#: gecoscc/static/js/app-utils.js:206
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:227
+#: gecoscc/static/js/app-utils.js:220
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:228
+#: gecoscc/static/js/app-utils.js:221
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:258
+#: gecoscc/static/js/app-utils.js:251
 #, python-format
 msgid "Saving the %s failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:288
+#: gecoscc/static/js/app-utils.js:281
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr ""
 
-#: gecoscc/static/js/app.js:108
+#: gecoscc/static/js/app.js:130
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:116
+#: gecoscc/static/js/app.js:138
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:117
+#: gecoscc/static/js/app.js:139
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:118
+#: gecoscc/static/js/app.js:140
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:119
+#: gecoscc/static/js/app.js:141
 msgid "Computer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:120
+#: gecoscc/static/js/app.js:142
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:121
+#: gecoscc/static/js/app.js:143
 msgid "Remote Storage"
 msgstr ""
 
@@ -123,7 +123,11 @@ msgstr ""
 msgid "Add new root OU"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:462
+#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:480
 msgid "Loading"
+msgstr ""
+
+#: gecoscc/static/js/tree-views.js:204
+msgid "Deleting an OU is a permanent action. It will also delete all its children."
 msgstr ""
 

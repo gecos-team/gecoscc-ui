@@ -1,7 +1,7 @@
-/*jslint browser: true, nomen: true, unparam: true */
+/*jslint browser: true, nomen: true, unparam: true, vars: false */
 /*global App */
 
-// Copyright 2013 Junta de Andalucia
+// Copyright 2014 Junta de Andalucia
 //
 // Licensed under the EUPL, Version 1.1 or - as soon they
 // will be approved by the European Commission - subsequent
@@ -20,35 +20,36 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
+App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.OUModel = App.GecosResourceModel.extend({
-        resourceType: "ou",
+    Models.RepositoryModel = App.GecosResourceModel.extend({
+        resourceType: "repository",
 
         defaults: {
-            type: "ou",
-            source: "gecos",
+            type: "repository",
             lock: false,
-            policies: [],
-            extra: "",
-            policiesCollection: null
+            source: "gecos",
+            name: "",
+            url: "",
+            description: ""
         },
 
-        parse: function (response) {
-            var result = _.clone(response);
-            result.policiesCollection = new Models.PolicyCollection(response.policies);
-            result.id = response._id;
-            return result;
+        url: function () {
+            var url = "/api/repositories/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
         }
     });
 });
 
-App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
+App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.OUForm = App.GecosFormItemView.extend({
-        template: "#ou-template",
+    Views.RepositoryForm = App.GecosFormItemView.extend({
+        template: "#repository-template",
         tagName: "div",
         className: "col-sm-12",
 
@@ -61,9 +62,11 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
+
             this.saveModel($(evt.target), {
                 name: "#name",
-                extra: "#extra"
+                url: "#url",
+                description: "#description"
             });
         }
     });

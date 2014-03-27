@@ -387,6 +387,17 @@ class Storages(colander.SequenceSchema):
     storages = Storage()
 
 
+class Repository(Node):
+    url = colander.SchemaNode(colander.String())
+    description = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')
+
+
+class Repositories(colander.SequenceSchema):
+    repositories = Repository()
+
+
 JOB_STATUS = {
     # Calculating node changes
     'processing': _('Processing'),

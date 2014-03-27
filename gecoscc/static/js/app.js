@@ -140,7 +140,8 @@ var App;
                 group: gettext("Group"),
                 computer: gettext("Computer"),
                 printer: gettext("Printer"),
-                storage: gettext("Remote Storage")
+                storage: gettext("Remote Storage"),
+                repository: gettext("Software Repository")
             },
 
             _typeClasses: function (type) {
@@ -152,7 +153,8 @@ var App;
                     group: [App.Group.Models.GroupModel, App.Group.Views.GroupForm],
                     computer: [App.Computer.Models.ComputerModel, App.Computer.Views.ComputerForm],
                     printer: [App.Printer.Models.PrinterModel, App.Printer.Views.PrinterForm],
-                    storage: [App.Storage.Models.StorageModel, App.Storage.Views.StorageForm]
+                    storage: [App.Storage.Models.StorageModel, App.Storage.Views.StorageForm],
+                    repository: [App.Repository.Models.RepositoryModel, App.Repository.Views.RepositoryForm]
                 }[type];
             },
 

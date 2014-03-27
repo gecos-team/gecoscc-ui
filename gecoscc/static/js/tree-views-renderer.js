@@ -80,7 +80,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         computer: "desktop",
         printer: "print",
         group: "link",
-        storage: "hdd-o"
+        storage: "hdd-o",
+        repository: "archive"
     };
 
     Views.Renderer = function (options) {
