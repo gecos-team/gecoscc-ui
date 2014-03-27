@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-03-27 13:52+0100\n"
+"POT-Creation-Date: 2014-03-27 14:01+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -301,7 +301,7 @@ msgid "Policies"
 msgstr "Políticas"
 
 #: gecoscc/templates/bb-computer.html:12
-#: gecoscc/templates/bb-new-element.html:31
+#: gecoscc/templates/bb-new-element.html:23
 msgid "Computer"
 msgstr "Puesto de trabajo"
 
@@ -429,7 +429,7 @@ msgid "Policies list"
 msgstr "Lista de políticas"
 
 #: gecoscc/templates/bb-groups-form.html:11
-#: gecoscc/templates/bb-new-element.html:25
+#: gecoscc/templates/bb-new-element.html:31
 msgid "Group"
 msgstr "Grupo"
 
@@ -482,6 +482,14 @@ msgstr "Unidad organizativa"
 #: gecoscc/templates/bb-new-element.html:37 gecoscc/templates/bb-printer.html:3
 msgid "Printer"
 msgstr "Impresora"
+
+#: gecoscc/templates/bb-new-element.html:43
+msgid "Remote storage"
+msgstr "Almacenamiento remoto"
+
+#: gecoscc/templates/bb-new-element.html:49
+msgid "Software repository"
+msgstr "Repositorio de software"
 
 #: gecoscc/templates/bb-ou.html:22
 msgid "Testing department"

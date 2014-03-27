@@ -5,36 +5,48 @@
         </div>
         <div class="bootstrap-admin-panel-content" id="new-element-view">
             <div class="row bootstrap-admin-light-padding-bottom">
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-12 col-sm-4">
                     <a id="new-user" href="#ou/<%= ouID %>/user" class="thumbnail">
                         <span class="fa fa-user"></span>
                         <p>{{ gettext('User') }}</p>
                     </a>
                 </div>
-                <div class="col-xs-12 col-sm-6">
+                <div class="col-xs-12 col-sm-4">
                     <a id="new-ou" href="#ou/<%= ouID %>/ou" class="thumbnail">
                         <span class="fa fa-group"></span>
                         <p>{{ gettext('Organisational Unit') }}</p>
                     </a>
                 </div>
-            </div>
-            <div class="row bootstrap-admin-light-padding-bottom">
                 <div class="col-xs-12 col-sm-4">
-                    <a id="new-group" href="#ou/<%= ouID %>/group" class="thumbnail">
-                        <span class="fa fa-link"></span>
-                        <p>{{ gettext('Group') }}</p>
-                    </a>
-                </div>
-                <div id="new-computer" class="col-xs-12 col-sm-4">
                     <a id="new-computer" href="#ou/<%= ouID %>/computer" class="thumbnail">
                         <span class="fa fa-desktop"></span>
                         <p>{{ gettext('Computer') }}</p>
                     </a>
                 </div>
-                <div id="new-printer" class="col-xs-12 col-sm-4">
+            </div>
+            <div class="row bootstrap-admin-light-padding-bottom">
+                <div class="col-xs-12 col-sm-3">
+                    <a id="new-group" href="#ou/<%= ouID %>/group" class="thumbnail">
+                        <span class="fa fa-link"></span>
+                        <p>{{ gettext('Group') }}</p>
+                    </a>
+                </div>
+                <div class="col-xs-12 col-sm-3">
                     <a id="new-printer" href="#ou/<%= ouID %>/printer" class="thumbnail">
                         <span class="fa fa-print"></span>
                         <p>{{ gettext('Printer') }}</p>
+                    </a>
+                </div>
+                <div class="col-xs-12 col-sm-3">
+                    <a id="new-storage" href="#ou/<%= ouID %>/storage" class="thumbnail">
+                        <span class="fa fa-hdd-o"></span>
+                        <p>{{ gettext('Remote storage') }}</p>
+                    </a>
+                </div>
+                <div class="col-xs-12 col-sm-3">
+                    <a id="new-repository" href="#ou/<%= ouID %>/repository" class="thumbnail">
+                        <span class="fa fa-archive"></span>
+                        <p>{{ gettext('Software repository') }}</p>
                     </a>
                 </div>
             </div>

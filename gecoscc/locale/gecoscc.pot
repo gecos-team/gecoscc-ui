@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.3\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-27 13:52+0100\n"
+"POT-Creation-Date: 2014-03-27 14:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -296,7 +296,7 @@ msgstr ""
 msgid "Policies"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-new-element.html:31
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-new-element.html:23
 msgid "Computer"
 msgstr ""
 
@@ -418,7 +418,7 @@ msgid "Policies list"
 msgstr ""
 
 #: gecoscc/templates/bb-groups-form.html:11
-#: gecoscc/templates/bb-new-element.html:25
+#: gecoscc/templates/bb-new-element.html:31
 msgid "Group"
 msgstr ""
 
@@ -470,6 +470,14 @@ msgstr ""
 
 #: gecoscc/templates/bb-new-element.html:37 gecoscc/templates/bb-printer.html:3
 msgid "Printer"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:43
+msgid "Remote storage"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:49
+msgid "Software repository"
 msgstr ""
 
 #: gecoscc/templates/bb-ou.html:22
