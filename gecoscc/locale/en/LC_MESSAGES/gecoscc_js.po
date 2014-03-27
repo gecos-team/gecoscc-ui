@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-03-20 13:20+0100\n"
+"POT-Creation-Date: 2014-03-27 13:52+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -93,6 +93,10 @@ msgstr ""
 msgid "Remote Storage"
 msgstr ""
 
+#: gecoscc/static/js/app.js:144
+msgid "Software Repository"
+msgstr ""
+
 #: gecoscc/static/js/breadcrumb.js:30
 msgid "Home"
 msgstr ""
@@ -124,7 +128,7 @@ msgstr ""
 msgid "Add new root OU"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:103 gecoscc/static/js/tree.js:480
+#: gecoscc/static/js/tree-views-renderer.js:104 gecoscc/static/js/tree.js:480
 msgid "Loading"
 msgstr ""
 

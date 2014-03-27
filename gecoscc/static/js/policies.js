@@ -139,8 +139,6 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
     Views.PoliciesList = Marionette.ItemView.extend({
         template: "#policies-list-template",
-        tagName: "div",
-        className: "col-sm-12",
 
         resource: null,
 

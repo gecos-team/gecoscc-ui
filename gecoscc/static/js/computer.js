@@ -56,7 +56,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         ui: {
             groups: "div#groups-widget",
-            policies: "div#policies div.row"
+            policies: "div#policies div.bootstrap-admin-panel-content"
         },
 
         events: {
