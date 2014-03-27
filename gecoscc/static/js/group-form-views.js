@@ -47,6 +47,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             members: "#members"
         },
 
+        ui: {
+            policies: "div#policies div.bootstrap-admin-panel-content"
+        },
+
         events: {
             "click button#delete": "deleteModel",
             "click button#save": "save",
@@ -54,6 +58,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         helperView: undefined,
+        policiesList: undefined,
 
         initialize: function (options) {
             this.helperView = new App.GecosFormItemView({
@@ -89,6 +94,17 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        renderPolicies: function () {
+            if (_.isUndefined(this.policiesList)) {
+                this.policiesList = new App.Policies.Views.PoliciesList({
+                    el: this.ui.policies[0],
+                    collection: this.model.get("policyCollection"),
+                    resource: this.model
+                });
+            }
+            this.policiesList.render();
+        },
+
         onRender: function () {
             var that = this,
                 memberof = this.model.get("memberof"),
@@ -115,6 +131,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.renderMembers("members", Views.Members);
+            this.renderPolicies();
         },
 
         deleteModel: function (evt) {

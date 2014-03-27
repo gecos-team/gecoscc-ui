@@ -78,7 +78,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (_.isUndefined(this.policiesList)) {
                 this.policiesList = new App.Policies.Views.PoliciesList({
                     el: this.ui.policies[0],
-                    collection: this.model.get("policyCollection")
+                    collection: this.model.get("policyCollection"),
+                    resource: this.model
                 });
             }
             this.policiesList.render();

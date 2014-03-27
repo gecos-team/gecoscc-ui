@@ -23,7 +23,7 @@
 App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.UserModel = App.GecosResourceModel.extend({
+    Models.UserModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "user",
 
         defaults: {
@@ -35,7 +35,8 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
             name: "",
             address: "",
             phone: "",
-            email: ""
+            email: "",
+            policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
 });
@@ -52,7 +53,8 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         ui: {
             passwd1: "input#passwd1",
-            passwd2: "input#passwd2"
+            passwd2: "input#passwd2",
+            policies: "div#policies div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -63,12 +65,25 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             "keyup input:password": "checkPasswords"
         },
 
+        policiesList: undefined,
+
         onRender: function () {
-            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                el: this.$el.find("div#groups-widget")[0],
-                checked: this.model.get("memberof")
-            });
+            if (_.isUndefined(this.groupsWidget)) {
+                this.groupsWidget = new App.Group.Views.MultiGroupWidget({
+                    el: this.$el.find("div#groups-widget")[0],
+                    checked: this.model.get("memberof")
+                });
+            }
             this.groupsWidget.render();
+
+            if (_.isUndefined(this.policiesList)) {
+                this.policiesList = new App.Policies.Views.PoliciesList({
+                    el: this.ui.policies[0],
+                    collection: this.model.get("policyCollection"),
+                    resource: this.model
+                });
+            }
+            this.policiesList.render();
         },
 
         customValidate: function () {
