@@ -150,7 +150,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button.btn-danger": "remove",
-            "click button.btn-default": "edit"
+            "click button.btn-default": "edit",
+            "click button.btn-primary": "add"
         },
 
         remove: function (evt) {
@@ -161,6 +162,17 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         edit: function (evt) {
             evt.preventDefault();
             // TODO
+        },
+
+        add: function (evt) {
+            evt.preventDefault();
+            // TODO
         }
+    });
+
+    Views.AllPoliciesModal = Marionette.ItemView.extend({
+        template: "#policies-modal-template",
+
+        events: {}
     });
 });
