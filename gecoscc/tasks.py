@@ -90,10 +90,6 @@ class ChefTask(Task):
         return api['/cookbooks/%s/%s' % (cookbook_name,
                                          last_cookbook['version'])]
 
-        #1. JSON schema de cada uno de los cookbooks
-        #2. Validar los datos contra ese JSON schema
-        #3. Modifico los atributos de cada nodo
-
     RULES = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_address': 'ip'}},
              'ou': {'save': {}},
              'group': {'save': {}},
@@ -108,52 +104,43 @@ class ChefTask(Task):
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def get_data_from_rules(self, rule_type, obj, objold=None):
+    def update_node_from_rules(self, rule_type, obj, node=None):
         fields = self.RULES[obj['type']][rule_type]
-        data = {}
         for field_chef, field_ui in fields.items():
-            if objold and obj.get(field_ui, None) == objold.get(field_ui, None):
+            if node and obj.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
-            field_chef_path = field_chef.split('.')
-            item = data
-            for i in range(0, len(field_chef_path)):
-                if i == len(field_chef_path) - 1:
-                    item[field_chef_path[i]] = obj[field_ui]
-                else:
-                    if not field_chef_path[i] in item:
-                        item[field_chef_path[i]] = {field_chef_path[i + 1]: {}}
-                    item = item[field_chef_path[i]]
-        return data
+            node.attributes.set_dotted(field_chef, obj[field_ui])
+            node.save()
+        return node
 
-    def get_data(self, obj, objold, action):
+    def update_node(self, obj, objold, node, action):
         if action == 'deleted':
             return None
         elif action == 'changed':
             if self.is_adding_policy(obj, objold):
-                return self.get_data_from_rules('policy', obj, objold)
+                return self.update_node_from_rules('policy', obj, node)
             else:
-                return self.get_data_from_rules('save', obj, objold)
+                return self.update_node_from_rules('save', obj, node)
             return ''
         elif action == 'created':
-            return self.get_data_from_rules('save', obj)
+            return self.update_node_from_rules('save', obj, node)
         raise NotImplementedError
 
-    def validate_data(self, data, cookbook):
+    def validate_data(self, node, cookbook):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
-        validate(data, schema)
+        validate(node, schema)
 
     def resource_action(self, obj, objold=None, action=None):
         api = ChefAPI(self.app.conf.get('chef.url'),
                       self.app.conf.get('chef.pem'),
                       self.app.conf.get('chef.username'))
         cookbook = self.get_related_cookbook(api)
-        data = self.get_data(obj, objold, action)
-        self.validate_data(data, cookbook)
         computers = self.get_related_computers(obj)
         for computer in computers:
             hardcode_computer_name = 'gecos-workstation-1'
             node = Node(hardcode_computer_name, api)
-            #node = Node(computer['name'], api)
+            node = self.update_node(obj, objold, node, action)
+            self.validate_data(node, cookbook)
 
     def object_action(self, obj, objold=None, action=None):
         if obj['type'] in RESOURCES_EMITTERS_TYPES:

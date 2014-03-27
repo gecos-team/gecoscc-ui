@@ -244,7 +244,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         obj = self.post_save(obj, old_obj=old_obj)
 
-        self.notify_changed(old_obj, obj)
+        self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
         return obj
 
