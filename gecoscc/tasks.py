@@ -1,9 +1,13 @@
 from bson import ObjectId
-from chef import autoconfigure, Node, ChefAPI
+from chef import Node, ChefAPI
+from jsonschema import validate
 
 from celery.task import Task, task
 from celery.signals import task_prerun
 from celery.exceptions import Ignore
+
+RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
+RESOURCES_EMITTERS_TYPES = ('printer', 'storage')
 
 
 class ChefTask(Task):
@@ -77,49 +81,96 @@ class ChefTask(Task):
             raise NotImplementedError
         return self.get_related_computers_of_ou(ou, related_computers, related_objects)
 
-    def get_related_name_of_cookbooks(self, api, obj):
-        cookbooks = api['/cookbooks/']
-        # TODO: Now always return the gecos-network-management cookbook
-        return [cookbook for cookbook in cookbooks.keys() if 'gecos-ws-mgmt' in cookbook]
+    def get_related_cookbook(self, api):
+        cookbook_name = self.app.conf.get('chef.cookbook_name')
+        cookbook = api['/cookbooks/' + cookbook_name]
+        cookbook[cookbook_name]['versions'].sort(key=lambda s: map(int, s['version'].split('.')),
+                                                 reverse=True)
+        last_cookbook = cookbook[cookbook_name]['versions'][0]
+        return api['/cookbooks/%s/%s' % (cookbook_name,
+                                         last_cookbook['version'])]
 
-    def get_related_cookbooks(self, obj):
+        #1. JSON schema de cada uno de los cookbooks
+        #2. Validar los datos contra ese JSON schema
+        #3. Modifico los atributos de cada nodo
+
+    RULES = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_address': 'ip'}},
+             'ou': {'save': {}},
+             'group': {'save': {}},
+             'user': {'save': {}},
+             'printer': {'save': {},
+                         'related': {'gecos_ws_mgmt.printer_use.network_res.ip_address': 'ip'}},
+             'storage': {'save': {}},
+             }
+
+    def is_adding_policy(self, obj, objold):
+        new_policies = obj.get('policies', None)
+        old_policies = objold.get('policies', None)
+        return new_policies != old_policies
+
+    def get_data_from_rules(self, rule_type, obj, objold=None):
+        fields = self.RULES[obj['type']][rule_type]
+        data = {}
+        for field_chef, field_ui in fields.items():
+            if objold and obj.get(field_ui, None) == objold.get(field_ui, None):
+                continue
+            field_chef_path = field_chef.split('.')
+            item = data
+            for i in range(0, len(field_chef_path)):
+                if i == len(field_chef_path) - 1:
+                    item[field_chef_path[i]] = obj[field_ui]
+                else:
+                    if not field_chef_path[i] in item:
+                        item[field_chef_path[i]] = {field_chef_path[i + 1]: {}}
+                    item = item[field_chef_path[i]]
+        return data
+
+    def get_data(self, obj, objold, action):
+        if action == 'deleted':
+            return None
+        elif action == 'changed':
+            if self.is_adding_policy(obj, objold):
+                return self.get_data_from_rules('policy', obj, objold)
+            else:
+                return self.get_data_from_rules('save', obj, objold)
+            return ''
+        elif action == 'created':
+            return self.get_data_from_rules('save', obj)
+        raise NotImplementedError
+
+    def validate_data(self, data, cookbook):
+        schema = cookbook['metadata']['attributes']['json_schema']['object']
+        validate(data, schema)
+
+    def resource_action(self, obj, objold=None, action=None):
         api = ChefAPI(self.app.conf.get('chef.url'),
                       self.app.conf.get('chef.pem'),
                       self.app.conf.get('chef.username'))
-        related_cookbooks_names = self.get_related_name_of_cookbooks(api, obj)
-        related_cookbooks = []
-        for cookbook_name in related_cookbooks_names:
-            cookbook = api['/cookbooks/' + cookbook_name]
-            cookbook[cookbook_name]['versions'].sort(key=lambda s: map(int, s['version'].split('.')),
-                                                     reverse=True)
-            last_cookbook = cookbook[cookbook_name]['versions'][0]
-            cookbook_version = api['/cookbooks/%s/%s' % (cookbook_name,
-                                                         last_cookbook['version'])]
-            related_cookbooks.append(cookbook_version)
-        return related_cookbooks
-
-    def validate_data(self, obj, cookbooks):
-        for cookbook in cookbooks:
-            from jsonschema import validate, Draft3Validator, Draft4Validator
-            schema = cookbook['metadata']['attributes']['json_schema']['object']
-            data = {'gecos_network_management': {'default_recipe': {'setup_connection_resource': {'gateway': 2}}}}
-            validate(data, schema, Draft3Validator)
-            [x for x in Draft3Validator(schema).iter_errors(data)]
-            [x for x in Draft4Validator(schema).iter_errors(data)]
-
-    def objects_action(self, obj):
+        cookbook = self.get_related_cookbook(api)
+        data = self.get_data(obj, objold, action)
+        self.validate_data(data, cookbook)
         computers = self.get_related_computers(obj)
-        cookbooks = self.get_related_cookbooks(obj)
-        self.validate_data(obj, cookbooks)
+        for computer in computers:
+            hardcode_computer_name = 'gecos-workstation-1'
+            node = Node(hardcode_computer_name, api)
+            #node = Node(computer['name'], api)
+
+    def object_action(self, obj, objold=None, action=None):
+        if obj['type'] in RESOURCES_EMITTERS_TYPES:
+            related_resources = self.search_resources(obj)
+            for related_resource in related_resources:
+                self.resource_action(obj, objold, action)
+        else:
+            return self.resource_action(obj, objold, action)
 
     def object_created(self, objnew):
-        self.objects_action(objnew)
+        self.object_action(objnew, action='created')
 
     def object_changed(self, objnew, objold):
-        self.objects_action(objnew)
+        self.object_action(objnew, objold, action='changed')
 
     def object_deleted(self, obj):
-        self.objects_action(obj)
+        self.object_action(obj, action='deleted')
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
