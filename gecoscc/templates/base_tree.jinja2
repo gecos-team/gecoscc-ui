@@ -187,6 +187,9 @@
 
     <script src="{{request.application_url}}/static/js/app.js"></script>
     <script src="{{request.application_url}}/static/js/app-utils.js"></script>
+    <!-- Policies have to loaded before the rest because some models inherit
+    from them -->
+    <script src="{{request.application_url}}/static/js/policies.js"></script>
 
     <script src="{{request.application_url}}/static/js/breadcrumb.js"></script>
     <script src="{{request.application_url}}/static/js/cache.js"></script>
@@ -195,7 +198,6 @@
     <script src="{{request.application_url}}/static/js/group-form-views.js"></script>
     <script src="{{request.application_url}}/static/js/group-multiwidget-views.js"></script>
     <script src="{{request.application_url}}/static/js/ou.js"></script>
-    <script src="{{request.application_url}}/static/js/policies.js"></script>
     <script src="{{request.application_url}}/static/js/printer.js"></script>
     <script src="{{request.application_url}}/static/js/repository.js"></script>
     <script src="{{request.application_url}}/static/js/staging.js"></script>

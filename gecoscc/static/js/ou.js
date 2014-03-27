@@ -37,7 +37,7 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         parse: function (response) {
             var result = _.clone(response);
-            result.policiesCollection = new Models.PolicyCollection(response.policies);
+            // result.policiesCollection = new Models.PolicyCollection(response.policies); FIXME
             result.id = response._id;
             return result;
         }

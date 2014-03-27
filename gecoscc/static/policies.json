@@ -1,0 +1,32 @@
+{
+    "policies": [
+        {
+            "_id": "861b1ea0-b58c-11e3-a5e2-0800200c9a66",
+            "name": "Execute a script",
+            "schema": {
+                "title": "Execute a script",
+                "type": "object",
+                "properties": {
+                    "interpreter": {
+                        "description": "Ej: /bin/python",
+                        "type": "string"
+                    },
+                    "scriptUrl": {
+                        "description": "Url of the script to be downloaded and executed",
+                        "type": "string"
+                    },
+                    "": {
+                        "description": "Number of tries until success",
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "required": ["interpreter", "scriptUrl"]
+            },
+            "targets": ["computer", "ou"]
+        }
+    ],
+    "pages": 1,
+    "pagesize": 10,
+    "page": 1
+}

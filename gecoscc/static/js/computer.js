@@ -23,7 +23,7 @@
 App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.ComputerModel = App.GecosResourceModel.extend({
+    Models.ComputerModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "computer",
 
         defaults: {
@@ -37,7 +37,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             family: "laptop",
             serial: "",
             registry: "",
-            extra: ""
+            extra: "",
+            policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
 });
@@ -51,6 +52,12 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         groupsWidget: undefined,
+        policiesList: undefined,
+
+        ui: {
+            groups: "div#groups-widget",
+            policies: "div#policies div.row"
+        },
 
         events: {
             "click #submit": "saveForm",
@@ -60,11 +67,21 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                el: this.$el.find("div#groups-widget")[0],
-                checked: this.model.get("memberof")
-            });
+            if (_.isUndefined(this.groupsWidget)) {
+                this.groupsWidget = new App.Group.Views.MultiGroupWidget({
+                    el: this.ui.groups[0],
+                    checked: this.model.get("memberof")
+                });
+            }
             this.groupsWidget.render();
+
+            if (_.isUndefined(this.policiesList)) {
+                this.policiesList = new App.Policies.Views.PoliciesList({
+                    el: this.ui.policies[0],
+                    collection: this.model.get("policyCollection")
+                });
+            }
+            this.policiesList.render();
 
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");

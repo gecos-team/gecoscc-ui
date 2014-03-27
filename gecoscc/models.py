@@ -137,6 +137,9 @@ class Group(Node):
     members = ObjectIdList(missing=[], default=[])
 
     memberof = ObjectIdList(missing=[], default=[])
+    policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
 
 
 class Groups(colander.SequenceSchema):
@@ -164,6 +167,9 @@ class User(Node, BaseUser):
                                   default='',
                                   missing='')
     memberof = ObjectIdList(missing=[], default=[])
+    policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
 
 
 class Users(colander.SequenceSchema):
@@ -194,18 +200,10 @@ class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
 
 
-class Policy(colander.MappingSchema):
-    _id = colander.SchemaNode(colander.String())
-    name = colander.SchemaNode(colander.String())
-    type = colander.SchemaNode(colander.String())
-
-
-class Policies(colander.SequenceSchema):
-    policies = Policy()
-
-
 class OrganisationalUnit(Node):
-    policies = Policies()
+    policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
     extra = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
@@ -248,6 +246,9 @@ class Computer(Node):
     extra = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
+    policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
 
 
 class Computers(colander.SequenceSchema):
@@ -435,16 +436,3 @@ class Job(colander.MappingSchema):
 
 class Jobs(colander.SequenceSchema):
     jobs = Job()
-
-
-class Policy(colander.MappingSchema):
-
-    name = colander.SchemaNode(colander.String())
-    screen_name = colander.SchemaNode(colander.String())
-
-    schema = colander.SchemaNode(JsonSchemaField())
-
-
-class Policies(colander.SequenceSchema):
-
-    policies = Policy()
