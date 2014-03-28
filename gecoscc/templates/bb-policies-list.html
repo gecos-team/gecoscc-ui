@@ -33,6 +33,10 @@
 <% } %>
 
     <p>
-        <button class="btn btn-primary"><span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}</button>
+        <button id="add-policy" class="btn btn-primary" disabled="disabled">
+            <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}
+        </button>
     </p>
+
+    <div id="policies-modal-viewport"></div>
 </div></div>

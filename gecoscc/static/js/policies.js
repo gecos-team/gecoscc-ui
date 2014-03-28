@@ -55,7 +55,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             if (oids.length === 0) { return; }
 
             // $.ajax("/api/policies?oids=" + oids).done(function (response) {
-            $.ajax("/static/policies.json").done(function (response) {
+            $.ajax("/static/policies.json").done(function (response) { // FIXME
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
 
@@ -141,10 +141,22 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#policies-list-template",
 
         resource: null,
+        modalAddPolicy: null,
 
         initialize: function (options) {
             if (_.has(options, "resource")) {
-                this.resource = options.resource;
+                this.resource = options.resource; // FIXME delete?
+            }
+        },
+
+        onRender: function () {
+            if (_.isNull(this.modalAddPolicy)) {
+                this.modalAddPolicy = new Views.AllPoliciesModal({
+                    el: this.$el.find("div#policies-modal-viewport")[0],
+                    $button: this.$el.find("button#add-policy")
+                });
+            } else {
+                this.modalAddPolicy.render();
             }
         },
 
@@ -166,13 +178,49 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         add: function (evt) {
             evt.preventDefault();
-            // TODO
+
+            this.modalAddPolicy.show();
         }
     });
 
     Views.AllPoliciesModal = Marionette.ItemView.extend({
         template: "#policies-modal-template",
 
-        events: {}
+        events: {
+            "click button.btn-primary": "add"
+        },
+
+        $button: undefined,
+        modal: undefined,
+
+        initialize: function (options) {
+            var that = this;
+
+            if (_.has(options, "$button")) {
+                this.$button = options.$button;
+            }
+
+            this.collection = new App.Policies.Models.PaginatedPolicyCollection();
+            this.collection.goTo(1, {
+                success: function () {
+                    that.render();
+                    that.$button.attr("disabled", false);
+                }
+            });
+        },
+
+        show: function () {
+            if (_.isUndefined(this.modal)) {
+                this.modal = this.$el.find("#add-policy-modal").modal({
+                    show: false
+                });
+            }
+            this.modal.modal("show");
+        },
+
+        add: function (evt) {
+            evt.preventDefault();
+            // TODO
+        }
     });
 });
