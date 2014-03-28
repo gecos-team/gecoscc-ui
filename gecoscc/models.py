@@ -128,6 +128,12 @@ class ObjectIdList(colander.SequenceSchema):
                                missing=[])
 
 
+class StringList(colander.SequenceSchema):
+    item = colander.SchemaNode(colander.String(),
+                               default=[],
+                               missing=[])
+
+
 class Group(Node):
 
     # Group object members
@@ -436,3 +442,16 @@ class Job(colander.MappingSchema):
 
 class Jobs(colander.SequenceSchema):
     jobs = Job()
+
+
+class Policy(colander.MappingSchema):
+    _id = colander.SchemaNode(ObjectIdField())
+    name = colander.SchemaNode(colander.String())
+    schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                 default={},
+                                 missing={})  # FIXME use JsonSchemaField instead?
+    targets = StringList(missing=[], default=[])
+
+
+class Policies(colander.SequenceSchema):
+    policies = Policy()

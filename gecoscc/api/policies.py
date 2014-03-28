@@ -1,27 +1,27 @@
-# TODO
-#from cornice.resource import resource
+from cornice.resource import resource
 #from pyramid.httpexceptions import HTTPNotFound
 
-#from gecoscc.permissions import api_login_required
+from gecoscc.permissions import api_login_required
 
-#from gecoscc.models import Policy, Policies
+from gecoscc.models import Policy, Policies
 
 #from gecoscc.policies import PoliciesManager, PolicyDoesNotExist
 
-#from . import ResourcePaginatedReadOnly
+from gecoscc.api import ResourcePaginatedReadOnly
 
 
-#@resource(collection_path='/api/policies/',
-          #path='/api/policies/{name}/',
-          #description='Policies resource',
-          #validators=(api_login_required,))
-#class PoliciesResource(ResourcePaginatedReadOnly):
+@resource(collection_path='/api/policies/',
+          path='/api/policies/{oid}/',
+          description='Policies resource',
+          validators=(api_login_required,))
+class PoliciesResource(ResourcePaginatedReadOnly):
 
-    #schema_collection = Policies
-    #schema_detail = Policy
+    schema_collection = Policies
+    schema_detail = Policy
 
-    #objtype = 'policy'
-    #collection_name = 'policies'
+    #mongo_filter = {}
+    objtype = 'policies'
+    collection_name = 'policies'
 
     #def collection_get(self):
         #page = int(self.request.GET.get('page', 0))

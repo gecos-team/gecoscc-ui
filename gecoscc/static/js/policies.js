@@ -54,8 +54,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             oids = oids.join(',');
             if (oids.length === 0) { return; }
 
-            // $.ajax("/api/policies?oids=" + oids).done(function (response) {
-            $.ajax("/static/policies.json").done(function (response) { // FIXME
+            $.ajax("/api/policies?oids=" + oids).done(function (response) {
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
 
@@ -75,12 +74,11 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         },
 
         url: function () {
-//             var url = "/api/policies/";
-//             if (this.has("id")) {
-//                 url += this.get("id") + '/';
-//             }
-//             return url;
-            return "/static/policies.json"; // FIXME mockup
+            var url = "/api/policies/";
+            if (this.has("id")) {
+                url += this.get("id") + '/';
+            }
+            return url;
         },
 
         parse: function (response) {
@@ -94,8 +92,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         model: Models.PolicyModel,
 
         url: function () {
-            // return "/api/policies/?pagesize=99999";
-            return "/static/policies.json"; // FIXME mockup
+            return "/api/policies/?pagesize=99999";
         },
 
         parse: function (response) {
@@ -109,8 +106,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         paginator_core: {
             type: "GET",
             dataType: "json",
-            // url: "/api/policies/"
-            url: "/static/policies.json" // FIXME mockup
+            url: "/api/policies/"
         },
 
         paginator_ui: {
@@ -299,6 +295,34 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.modal.modal("hide");
             this.policiesView.addPolicyToNode(policy);
+        }
+    });
+
+    Views.PolicyGenericForm = Marionette.ItemView.extend({
+        // https://github.com/garycourt/JSV    JSON Schema Validator
+        // https://github.com/neyric/inputex/tree/master    Generator for YUI
+
+        render: function () {
+            var data, template, html;
+
+            this.isClosed = false;
+
+            this.triggerMethod("before:render", this);
+            this.triggerMethod("item:before:render", this);
+
+            data = this.serializeData();
+            data = this.mixinTemplateHelpers(data);
+
+            template = this.getTemplate();
+            html = Marionette.Renderer.render(template, data);
+
+            this.$el.html(html);
+            this.bindUIElements();
+
+            this.triggerMethod("render", this);
+            this.triggerMethod("item:rendered", this);
+
+            return this;
         }
     });
 });
