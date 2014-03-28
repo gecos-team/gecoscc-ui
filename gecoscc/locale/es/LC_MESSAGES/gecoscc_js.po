@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-03-27 14:01+0100\n"
+"POT-Creation-Date: 2014-03-28 14:33+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -64,37 +64,47 @@ msgstr "El guardado de %s ha fallado."
 msgid "Couldn't delete the %s."
 msgstr "No se pudo eliminar el %s"
 
-#: gecoscc/static/js/app.js:130
+#: gecoscc/static/js/app.js:131
 msgid "New element"
 msgstr "Nuevo elemento"
 
-#: gecoscc/static/js/app.js:138
+#: gecoscc/static/js/app.js:139
 msgid "User"
 msgstr "Usuario"
 
-#: gecoscc/static/js/app.js:139
+#: gecoscc/static/js/app.js:140
 msgid "Organisational Unit"
 msgstr "Unidad organizativa"
 
-#: gecoscc/static/js/app.js:140
+#: gecoscc/static/js/app.js:141
 msgid "Group"
 msgstr "Grupo"
 
-#: gecoscc/static/js/app.js:141
+#: gecoscc/static/js/app.js:142
 msgid "Computer"
 msgstr "Puesto de trabajo"
 
-#: gecoscc/static/js/app.js:142
+#: gecoscc/static/js/app.js:143
 msgid "Printer"
 msgstr "Impresora"
 
-#: gecoscc/static/js/app.js:143
+#: gecoscc/static/js/app.js:144
 msgid "Remote Storage"
 msgstr "Almacenamiento Remoto"
 
-#: gecoscc/static/js/app.js:144
+#: gecoscc/static/js/app.js:145
 msgid "Software Repository"
 msgstr "Repositorio de Software"
+
+#: gecoscc/static/js/app.js:283
+msgid "Policies can't be directly accessed."
+msgstr "No se puede acceder a las políticas directamente."
+
+#: gecoscc/static/js/app.js:284
+msgid ""
+"You need to load the node that has the policy assigned first. Try again "
+"now."
+msgstr "Es necesario cargar primero el nodo que tiene la política asignada. Pruebe ahora de nuevo."
 
 #: gecoscc/static/js/breadcrumb.js:30
 msgid "Home"
