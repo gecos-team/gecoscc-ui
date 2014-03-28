@@ -1,10 +1,11 @@
-from bson import ObjectId
-from chef import Node, ChefAPI
-from jsonschema import validate
+from copy import deepcopy
 
+from bson import ObjectId
 from celery.task import Task, task
 from celery.signals import task_prerun
 from celery.exceptions import Ignore
+from chef import Node, ChefAPI
+from jsonschema import validate
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage')
@@ -104,41 +105,38 @@ class ChefTask(Task):
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def update_node_from_rules(self, rule_type, obj, node=None):
+    def update_node_from_rules(self, rule_type, computer, obj, node=None):
         fields = self.RULES[obj['type']][rule_type]
         updated = False
         for field_chef, field_ui in fields.items():
-            if node and obj.get(field_ui, None) == node.attributes.get_dotted(field_chef):
+            if node and computer.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
-            field_chef_path = field_chef.split('.')
-            field_chef_resource_name = '.'.join(field_chef_path[:3])
-            try:
-                node.normal.get_dotted(field_chef_resource_name)
-            except KeyError:
-                field_chef_resource = node.default.get_dotted(field_chef_resource_name).to_dict()
-                node.attributes.set_dotted(field_chef_resource_name, field_chef_resource)
-            node.attributes.set_dotted(field_chef, obj[field_ui])
+            elif obj['type'] != 'computer' and rule_type == 'save':
+                try:
+                    node.default.get_dotted(field_chef)
+                    continue
+                except KeyError:
+                    pass
+            node.attributes.set_dotted(field_chef, computer[field_ui])
             updated = True
         return (node, updated)
 
-    def update_node(self, obj, objold, node, action):
+    def update_node(self, computer, obj, objold, node, action):
         if action == 'deleted':
             return (None, False)
         elif action == 'changed':
             if self.is_adding_policy(obj, objold):
-                return self.update_node_from_rules('policy', obj, node)
+                return self.update_node_from_rules('policy', computer, obj, node)
             else:
-                return self.update_node_from_rules('save', obj, node)
+                return self.update_node_from_rules('save', computer, obj, node)
             return ''
         elif action == 'created':
-            return self.update_node_from_rules('save', obj, node)
+            return self.update_node_from_rules('save', computer, obj, node)
         raise NotImplementedError
 
     def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
-        # TODO: Remove the next line
-        schema['properties']['gecos_ws_mgmt']['required'] = [u'network_mgmt', u'software_mgmt']
-        validate({'gecos_ws_mgmt': node.attributes['gecos_ws_mgmt'].to_dict()}, schema)
+        validate(to_deep_dict(node.attributes), schema)
 
     def resource_action(self, obj, objold=None, action=None):
         api = ChefAPI(self.app.conf.get('chef.url'),
@@ -149,7 +147,7 @@ class ChefTask(Task):
         for computer in computers:
             hardcode_computer_name = 'gecos-workstation-1'
             node = Node(hardcode_computer_name, api)
-            node, updated = self.update_node(obj, objold, node, action)
+            node, updated = self.update_node(computer, obj, objold, node, action)
             if not updated:
                 continue
             self.validate_data(node, cookbook, api)
@@ -297,3 +295,27 @@ def object_deleted(objtype, obj):
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
+
+# Utils to NodeAttributes chef class
+
+
+def to_deep_dict(node_attr):
+    merged = {}
+    for d in reversed(node_attr.search_path):
+        merged = dict_merge(merged, d)
+    return merged
+
+
+def dict_merge(a, b):
+    '''recursively merges dict's. not just simple a['key'] = b['key'], if
+    both a and bhave a key who's value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary.'''
+    if not isinstance(b, dict):
+        return b
+    result = deepcopy(a)
+    for k, v in b.iteritems():
+        if k in result and isinstance(result[k], dict):
+                result[k] = dict_merge(result[k], v)
+        else:
+            result[k] = deepcopy(v)
+    return result
