@@ -1,3 +1,5 @@
+from bson import ObjectId
+
 from cornice.resource import resource
 #from pyramid.httpexceptions import HTTPNotFound
 
@@ -8,6 +10,28 @@ from gecoscc.models import Policy, Policies
 #from gecoscc.policies import PoliciesManager, PolicyDoesNotExist
 
 from gecoscc.api import ResourcePaginatedReadOnly
+
+
+def policies_oids_filter(params):
+    oids = params.get('oids')
+    return {
+        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
+    }
+
+
+policies_filters = {
+    'oids': policies_oids_filter,
+}
+
+
+def get_filters(policies_filters, params):
+    filters = []
+    for (filter_name, filter_func) in policies_filters.iteritems():
+        if filter_name in params:
+            filter_dict = filter_func(params)
+            if filter_dict:
+                filters.append(filter_dict)
+    return filters
 
 
 @resource(collection_path='/api/policies/',
@@ -63,3 +87,26 @@ class PoliciesResource(ResourcePaginatedReadOnly):
             #raise HTTPNotFound()
 
         #return self.parse_item(policy)
+
+    def get_objects_filter(self):
+        # TODO
+        # Implement permissions filter
+        # permissions_filters = get_user_permissions(self.request)
+        filters = super(PoliciesResource, self).get_objects_filter()
+
+        permissions_filters = []
+
+        local_filters = get_filters(policies_filters, self.request.GET)
+
+        if local_filters:
+            filters += local_filters
+        if permissions_filters:
+            filters += permissions_filters
+
+        return filters
+
+    def get_object_filter(self):
+        # TODO
+        # Implement permissions filter
+        # permissions_filters = get_user_permissions(self.request)
+        return {}
