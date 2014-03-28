@@ -106,16 +106,24 @@ class ChefTask(Task):
 
     def update_node_from_rules(self, rule_type, obj, node=None):
         fields = self.RULES[obj['type']][rule_type]
+        updated = False
         for field_chef, field_ui in fields.items():
             if node and obj.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
+            field_chef_path = field_chef.split('.')
+            field_chef_resource_name = '.'.join(field_chef_path[:3])
+            try:
+                node.normal.get_dotted(field_chef_resource_name)
+            except KeyError:
+                field_chef_resource = node.default.get_dotted(field_chef_resource_name).to_dict()
+                node.attributes.set_dotted(field_chef_resource_name, field_chef_resource)
             node.attributes.set_dotted(field_chef, obj[field_ui])
-            node.save()
-        return node
+            updated = True
+        return (node, updated)
 
     def update_node(self, obj, objold, node, action):
         if action == 'deleted':
-            return None
+            return (None, False)
         elif action == 'changed':
             if self.is_adding_policy(obj, objold):
                 return self.update_node_from_rules('policy', obj, node)
@@ -126,9 +134,11 @@ class ChefTask(Task):
             return self.update_node_from_rules('save', obj, node)
         raise NotImplementedError
 
-    def validate_data(self, node, cookbook):
+    def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
-        validate(node, schema)
+        # TODO: Remove the next line
+        schema['properties']['gecos_ws_mgmt']['required'] = [u'network_mgmt', u'software_mgmt']
+        validate({'gecos_ws_mgmt': node.attributes['gecos_ws_mgmt'].to_dict()}, schema)
 
     def resource_action(self, obj, objold=None, action=None):
         api = ChefAPI(self.app.conf.get('chef.url'),
@@ -139,8 +149,11 @@ class ChefTask(Task):
         for computer in computers:
             hardcode_computer_name = 'gecos-workstation-1'
             node = Node(hardcode_computer_name, api)
-            node = self.update_node(obj, objold, node, action)
-            self.validate_data(node, cookbook)
+            node, updated = self.update_node(obj, objold, node, action)
+            if not updated:
+                continue
+            self.validate_data(node, cookbook, api)
+            node.save()
 
     def object_action(self, obj, objold=None, action=None):
         if obj['type'] in RESOURCES_EMITTERS_TYPES:
