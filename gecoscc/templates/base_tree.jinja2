@@ -178,7 +178,7 @@
 {% block extrajs %}
     <script src="{{request.application_url}}/static/js/libs/backbone-1.1.2.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/backbone.paginator-0.8.1.min.js"></script>
-    <script src="{{request.application_url}}/static/js/libs/backbone-marionette-1.6.4.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone-marionette-1.7.3.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/TreeModel-0.4.0.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/jquery.easy-pie-chart-1.0.1.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/jquery.dataTables-1.9.4.min.js"></script>
@@ -187,6 +187,9 @@
 
     <script src="{{request.application_url}}/static/js/app.js"></script>
     <script src="{{request.application_url}}/static/js/app-utils.js"></script>
+    <!-- Policies have to loaded before the rest because some models inherit
+    from them -->
+    <script src="{{request.application_url}}/static/js/policies.js"></script>
 
     <script src="{{request.application_url}}/static/js/breadcrumb.js"></script>
     <script src="{{request.application_url}}/static/js/cache.js"></script>
@@ -195,7 +198,6 @@
     <script src="{{request.application_url}}/static/js/group-form-views.js"></script>
     <script src="{{request.application_url}}/static/js/group-multiwidget-views.js"></script>
     <script src="{{request.application_url}}/static/js/ou.js"></script>
-    <script src="{{request.application_url}}/static/js/policies.js"></script>
     <script src="{{request.application_url}}/static/js/printer.js"></script>
     <script src="{{request.application_url}}/static/js/repository.js"></script>
     <script src="{{request.application_url}}/static/js/staging.js"></script>
@@ -217,6 +219,7 @@
     <script type="text/html" id="new-element-template">{% include "bb-new-element.html" %}</script>
     <script type="text/html" id="ou-template">{% include "bb-ou.html" %}</script>
     <script type="text/html" id="policies-list-template">{% include "bb-policies-list.html" %}</script>
+    <script type="text/html" id="policies-modal-template">{% include "bb-policies-modal.html" %}</script>
     <script type="text/html" id="printer-template">{% include "bb-printer.html" %}</script>
     <script type="text/html" id="repository-template">{% include "bb-repository.html" %}</script>
     <script type="text/html" id="staging-button-template">{% include "bb-staging-button.html" %}</script>

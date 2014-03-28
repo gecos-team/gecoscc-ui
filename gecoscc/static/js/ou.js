@@ -23,7 +23,7 @@
 App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.OUModel = App.GecosResourceModel.extend({
+    Models.OUModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "ou",
 
         defaults: {
@@ -32,14 +32,7 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             lock: false,
             policies: [],
             extra: "",
-            policiesCollection: null
-        },
-
-        parse: function (response) {
-            var result = _.clone(response);
-            result.policiesCollection = new Models.PolicyCollection(response.policies);
-            result.id = response._id;
-            return result;
+            policiesCollection: new App.Policies.Models.PolicyCollection()
         }
     });
 });
@@ -52,11 +45,28 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
 
+        ui: {
+            policies: "div#policies div.bootstrap-admin-panel-content"
+        },
+
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh"
+        },
+
+        policiesList: undefined,
+
+        onRender: function () {
+            if (_.isUndefined(this.policiesList)) {
+                this.policiesList = new App.Policies.Views.PoliciesList({
+                    el: this.ui.policies[0],
+                    collection: this.model.get("policyCollection"),
+                    resource: this.model
+                });
+            }
+            this.policiesList.render();
         },
 
         saveForm: function (evt) {

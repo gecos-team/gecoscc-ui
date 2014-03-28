@@ -29,6 +29,8 @@
         MAX_GROUPS = 150,
         MAX_NODES_PER_GROUP = 15,
         MAX_GROUPS_PER_NODE = 8,
+        MAX_POLICIES = 50,
+        MAX_POLICIES_PER_NODE = 6,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage',
                  'repository'],
         SEPARATOR = ',',
@@ -52,6 +54,8 @@
         contains,
         defaults,
         object_creator,
+        somePolicies,
+        policy,
         rootId,
         admin_user,
         limit,
@@ -134,6 +138,21 @@
         constructors[new_object_type](path);
     };
 
+    somePolicies = function (type) {
+        var policies = db.policies.find({ targets: { $all: [type] } }),
+            toAdd = random_int(MAX_POLICIES_PER_NODE),
+            result = {},
+            idx,
+            p;
+
+        for (idx = 0; idx < toAdd; idx += 1) {
+            p = policies[random_int(policies.count())];
+            result[p._id.valueOf()] = {};
+        }
+
+        return result;
+    };
+
     constructors.default = function (path, type, extraValues) {
         var name = type + '_' + counters[type],
             oid = new ObjectId(),
@@ -160,7 +179,7 @@
 
     constructors.ou = function (path) {
         var oid = constructors.default(path, 'ou', {
-                policies: [],
+                policies: somePolicies('ou'),
                 extra: ''
             }),
             new_children = random_int(MAX_CHILDS) + 1,
@@ -178,7 +197,8 @@
         var email = 'user_' + counters.user + '@example.com',
             oid = constructors.default(path, 'user', {
                 email: email,
-                memberof: []
+                memberof: [],
+                policies: somePolicies('user')
             });
         potential_group_members.push(oid);
         return oid;
@@ -197,7 +217,8 @@
                 lock: false,
                 source: 'gecos',
                 members: [],
-                memberof: []
+                memberof: [],
+                policies: somePolicies('group')
             },
             count = 0,
             node_oid,
@@ -260,7 +281,8 @@
             serial: 'SN' + random_int(100000),
             registry: 'JDA' + random_int(10000),
             extra: '',
-            memberof: []
+            memberof: [],
+            policies: somePolicies('computer')
         });
         potential_group_members.push(oid);
         return oid;
@@ -315,6 +337,27 @@
         });
         return oid;
     };
+
+    // Populate policies
+
+    db.policies.drop();
+
+    for (i = 0; i < MAX_POLICIES; i += 1) {
+        policy = {
+            _id: new ObjectId(),
+            name: "policy_" + i,
+            schema: {}, // TODO
+            targets: [choice(TYPES.slice(0, 2))]
+        };
+
+        if (i % 2) {
+            policy.targets.push(choice(TYPES.slice(2, 4)));
+        }
+
+        db.policies.insert(policy);
+    }
+
+    // Populate nodes
 
     db.nodes.drop();
 

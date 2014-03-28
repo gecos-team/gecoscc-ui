@@ -84,7 +84,8 @@ var App;
             "newroot": "newRoot",
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/:type": "newItem",
-            "ou/:containerid/:type/:userid": "loadItem",
+            "ou/:containerid/:type/:itemid": "loadItem",
+            "ou/:containerid/:type/:userid/policy/:policyid": "loadPolicy",
             "search/:keyword": "search"
         },
 
@@ -263,6 +264,41 @@ var App;
                 } else {
                     this._fetchModel(model);
                 }
+            },
+
+            _loadPolicy: function (resource, policy) {
+                // TODO
+            },
+
+            loadPolicy: function (containerid, type, itemid, policyid) {
+                var resource = App.instances.cache.get(itemid),
+                    policy = App.instances.cache.get(policyid),
+                    promise = $.Deferred(),
+                    that = this,
+                    url;
+
+                if (_.isUndefined(resource)) {
+                    App.showAlert(
+                        "error",
+                        gettext("Policies can't be directly accessed."),
+                        gettext("You need to load the node that has the policy assigned first. Try again now.")
+                    );
+                    url = "ou" + containerid + '/' + type + '/' + itemid;
+                    App.instances.router.navigate(url, { trigger: true });
+                    return;
+                }
+
+                if (_.isUndefined(policyid)) {
+                    policy = new App.Policies.Models.PolicyModel({ id: policyid });
+                    promise = policy.fetch();
+                    App.instances.cache.set(policyid, policy);
+                } else {
+                    promise.resolve();
+                }
+
+                promise.done(function () {
+                    that._loadPolicy(resource, policy);
+                });
             },
 
             search: function (keyword) {

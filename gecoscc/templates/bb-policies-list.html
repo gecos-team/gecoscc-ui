@@ -1,23 +1,42 @@
-<table class="table table-striped table-bordered mb10" id="policies-table">
-    <thead>
-        <tr>
-            <th>{{ gettext('Name') }}</th>
-            <th>{{ gettext('Actions') }}</th>
-        </tr>
-    </thead>
+<div class="row"><div class="col-sm-12">
+<% if (items.length > 0) { %>
+    <table class="table table-striped table-bordered mb10" id="policies-table">
+        <thead>
+            <tr>
+                <th>{{ gettext('Name') }}</th>
+                <th>{{ gettext('Actions') }}</th>
+            </tr>
+        </thead>
+        <tbody>
+        <% _.each(items, function (policy, idx) { %>
+            <tr id="<%= policy.id %>" class="
+                <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
+            ">
+                <td><%= policy.name %></td>
+                <td>
+                    <button class="btn btn-danger btn-xs">
+                        <span class="fa fa-times"></span> {{ gettext('Remove') }}
+                    </button>
+                    <button class="btn btn-default btn-xs">
+                        <span class="fa fa-edit"></span> {{ gettext('Edit') }}
+                    </button>
+                </td>
+            </tr>
+        <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <div class="alert alert-info alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no policies assigned to this resource yet.') }}
+    </div>
+<% } %>
 
-<% _.each(items, function (policy, idx) { %>
-    <tr id="<%= policy.id %>" class="
-        <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
-    ">
-        <td><%= policy.name %></td>
-        <td>
-            <button class="btn btn-danger btn-xs">
-                <span class="fa fa-times"></span> {{ gettext('Delete') }}
-            </button>
-            <button class="btn btn-default btn-xs">
-                <span class="fa fa-edit"></span> {{ gettext('Edit') }}
-            </button>
-        </td>
-    </tr>
-<% }); %>
+    <p>
+        <button id="add-policy" class="btn btn-primary" disabled="disabled">
+            <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}
+        </button>
+    </p>
+
+    <div id="policies-modal-viewport"></div>
+</div></div>

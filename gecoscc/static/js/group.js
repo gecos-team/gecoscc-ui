@@ -23,7 +23,7 @@
 App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.GroupModel = App.GecosResourceModel.extend({
+    Models.GroupModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "group",
 
         defaults: {
@@ -32,7 +32,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             source: "gecos",
             name: "",
             members: [],
-            memberof: []
+            memberof: [],
+            policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
 

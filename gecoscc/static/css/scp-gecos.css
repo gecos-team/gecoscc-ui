@@ -234,24 +234,24 @@ footer {
 }
 
 #new-element-view a.thumbnail span {
-    font-size: 130px;
+    font-size: 100px;
 }
 
 #new-element-view a.thumbnail p {
     font-size: 25px;
 }
 
-/* OU VIEW */
+/* POLICIES VIEW */
 
 #policies-table tr td:last-child {
     width: 30%;
 }
 
-#policies-table tr td:last-child a:first-child {
+#policies-table tr td:last-child button:first-child {
     margin-left: 8px;
 }
 
-#policies-table tr td:last-child a {
+#policies-table tr td:last-child button {
     float: right;
 }
 
