@@ -145,7 +145,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         initialize: function (options) {
             if (_.has(options, "resource")) {
-                this.resource = options.resource; // FIXME delete?
+                this.resource = options.resource;
             }
         },
 
@@ -153,7 +153,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (_.isNull(this.modalAddPolicy)) {
                 this.modalAddPolicy = new Views.AllPoliciesModal({
                     el: this.$el.find("div#policies-modal-viewport")[0],
-                    $button: this.$el.find("button#add-policy")
+                    $button: this.$el.find("button#add-policy"),
+                    view: this
                 });
             } else {
                 this.modalAddPolicy.render();
@@ -166,6 +167,15 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.btn-primary": "add"
         },
 
+        getPolicyUrl: function (id) {
+            var url = ["ou", _.last(this.resource.get("path").split(','))];
+            url.push(this.resource.resourceType);
+            url.push(this.resource.get("id"));
+            url.push("policy");
+            url.push(id);
+            return url.join('/');
+        },
+
         remove: function (evt) {
             evt.preventDefault();
             // TODO
@@ -173,13 +183,21 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         edit: function (evt) {
             evt.preventDefault();
-            // TODO
+            var id = $(evt.target).parents("tr").first().attr("id");
+            App.instances.router.navigate(this.getPolicyUrl(id), { trigger: true });
         },
 
         add: function (evt) {
             evt.preventDefault();
-
             this.modalAddPolicy.show();
+        },
+
+        addPolicyToNode: function (policy) {
+            var id = policy.get("id"),
+                url = this.getPolicyUrl(id);
+
+            App.instances.cache.set(id, policy);
+            App.instances.router.navigate(url, { trigger: true });
         }
     });
 
@@ -187,25 +205,81 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#policies-modal-template",
 
         events: {
-            "click button.btn-primary": "add"
+            "click ul.pagination a": "goToPage",
+            "click button.add-policy-btn": "add"
         },
 
-        $button: undefined,
         modal: undefined,
+        filteredPolicies: undefined,
+        currentFilter: undefined,
+        policiesView: undefined,
 
         initialize: function (options) {
-            var that = this;
+            var that = this,
+                $button;
 
             if (_.has(options, "$button")) {
-                this.$button = options.$button;
+                $button = options.$button;
+            } else {
+                throw "A reference to the 'add policy' button is required";
+            }
+
+            if (_.has(options, "view")) {
+                this.policiesView = options.view;
+            } else {
+                throw "A reference to the policies list view is required";
             }
 
             this.collection = new App.Policies.Models.PaginatedPolicyCollection();
             this.collection.goTo(1, {
                 success: function () {
                     that.render();
-                    that.$button.attr("disabled", false);
+                    $button.attr("disabled", false);
                 }
+            });
+        },
+
+        serializeData: function () {
+            var paginator = [],
+                inRange = this.collection.pagesInRange,
+                pages = inRange * 2 + 1,
+                current = this.collection.currentPage,
+                total = this.collection.totalPages,
+                i = 0,
+                page;
+
+            for (i; i < pages; i += 1) {
+                page = current - inRange + i;
+                if (page > 0 && page <= total) {
+                    paginator.push([page, page === current]);
+                }
+            }
+            return {
+                items: this.collection.toJSON(),
+                prev: current !== 1,
+                next: current !== total,
+                pages: paginator,
+                showPaginator: _.isNull(this.filteredPolicies),
+                currentFilter: this.currentFilter
+            };
+        },
+
+        goToPage: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                that = this,
+                page;
+
+            if ($el.parent().is(".disabled")) { return; }
+            if ($el.is(".previous")) {
+                page = this.collection.currentPage - 1;
+            } else if ($el.is(".next")) {
+                page = this.collection.currentPage + 1;
+            } else {
+                page = parseInt($el.text(), 10);
+            }
+            this.collection.goTo(page, {
+                success: function () { that.render(); }
             });
         },
 
@@ -220,7 +294,11 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         add: function (evt) {
             evt.preventDefault();
-            // TODO
+            var id = $(evt.target).parents("li").first().attr("id"),
+                policy = this.collection.get(id);
+
+            this.modal.modal("hide");
+            this.policiesView.addPolicyToNode(policy);
         }
     });
 });
