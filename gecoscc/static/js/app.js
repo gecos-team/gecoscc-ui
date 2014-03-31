@@ -266,15 +266,10 @@ var App;
                 }
             },
 
-            _loadPolicy: function (resource, policy) {
-                // TODO
-            },
-
             loadPolicy: function (containerid, type, itemid, policyid) {
                 var resource = App.instances.cache.get(itemid),
                     policy = App.instances.cache.get(policyid),
                     promise = $.Deferred(),
-                    that = this,
                     url;
 
                 if (_.isUndefined(resource)) {
@@ -288,7 +283,9 @@ var App;
                     return;
                 }
 
-                if (_.isUndefined(policyid)) {
+                App.main.show(App.instances.loaderView);
+
+                if (_.isUndefined(policy)) {
                     policy = new App.Policies.Models.PolicyModel({ id: policyid });
                     promise = policy.fetch();
                     App.instances.cache.set(policyid, policy);
@@ -297,7 +294,11 @@ var App;
                 }
 
                 promise.done(function () {
-                    that._loadPolicy(resource, policy);
+                    var view = new App.Policies.Views.PolicyGenericForm({
+                        model: policy,
+                        resource: resource
+                    });
+                    App.main.show(view);
                 });
             },
 

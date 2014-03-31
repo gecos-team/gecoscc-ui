@@ -307,7 +307,7 @@
 
         for (idx = 0; idx < toAdd; idx += 1) {
             p = policies[random_int(policies.count())];
-            result[p._id.valueOf()] = {};
+            result[p._id.valueOf()] = {}; // <policy objId> = {<values>}
         }
 
         return result;

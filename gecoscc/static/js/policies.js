@@ -297,32 +297,4 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.policiesView.addPolicyToNode(policy);
         }
     });
-
-    Views.PolicyGenericForm = Marionette.ItemView.extend({
-        // https://github.com/garycourt/JSV    JSON Schema Validator
-        // https://github.com/neyric/inputex/tree/master    Generator for YUI
-
-        render: function () {
-            var data, template, html;
-
-            this.isClosed = false;
-
-            this.triggerMethod("before:render", this);
-            this.triggerMethod("item:before:render", this);
-
-            data = this.serializeData();
-            data = this.mixinTemplateHelpers(data);
-
-            template = this.getTemplate();
-            html = Marionette.Renderer.render(template, data);
-
-            this.$el.html(html);
-            this.bindUIElements();
-
-            this.triggerMethod("render", this);
-            this.triggerMethod("item:rendered", this);
-
-            return this;
-        }
-    });
 });
