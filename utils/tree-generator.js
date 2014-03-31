@@ -33,8 +33,12 @@
         MAX_POLICIES_PER_NODE = 6,
         TYPES = ['ou', 'user', 'group', 'computer', 'printer', 'storage',
                  'repository'],
+
         SEPARATOR = ',',
         GROUP_NESTED_PROBABILITY = 0.4,
+        POLICY_SCHEMA1,
+        POLICY_SCHEMA2,
+        POLICY_SCHEMAS,
         counters = {
             ou: 0,
             user: 0,
@@ -64,6 +68,162 @@
         ou,
         i,
         j;
+
+    POLICY_SCHEMA1 = {
+        "required": [
+            "network_res"
+        ],
+        "type": "object",
+        "properties": {
+            "network_res": {
+                "required": [
+                    "network_type"
+                ],
+                "type": "object",
+                "properties": {
+                    "dns_server": {
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "users": {
+                        "minItems": 0,
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "username",
+                                "network_type"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "username": {
+                                    "type": "string"
+                                },
+                                "network_type": {
+                                    "pattern": "(wired|wireless|vpn|proxy)",
+                                    "type": "string"
+                                },
+                                "netmask": {
+                                    "type": "string"
+                                },
+                                "use_dhcp": {
+                                    "type": "boolean"
+                                },
+                                "ip_address": {
+                                    "type": "string"
+                                },
+                                "gateway": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "network_type": {
+                        "pattern": "(wired|wireless)",
+                        "type": "string"
+                    },
+                    "netmask": {
+                        "type": "string"
+                    },
+                    "job_ids": {
+                        "minItems": 0,
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "use_dhcp": {
+                        "type": "boolean"
+                    },
+                    "ip_address": {
+                        "type": "string"
+                    },
+                    "gateway": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    };
+
+    POLICY_SCHEMA2 = {
+        "required": [
+            "user_apps_autostart_res"
+        ],
+        "type": "object",
+        "properties": {
+            "user_apps_autostart_res": {
+                "required": [
+                    "autostart_files"
+                ],
+                "type": "object",
+                "properties": {
+                    "autostart_files": {
+                        "minItems": 0,
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "user",
+                                "desktops"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "desktops": {
+                                    "minItems": 0,
+                                    "uniqueItems": true,
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                },
+                                "user": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "job_ids": {
+                        "minItems": 0,
+                        "uniqueItems": true,
+                        "type": "array",
+                        "items": {
+                            "required": [
+                                "id"
+                            ],
+                            "type": "object",
+                            "properties": {
+                                "status": {
+                                    "type": "string"
+                                },
+                                "id": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+
+    POLICY_SCHEMAS = [POLICY_SCHEMA1, POLICY_SCHEMA2];
 
     random_int = function (max) {
         return Math.floor(Math.random() * max);
@@ -153,7 +313,7 @@
         return result;
     };
 
-    constructors.default = function (path, type, extraValues) {
+    constructors.base = function (path, type, extraValues) {
         var name = type + '_' + counters[type],
             oid = new ObjectId(),
             defs,
@@ -178,7 +338,7 @@
     };
 
     constructors.ou = function (path) {
-        var oid = constructors.default(path, 'ou', {
+        var oid = constructors.base(path, 'ou', {
                 policies: somePolicies('ou'),
                 extra: ''
             }),
@@ -195,7 +355,7 @@
 
     constructors.user = function (path) {
         var email = 'user_' + counters.user + '@example.com',
-            oid = constructors.default(path, 'user', {
+            oid = constructors.base(path, 'user', {
                 email: email,
                 memberof: [],
                 policies: somePolicies('user')
@@ -273,7 +433,7 @@
             types = ['desktop', 'laptop', 'netbook', 'tablet'],
             oid;
 
-        oid = constructors.default(path, 'computer', {
+        oid = constructors.base(path, 'computer', {
             identifier: 'id_computer_' + counters.computer,
             ip: ip,
             mac: '98:5C:29:31:CF:07',
@@ -294,7 +454,7 @@
             oid;
 
         brand = choice(brands);
-        oid = constructors.default(path, 'printer', {
+        oid = constructors.base(path, 'printer', {
             brand: brand,
             model: brand.slice(0, 2).toUpperCase() + random_int(256),
             serial: brand.slice(0, 2).toUpperCase() + random_int(100000),
@@ -314,7 +474,7 @@
             protocols = ['ftp', 'sshfs', 'nfs', 'smb', 'smb4'],
             oid;
 
-        oid = constructors.default(path, 'storage', {
+        oid = constructors.base(path, 'storage', {
             server: ip,
             port: random_int(65535) + 1,
             protocol: choice(protocols),
@@ -332,7 +492,7 @@
                     'http://packages.linuxmint.com/pool/import/'],
             oid;
 
-        oid = constructors.default(path, 'repository', {
+        oid = constructors.base(path, 'repository', {
             url: choice(urls)
         });
         return oid;
@@ -346,7 +506,7 @@
         policy = {
             _id: new ObjectId(),
             name: "policy_" + i,
-            schema: {}, // TODO
+            schema: choice(POLICY_SCHEMAS),
             targets: [choice(TYPES.slice(0, 2))]
         };
 

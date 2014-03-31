@@ -1,7 +1,6 @@
 import colander
 import deform
 import pyramid
-import simplejson as json
 
 from bson import ObjectId
 from bson.objectid import InvalidId
@@ -44,34 +43,6 @@ class ObjectIdField(object):
         except TypeError:
             raise colander.Invalid(node, '{0} is not a objectid string'.format(
                 cstruct))
-
-    def cstruct_children(self, node, cstruct):
-        return []
-
-
-class JsonSchemaField(object):
-    """ Should validate if the json object is a valid json schema """
-
-    def serialize(self, node, appstruct):
-        if appstruct is colander.null:
-            if isinstance(node.missing, colander._drop):
-                return colander.drop
-            return colander.null
-        if not isinstance(appstruct, dict):
-            raise colander.Invalid(node, '{0} is not a json schema'.format(
-                appstruct))
-        return json.dumps(appstruct)
-
-    def deserialize(self, node, cstruct):
-        if cstruct is colander.null:
-            if isinstance(node.missing, colander._drop):
-                return colander.drop
-            return colander.null
-        try:
-            return json.loads(cstruct)
-        except:
-            raise colander.Invalid(node, '{0} is not a valid json '
-                                   'object'.format(cstruct))
 
     def cstruct_children(self, node, cstruct):
         return []
@@ -449,7 +420,7 @@ class Policy(colander.MappingSchema):
     name = colander.SchemaNode(colander.String())
     schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                  default={},
-                                 missing={})  # FIXME use JsonSchemaField instead?
+                                 missing={})
     targets = StringList(missing=[], default=[])
 
 
