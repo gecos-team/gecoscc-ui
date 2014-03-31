@@ -54,7 +54,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             oids = oids.join(',');
             if (oids.length === 0) { return; }
 
-            $.ajax("/api/policies?oids=" + oids).done(function (response) {
+            $.ajax("/api/policies/?oids=" + oids).done(function (response) {
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
 
