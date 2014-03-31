@@ -43,8 +43,8 @@ class PoliciesResource(ResourcePaginatedReadOnly):
     schema_collection = Policies
     schema_detail = Policy
 
-    #mongo_filter = {}
-    objtype = 'policies'
+    mongo_filter = {}
+    objtype = 'policy'
     collection_name = 'policies'
 
     #def collection_get(self):

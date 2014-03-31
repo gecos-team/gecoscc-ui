@@ -87,9 +87,13 @@ class ResourcePaginatedReadOnly(object):
         objects_filter = self.get_objects_filter()
         if self.mongo_filter:
             objects_filter.append(self.mongo_filter)
-        mongo_query = {
-            '$and':  objects_filter,
-        }
+
+        if objects_filter:
+            mongo_query = {
+                '$and':  objects_filter,
+            }
+        else:
+            mongo_query = {}
 
         nodes_count = self.collection.find(
             mongo_query,
