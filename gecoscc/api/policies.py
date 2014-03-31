@@ -19,8 +19,16 @@ def policies_oids_filter(params):
     }
 
 
+def policies_targets_filter(params):
+    target = params.get('target')
+    return {
+        'targets': target
+    }
+
+
 policies_filters = {
     'oids': policies_oids_filter,
+    'target': policies_targets_filter,
 }
 
 
