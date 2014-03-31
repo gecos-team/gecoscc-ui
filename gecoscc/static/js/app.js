@@ -252,6 +252,13 @@ var App;
                     .once("change", function () {
                         App.main.show(view);
                     });
+                model
+                    .off("policiesloaded")
+                    .once("policiesloaded", function () {
+                        if (_.has(view, "policiesList")) {
+                            view.policiesList.render();
+                        }
+                    });
 
                 if (skipFetch) {
                     // The object was cached

@@ -37,23 +37,21 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     };
                 })
             );
-
             this.resolvePoliciesNames(result.policyCollection);
 
             return result;
         },
 
         resolvePoliciesNames: function (collection) {
-            var oids;
+            var that = this,
+                oids;
 
             if (_.isUndefined(collection)) {
                 collection = this.get("policyCollection");
             }
+            if (!collection.hasUnknownPolicies()) { return; }
 
-            oids = collection.map(function (p) { return p.get("id"); });
-            oids = oids.join(',');
-            if (oids.length === 0) { return; }
-
+            oids = collection.getOids().join(',');
             $.ajax("/api/policies/?oids=" + oids).done(function (response) {
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
@@ -62,6 +60,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     model.set("name", p.name);
                     model.set("schema", p.schema);
                 });
+                that.trigger("policiesloaded");
             });
         }
     });
@@ -97,6 +96,14 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
 
         parse: function (response) {
             return response.policies;
+        },
+
+        hasUnknownPolicies: function () {
+            return this.some(function (p) { return p.get("name") === ""; });
+        },
+
+        getOids: function () {
+            return this.map(function (p) { return p.get("id"); });
         }
     });
 

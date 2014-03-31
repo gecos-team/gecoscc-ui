@@ -95,7 +95,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.render();
             });
             _.each(checked, function (id) {
-                var group = new App.Group.Models.GroupModel({ id: id });
+                var group = new App.Group.Models.GroupWithoutPoliciesModel({ id: id });
                 group.fetch();
                 that.checked.add(group);
             });
@@ -179,8 +179,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     that.filteredGroups = new App.Group.Models.GroupCollection();
                     _.each(response.nodes, function (g) {
                         var group;
-                        g = App.Group.Models.GroupModel.prototype.parse(g);
-                        group = new App.Group.Models.GroupModel(g);
+                        g = App.Group.Models.GroupWithoutPoliciesModel.prototype.parse(g);
+                        group = new App.Group.Models.GroupWithoutPoliciesModel(g);
                         that.filteredGroups.add(group);
                     });
                     that.render();
@@ -225,7 +225,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 group;
 
             if ($el.is(":checked")) {
-                group = new App.Group.Models.GroupModel({ id: nid });
+                group = new App.Group.Models.GroupWithoutPoliciesModel({ id: nid });
                 group.fetch();
                 this.checked.add(group);
             } else {

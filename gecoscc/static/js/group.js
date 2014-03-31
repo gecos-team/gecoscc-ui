@@ -37,8 +37,21 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         }
     });
 
+    Models.GroupWithoutPoliciesModel = App.GecosResourceModel.extend({
+        resourceType: "group",
+
+        defaults: {
+            type: "group",
+            lock: false,
+            source: "gecos",
+            name: "",
+            members: [],
+            memberof: []
+        }
+    });
+
     Models.GroupCollection = Backbone.Collection.extend({
-        model: Models.GroupModel,
+        model: Models.GroupWithoutPoliciesModel,
 
         url: function () {
             return "/api/groups/?pagesize=99999";
@@ -50,7 +63,7 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     });
 
     Models.PaginatedGroupCollection = Backbone.Paginator.requestPager.extend({
-        model: Models.GroupModel,
+        model: Models.GroupWithoutPoliciesModel,
 
         paginator_core: {
             type: "GET",
