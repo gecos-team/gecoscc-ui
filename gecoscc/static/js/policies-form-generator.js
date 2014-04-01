@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true, unparam: true */
-/*global App */
+/*global App, jsonform */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -69,12 +69,11 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             $html = $(Marionette.Renderer.render(template, policyData));
 
             data = this.serializeData();
-//             $html = $("<form></form>");
             $html.find("form").jsonForm({
                 // Object that describes the data model
-                schema: data.schema //,
+                schema: data.schema,
                 // Array that describes the layout of the form
-//                 form: [],
+                form: ["*"]
 //                 // Callback function called upon form submission when values are valid
 //                 onSubmitValid: function (values) {
 //                     return; // TODO
@@ -88,6 +87,24 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:rendered", this);
 
             return this;
+        },
+
+        events: {
+            "click button#cancel": "onCancel"
+        },
+
+        getResourceUrl: function () {
+            var url = ["ou", _.last(this.resource.get("path").split(','))];
+            url.push(this.resource.resourceType);
+            url.push(this.resource.get("id"));
+            return url.join('/');
+        },
+
+        onCancel: function (evt) {
+            evt.preventDefault();
+            App.instances.router.navigate(this.getResourceUrl(), {
+                trigger: true
+            });
         }
     });
 });

@@ -189,35 +189,36 @@ var initializeTabs = function (tabs) {
 
 // Twitter bootstrap-friendly HTML boilerplate for standard inputs
 jsonform.fieldTemplate = function(inner) {
-  return '<div class="control-group jsonform-error-<%= keydash %>' +
-    '<%= elt.htmlClass ? " " + elt.htmlClass : "" %>' +
-    '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " jsonform-required" : "") %>' +
-    '<%= (node.readOnly ? " jsonform-readonly" : "") %>' +
-    '<%= (node.disabled ? " jsonform-disabled" : "") %>' +
+  return '' +
+    '<div class="form-group jsonform-error-<%= keydash %>' +
+        '<%= elt.htmlClass ? " " + elt.htmlClass : "" %>' +
+        '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " jsonform-required" : "") %>' +
+        '<%= (node.readOnly ? " jsonform-readonly" : "") %>' +
+        '<%= (node.disabled ? " jsonform-disabled" : "") %>' +
     '">' +
+
     '<% if (node.title && !elt.notitle) { %>' +
-      '<label class="control-label" for="<%= node.id %>"><%= node.title %></label>' +
+        '<label class="col-sm-2 control-label" for="<%= node.id %>"><%= node.title %></label>' +
     '<% } %>' +
-    '<div class="controls">' +
-      '<% if (node.prepend || node.append) { %>' +
-      '<div class="<% if (node.prepend) { %>input-prepend<% } %>' +
-        '<% if (node.append) { %> input-append<% } %>">' +
-        '<% if (node.prepend) { %>' +
-          '<span class="add-on"><%= node.prepend %></span>' +
-        '<% } %>' +
-      '<% } %>' +
-      inner +
-      '<% if (node.append) { %>' +
-        '<span class="add-on"><%= node.append %></span>' +
-      '<% } %>' +
-      '<% if (node.prepend || node.append) { %>' +
+
+        '<div class="col-sm-10 '+
+            '<% if (!(node.title && !elt.notitle)) { print("col-sm-offset-2 "); } %>' +
+            '<% if (node.prepend || node.append) { print("input-group"); } %>' +
+        '">' +
+            '<% if (node.prepend) { %>' +
+                '<span class="input-group-addon"><%= node.prepend %></span>' +
+            '<% } %>' +
+            inner + // The input itself
+            '<% if (node.append) { %>' +
+                '<span class="input-group-addon"><%= node.append %></span>' +
+            '<% } %>' +
         '</div>' +
-      '<% } %>' +
-      '<% if (node.description) { %>' +
-        '<span class="help-inline"><%= node.description %></span>' +
-      '<% } %>' +
-      '<span class="help-block jsonform-errortext" style="display:none;"></span>' +
-    '</div></div>';
+
+        '<% if (node.description) { %>' +
+            '<span class="help-block"><%= node.description %></span>' +
+        '<% } %>' +
+        '<span class="help-block jsonform-errortext text-danger" style="display:none;"></span>' +
+    '</div>';
 };
 
 var fileDisplayTemplate = '<div class="_jsonform-preview">' +
@@ -231,15 +232,16 @@ var fileDisplayTemplate = '<div class="_jsonform-preview">' +
 
 var inputFieldTemplate = function (type) {
   return {
-    'template': '<input type="' + type + '" ' +
-      '<%= (fieldHtmlClass ? "class=\'" + fieldHtmlClass + "\' " : "") %>' +
-      'name="<%= node.name %>" value="<%= escape(value) %>" id="<%= id %>"' +
-      '<%= (node.disabled? " disabled" : "")%>' +
-      '<%= (node.readOnly ? " readonly=\'readonly\'" : "") %>' +
-      '<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
-      '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
-      '<%= (node.placeholder? "placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
-      ' />',
+    'template': '' +
+        '<input type="' + type + '" ' +
+            'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>" '+
+            'name="<%= node.name %>" value="<%= escape(value) %>" id="<%= id %>"' +
+            '<%= (node.disabled? " disabled" : "")%>' +
+            '<%= (node.readOnly ? " readonly=\'readonly\'" : "") %>' +
+            '<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
+            '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
+            '<%= (node.placeholder? "placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
+        ' />',
     'fieldtemplate': true,
     'inputfield': true
   }
@@ -322,7 +324,7 @@ jsonform.elementTypes = {
     }
   },
   'textarea':{
-    'template':'<textarea id="<%= id %>" name="<%= node.name %>" ' +
+    'template':'<textarea id="<%= id %>" name="<%= node.name %>" class="form-control" ' +
       'style="height:<%= elt.height || "150px" %>;width:<%= elt.width || "100%" %>;"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.readOnly ? " readonly=\'readonly\'" : "") %>' +
@@ -412,7 +414,7 @@ jsonform.elementTypes = {
           $(node.el).find(idSelector).change();
         }, 600);
         editor.getSession().on('change', lazyChanged);
-        
+
         editor.on('blur', function() {
           $(node.el).find(idSelector).change();
           $(node.el).find(idSelector).trigger("blur");
@@ -438,12 +440,15 @@ jsonform.elementTypes = {
     }
   },
   'checkbox':{
-    'template': '<label class="checkbox"><input type="checkbox" id="<%= id %>" ' +
-      'name="<%= node.name %>" value="1" <% if (value) {%>checked<% } %>' +
-      '<%= (node.disabled? " disabled" : "")%>' +
-      '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
-      ' /><span><%= node.inlinetitle || "" %></span>' +
-      '</label>',
+    'template': '' +
+        '<div class="checkbox"><label>' +
+            '<input type="checkbox" id="<%= id %>" ' +
+                'name="<%= node.name %>" value="1" <% if (value) {%>checked<% } %>' +
+                '<%= (node.disabled? " disabled" : "")%>' +
+                '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
+            ' />'+
+            '<%= node.inlinetitle || "" %>' +
+        '</label></div>',
     'fieldtemplate': true,
     'inputfield': true,
     'getElement': function (el) {
@@ -471,7 +476,7 @@ jsonform.elementTypes = {
       } else {
         node.ownerTree._transloadit_generic_public_index++;
       }
-      
+
       data.transloaditname = "_transloadit_jsonform_genericupload_public_"+node.ownerTree._transloadit_generic_public_index;
 
       if (!node.ownerTree._transloadit_generic_elts) node.ownerTree._transloadit_generic_elts = {};
@@ -616,11 +621,13 @@ jsonform.elementTypes = {
   },
   'select':{
     'template':'<select name="<%= node.name %>" id="<%= id %>"' +
-      '<%= (fieldHtmlClass ? " class=\'" + fieldHtmlClass + "\'" : "") %>' +
+      'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
       '> ' +
-      '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %> <option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option> <% }}}); %> ' +
+      '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
+        '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
+      '<% }}}); %> ' +
       '</select>',
     'fieldtemplate': true,
     'inputfield': true
@@ -698,22 +705,33 @@ jsonform.elementTypes = {
     }
   },
   'radios':{
-    'template': '<div id="<%= node.id %>"><% _.each(node.options, function(key, val) { %><label class="radio"><input type="radio" <% if (((key instanceof Object) && (value === key.value)) || (value === key)) { %> checked="checked" <% } %> name="<%= node.name %>" value="<%= (key instanceof Object ? key.value : key) %>"' +
-      '<%= (node.disabled? " disabled" : "")%>' +
-      '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '/><span><%= (key instanceof Object ? key.title : key) %></span></label> <% }); %></div>',
+    'template': '' +
+        '<div id="<%= node.id %>">' +
+            '<% _.each(node.options, function(key, val) { %>' +
+                '<div class="radio"><label>' +
+                    '<input type="radio" ' +
+                        '<% if (((key instanceof Object) && (value === key.value)) || (value === key)) { %> checked="checked" <% } %> name="<%= node.name %>" value="<%= (key instanceof Object ? key.value : key) %>"' +
+                        '<%= (node.disabled? " disabled" : "")%>' +
+                        '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
+                    '/>' +
+                    '<%= (key instanceof Object ? key.title : key) %>' +
+                '</label></div>' +
+            '<% }); %>' +
+        '</div>',
     'fieldtemplate': true,
     'inputfield': true
   },
   'radiobuttons': {
-    'template': '<div id="<%= node.id %>">' +
-      '<% _.each(node.options, function(key, val) { %>' +
-        '<label class="radio btn">' +
-        '<input type="radio" style="position:absolute;left:-9999px;" ' +
-        '<% if (((key instanceof Object) && (value === key.value)) || (value === key)) { %> checked="checked" <% } %> name="<%= node.name %>" value="<%= (key instanceof Object ? key.value : key) %>" />' +
-        '<span><%= (key instanceof Object ? key.title : key) %></span></label> ' +
-        '<% }); %>' +
-      '</div>',
+    'template': '' +
+        '<div id="<%= node.id %>">' +
+            '<% _.each(node.options, function(key, val) { %>' +
+                '<div class="radio"><label class="radio btn">' +
+                    '<input type="radio" style="position:absolute;left:-9999px;" ' +
+                        '<% if (((key instanceof Object) && (value === key.value)) || (value === key)) { %> checked="checked" <% } %> name="<%= node.name %>" value="<%= (key instanceof Object ? key.value : key) %>" />' +
+                    '<%= (key instanceof Object ? key.title : key) %>' +
+                '</label></div>' +
+            '<% }); %>' +
+        '</div>',
     'fieldtempate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
@@ -729,17 +747,19 @@ jsonform.elementTypes = {
     }
   },
   'checkboxes':{
-    'template': '<div><%= choiceshtml %></div>',
+    'template': '<div class="checkbox"><%= choiceshtml %></div>',
     'fieldtemplate': true,
     'inputfield': true,
     'onBeforeRender': function (data, node) {
       // Build up choices from the enumeration list
       var choices = null;
       var choiceshtml = null;
-      var template = '<label class="checkbox">' +
-        '<input type="checkbox" <% if (value) { %> checked="checked" <% } %> name="<%= name %>" value="1"' +
-        '<%= (node.disabled? " disabled" : "")%>' +
-        '/><span><%= title %></span></label>';
+      var template = '' +
+        '<label>' +
+            '<input type="checkbox" <% if (value) { %> checked="checked" <% } %> name="<%= name %>" value="1"' +
+                '<%= (node.disabled? " disabled" : "")%>' +
+            '/> <%= title %>' +
+        '</label>';
       if (!node || !node.schemaElement || !node.schemaElement.items) return;
       choices = node.schemaElement.items['enum'] ||
         node.schemaElement.items[0]['enum'];
@@ -759,12 +779,13 @@ jsonform.elementTypes = {
     }
   },
   'array': {
-    'template': '<div id="<%= id %>"><ul class="_jsonform-array-ul" style="list-style-type:none;"><%= children %></ul>' +
-      '<span class="_jsonform-array-buttons">' +
-        '<a href="#" class="btn _jsonform-array-addmore"><i class="icon-plus-sign" title="Add new"></i></a> ' +
-        '<a href="#" class="btn _jsonform-array-deletelast"><i class="icon-minus-sign" title="Delete last"></i></a>' +
-      '</span>' +
-      '</div>',
+    'template': '' +
+        '<div id="<%= id %>"><ul class="_jsonform-array-ul" style="list-style-type:none;"><%= children %></ul>' +
+            '<span class="_jsonform-array-buttons">' +
+                '<a href="#" class="btn btn-default btn-xs _jsonform-array-addmore"><span class="fa fa-plus" title="Add new"></span></a> ' +
+                '<a href="#" class="btn btn-default btn-xs _jsonform-array-deletelast"><span class="fa fa-minus" title="Delete last"></span></a>' +
+            '</span>' +
+        '</div>',
     'fieldtemplate': true,
     'array': true,
     'childTemplate': function (inner) {
@@ -898,19 +919,19 @@ jsonform.elementTypes = {
   },
   'tabarray': {
     'template': '<div id="<%= id %>"><div class="tabbable tabs-left">' +
-      '<ul class="nav nav-tabs">' +
-        '<%= tabs %>' +
-      '</ul>' +
-      '<div class="tab-content">' +
-        '<%= children %>' +
-      '</div>' +
-      '</div>' +
-      '<a href="#" class="btn _jsonform-array-addmore"><i class="icon-plus-sign" title="Add new"></i></a> ' +
-      '<a href="#" class="btn _jsonform-array-deleteitem"><i class="icon-minus-sign" title="Delete item"></i></a></div>',
+            '<ul class="nav nav-tabs">' +
+                '<%= tabs %>' +
+            '</ul>' +
+            '<div class="tab-content">' +
+                '<%= children %>' +
+            '</div>' +
+        '</div>' +
+        '<a href="#" class="btn btn-default btn-xs _jsonform-array-addmore"><span class="fa fa-plus" title="Add new"></span></a> ' +
+        '<a href="#" class="btn btn-default btn-xs _jsonform-array-deleteitem"><span class="fa fa-minus" title="Delete item"></span></a></div>',
     'fieldtemplate': true,
     'array': true,
     'childTemplate': function (inner) {
-      return '<div data-idx="<%= node.childPos %>" class="tab-pane">' +
+      return '<div data-idx="<%= node.childPos %>" id="<%= node.childPos %>" class="tab-pane">' +
         inner +
         '</div>';
     },
@@ -923,8 +944,8 @@ jsonform.elementTypes = {
           ('Item ' + (idx+1));
         tabs += '<li data-idx="' + idx + '"' +
           ((idx === 0) ? ' class="active"' : '') +
-          '><a class="draggable tab" data-toggle="tab">' +
-          escapeHTML(title) +
+          '><a href="#' + idx + '" class="draggable tab" data-toggle="tab">' +
+            escapeHTML(title) +
           '</a></li>';
       });
       data.tabs = tabs;
@@ -974,8 +995,8 @@ jsonform.elementTypes = {
             child.title ||
             ('Item ' + (idx+1));
           tabs += '<li data-idx="' + idx + '">' +
-            '<a class="draggable tab" data-toggle="tab">' +
-            escapeHTML(title) +
+            '<a href="#' + idx + '" class="draggable tab" data-toggle="tab">' +
+                escapeHTML(title) +
             '</a></li>';
         });
         $('> .tabbable > .nav-tabs', $nodeid).html(tabs);
@@ -1075,63 +1096,68 @@ jsonform.elementTypes = {
     'template': '<%= elt.msg %>'
   },
   'fieldset':{
-    'template': '<fieldset class="control-group jsonform-error-<%= keydash %> <% if (elt.expandable) { %>expandable<% } %> <%= elt.htmlClass?elt.htmlClass:"" %>" ' +
-      '<% if (id) { %> id="<%= id %>"<% } %>' +
-      '>' +
-      '<% if (node.title || node.legend) { %><legend><%= node.title || node.legend %></legend><% } %>' +
-      '<% if (elt.expandable) { %><div class="control-group"><% } %>' +
-      '<%= children %>' +
-      '<% if (elt.expandable) { %></div><% } %>' +
-      '</fieldset>'
+    'template': '' +
+        '<fieldset class="jsonform-error-<%= keydash %> <% if (elt.expandable) { %>expandable<% } %> <%= elt.htmlClass?elt.htmlClass:"" %>" ' +
+            '<% if (id) { %> id="<%= id %>"<% } %>' +
+        '>' +
+            '<% if (node.title || node.legend) { %><legend><%= node.title || node.legend %></legend><% } %>' +
+            '<% if (elt.expandable) { %><div><% } %>' +
+                '<%= children %>' +
+            '<% if (elt.expandable) { %></div><% } %>' +
+        '</fieldset>'
   },
   'advancedfieldset': {
-    'template': '<fieldset' +
-      '<% if (id) { %> id="<%= id %>"<% } %>' +
-      ' class="expandable <%= elt.htmlClass?elt.htmlClass:"" %>">' +
-      '<legend>Advanced options</legend>' +
-      '<div class="control-group">' +
-      '<%= children %>' +
-      '</div>' +
-      '</fieldset>'
+    'template':
+        '<fieldset' +
+            '<% if (id) { %> id="<%= id %>"<% } %>' +
+            ' class="expandable <%= elt.htmlClass?elt.htmlClass:"" %>"' +
+        '>' +
+            '<legend>Advanced options</legend>' +
+            '<div>' +
+                '<%= children %>' +
+            '</div>' +
+        '</fieldset>'
   },
   'authfieldset': {
-    'template': '<fieldset' +
-      '<% if (id) { %> id="<%= id %>"<% } %>' +
-      ' class="expandable <%= elt.htmlClass?elt.htmlClass:"" %>">' +
-      '<legend>Authentication settings</legend>' +
-      '<div class="control-group">' +
-      '<%= children %>' +
-      '</div>' +
-      '</fieldset>'
+    'template':
+        '<fieldset' +
+            '<% if (id) { %> id="<%= id %>"<% } %>' +
+            ' class="expandable <%= elt.htmlClass?elt.htmlClass:"" %>"' +
+        '>' +
+            '<legend>Authentication settings</legend>' +
+            '<div>' +
+                '<%= children %>' +
+            '</div>' +
+        '</fieldset>'
   },
   'submit':{
     'template':'<input type="submit" <% if (id) { %> id="<%= id %>" <% } %> class="btn btn-primary <%= elt.htmlClass?elt.htmlClass:"" %>" value="<%= value || node.title %>"<%= (node.disabled? " disabled" : "")%>/>'
   },
   'button':{
-    'template':' <button <% if (id) { %> id="<%= id %>" <% } %> class="btn <%= elt.htmlClass?elt.htmlClass:"" %>"><%= node.title %></button> '
+    'template':' <button <% if (id) { %> id="<%= id %>" <% } %> class="btn <%= elt.htmlClass?elt.htmlClass:"btn-default" %>"><%= node.title %></button> '
   },
   'actions':{
-    'template':'<div class="form-actions <%= elt.htmlClass?elt.htmlClass:"" %>"><%= children %></div>'
+    'template':'<div class="<%= elt.htmlClass?elt.htmlClass:"" %>"><%= children %></div>'
   },
   'hidden':{
     'template':'<input type="hidden" id="<%= id %>" name="<%= node.name %>" value="<%= escape(value) %>" />',
     'inputfield': true
   },
   'selectfieldset': {
-    'template': '<fieldset class="tab-container <%= elt.htmlClass?elt.htmlClass:"" %>">' +
-      '<% if (node.legend) { %><legend><%= node.legend %></legend><% } %>' +
-      '<% if (node.formElement.key) { %><input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" /><% } else { %>' +
-        '<a id="<%= node.id %>"></a><% } %>' +
-      '<div class="tabbable">' +
-        '<div class="control-group<%= node.formElement.hideMenu ? " hide" : "" %>">' +
-          '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.title %></label><% } %>' +
-          '<div class="controls"><%= tabs %></div>' +
-        '</div>' +
-        '<div class="tab-content">' +
-          '<%= children %>' +
-        '</div>' +
-      '</div>' +
-      '</fieldset>',
+    'template': ''+
+        '<fieldset class="tab-container <%= elt.htmlClass?elt.htmlClass:"" %>">' +
+            '<% if (node.legend) { %><legend><%= node.legend %></legend><% } %>' +
+            '<% if (node.formElement.key) { %><input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" /><% } else { %><a id="<%= node.id %>"></a><% } %>' +
+            '<div class="tabbable">' +
+                '<div class="control-group<%= node.formElement.hideMenu ? " hide" : "" %>">' +
+                    '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.title %></label><% } %>' +
+                    '<div class="controls"><%= tabs %></div>' +
+                '</div>' +
+                '<div class="tab-content">' +
+                    '<%= children %>' +
+                '</div>' +
+            '</div>' +
+        '</fieldset>',
     'inputfield': true,
     'getElement': function (el) {
       return $(el).parent().get(0);
@@ -1233,9 +1259,9 @@ jsonform.elementTypes = {
   },
   'optionfieldset': {
     'template': '<div' +
-      '<% if (node.id) { %> id="<%= node.id %>"<% } %>' +
+        '<% if (node.id) { %> id="<%= node.id %>"<% } %>' +
       '>' +
-      '<%= children %>' +
+        '<%= children %>' +
       '</div>'
   },
   'section': {
@@ -1250,8 +1276,8 @@ jsonform.elementTypes = {
    */
   'questions': {
     'template': '<div>' +
-      '<input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" />' +
-      '<%= children %>' +
+        '<input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" />' +
+        '<%= children %>' +
       '</div>',
     'fieldtempate': true,
     'inputfield': true,
@@ -1274,7 +1300,19 @@ jsonform.elementTypes = {
    * schema key.
    */
   'question': {
-    'template': '<div id="<%= node.id %>"><% _.each(node.options, function(key, val) { %><label class="radio<%= (node.formElement.optionsType === "radiobuttons") ? " btn" : "" %><%= ((key instanceof Object && key.htmlClass) ? " " + key.htmlClass : "") %>"><input type="radio" <% if (node.formElement.optionsType === "radiobuttons") { %> style="position:absolute;left:-9999px;" <% } %>name="<%= node.id %>" value="<%= val %>"<%= (node.disabled? " disabled" : "")%>/><span><%= (key instanceof Object ? key.title : key) %></span></label> <% }); %></div>',
+    'template': '' +
+        '<div id="<%= node.id %>">'+
+            '<% _.each(node.options, function(key, val) { %>' +
+                '<div class="radio"><label class="' +
+                //'<%= (node.formElement.optionsType === "radiobuttons") ? " btn btn-default" : "" %>' +
+                // FIXME Can't transform this directly to bootstrap 3, the html
+                // is to different
+                '<%= ((key instanceof Object && key.htmlClass) ? " " + key.htmlClass : "") %>">' +
+                    '<input type="radio" <% if (node.formElement.optionsType === "radiobuttons") { %> style="position:absolute;left:-9999px;" <% } %>name="<%= node.id %>" value="<%= val %>"<%= (node.disabled? " disabled" : "")%>/>' +
+                    '<%= (key instanceof Object ? key.title : key) %>' +
+                '</label></div>' +
+            '<% }); %>' +
+        '</div>',
     'fieldtemplate': true,
     'onInsert': function (evt, node) {
       var activeClass = 'active';
@@ -1831,7 +1869,7 @@ formNode.prototype.hasNonDefaultValue = function () {
   if (this.formElement && this.formElement.type=="hidden") {
     return false;
   }
-  
+
   if (this.value && !this.defaultValue) {
     return true;
   }
@@ -3058,6 +3096,9 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     formElement.title =
       formElement.title ||
       schemaElement.title;
+    formElement.inlinetitle =
+      formElement.inlinetitle ||
+      schemaElement.inlinetitle;
     formElement.description =
       formElement.description ||
       schemaElement.description;
@@ -3157,7 +3198,7 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     throw new Error('The JSONForm contains an element whose type is unknown: "' +
       formElement.type + '"');
   }
-  
+
 
   if (schemaElement) {
     // The form element is linked to an element in the schema.
@@ -3282,7 +3323,7 @@ formTree.prototype.render = function (domRoot) {
  * @param {Function} callback The callback to call on each element
  */
 formTree.prototype.forEachElement = function (callback) {
-  
+
   var f = function(root) {
     for (var i=0;i<root.children.length;i++) {
       callback(root.children[i]);

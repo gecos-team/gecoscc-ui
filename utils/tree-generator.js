@@ -71,152 +71,68 @@
 
     POLICY_SCHEMA1 = {
         "required": [
-            "network_res"
+            "network_type"
         ],
         "type": "object",
         "properties": {
-            "network_res": {
+            "dns_server": {
+                "title": "DNS Servers",
+                "minItems": 1,
+                "uniqueItems": true,
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "network_type": {
+                "title": "Network type",
+                "pattern": "(wired|wireless)",
+                "type": "string"
+            },
+            "netmask": {
+                "title": "Netmask",
+                "type": "string"
+            },
+            "use_dhcp": {
+                "inlinetitle": "Use DHCP?",
+                "type": "boolean"
+            },
+            "ip_address": {
+                "title": "IP Address",
+                "type": "string"
+            },
+            "gateway": {
+                "title": "Gateway",
+                "type": "string"
+            }
+        }
+    };
+
+    POLICY_SCHEMA2 = {
+        "autostart_files": {
+            "title": "Files to execute at booting",
+            "minItems": 0,
+            "uniqueItems": true,
+            "type": "array",
+            "items": {
                 "required": [
-                    "network_type"
+                    "user",
+                    "desktops"
                 ],
                 "type": "object",
                 "properties": {
-                    "dns_server": {
-                        "minItems": 1,
+                    "desktops": {
+                        "title": "Desktops",
+                        "minItems": 0,
                         "uniqueItems": true,
                         "type": "array",
                         "items": {
                             "type": "string"
                         }
                     },
-                    "users": {
-                        "minItems": 0,
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "required": [
-                                "username",
-                                "network_type"
-                            ],
-                            "type": "object",
-                            "properties": {
-                                "username": {
-                                    "type": "string"
-                                },
-                                "network_type": {
-                                    "pattern": "(wired|wireless|vpn|proxy)",
-                                    "type": "string"
-                                },
-                                "netmask": {
-                                    "type": "string"
-                                },
-                                "use_dhcp": {
-                                    "type": "boolean"
-                                },
-                                "ip_address": {
-                                    "type": "string"
-                                },
-                                "gateway": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "network_type": {
-                        "pattern": "(wired|wireless)",
+                    "user": {
+                        "title": "Username",
                         "type": "string"
-                    },
-                    "netmask": {
-                        "type": "string"
-                    },
-                    "job_ids": {
-                        "minItems": 0,
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "required": [
-                                "id"
-                            ],
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string"
-                                },
-                                "id": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "use_dhcp": {
-                        "type": "boolean"
-                    },
-                    "ip_address": {
-                        "type": "string"
-                    },
-                    "gateway": {
-                        "type": "string"
-                    }
-                }
-            }
-        }
-    };
-
-    POLICY_SCHEMA2 = {
-        "required": [
-            "user_apps_autostart_res"
-        ],
-        "type": "object",
-        "properties": {
-            "user_apps_autostart_res": {
-                "required": [
-                    "autostart_files"
-                ],
-                "type": "object",
-                "properties": {
-                    "autostart_files": {
-                        "minItems": 0,
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "required": [
-                                "user",
-                                "desktops"
-                            ],
-                            "type": "object",
-                            "properties": {
-                                "desktops": {
-                                    "minItems": 0,
-                                    "uniqueItems": true,
-                                    "type": "array",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "user": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
-                    "job_ids": {
-                        "minItems": 0,
-                        "uniqueItems": true,
-                        "type": "array",
-                        "items": {
-                            "required": [
-                                "id"
-                            ],
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string"
-                                },
-                                "id": {
-                                    "type": "string"
-                                }
-                            }
-                        }
                     }
                 }
             }
