@@ -3,13 +3,14 @@
         <div class="text-muted bootstrap-admin-box-title">{{ gettext('Configure policy:') }} <%= name %></div>
     </div>
     <div class="bootstrap-admin-panel-content dashboard">
-        <form role="form" class="form-horizontal"></form>
-        <div class="row"><div class="col-sm-12">
-            <button id="cancel" class="btn btn-default">{{ gettext('Cancel') }}</button>
-            <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
-            <% if (typeof id !== "undefined") { %>
-                <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
-            <% } %>
-        </div></div>
+        <form role="form" class="form-horizontal">
+            <div class="row"><div class="col-sm-12">
+                <button id="cancel" class="btn btn-default">{{ gettext('Cancel') }}</button>
+                <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
+                <% if (typeof id !== "undefined") { %>
+                    <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
+                <% } %>
+            </div></div>
+        </form>
     </div>
 </div>

@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true, unparam: true */
-/*global App, jsonform */
+/*global App, jsonform, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -73,11 +73,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 // Object that describes the data model
                 schema: data.schema,
                 // Array that describes the layout of the form
-                form: ["*"]
-//                 // Callback function called upon form submission when values are valid
-//                 onSubmitValid: function (values) {
-//                     return; // TODO
-//                 }
+                form: ["*"],
+                // Callback function called upon form submission when values are valid
+                onSubmitValid: _.bind(this.processForm, this)
             });
 
             this.$el.html($html);
@@ -98,6 +96,24 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             url.push(this.resource.resourceType);
             url.push(this.resource.get("id"));
             return url.join('/');
+        },
+
+        processForm: function (values) {
+            var id = this.model.get("id"),
+                url = this.getResourceUrl();
+
+            this.resource.get("policies")[id] = values;
+            this.resource.save();
+            App.showAlert(
+                "success",
+                gettext("Policy saved successfully."),
+                gettext("Your changes are pending queuing in the staging area. In a few momentos you'll be redirected to the resource.")
+            );
+            setTimeout(function () {
+                App.instances.router.navigate(url, {
+                    trigger: true
+                });
+            }, 2000);
         },
 
         onCancel: function (evt) {
