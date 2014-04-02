@@ -1,47 +1,32 @@
-<div id="add-policy-modal" class="modal fade">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">{{ gettext('Add a policy to this resource') }}</h4>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb10">
-                    <input type="text" class="form-control" id="newpolicy-filter" placeholder="{{ gettext('Filter') }}">
-                    <span class="input-group-btn">
-                        <button class="btn btn-primary" id="newpolicy-filter-btn" type="button"><span class="fa fa-search"></span></button>
-                    </span>
-                </div>
+<div class="input-group mb10">
+    <input type="text" class="form-control" id="newpolicy-filter" placeholder="{{ gettext('Filter') }}">
+    <span class="input-group-btn">
+        <button class="btn btn-primary" id="newpolicy-filter-btn" type="button"><span class="fa fa-search"></span></button>
+    </span>
+</div>
 
-                <ul id="new-policies" class="list-unstyled">
-                    <% _.each(items, function (policy) { %>
-                        <li id="<%= policy.id %>">
-                            <span class="fa fa-cogs"></span> <%= policy.name %>
-                            <button class="btn btn-primary btn-sm pull-right add-policy-btn">{{ gettext('Add') }}</button>
-                        </li>
-                    <% }); %>
-                </ul>
-                <% if (showPaginator) { %>
-                    <div>
-                        <ul class="pagination pull-right">
-                            <li <% if (!prev) { print('class="disabled"'); } %>>
-                                <a class="previous" href="#">&laquo;</a>
-                            </li>
-                            <% _.each(pages, function (p) { %>
-                                <li <% if (p[1]) { print('class="active"'); } %>>
-                                    <a href="#"><%= p[0] %></a>
-                                </li>
-                            <% }); %>
-                            <li <% if (!next) { print('class="disabled"'); } %>>
-                                <a class="next" href="#">&raquo;</a>
-                            </li>
-                        </ul>
-                    </div>
-                <% } %>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Cancel') }}</button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+<ul id="new-policies" class="list-unstyled">
+    <% _.each(items, function (policy) { %>
+        <li id="<%= policy.id %>">
+            <span class="fa fa-cogs"></span> <%= policy.name %>
+            <button class="btn btn-primary btn-xs pull-right add-policy-btn">{{ gettext('Add') }}</button>
+        </li>
+    <% }); %>
+</ul>
+<% if (showPaginator) { %>
+    <div class="align-right">
+        <ul class="pagination">
+            <li <% if (!prev) { print('class="disabled"'); } %>>
+                <a class="previous" href="#">&laquo;</a>
+            </li>
+            <% _.each(pages, function (p) { %>
+                <li <% if (p[1]) { print('class="active"'); } %>>
+                    <a href="#"><%= p[0] %></a>
+                </li>
+            <% }); %>
+            <li <% if (!next) { print('class="disabled"'); } %>>
+                <a class="next" href="#">&raquo;</a>
+            </li>
+        </ul>
+    </div>
+<% } %>

@@ -57,7 +57,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         render: function () {
-            var data, policyData, template, $html;
+            var data, policyData, template, $html, options;
 
             this.isClosed = false;
 
@@ -69,14 +69,16 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             $html = $(Marionette.Renderer.render(template, policyData));
 
             data = this.serializeData();
-            $html.find("form").jsonForm({
+            options = {
                 // Object that describes the data model
                 schema: data.schema,
                 // Array that describes the layout of the form
                 form: ["*"],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: _.bind(this.processForm, this)
-            });
+            };
+            if (_.has(data, "values")) { options.value = data.values; }
+            $html.find("form").jsonForm(options);
 
             this.$el.html($html);
             this.bindUIElements();
@@ -100,11 +102,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         processForm: function (values) {
-            var id = this.model.get("id"),
-                url = this.getResourceUrl();
+            var url = this.getResourceUrl();
 
-            this.resource.get("policies")[id] = values;
-            this.resource.save();
+            this.resource.addPolicy(this.model, values);
             App.showAlert(
                 "success",
                 gettext("Policy successfully saved."),

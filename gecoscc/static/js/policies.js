@@ -68,6 +68,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             this.get("policyCollection").remove(id);
             delete this.get("policies")[id];
             this.save();
+        },
+
+        addPolicy: function (policyModel, values) {
+            this.get("policyCollection").add(policyModel);
+            this.get("policies")[policyModel.get("id")] = values;
+            this.save();
         }
     });
 
@@ -125,7 +131,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 10,
+            perPage: 5,
             pagesInRange: 2,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
@@ -150,7 +156,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#policies-list-template",
 
         resource: null,
-        modalAddPolicy: null,
+        addPoliciesView: null,
+        addPoliciesModal: undefined,
 
         initialize: function (options) {
             if (_.has(options, "resource")) {
@@ -159,14 +166,14 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            if (_.isNull(this.modalAddPolicy)) {
-                this.modalAddPolicy = new Views.AllPoliciesModal({
-                    el: this.$el.find("div#policies-modal-viewport")[0],
+            if (_.isNull(this.addPoliciesView)) {
+                this.addPoliciesView = new Views.AllPoliciesModal({
+                    el: this.$el.find("div#add-policy-modal div.modal-body")[0],
                     $button: this.$el.find("button#add-policy"),
                     view: this
                 });
             } else {
-                this.modalAddPolicy.render();
+                this.addPoliciesView.render();
             }
         },
 
@@ -200,13 +207,21 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         add: function (evt) {
             evt.preventDefault();
-            this.modalAddPolicy.show();
+
+            if (_.isUndefined(this.addPoliciesModal)) {
+                this.addPoliciesModal = this.$el.find("#add-policy-modal").modal({
+                    show: false
+                });
+            }
+            this.addPoliciesModal.modal("show");
         },
 
         addPolicyToNode: function (policy) {
             var id = policy.get("id"),
                 url = this.getPolicyUrl(id);
 
+            this.addPoliciesModal.modal("hide");
+            $(".modal-backdrop").remove();
             App.instances.cache.set(id, policy);
             App.instances.router.navigate(url, { trigger: true });
         }
@@ -220,9 +235,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.add-policy-btn": "add"
         },
 
-        modal: undefined,
-        filteredPolicies: undefined,
-        currentFilter: undefined,
+        filteredPolicies: null,
+        currentFilter: null,
         policiesView: undefined,
 
         initialize: function (options) {
@@ -294,22 +308,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
-        show: function () {
-            if (_.isUndefined(this.modal)) {
-                this.modal = this.$el.find("#add-policy-modal").modal({
-                    show: false
-                });
-            }
-            this.modal.modal("show");
-        },
-
         add: function (evt) {
             evt.preventDefault();
-            var id = $(evt.target).parents("li").first().attr("id"),
-                policy = this.collection.get(id);
-
-            this.modal.modal("hide");
-            this.policiesView.addPolicyToNode(policy);
+            var id = $(evt.target).parents("li").first().attr("id");
+            this.policiesView.addPolicyToNode(this.collection.get(id));
         }
     });
 });
