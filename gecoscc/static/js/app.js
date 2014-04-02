@@ -277,7 +277,7 @@ var App;
                 var resource = App.instances.cache.get(itemid),
                     policy = App.instances.cache.get(policyid),
                     promise = $.Deferred(),
-                    url;
+                    url = "ou" + containerid + '/' + type + '/' + itemid;
 
                 if (_.isUndefined(resource)) {
                     App.showAlert(
@@ -285,11 +285,12 @@ var App;
                         gettext("Policies can't be directly accessed."),
                         gettext("You need to load the node that has the policy assigned first. Try again now.")
                     );
-                    url = "ou" + containerid + '/' + type + '/' + itemid;
                     App.instances.router.navigate(url, { trigger: true });
                     return;
                 }
 
+                App.instances.breadcrumb.addStep(url + '/' + policyid,
+                                                 gettext('Policy'));
                 App.main.show(App.instances.loaderView);
 
                 if (_.isUndefined(policy)) {
