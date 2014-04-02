@@ -88,7 +88,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         events: {
-            "click button#cancel": "onCancel"
+            "click button#cancel": "onCancel",
+            "click button#delete": "onDelete"
         },
 
         getResourceUrl: function () {
@@ -106,8 +107,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.resource.save();
             App.showAlert(
                 "success",
-                gettext("Policy saved successfully."),
-                gettext("Your changes are pending queuing in the staging area. In a few momentos you'll be redirected to the resource.")
+                gettext("Policy successfully saved."),
+                gettext("Your changes are pending queuing in the staging area. In a few moments you'll be redirected to the resource.")
             );
             setTimeout(function () {
                 App.instances.router.navigate(url, {
@@ -121,6 +122,23 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             App.instances.router.navigate(this.getResourceUrl(), {
                 trigger: true
             });
+        },
+
+        onDelete: function (evt) {
+            evt.preventDefault();
+            var url = this.getResourceUrl();
+
+            this.resource.removePolicy(this.model.get("id"));
+            App.showAlert(
+                "success",
+                gettext("Policy successfully deleted."),
+                gettext("Your changes are pending queuing in the staging area. In a few moments you'll be redirected to the resource.")
+            );
+            setTimeout(function () {
+                App.instances.router.navigate(url, {
+                    trigger: true
+                });
+            }, 2000);
         }
     });
 });

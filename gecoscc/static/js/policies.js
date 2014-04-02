@@ -62,6 +62,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                 });
                 that.trigger("policiesloaded");
             });
+        },
+
+        removePolicy: function (id) {
+            this.get("policyCollection").remove(id);
+            delete this.get("policies")[id];
+            this.save();
         }
     });
 
@@ -181,7 +187,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         remove: function (evt) {
             evt.preventDefault();
-            // TODO
+            var id = $(evt.target).parents("tr").first().attr("id");
+            this.resource.removePolicy(id);
+            this.render();
         },
 
         edit: function (evt) {
