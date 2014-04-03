@@ -201,7 +201,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
     });
 
     Views.AllPoliciesWidget = Marionette.ItemView.extend({
-        template: "#policies-widget-template",
+        template: "#policies-add-template",
         tagName: "div",
         className: "col-sm-12",
 
