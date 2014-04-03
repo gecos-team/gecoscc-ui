@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true, unparam: true */
-/*global App */
+/*global App, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -156,8 +156,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#policies-list-template",
 
         resource: null,
-        addPoliciesView: null,
-        addPoliciesModal: undefined,
+        addPolicyBtnView: null,
+        addPolicyListView: null,
 
         initialize: function (options) {
             if (_.has(options, "resource")) {
@@ -165,22 +165,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
-        onRender: function () {
-            if (_.isNull(this.addPoliciesView)) {
-                this.addPoliciesView = new Views.AllPoliciesModal({
-                    el: this.$el.find("div#add-policy-modal div.modal-body")[0],
-                    $button: this.$el.find("button#add-policy"),
-                    view: this
-                });
-            } else {
-                this.addPoliciesView.render();
-            }
-        },
-
         events: {
-            "click button.btn-danger": "remove",
-            "click button.btn-default": "edit",
-            "click button.btn-primary": "add"
+            "click table#policies-table button.btn-danger": "remove",
+            "click table#policies-table button.btn-default": "edit",
+            "click button#add-policy": "add"
         },
 
         getPolicyUrl: function (id) {
@@ -188,7 +176,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             url.push(this.resource.resourceType);
             url.push(this.resource.get("id"));
             url.push("policy");
-            url.push(id);
+            if (!_.isUndefined(id)) {
+                url.push(id);
+            }
             return url.join('/');
         },
 
@@ -206,61 +196,37 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         add: function (evt) {
-            evt.preventDefault();
-
-            if (_.isUndefined(this.addPoliciesModal)) {
-                this.addPoliciesModal = this.$el.find("#add-policy-modal").modal({
-                    show: false
-                });
-            }
-            this.addPoliciesModal.modal("show");
-        },
-
-        addPolicyToNode: function (policy) {
-            var id = policy.get("id"),
-                url = this.getPolicyUrl(id);
-
-            this.addPoliciesModal.modal("hide");
-            $(".modal-backdrop").remove();
-            App.instances.cache.set(id, policy);
-            App.instances.router.navigate(url, { trigger: true });
+            App.instances.router.navigate(this.getPolicyUrl(), { trigger: true });
         }
     });
 
-    Views.AllPoliciesModal = Marionette.ItemView.extend({
-        template: "#policies-modal-template",
+    Views.AllPoliciesWidget = Marionette.ItemView.extend({
+        template: "#policies-widget-template",
+        tagName: "div",
+        className: "col-sm-12",
 
         events: {
             "click ul.pagination a": "goToPage",
-            "click button.add-policy-btn": "add"
+            "click button.add-policy-btn": "add",
+            "click button#cancel": "cancel"
         },
 
         filteredPolicies: null,
         currentFilter: null,
-        policiesView: undefined,
+        resource: undefined,
 
         initialize: function (options) {
-            var that = this,
-                $button;
+            var that = this;
 
-            if (_.has(options, "$button")) {
-                $button = options.$button;
+            if (_.has(options, "resource")) {
+                this.resource = options.resource;
             } else {
-                throw "A reference to the 'add policy' button is required";
-            }
-
-            if (_.has(options, "view")) {
-                this.policiesView = options.view;
-            } else {
-                throw "A reference to the policies list view is required";
+                throw "A reference to the resource is required";
             }
 
             this.collection = new App.Policies.Models.PaginatedPolicyCollection();
             this.collection.goTo(1, {
-                success: function () {
-                    that.render();
-                    $button.attr("disabled", false);
-                }
+                success: function () { that.render(); }
             });
         },
 
@@ -308,10 +274,26 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
+        getUrl: function () {
+            var containerid = _.last(this.resource.get("path").split(',')),
+                url = "ou/" + containerid + '/' + this.resource.resourceType +
+                      '/' + this.resource.get("id");
+            return url;
+        },
+
         add: function (evt) {
             evt.preventDefault();
-            var id = $(evt.target).parents("li").first().attr("id");
-            this.policiesView.addPolicyToNode(this.collection.get(id));
+            var id = $(evt.target).parents("li").first().attr("id"),
+                url = this.getUrl();
+
+            this.resource.addPolicy(this.collection.get(id), {});
+            url += "/policy/" + id;
+            App.instances.router.navigate(url, { trigger: true });
+        },
+
+        cancel: function (evt) {
+            evt.preventDefault();
+            App.instances.router.navigate(this.getUrl(), { trigger: true });
         }
     });
 });

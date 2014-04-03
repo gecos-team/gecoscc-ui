@@ -1,0 +1,44 @@
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <div class="text-muted bootstrap-admin-box-title">{{ gettext('Add policy') }}</div>
+    </div>
+    <div class="bootstrap-admin-panel-content dashboard">
+        <div class="input-group mb10">
+            <input type="text" class="form-control" id="newpolicy-filter" placeholder="{{ gettext('Filter') }}">
+            <span class="input-group-btn">
+                <button class="btn btn-primary" id="newpolicy-filter-btn" type="button"><span class="fa fa-search"></span></button>
+            </span>
+        </div>
+
+        <ul id="new-policies" class="list-unstyled">
+            <% _.each(items, function (policy) { %>
+                <li id="<%= policy.id %>">
+                    <span class="fa fa-cogs"></span> <%= policy.name %>
+                    <button class="btn btn-primary btn-xs pull-right add-policy-btn">
+                        <span class="fa fa-plus"></span> {{ gettext('Add') }}
+                    </button>
+                </li>
+            <% }); %>
+        </ul>
+        <div>
+            <button id="cancel" class="btn btn-default mt20">
+                {{ gettext('Cancel') }}
+            </button>
+            <% if (showPaginator) { %>
+                <ul class="pagination pull-right">
+                    <li <% if (!prev) { print('class="disabled"'); } %>>
+                        <a class="previous" href="#">&laquo;</a>
+                    </li>
+                    <% _.each(pages, function (p) { %>
+                        <li <% if (p[1]) { print('class="active"'); } %>>
+                            <a href="#"><%= p[0] %></a>
+                        </li>
+                    <% }); %>
+                    <li <% if (!next) { print('class="disabled"'); } %>>
+                        <a class="next" href="#">&raquo;</a>
+                    </li>
+                </ul>
+            <% } %>
+        </div>
+    </div>
+</div>

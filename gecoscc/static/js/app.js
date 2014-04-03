@@ -85,7 +85,8 @@ var App;
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/:type": "newItem",
             "ou/:containerid/:type/:itemid": "loadItem",
-            "ou/:containerid/:type/:userid/policy/:policyid": "loadPolicy",
+            "ou/:containerid/:type/:itemid/policy": "newPolicy",
+            "ou/:containerid/:type/:itemid/policy/:policyid": "loadPolicy",
             "search/:keyword": "search"
         },
 
@@ -273,6 +274,31 @@ var App;
                 }
             },
 
+            newPolicy: function (containerid, type, itemid) {
+                var resource = App.instances.cache.get(itemid),
+                    url = "ou" + containerid + '/' + type + '/' + itemid,
+                    view;
+
+                if (_.isUndefined(resource)) {
+                    App.showAlert(
+                        "error",
+                        gettext("Policies can't be directly accessed."),
+                        gettext("You need to load the node that has the policy assigned first. Try again now.")
+                    );
+                    App.instances.router.navigate(url, { trigger: true });
+                    return;
+                }
+
+                App.instances.breadcrumb.addStep(url + '/policy/',
+                                                 gettext('Add policy'));
+                App.main.show(App.instances.loaderView);
+
+                view = new App.Policies.Views.AllPoliciesWidget({
+                    resource: resource
+                });
+                App.main.show(view);
+            },
+
             loadPolicy: function (containerid, type, itemid, policyid) {
                 var resource = App.instances.cache.get(itemid),
                     policy = App.instances.cache.get(policyid),
@@ -289,7 +315,7 @@ var App;
                     return;
                 }
 
-                App.instances.breadcrumb.addStep(url + '/' + policyid,
+                App.instances.breadcrumb.addStep(url + '/policy/' + policyid,
                                                  gettext('Policy'));
                 App.main.show(App.instances.loaderView);
 
