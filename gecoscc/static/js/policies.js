@@ -102,9 +102,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
     Models.PolicyCollection = Backbone.Collection.extend({
         model: Models.PolicyModel,
 
-        url: function () {
-            return "/api/policies/?pagesize=99999";
-        },
+        url: "/api/policies/?pagesize=99999",
 
         parse: function (response) {
             return response.policies;
@@ -145,6 +143,23 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         parse: function (response) {
             this.totalPages = response.pages;
             return response.policies;
+        }
+    });
+
+    Models.SearchPolicyCollection = Models.PaginatedPolicyCollection.extend({
+        initialize: function (options) {
+            if (!_.isString(options.keyword)) {
+                throw "Search collections require a keyword attribute";
+            }
+            this.keyword = options.keyword;
+        },
+
+        paginator_core: {
+            type: "GET",
+            dataType: "json",
+            url: function () {
+                return "/api/policies/?iname=" + this.keyword;
+            }
         }
     });
 });
@@ -208,11 +223,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click ul.pagination a": "goToPage",
             "click button.add-policy-btn": "add",
-            "click button#cancel": "cancel"
+            "click button#cancel": "cancel",
+            "click button#newpolicy-filter-btn": "filter"
         },
 
-        filteredPolicies: null,
-        currentFilter: null,
         resource: undefined,
 
         initialize: function (options) {
@@ -224,7 +238,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 throw "A reference to the resource is required";
             }
 
-            this.collection = new App.Policies.Models.PaginatedPolicyCollection();
+            this.collection = new App.Policies.Models.SearchPolicyCollection({
+                keyword: ""
+            });
             this.collection.goTo(1, {
                 success: function () { that.render(); }
             });
@@ -245,14 +261,15 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                     paginator.push([page, page === current]);
                 }
             }
+
             return {
                 items: this.collection.toJSON(),
                 resource: this.resource.toJSON(),
                 prev: current !== 1,
                 next: current !== total,
                 pages: paginator,
-                showPaginator: _.isNull(this.filteredPolicies),
-                currentFilter: this.currentFilter
+                showPaginator: paginator.length > 0,
+                currentFilter: this.collection.keyword
             };
         },
 
@@ -295,6 +312,14 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         cancel: function (evt) {
             evt.preventDefault();
             App.instances.router.navigate(this.getUrl(), { trigger: true });
+        },
+
+        filter: function (evt) {
+            evt.preventDefault();
+            this.collection.keyword = $(evt.target).parents(".input-group").find("input").val().trim();
+            this.collection.goTo(1, {
+                success: _.bind(this.render, this)
+            });
         }
     });
 });
