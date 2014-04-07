@@ -28,52 +28,47 @@ class JobStorage(object):
     class JobOperationForbidden(Exception):
         pass
 
-    def __init__(self, collection, userdb, user):
+    def __init__(self, collection, user):
         self.collection = collection
-        self.userdb = userdb
         self.user = user
 
-    def check_permissions(self, jobid):
+    def check_permissions(self):
         # TODO
         if self.user is None:
             return False
 
         return True
 
-    def assert_permissions(self, jobid):
+    def assert_permissions(self):
         # TODO
         # Raise a forbidden exception is not allowed
-        if not self.check_permissions(jobid):
+        if not self.check_permissions():
             raise self.JobOperationForbidden()
 
-    def create(self, jobid, objid=None, type=None, op=None):
+    def create(self, objid=None, type=None, op=None, status=None):
 
-        self.assert_permissions(jobid)
+        self.assert_permissions()
         userid = self.user['_id']
 
-        if objid is None or type is None or op is None:
+        if objid is None or type is None or op is None or status is None:
             raise ValueError('objid, type and op are required')
-
-        if self.collection.find_one({
-            '_id': jobid
-        }):
-            raise self.JobAlreadyExists()
-
+        elif status not in JOB_STATUS:
+            raise self.StatusInvalidException()
         job = {
-            '_id': jobid,
             'userid': userid,
             'objid': objid,
             'type': type,
             'op': op,
+            'status': status,
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
         }
 
-        self.collection.insert(job)
+        return self.collection.insert(job)
 
     def update_status(self, jobid, status):
 
-        self.assert_permissions(jobid)
+        self.assert_permissions()
 
         job = self.collection.find_one({
             '_id': jobid
@@ -95,7 +90,7 @@ class JobStorage(object):
 
     def get(self, jobid):
 
-        self.assert_permissions(jobid)
+        self.assert_permissions()
 
         job = self.collection.find_one({
             '_id': jobid
@@ -112,7 +107,7 @@ def get_jobstorage(request):
         user = request.user
     else:
         user = None
-    return JobStorage(request.db.jobs, request.userdb, user)
+    return JobStorage(request.db.jobs, user)
 
 
 class EventsManager(Session):

@@ -7,6 +7,8 @@ from celery.exceptions import Ignore
 from chef import Node, ChefAPI
 from jsonschema import validate
 
+from gecoscc.eventsmanager import JobStorage
+
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage')
 
@@ -32,7 +34,7 @@ class ChefTask(Task):
 
     def get_related_computers_of_computer(self, obj, related_computers, related_objects):
         if related_objects is not None:
-            if not obj in related_objects:
+            if obj not in related_objects:
                 related_objects.append(obj)
             else:
                 return related_computers
@@ -40,19 +42,19 @@ class ChefTask(Task):
         return related_computers
 
     def get_related_computers_of_group(self, obj, related_computers, related_objects):
-        if not obj in related_objects:
+        if obj not in related_objects:
             related_objects.append(obj)
         else:
             return related_computers
         for node_id in obj['members']:
             node = self.db.nodes.find_one({'_id': node_id})
-            if not node in related_objects:
+            if node not in related_objects:
                 self.get_related_computers(node, related_computers, related_objects)
         return related_computers
 
     def get_related_computers_of_ou(self, ou, related_computers, related_objects):
         if related_objects is not None:
-            if not ou in related_objects:
+            if ou not in related_objects:
                 related_objects.append(ou)
             else:
                 return related_computers
@@ -105,11 +107,12 @@ class ChefTask(Task):
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def update_node_from_rules(self, rule_type, computer, obj, node=None):
+    def update_node_from_rules(self, rule_type, user, computer, obj, action, node):
         fields = self.RULES[obj['type']][rule_type]
         updated = False
+        attributes_updated = []
         for field_chef, field_ui in fields.items():
-            if node and computer.get(field_ui, None) == node.attributes.get_dotted(field_chef):
+            if computer.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
             elif obj['type'] != 'computer' and rule_type == 'save':
                 try:
@@ -119,26 +122,37 @@ class ChefTask(Task):
                     pass
             node.attributes.set_dotted(field_chef, computer[field_ui])
             updated = True
+            attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
+            if attr not in attributes_updated:
+                self.update_node_job_id(user, obj, action, node, attr, attributes_updated)
         return (node, updated)
 
-    def update_node(self, computer, obj, objold, node, action):
+    def update_node_job_id(self, user, obj, action, node, attr, attributes_updated):
+        job_ids = node.attributes.get_dotted(attr)
+        job_storage = JobStorage(self.db.jobs, user)
+        job_status = 'processing'
+        job_id = job_storage.create(objid=obj['_id'], type=obj['type'], op=action, status=job_status)
+        job_ids.append({'id': unicode(job_id), 'status': job_status})
+        attributes_updated.append(attr)
+
+    def update_node(self, user, computer, obj, objold, node, action):
         if action == 'deleted':
             return (None, False)
         elif action == 'changed':
             if self.is_adding_policy(obj, objold):
-                return self.update_node_from_rules('policy', computer, obj, node)
+                return self.update_node_from_rules('policy', user, computer, obj, action, node)
             else:
-                return self.update_node_from_rules('save', computer, obj, node)
+                return self.update_node_from_rules('save', user, computer, obj, action, node)
             return ''
         elif action == 'created':
-            return self.update_node_from_rules('save', computer, obj, node)
+            return self.update_node_from_rules('save', user, computer, obj, action, node)
         raise NotImplementedError
 
     def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
-    def resource_action(self, obj, objold=None, action=None):
+    def resource_action(self, user, obj, objold=None, action=None):
         api = ChefAPI(self.app.conf.get('chef.url'),
                       self.app.conf.get('chef.pem'),
                       self.app.conf.get('chef.username'))
@@ -147,102 +161,102 @@ class ChefTask(Task):
         for computer in computers:
             hardcode_computer_name = 'gecos-workstation-1'
             node = Node(hardcode_computer_name, api)
-            node, updated = self.update_node(computer, obj, objold, node, action)
+            node, updated = self.update_node(user, computer, obj, objold, node, action)
             if not updated:
                 continue
             self.validate_data(node, cookbook, api)
             node.save()
 
-    def object_action(self, obj, objold=None, action=None):
+    def object_action(self, user, obj, objold=None, action=None):
         if obj['type'] in RESOURCES_EMITTERS_TYPES:
             related_resources = self.search_resources(obj)
             for related_resource in related_resources:
-                self.resource_action(obj, objold, action)
+                self.resource_action(user, obj, objold, action)
         else:
-            return self.resource_action(obj, objold, action)
+            return self.resource_action(user, obj, objold, action)
 
-    def object_created(self, objnew):
-        self.object_action(objnew, action='created')
+    def object_created(self, user, objnew):
+        self.object_action(user, objnew, action='created')
 
-    def object_changed(self, objnew, objold):
-        self.object_action(objnew, objold, action='changed')
+    def object_changed(self, user, objnew, objold):
+        self.object_action(user, objnew, objold, action='changed')
 
-    def object_deleted(self, obj):
-        self.object_action(obj, action='deleted')
+    def object_deleted(self, user, obj):
+        self.object_action(user, obj, action='deleted')
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
 
-    def group_created(self, objnew):
-        self.object_created(objnew)
+    def group_created(self, user, objnew):
+        self.object_created(user, objnew)
         self.log_action('created', 'Group', objnew)
 
-    def group_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def group_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'Group', objnew)
 
-    def group_deleted(self, obj):
-        self.object_deleted(obj)
+    def group_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'Group', obj)
 
-    def user_created(self, objnew):
-        self.object_deleted(objnew)
+    def user_created(self, user, objnew):
+        self.object_deleted(user, objnew)
         self.log_action('created', 'User', objnew)
 
-    def user_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def user_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'User', objnew)
 
-    def user_deleted(self, obj):
-        self.object_deleted(obj)
+    def user_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'User', obj)
 
-    def computer_created(self, objnew):
-        self.object_deleted(objnew)
+    def computer_created(self, user, objnew):
+        self.object_deleted(user, objnew)
         self.log_action('created', 'Computer', objnew)
 
-    def computer_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def computer_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'Computer', objnew)
 
-    def computer_deleted(self, obj):
-        self.object_deleted(obj)
+    def computer_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'Computer', obj)
 
-    def ou_created(self, objnew):
-        self.object_created(objnew)
+    def ou_created(self, user, objnew):
+        self.object_created(user, objnew)
         self.log_action('created', 'OU', objnew)
 
-    def ou_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def ou_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'OU', objnew)
 
-    def ou_deleted(self, obj):
-        self.object_deleted(obj)
+    def ou_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'OU', obj)
 
-    def printer_created(self, objnew):
-        self.object_created(objnew)
+    def printer_created(self, user, objnew):
+        self.object_created(user, objnew)
         self.log_action('created', 'Printer', objnew)
 
-    def printer_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def printer_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'Printer', objnew)
 
-    def printer_deleted(self, obj):
-        self.object_deleted(obj)
+    def printer_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'Printer', obj)
 
-    def storage_created(self, objnew):
-        self.object_created(objnew)
+    def storage_created(self, user, objnew):
+        self.object_created(user, objnew)
         self.log_action('created', 'Storage', objnew)
 
-    def storage_changed(self, objnew, objold):
-        self.object_changed(objnew, objold)
+    def storage_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
         self.log_action('changed', 'Storage', objnew)
 
-    def storage_deleted(self, obj):
-        self.object_deleted(obj)
+    def storage_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
 
 
@@ -260,12 +274,12 @@ def task_test(value):
 
 
 @task(base=ChefTask)
-def object_created(objtype, obj):
+def object_created(user, objtype, obj):
     self = object_created
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
-        return func(obj)
+        return func(user, obj)
 
     else:
         self.log('error', 'The method {0}_created does not exist'.format(
@@ -273,11 +287,11 @@ def object_created(objtype, obj):
 
 
 @task(base=ChefTask)
-def object_changed(objtype, objnew, objold):
+def object_changed(user, objtype, objnew, objold):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
-        return func(objnew, objold)
+        return func(user, objnew, objold)
 
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
@@ -285,12 +299,12 @@ def object_changed(objtype, objnew, objold):
 
 
 @task(base=ChefTask)
-def object_deleted(objtype, obj):
+def object_deleted(user, objtype, obj):
     self = object_changed
 
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
-        return func(obj)
+        return func(user, obj)
 
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(

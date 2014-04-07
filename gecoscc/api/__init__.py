@@ -179,41 +179,14 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         self.notify_created(obj)
         return self.parse_item(obj)
 
-    def _job_params(self, obj, op):
-
-        if self.objtype == 'group':
-            type = 'group'
-        else:
-            type = 'node'
-
-        params = {
-            'type': type,
-            'objid': obj['_id'],
-            'op': op,
-        }
-
-        return params
-
     def notify_created(self, obj):
-        result = object_created.delay(self.objtype, obj)
-
-        params = self._job_params(obj, 'created')
-
-        self.request.jobs.create(result.task_id, **params)
+        object_created.delay(self.request.user, self.objtype, obj)
 
     def notify_changed(self, obj, old_obj):
-        result = object_changed.delay(self.objtype, obj, old_obj)
-
-        params = self._job_params(obj, 'changed')
-
-        self.request.jobs.create(result.task_id, **params)
+        object_changed.delay(self.request.user, self.objtype, obj, old_obj)
 
     def notify_deleted(self, obj):
-        result = object_deleted.delay(self.objtype, obj)
-
-        params = self._job_params(obj, 'deleted')
-
-        self.request.jobs.create(result.task_id, **params)
+        object_deleted.delay(self.request.user, self.objtype, obj)
 
     def put(self):
         obj = self.request.validated
@@ -239,7 +212,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.pre_save(obj, old_obj=old_obj)
 
         real_obj.update(obj)
-
         try:
             self.collection.update(obj_filter, real_obj, new=True)
         except DuplicateKeyError, e:
@@ -247,7 +219,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 e.message))
 
         obj = self.post_save(obj, old_obj=old_obj)
-
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
         return obj
