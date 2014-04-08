@@ -163,6 +163,7 @@ class AdminUser(BaseUser):
                                    title=_('Password'),
                                    widget=deform.widget.PasswordWidget())
     repeat_password = colander.SchemaNode(colander.String(),
+                                          default='',
                                           title=_('Repeat the password'),
                                           widget=deform.widget.PasswordWidget())
     email = colander.SchemaNode(colander.String(),

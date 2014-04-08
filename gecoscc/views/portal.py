@@ -92,8 +92,7 @@ def forbidden_view(context, request):
         response = Response(render('templates/forbidden.jinja2', {}))
         response.status_int = 403
         return response
-
-    if user is None and request.is_xhr:
+    if user is None and (request.is_xhr or request.headers.get('content-type') == 'application/json'):
         response = Response(render('templates/forbidden.jinja2', {}))
         response.status_int = 403
         return response
