@@ -114,7 +114,6 @@ class ResourcePaginatedReadOnly(object):
         }
 
     def get(self):
-        import ipdb; ipdb.set_trace()
         oid = self.request.matchdict['oid']
         collection_filter = self.get_oid_filter(oid)
         collection_filter.update(self.get_object_filter())
