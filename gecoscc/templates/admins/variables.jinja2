@@ -27,8 +27,8 @@
             var specific_conf = $("input[name=specific_conf]");
             var specific_conf_group = specific_conf.parents(".form-group");
             var auth_ldap = $("input[name=uri]").parents(".panel");
-            var auth_ad = $("input[name=sssd_conf]").parents(".panel");
-            var auth_ad_spec = $("input[name=fqdn]").parents(".panel");
+            var auth_ad = $("input[name=fqdn]").parents(".panel");
+            var auth_ad_spec = $("input[name=upload]").parents(".panel");
 
             var hidden_fields = function () {
                 if (auth_type.val() == "LDAP") {

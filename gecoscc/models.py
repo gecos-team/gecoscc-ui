@@ -5,7 +5,17 @@ import pyramid
 from bson import ObjectId
 from bson.objectid import InvalidId
 
+from deform.widget import FileUploadWidget
+
 from gecoscc.i18n import TranslationString as _
+
+
+class MemoryTmpStore(dict):
+
+    def preview_url(self, name):
+        return None
+
+filestore = MemoryTmpStore()
 
 
 class MyModel(object):
@@ -178,15 +188,6 @@ class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
 
 
-class ChefVariable(colander.MappingSchema):
-    chef_server_uri = colander.SchemaNode(colander.String(),
-                                          title=_('Chef server uri'),
-                                          default='http://URL_CHEF')
-    chef_validation = colander.SchemaNode(colander.String(),
-                                          title=_('Chef validation'),
-                                          default='CRYPTED_FILE_VALIDATION_PEM')
-
-
 class AuthLDAPVariable(colander.MappingSchema):
     uri = colander.SchemaNode(colander.String(),
                               title=_('uri'),
@@ -205,21 +206,26 @@ class AuthLDAPVariable(colander.MappingSchema):
                                   default='PASSWORD_USER_BIND')
 
 
-class ActiveDirectoryVariableSpecific(colander.MappingSchema):
+class ActiveDirectoryVariableNoSpecific(colander.MappingSchema):
     fqdn = colander.SchemaNode(colander.String(),
-                               title=_('FQDN'))
+                               title=_('FQDN'),
+                               validator=colander.All(colander.Email()))
     workgroup = colander.SchemaNode(colander.String(),
                                     title=_('WORKGROUP'))
 
 
-class ActiveDirectoryVariableNoSpecific(colander.MappingSchema):
-    sssd_conf = colander.SchemaNode(colander.String(),
+class ActiveDirectoryVariableSpecific(colander.MappingSchema):
+    sssd_conf = colander.SchemaNode(deform.FileData(),
+                                    widget=FileUploadWidget(filestore),
                                     title=_('SSSD conf'))
-    krb5_conf = colander.SchemaNode(colander.String(),
+    krb5_conf = colander.SchemaNode(deform.FileData(),
+                                    widget=FileUploadWidget(filestore),
                                     title=_('KRB5 conf'))
-    smb_conf = colander.SchemaNode(colander.String(),
+    smb_conf = colander.SchemaNode(deform.FileData(),
+                                   widget=FileUploadWidget(filestore),
                                    title=_('SMB conf'))
-    pam_conf = colander.SchemaNode(colander.String(),
+    pam_conf = colander.SchemaNode(deform.FileData(),
+                                   widget=FileUploadWidget(filestore),
                                    title=_('PAM conf'))
 
 AUTH_TYPE_CHOICES = (('LDAP', 'LDAP'),
@@ -230,6 +236,9 @@ class AdminUserVariables(colander.MappingSchema):
     uri_ntp = colander.SchemaNode(colander.String(),
                                   default='http://URL_NTP_SERVER',
                                   title=_('URI ntp'))
+    chef_server_uri = colander.SchemaNode(colander.String(),
+                                          title=_('Chef server uri'),
+                                          default='http://URL_CHEF')
     auth_type = colander.SchemaNode(colander.String(),
                                     title=_('Auth type'),
                                     default='LDAP',
@@ -240,7 +249,6 @@ class AdminUserVariables(colander.MappingSchema):
     auth_ldap = AuthLDAPVariable(title=_('Auth LDAP'))
     auth_ad = ActiveDirectoryVariableNoSpecific(title=_('Auth Active directory'))
     auth_ad_spec = ActiveDirectoryVariableSpecific(title=_('Auth Active directory'))
-    chef = ChefVariable(title=_('Chef'))
 
 
 class OrganisationalUnit(Node):
@@ -278,8 +286,7 @@ class Computer(Node):
     family = colander.SchemaNode(colander.String(),
                                  default='desktop',
                                  validator=colander.OneOf(
-                                     COMPUTER_FAMILY.keys()
-                                 ))
+                                     COMPUTER_FAMILY.keys()))
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
@@ -326,8 +333,7 @@ class Printer(Node):
     printtype = colander.SchemaNode(colander.String(),
                                     default='laser',
                                     validator=colander.OneOf(
-                                        PRINTER_TYPE.keys()
-                                    ))
+                                        PRINTER_TYPE.keys()))
     brand = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
@@ -352,16 +358,14 @@ class Printer(Node):
     connection = colander.SchemaNode(colander.String(),
                                      default='network',
                                      validator=colander.OneOf(
-                                         PRINTER_CONN_TYPE.keys()
-                                     ))
+                                         PRINTER_CONN_TYPE.keys()))
     printerpath = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
     driver = colander.SchemaNode(colander.String(),
                                  default='auto',
                                  validator=colander.OneOf(
-                                     PRINTER_DRIVER.keys()
-                                 ))
+                                     PRINTER_DRIVER.keys()))
     driverBrand = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')  # TODO choices?
@@ -378,8 +382,7 @@ class Printer(Node):
     quality = colander.SchemaNode(colander.String(),
                                   default='auto',
                                   validator=colander.OneOf(
-                                      PRINTER_QUALITIES.keys()
-                                  ))
+                                      PRINTER_QUALITIES.keys()))
     paperTray = colander.SchemaNode(colander.String(),
                                     default='',
                                     missing='')  # TODO remove this field?
@@ -414,13 +417,11 @@ class Storage(Node):
                                missing='')
     protocol = colander.SchemaNode(colander.String(),
                                    validator=colander.OneOf(
-                                       STORAGE_PROTOCOLS.keys()
-                                   ))
+                                       STORAGE_PROTOCOLS.keys()))
     localpath = colander.SchemaNode(colander.String())
     mount = colander.SchemaNode(colander.String(),
                                 validator=colander.OneOf(
-                                    STORAGE_MOUNT_TYPE.keys()
-                                ),
+                                    STORAGE_MOUNT_TYPE.keys()),
                                 default='gvfs')
     extraops = colander.SchemaNode(colander.String(),
                                    default='',
@@ -470,8 +471,7 @@ class Job(colander.MappingSchema):
     type = colander.SchemaNode(colander.String())
     op = colander.SchemaNode(colander.String(),
                              validator=colander.OneOf(
-                                 ['created', 'changed', 'deleted']
-                             ))
+                                 ['created', 'changed', 'deleted']))
 
     created = colander.SchemaNode(colander.DateTime())
     last_update = colander.SchemaNode(colander.DateTime())

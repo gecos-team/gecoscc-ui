@@ -49,7 +49,7 @@ def admins_set_variables(context, request):
     instance = data = {}
     if username:
         instance = request.userdb.get_user(username)
-    if 'submit' in request.POST:
+    if '_submit' in request.POST:
         data = request.POST.items()
         try:
             admin_user = form.validate(data)
@@ -86,7 +86,7 @@ def _admin_edit(request, form_class, username=None):
     instance = data = {}
     if username:
         instance = request.userdb.get_user(username)
-    if 'submit' in request.POST:
+    if '_submit' in request.POST:
         data = request.POST.items()
         try:
             admin_user = admin_user_form.validate(data)

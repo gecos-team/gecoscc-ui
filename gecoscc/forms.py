@@ -14,7 +14,7 @@ gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
 
 class GecosButton(deform.Button):
 
-    def __init__(self, name='submit', title=None, type='submit', value=None,
+    def __init__(self, name='_submit', title=None, type='submit', value=None,
                  disabled=False, css_class=None, attrs=None):
         super(GecosButton, self).__init__(name=name, title=title, type=type, value=value,
                                           disabled=False, css_class=css_class)
@@ -112,7 +112,41 @@ class AdminUserEditForm(BaseAdminUserForm):
 
 class AdminUserVariablesForm(GecosForm):
 
+    def validate(self, data):
+        data_dict = dict(data)
+        if data_dict['auth_type'] == 'LDAP':
+            for field in self.schema.get('auth_ad').children:
+                field.missing = ''
+            for field in self.schema.get('auth_ad_spec').children:
+                field.validator = None
+                field.missing = ''
+        else:
+            for field in self.schema.get('auth_ad').children:
+                field.missing = ''
+            if data_dict.get('specific_conf', False):
+                for field in self.schema.get('auth_ad').children:
+                    field.validator = None
+                    field.missing = ''
+            else:
+                for field in self.schema.get('auth_ad_spec').children:
+                    field.validator = None
+                    field.missing = ''
+        return super(AdminUserVariablesForm, self).validate(data)
+
     def save(self, admin_user):
+        variables = {}
+        if admin_user['auth_type'] == 'LDAP':
+            pass
+        else:
+            if admin_user.get('specific_conf', False):
+                for i, name in enumerate(['sssd_conf', 'krb5_conf', 'smb_conf', 'pam_conf']):
+                    filein = admin_user['auth_ad_spec'][name]['fp']
+                    fileout = open('/tmp/%s' % name, 'w')
+                    fileout.write(filein.read())
+                    filein.close()
+                    fileout.close()
+            else:
+                pass
         user = self.collection.find_one({'username': self.username})
-        user.update()
-        import ipdb; ipdb.set_trace()
+        user.update({'variables': variables})
+        self.created_msg(_('Variables updated successfully'))
