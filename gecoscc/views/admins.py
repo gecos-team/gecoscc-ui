@@ -5,9 +5,9 @@ from pyramid.security import forget
 from deform import ValidationFailure
 
 from gecoscc import messages
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm
+from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm
 from gecoscc.i18n import TranslationString as _
-from gecoscc.models import AdminUser
+from gecoscc.models import AdminUser, AdminUserVariables
 from gecoscc.pagination import create_pagination_mongo_collection
 
 
@@ -35,6 +35,34 @@ def admin_add(context, request):
 def admin_edit(context, request):
     return _admin_edit(request, AdminUserEditForm,
                        username=request.matchdict['username'])
+
+
+@view_config(route_name='admins_set_variables', renderer='templates/admins/variables.jinja2',
+             permission='edit')
+def admins_set_variables(context, request):
+    username = request.matchdict['username']
+    schema = AdminUserVariables()
+    form = AdminUserVariablesForm(schema=schema,
+                                  collection=request.db['adminusers'],
+                                  username=username,
+                                  request=request)
+    instance = data = {}
+    if username:
+        instance = request.userdb.get_user(username)
+    if 'submit' in request.POST:
+        data = request.POST.items()
+        try:
+            admin_user = form.validate(data)
+            form.save(admin_user)
+            return HTTPFound(location=request.route_url('admins'))
+        except ValidationFailure, e:
+            form = e
+    if instance and not data:
+        form_render = form.render(instance)
+    else:
+        form_render = form.render()
+    return {'admin_user_form': form_render,
+            'username': username}
 
 
 @view_config(route_name='admin_delete', permission='edit',  xhr=True, renderer='json')

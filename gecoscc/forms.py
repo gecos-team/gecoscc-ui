@@ -108,3 +108,11 @@ class AdminUserEditForm(BaseAdminUserForm):
         if admin_user['username'] != self.username and self.request.session['auth.userid'] == self.username:
             self.request.session['auth.userid'] = admin_user['username']
         self.created_msg(_('User edited successfully'))
+
+
+class AdminUserVariablesForm(GecosForm):
+
+    def save(self, admin_user):
+        user = self.collection.find_one({'username': self.username})
+        user.update()
+        import ipdb; ipdb.set_trace()

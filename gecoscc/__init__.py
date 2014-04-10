@@ -27,6 +27,7 @@ def route_config(config):
     config.add_route('admins', '/admins/', factory=LoggedFactory)
     config.add_route('admins_add', '/admins/add/', factory=LoggedFactory)
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=LoggedFactory)
+    config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=LoggedFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=LoggedFactory)
     config.add_route('groups', '/groups/', factory=LoggedFactory)
     config.add_route('reports', '/reports/', factory=LoggedFactory)

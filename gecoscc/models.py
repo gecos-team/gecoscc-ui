@@ -178,6 +178,71 @@ class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
 
 
+class ChefVariable(colander.MappingSchema):
+    chef_server_uri = colander.SchemaNode(colander.String(),
+                                          title=_('Chef server uri'),
+                                          default='http://URL_CHEF')
+    chef_validation = colander.SchemaNode(colander.String(),
+                                          title=_('Chef validation'),
+                                          default='CRYPTED_FILE_VALIDATION_PEM')
+
+
+class AuthLDAPVariable(colander.MappingSchema):
+    uri = colander.SchemaNode(colander.String(),
+                              title=_('uri'),
+                              default='URL_LDAP')
+    base = colander.SchemaNode(colander.String(),
+                               title=_('base'),
+                               default='OU_BASE_USER')
+    basegroup = colander.SchemaNode(colander.String(),
+                                    title=_('base group'),
+                                    default='OU_BASE_GROUP')
+    binddn = colander.SchemaNode(colander.String(),
+                                 title=_('binddn'),
+                                 default='USER_WITH_BIND_PRIVILEGES')
+    bindpwd = colander.SchemaNode(colander.String(),
+                                  title=_('bindpwd'),
+                                  default='PASSWORD_USER_BIND')
+
+
+class ActiveDirectoryVariableSpecific(colander.MappingSchema):
+    fqdn = colander.SchemaNode(colander.String(),
+                               title=_('FQDN'))
+    workgroup = colander.SchemaNode(colander.String(),
+                                    title=_('WORKGROUP'))
+
+
+class ActiveDirectoryVariableNoSpecific(colander.MappingSchema):
+    sssd_conf = colander.SchemaNode(colander.String(),
+                                    title=_('SSSD conf'))
+    krb5_conf = colander.SchemaNode(colander.String(),
+                                    title=_('KRB5 conf'))
+    smb_conf = colander.SchemaNode(colander.String(),
+                                   title=_('SMB conf'))
+    pam_conf = colander.SchemaNode(colander.String(),
+                                   title=_('PAM conf'))
+
+AUTH_TYPE_CHOICES = (('LDAP', 'LDAP'),
+                     ('AD', 'Active Directory'))
+
+
+class AdminUserVariables(colander.MappingSchema):
+    uri_ntp = colander.SchemaNode(colander.String(),
+                                  default='http://URL_NTP_SERVER',
+                                  title=_('URI ntp'))
+    auth_type = colander.SchemaNode(colander.String(),
+                                    title=_('Auth type'),
+                                    default='LDAP',
+                                    widget=deform.widget.SelectWidget(values=AUTH_TYPE_CHOICES))
+    specific_conf = colander.SchemaNode(colander.Boolean(),
+                                        title=_('Specific conf'),
+                                        default=False)
+    auth_ldap = AuthLDAPVariable(title=_('Auth LDAP'))
+    auth_ad = ActiveDirectoryVariableNoSpecific(title=_('Auth Active directory'))
+    auth_ad_spec = ActiveDirectoryVariableSpecific(title=_('Auth Active directory'))
+    chef = ChefVariable(title=_('Chef'))
+
+
 class OrganisationalUnit(Node):
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},

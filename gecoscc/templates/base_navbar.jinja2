@@ -29,13 +29,18 @@
                             <li role="presentation" class="dropdown-header">{{ gettext('User options') }}</li>
                             <li>
                                 <a href="{{ request.route_url('admins_edit', username=request.user['username']) }}">
-                                    <span class="fa fa-wrench"></span> {{ gettext('Change password') }}
+                                    <span class="fa fa-user"></span> {{ gettext('Edit profile') }}
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{{ request.route_url('admins_set_variables', username=request.user['username']) }}">
+                                    <span class="fa fa-wrench"></span> {{ gettext('Set variables') }}
                                 </a>
                             </li>
                             <li role="presentation" class="divider"></li>
                             <li>
                                 <a href="{{ request.route_url('logout') }}">
-                                    <span class="fa fa-beer"></span> {{ gettext('Log out') }}
+                                    <span class="fa fa-sign-out"></span> {{ gettext('Log out') }}
                                 </a>
                             </li>
                         </ul>
