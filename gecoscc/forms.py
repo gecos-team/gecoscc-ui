@@ -5,14 +5,14 @@ from pkg_resources import resource_filename
 
 from deform.template import ZPTRendererFactory
 
+from pyramid.threadlocal import get_current_registry
+
 from gecoscc.i18n import TranslationString as _
 from gecoscc import messages
 
 default_dir = resource_filename('deform', 'templates/')
 gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
 gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
-
-media_dir = resource_filename('gecoscc', 'media/')
 
 
 class GecosButton(deform.Button):
@@ -124,7 +124,7 @@ class AdminUserVariablesForm(GecosForm):
                 field.validator = None
                 field.missing = ''
         else:
-            for field in self.schema.get('auth_ad').children:
+            for field in self.schema.get('auth_ldap').children:
                 field.missing = ''
             if data_dict.get('specific_conf', False):
                 for field in self.schema.get('auth_ad').children:
@@ -138,12 +138,9 @@ class AdminUserVariablesForm(GecosForm):
 
     def save(self, variables):
         if variables['auth_type'] != 'LDAP' and variables.get('specific_conf', False):
-            user_media = os.path.join(media_dir, 'users', self.username)
-            if not os.path.exists(user_media):
-                os.makedirs(user_media)
-            for i, name in enumerate(['sssd_conf', 'krb5_conf', 'smb_conf', 'pam_conf']):
-                filein = variables['auth_ad_spec'][name]['fp']
-                fileout = open(os.path.join(user_media, name.replace('_', '.')), 'w')
+            for i, fileout in enumerate(self.schema.get_files('w', self.username)):
+                fileout_name = fileout.name.split(os.sep)[-1]
+                filein = variables['auth_ad_spec'][fileout_name.replace('.', '_')]['fp']
                 fileout.write(filein.read())
                 filein.close()
                 fileout.close()

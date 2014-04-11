@@ -15,7 +15,25 @@ UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
 SCHEMA_METHODS = ('POST', 'PUT', )
 
 
-class ResourcePaginatedReadOnly(object):
+class BaseAPI(object):
+
+    def __init__(self, request):
+        self.request = request
+        self.collection = self.get_collection()
+
+    def parse_item(self, item):
+        return self.schema_detail().serialize(item)
+
+    def parse_collection(self, collection):
+        return self.schema_collection().serialize(collection)
+
+    def get_collection(self, collection=None):
+        if collection is None:
+            collection = self.collection_name
+        return self.request.db[collection]
+
+
+class ResourcePaginatedReadOnly(BaseAPI):
     # TODO
     # Implement permissions filter
 
@@ -29,21 +47,14 @@ class ResourcePaginatedReadOnly(object):
     key = '_id'
 
     def __init__(self, request):
-        self.request = request
+        super(ResourcePaginatedReadOnly, self).__init__(request)
         self.default_pagesize = request.registry.settings.get(
             'default_pagesize', 30)
-        self.collection = self.get_collection()
         if self.objtype is None:
             raise self.BadResourceDefinition('objtype is not defined')
 
     class BadResourceDefinition(Exception):
         pass
-
-    def parse_item(self, item):
-        return self.schema_detail().serialize(item)
-
-    def parse_collection(self, collection):
-        return self.schema_collection().serialize(collection)
 
     def get_objects_filter(self):
         query = []
@@ -68,11 +79,6 @@ class ResourcePaginatedReadOnly(object):
 
     def get_oid_filter(self, oid):
         return {self.key: ObjectId(oid)}
-
-    def get_collection(self, collection=None):
-        if collection is None:
-            collection = self.collection_name
-        return self.request.db[collection]
 
     def collection_get(self):
         page = int(self.request.GET.get('page', 1))

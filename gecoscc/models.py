@@ -1,5 +1,6 @@
 import colander
 import deform
+import os
 import pyramid
 
 from bson import ObjectId
@@ -8,6 +9,7 @@ from bson.objectid import InvalidId
 from deform.widget import FileUploadWidget
 
 from gecoscc.i18n import TranslationString as _
+from pyramid.threadlocal import get_current_registry
 
 
 class MemoryTmpStore(dict):
@@ -248,6 +250,16 @@ class AdminUserVariables(colander.MappingSchema):
     auth_ldap = AuthLDAPVariable(title=_('Auth LDAP'))
     auth_ad = ActiveDirectoryVariableNoSpecific(title=_('Auth Active directory'))
     auth_ad_spec = ActiveDirectoryVariableSpecific(title=_('Auth Active directory'))
+
+    def get_files(self, mode, username):
+        settings = get_current_registry().settings
+        first_boot_media = settings.get('firstboot_api.media')
+        user_media = os.path.join(first_boot_media, username)
+        if mode == 'w' and not os.path.exists(user_media):
+            os.makedirs(user_media)
+        file_names = ['sssd.conf', 'krb5.conf', 'smb.conf', 'pam.conf']
+        files = [open(os.path.join(user_media, name), mode) for name in file_names]
+        return files
 
 
 class OrganisationalUnit(Node):
