@@ -50,6 +50,7 @@ class AdminUserResource(BaseAPI):
         gcc = {}
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
+        # TODO Softcode it
         gcc['ou_username'] = ['HARD_CODE_OU1', 'HARD_CODE_OU1']
 
         auth_type = variables.get('auth_type', 'LDAP')
@@ -68,9 +69,11 @@ class AdminUserResource(BaseAPI):
                     variable_name = conf_file.name.split(os.sep)[-1].replace('.', '_')
                     ad_properties[variable_name] = conf_file.read().encode('base64')
                 auth_properties['ad_properties'] = ad_properties
+        auth = {'auth_properties': auth_properties,
+                'auth_type': auth_type}
         return {'version': settings.get('firstboot_api.version'),
                 'organization': settings.get('firstboot_api.organization_name'),
                 'uri_ntp': variables.get('uri_ntp', ''),
-                'auth': {'auth_properties': auth_properties},
+                'auth': auth,
                 'chef': chef,
                 'gcc': gcc}
