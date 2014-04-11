@@ -46,14 +46,13 @@ def admins_set_variables(context, request):
                                   collection=request.db['adminusers'],
                                   username=username,
                                   request=request)
-    instance = data = {}
-    if username:
-        instance = request.userdb.get_user(username)
+    data = {}
+    instance = request.userdb.get_user(username).get('variables', None)
     if '_submit' in request.POST:
         data = request.POST.items()
         try:
-            admin_user = form.validate(data)
-            form.save(admin_user)
+            variables = form.validate(data)
+            form.save(variables)
             return HTTPFound(location=request.route_url('admins'))
         except ValidationFailure, e:
             form = e
@@ -61,7 +60,7 @@ def admins_set_variables(context, request):
         form_render = form.render(instance)
     else:
         form_render = form.render()
-    return {'admin_user_form': form_render,
+    return {'variables_form': form_render,
             'username': username}
 
 

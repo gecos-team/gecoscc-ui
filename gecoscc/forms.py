@@ -1,4 +1,5 @@
 import deform
+import os
 
 from pkg_resources import resource_filename
 
@@ -10,6 +11,8 @@ from gecoscc import messages
 default_dir = resource_filename('deform', 'templates/')
 gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
 gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
+
+media_dir = resource_filename('gecoscc', 'media/')
 
 
 class GecosButton(deform.Button):
@@ -48,6 +51,9 @@ class GecosForm(deform.Form):
         self.widget.item_template = self.item_template
         self.widget.css_class = self.css_class
 
+    def created_msg(self, msg):
+        messages.created_msg(self.request, msg, 'success')
+
 
 class GecosTwoColumnsForm(GecosForm):
 
@@ -68,9 +74,6 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
-
-    def created_msg(self, msg):
-        messages.created_msg(self.request, msg, 'success')
 
 
 class AdminUserAddForm(BaseAdminUserForm):
@@ -133,20 +136,17 @@ class AdminUserVariablesForm(GecosForm):
                     field.missing = ''
         return super(AdminUserVariablesForm, self).validate(data)
 
-    def save(self, admin_user):
-        variables = {}
-        if admin_user['auth_type'] == 'LDAP':
-            pass
-        else:
-            if admin_user.get('specific_conf', False):
-                for i, name in enumerate(['sssd_conf', 'krb5_conf', 'smb_conf', 'pam_conf']):
-                    filein = admin_user['auth_ad_spec'][name]['fp']
-                    fileout = open('/tmp/%s' % name, 'w')
-                    fileout.write(filein.read())
-                    filein.close()
-                    fileout.close()
-            else:
-                pass
-        user = self.collection.find_one({'username': self.username})
-        user.update({'variables': variables})
+    def save(self, variables):
+        if variables['auth_type'] != 'LDAP' and variables.get('specific_conf', False):
+            user_media = os.path.join(media_dir, 'users', self.username)
+            if not os.path.exists(user_media):
+                os.makedirs(user_media)
+            for i, name in enumerate(['sssd_conf', 'krb5_conf', 'smb_conf', 'pam_conf']):
+                filein = variables['auth_ad_spec'][name]['fp']
+                fileout = open(os.path.join(user_media, name.replace('_', '.')), 'w')
+                fileout.write(filein.read())
+                filein.close()
+                fileout.close()
+        del variables['auth_ad_spec']
+        self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
         self.created_msg(_('Variables updated successfully'))

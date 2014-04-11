@@ -208,8 +208,7 @@ class AuthLDAPVariable(colander.MappingSchema):
 
 class ActiveDirectoryVariableNoSpecific(colander.MappingSchema):
     fqdn = colander.SchemaNode(colander.String(),
-                               title=_('FQDN'),
-                               validator=colander.All(colander.Email()))
+                               title=_('FQDN'))
     workgroup = colander.SchemaNode(colander.String(),
                                     title=_('WORKGROUP'))
 
