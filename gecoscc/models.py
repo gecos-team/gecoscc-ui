@@ -239,7 +239,10 @@ class AdminUserVariables(colander.MappingSchema):
                                   title=_('URI ntp'))
     chef_server_uri = colander.SchemaNode(colander.String(),
                                           title=_('Chef server uri'),
-                                          default='http://URL_CHEF')
+                                          default='https://URL_CHEF')
+    chef_server_pem = colander.SchemaNode(deform.FileData(),
+                                          widget=FileUploadWidget(filestore),
+                                          title=_('Chef server pem'))
     auth_type = colander.SchemaNode(colander.String(),
                                     title=_('Auth type'),
                                     default='LDAP',
@@ -251,15 +254,19 @@ class AdminUserVariables(colander.MappingSchema):
     auth_ad = ActiveDirectoryVariableNoSpecific(title=_('Auth Active directory'))
     auth_ad_spec = ActiveDirectoryVariableSpecific(title=_('Auth Active directory'))
 
-    def get_files(self, mode, username):
+    def get_config_files(self, mode, username):
+        return self.get_files(mode, username, ['sssd.conf', 'krb5.conf', 'smb.conf', 'pam.conf'])
+
+    def get_files(self, mode, username, file_name):
         settings = get_current_registry().settings
         first_boot_media = settings.get('firstboot_api.media')
         user_media = os.path.join(first_boot_media, username)
         if mode == 'w' and not os.path.exists(user_media):
             os.makedirs(user_media)
-        file_names = ['sssd.conf', 'krb5.conf', 'smb.conf', 'pam.conf']
-        files = [open(os.path.join(user_media, name), mode) for name in file_names]
-        return files
+        if isinstance(file_name, list):
+            files = [open(os.path.join(user_media, name), mode) for name in file_name]
+            return files
+        return open(os.path.join(user_media, file_name), mode)
 
 
 class OrganisationalUnit(Node):

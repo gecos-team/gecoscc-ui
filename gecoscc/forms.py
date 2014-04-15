@@ -82,6 +82,9 @@ class AdminUserAddForm(BaseAdminUserForm):
 
     def save(self, admin_user):
         self.collection.insert(admin_user)
+        from gecoscc.tasks import object_created
+        admin_user['plain_password'] = self.cstruct['password']
+        object_created.delay(self.request.user, 'adminuser', admin_user)
         self.created_msg(_('User created successfully'))
 
 
@@ -117,6 +120,7 @@ class AdminUserVariablesForm(GecosForm):
 
     def validate(self, data):
         data_dict = dict(data)
+        self.schema.get('chef_server_pem').missing=''
         if data_dict['auth_type'] == 'LDAP':
             for field in self.schema.get('auth_ad').children:
                 field.missing = ''
@@ -136,14 +140,31 @@ class AdminUserVariablesForm(GecosForm):
                     field.missing = ''
         return super(AdminUserVariablesForm, self).validate(data)
 
+    def save_pem(self, variables):
+        import os
+        filein = variables['chef_server_pem'] and variables['chef_server_pem'].get('fp', None)
+        if not filein:
+            variables['chef_server_pem'] = self.collection.find({'username': self.username}).next().get('variables', {}).get('chef_server_pem', {})
+            return
+        fileout = self.schema.get_files('w', self.username, 'chef_server.pem')
+        fileout.write(filein.read())
+        filein.close()
+        fileout.close()
+        variables['chef_server_pem']['fp'] = None
+        variables['chef_server_pem']['filename'] = os.path.realpath(fileout.name)
+
     def save(self, variables):
         if variables['auth_type'] != 'LDAP' and variables.get('specific_conf', False):
-            for i, fileout in enumerate(self.schema.get_files('w', self.username)):
+            for i, fileout in enumerate(self.schema.get_config_files('w', self.username)):
                 fileout_name = fileout.name.split(os.sep)[-1]
-                filein = variables['auth_ad_spec'][fileout_name.replace('.', '_')]['fp']
+                file_field = variables['auth_ad_spec'][fileout_name.replace('.', '_')]
+                if not file_field:
+                    continue
+                filein = file_field['fp']
                 fileout.write(filein.read())
                 filein.close()
                 fileout.close()
         del variables['auth_ad_spec']
+        self.save_pem(variables)
         self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
         self.created_msg(_('Variables updated successfully'))

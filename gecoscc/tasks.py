@@ -152,10 +152,23 @@ class ChefTask(Task):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
+    def get_api(self, user=None):
+        if not user:
+            api = ChefAPI(self.app.conf.get('chef.url'),
+                          self.app.conf.get('chef.pem'),
+                          self.app.conf.get('chef.username'))
+        else:
+            try:
+                api = ChefAPI(user['variables']['chef_server_uri'],
+                              user['variables']['chef_server_pem']['filename'],
+                              user['username'])
+            except KeyError:
+                from chef.exceptions import ChefError
+                raise ChefError, 'User not configured to access chef server'
+        return api
+
     def resource_action(self, user, obj, objold=None, action=None):
-        api = ChefAPI(self.app.conf.get('chef.url'),
-                      self.app.conf.get('chef.pem'),
-                      self.app.conf.get('chef.username'))
+        api = self.get_api(user)
         cookbook = self.get_related_cookbook(api)
         computers = self.get_related_computers(obj)
         for computer in computers:
@@ -258,6 +271,19 @@ class ChefTask(Task):
     def storage_deleted(self, user, obj):
         self.object_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
+
+    def adminuser_created(self, user, objnew):
+        api = self.get_api(user)
+        data = {'name': objnew['username'], 'password': objnew['plain_password'], 'admin': True}
+        chef_user = api.api_request('POST', '/users', data=data)
+        private_key = chef_user.get('private_key', None)
+        if private_key:
+            from gecoscc.models import AdminUserVariables
+            schema = AdminUserVariables()
+            fileout = schema.get_files('w', objnew['username'], 'chef_server.pem')
+            fileout.write(private_key)
+            fileout.close()
+        self.log_action('created', 'AdminUser', objnew)
 
 
 @task_prerun.connect

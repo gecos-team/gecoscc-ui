@@ -62,7 +62,7 @@ class AdminUserResource(BaseAPI):
                                    'ad_properties': variables['auth_ad']}
             else:
                 schema = self.schema_detail()
-                conf_files = schema.get_files('r', user['username'])
+                conf_files = schema.get_config_files('r', user['username'])
                 auth_properties = {'specif_conf': True}
                 ad_properties = {}
                 for conf_file in conf_files:
