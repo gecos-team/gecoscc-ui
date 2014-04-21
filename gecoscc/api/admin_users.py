@@ -48,6 +48,7 @@ class AdminUserResource(BaseAPI):
         chef['chef_validation'] = open(settings.get('chef.pem'), 'r').read().encode('base64')
 
         gcc = {}
+        gcc['gcc_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
         # TODO Softcode it
@@ -58,12 +59,12 @@ class AdminUserResource(BaseAPI):
             auth_properties = variables['auth_ldap']
         else:
             if variables['specific_conf'] == 'false':
-                auth_properties = {'specif_conf': False,
+                auth_properties = {'specific_conf': False,
                                    'ad_properties': variables['auth_ad']}
             else:
                 schema = self.schema_detail()
                 conf_files = schema.get_config_files('r', user['username'])
-                auth_properties = {'specif_conf': True}
+                auth_properties = {'specific_conf': True}
                 ad_properties = {}
                 for conf_file in conf_files:
                     variable_name = conf_file.name.split(os.sep)[-1].replace('.', '_')
