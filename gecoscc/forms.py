@@ -5,8 +5,6 @@ from pkg_resources import resource_filename
 
 from deform.template import ZPTRendererFactory
 
-from pyramid.threadlocal import get_current_registry
-
 from gecoscc.i18n import TranslationString as _
 from gecoscc import messages
 
@@ -120,7 +118,7 @@ class AdminUserVariablesForm(GecosForm):
 
     def validate(self, data):
         data_dict = dict(data)
-        self.schema.get('chef_server_pem').missing=''
+        self.schema.get('chef_server_pem').missing = ''
         if data_dict['auth_type'] == 'LDAP':
             for field in self.schema.get('auth_ad').children:
                 field.missing = ''
@@ -141,7 +139,6 @@ class AdminUserVariablesForm(GecosForm):
         return super(AdminUserVariablesForm, self).validate(data)
 
     def save_pem(self, variables):
-        import os
         filein = variables['chef_server_pem'] and variables['chef_server_pem'].get('fp', None)
         if not filein:
             variables['chef_server_pem'] = self.collection.find({'username': self.username}).next().get('variables', {}).get('chef_server_pem', {})

@@ -164,7 +164,7 @@ class ChefTask(Task):
                               user['username'])
             except KeyError:
                 from chef.exceptions import ChefError
-                raise ChefError, 'User not configured to access chef server'
+                raise ChefError('User not configured to access chef server')
         return api
 
     def resource_action(self, user, obj, objold=None, action=None):
