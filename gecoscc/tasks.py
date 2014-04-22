@@ -6,6 +6,7 @@ from celery.task import Task, task
 from celery.signals import task_prerun
 from celery.exceptions import Ignore
 from chef import Node, ChefAPI
+from chef.exceptions import ChefError
 from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
