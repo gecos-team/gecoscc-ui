@@ -49,6 +49,7 @@ class AdminUserResource(BaseAPI):
 
         gcc = {}
         gcc['gcc_link'] = True
+        gcc['chef_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
         # TODO Softcode it
