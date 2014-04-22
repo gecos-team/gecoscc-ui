@@ -240,9 +240,6 @@ class AdminUserVariables(colander.MappingSchema):
     chef_server_uri = colander.SchemaNode(colander.String(),
                                           title=_('Chef server uri'),
                                           default='https://URL_CHEF')
-    chef_server_pem = colander.SchemaNode(deform.FileData(),
-                                          widget=FileUploadWidget(filestore),
-                                          title=_('Chef server pem'))
     auth_type = colander.SchemaNode(colander.String(),
                                     title=_('Auth type'),
                                     default='LDAP',
