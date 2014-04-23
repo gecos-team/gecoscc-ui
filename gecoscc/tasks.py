@@ -163,7 +163,7 @@ class ChefTask(Task):
                         node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
                         if not updated and updated_policy:
                             updated = True
-                    return (node, updated)
+                return (node, updated)
             else:  # printer, storage, repo
                 rule_type = 'save'
                 rules, obj = self.get_rules(rule_type, obj)
