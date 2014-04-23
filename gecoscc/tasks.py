@@ -1,3 +1,4 @@
+import os
 from copy import deepcopy
 
 from bson import ObjectId
@@ -5,6 +6,7 @@ from celery.task import Task, task
 from celery.signals import task_prerun
 from celery.exceptions import Ignore
 from chef import Node, ChefAPI
+from chef.exceptions import ChefError
 from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
@@ -172,19 +174,22 @@ class ChefTask(Task):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
+    def get_pem_for_username(self, username):
+        first_boot_media = self.app.conf.get('firstboot_api.media')
+        user_media = os.path.join(first_boot_media, username)
+        if not os.path.exists(user_media):
+            os.makedirs(user_media)
+        return os.path.join(user_media, 'chef_server.pem')
+
     def get_api(self, user=None):
-        if not user:
-            api = ChefAPI(self.app.conf.get('chef.url'),
-                          self.app.conf.get('chef.pem'),
-                          self.app.conf.get('chef.username'))
-        else:
-            try:
-                api = ChefAPI(user['variables']['chef_server_uri'],
-                              user['variables']['chef_server_pem']['filename'],
-                              user['username'])
-            except KeyError:
-                from chef.exceptions import ChefError
-                raise ChefError('User not configured to access chef server')
+        username = user['username']
+        url = user.get('variables', {}).get('chef_server_uri', None) or self.app.conf.get('chef.url')
+        chef_pem = self.get_pem_for_username(user['username'])
+        print username, url, chef_pem
+        if not os.path.exists(chef_pem):
+            raise ChefError('User has no pem to access chef server')
+
+        api = ChefAPI(url, chef_pem, username)
         return api
 
     def object_action(self, user, obj, objold=None, action=None):
@@ -290,9 +295,7 @@ class ChefTask(Task):
         chef_user = api.api_request('POST', '/users', data=data)
         private_key = chef_user.get('private_key', None)
         if private_key:
-            from gecoscc.models import AdminUserVariables
-            schema = AdminUserVariables()
-            fileout = schema.get_files('w', objnew['username'], 'chef_server.pem')
+            fileout = open(self.get_pem_for_username(objnew['username']), 'w')
             fileout.write(private_key)
             fileout.close()
         self.log_action('created', 'AdminUser', objnew)
