@@ -185,10 +185,8 @@ class ChefTask(Task):
         username = user['username']
         url = user.get('variables', {}).get('chef_server_uri', None) or self.app.conf.get('chef.url')
         chef_pem = self.get_pem_for_username(user['username'])
-        print username, url, chef_pem
         if not os.path.exists(chef_pem):
             raise ChefError('User has no pem to access chef server')
-
         api = ChefAPI(url, chef_pem, username)
         return api
 
