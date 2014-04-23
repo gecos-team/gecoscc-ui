@@ -139,6 +139,7 @@
         }
     };
 
+
     POLICY_SCHEMAS = [POLICY_SCHEMA1, POLICY_SCHEMA2];
 
     random_int = function (max) {
@@ -421,7 +422,8 @@
     for (i = 0; i < MAX_POLICIES; i += 1) {
         policy = {
             _id: new ObjectId(),
-            name: "policy_" + i,
+            name: "Policy " + i,
+            slug: "policy_" + i,
             schema: choice(POLICY_SCHEMAS),
             targets: [choice(TYPES.slice(0, 2))]
         };

@@ -8,9 +8,11 @@ from chef import Node, ChefAPI
 from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
+from gecoscc.rules import RULES_NODE
+
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
-RESOURCES_EMITTERS_TYPES = ('printer', 'storage')
+RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 
 
 class ChefTask(Task):
@@ -66,23 +68,35 @@ class ChefTask(Task):
                                                    related_objects)
         return related_computers
 
+    def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
+        if related_objects is not None:
+            if obj not in related_objects:
+                related_objects.append(obj)
+            else:
+                return related_computers
+        raise NotImplementedError
+
+    def get_related_computers_of_user(self, obj, related_computers, related_objects):
+        if related_objects is not None:
+            if obj not in related_objects:
+                related_objects.append(obj)
+            else:
+                return related_computers
+        raise NotImplementedError
+
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
-        if related_computers is None:
-            related_computers = []
         if related_objects is None and obj['type'] == 'group':
             related_objects = []
-        if obj['type'] == 'computer':
-            return self.get_related_computers_of_computer(obj, related_computers, related_objects)
-        elif obj['type'] == 'group':
-            return self.get_related_computers_of_group(obj, related_computers, related_objects)
-        elif obj['type'] in ('user', 'printer', 'storage'):
-            ou_id = obj['path'].split(',')[-1]
-            ou = self.db.nodes.find_one({'_id': ObjectId(ou_id)})
-        elif obj['type'] == 'ou':
-            ou = obj
-        else:
-            raise NotImplementedError
-        return self.get_related_computers_of_ou(ou, related_computers, related_objects)
+
+        if related_computers is None:
+            related_computers = []
+
+        obj_type = obj['type']
+
+        if obj['type'] in RESOURCES_EMITTERS_TYPES:
+            obj_type = 'emiters'
+        get_realted_computers_of_type = getattr(self, 'get_related_computers_of_%s' % obj_type)
+        return get_realted_computers_of_type(obj, related_computers, related_objects)
 
     def get_related_cookbook(self, api):
         cookbook_name = self.app.conf.get('chef.cookbook_name')
@@ -93,34 +107,33 @@ class ChefTask(Task):
         return api['/cookbooks/%s/%s' % (cookbook_name,
                                          last_cookbook['version'])]
 
-    RULES = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_address': 'ip'}},
-             'ou': {'save': {}},
-             'group': {'save': {}},
-             'user': {'save': {}},
-             'printer': {'save': {},
-                         'related': {'gecos_ws_mgmt.printer_use.network_res.ip_address': 'ip'}},
-             'storage': {'save': {}},
-             }
-
     def is_adding_policy(self, obj, objold):
         new_policies = obj.get('policies', None)
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def update_node_from_rules(self, rule_type, user, computer, obj, action, node):
-        fields = self.RULES[obj['type']][rule_type]
+    def get_rules(self, rule_type, obj, policy_id=None):
+        if rule_type == 'save':
+            return (RULES_NODE[obj['type']][rule_type], obj)
+        elif rule_type == 'policy':
+            policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+            return (RULES_NODE[obj['type']]['policies'][policy['slug']],
+                    obj['policies'][policy_id])
+        return ValueError("The rule type should be save or policy")
+
+    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node):
         updated = False
         attributes_updated = []
-        for field_chef, field_ui in fields.items():
-            if computer.get(field_ui, None) == node.attributes.get_dotted(field_chef):
+        for field_chef, field_ui in rules.items():
+            if obj_ui.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
-            elif obj['type'] != 'computer' and rule_type == 'save':
+            elif obj['type'] != 'computer':
                 try:
                     node.default.get_dotted(field_chef)
                     continue
                 except KeyError:
                     pass
-            node.attributes.set_dotted(field_chef, computer[field_ui])
+            node.attributes.set_dotted(field_chef, obj_ui[field_ui])
             updated = True
             attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             if attr not in attributes_updated:
@@ -136,17 +149,24 @@ class ChefTask(Task):
         attributes_updated.append(attr)
 
     def update_node(self, user, computer, obj, objold, node, action):
+        updated = False
         if action == 'deleted':
             return (None, False)
-        elif action == 'changed':
-            if self.is_adding_policy(obj, objold):
-                return self.update_node_from_rules('policy', user, computer, obj, action, node)
-            else:
-                return self.update_node_from_rules('save', user, computer, obj, action, node)
-            return ''
-        elif action == 'created':
-            return self.update_node_from_rules('save', user, computer, obj, action, node)
-        raise NotImplementedError
+        elif action in ['changed', 'created']:
+            if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+                if self.is_adding_policy(obj, objold):
+                    rule_type = 'policy'
+                    for policy_id in obj['policies'].keys():
+                        rules, obj_ui = self.get_rules(rule_type, obj, policy_id)
+                        node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
+                        if not updated and updated_policy:
+                            updated = True
+                    return (node, updated)
+            else:  # printer, storage, repo
+                rule_type = 'save'
+                rules, obj = self.get_rules(rule_type, obj)
+                return self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
+        raise ValueError('The action should be deleted, changed or created')
 
     def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
@@ -167,7 +187,7 @@ class ChefTask(Task):
                 raise ChefError('User not configured to access chef server')
         return api
 
-    def resource_action(self, user, obj, objold=None, action=None):
+    def object_action(self, user, obj, objold=None, action=None):
         api = self.get_api(user)
         cookbook = self.get_related_cookbook(api)
         computers = self.get_related_computers(obj)
@@ -179,14 +199,6 @@ class ChefTask(Task):
                 continue
             self.validate_data(node, cookbook, api)
             node.save()
-
-    def object_action(self, user, obj, objold=None, action=None):
-        if obj['type'] in RESOURCES_EMITTERS_TYPES:
-            related_resources = self.search_resources(obj)
-            for related_resource in related_resources:
-                self.resource_action(user, obj, objold, action)
-        else:
-            return self.resource_action(user, obj, objold, action)
 
     def object_created(self, user, objnew):
         self.object_action(user, objnew, action='created')
@@ -213,7 +225,7 @@ class ChefTask(Task):
         self.log_action('deleted', 'Group', obj)
 
     def user_created(self, user, objnew):
-        self.object_deleted(user, objnew)
+        self.object_created(user, objnew)
         self.log_action('created', 'User', objnew)
 
     def user_changed(self, user, objnew, objold):
@@ -225,7 +237,7 @@ class ChefTask(Task):
         self.log_action('deleted', 'User', obj)
 
     def computer_created(self, user, objnew):
-        self.object_deleted(user, objnew)
+        self.object_created(user, objnew)
         self.log_action('created', 'Computer', objnew)
 
     def computer_changed(self, user, objnew, objold):
