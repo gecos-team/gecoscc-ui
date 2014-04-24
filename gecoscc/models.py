@@ -382,9 +382,14 @@ class Storages(colander.SequenceSchema):
 
 class Repository(Node):
     url = colander.SchemaNode(colander.String())
-    description = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')
+    distribution = colander.SchemaNode(colander.String(),
+                                       default='')
+    deb_src = colander.SchemaNode(colander.Boolean(),
+                                  default=False)
+    key = colander.SchemaNode(colander.String(),
+                              default='')
+    key_server = colander.SchemaNode(colander.String(),
+                                     default='')
 
 
 class Repositories(colander.SequenceSchema):
