@@ -32,6 +32,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             source: "gecos",
             name: "",
             registry: "",
+            family: "",
             policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
@@ -89,6 +90,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.saveModel($(evt.target), {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
+                family: "#family option:selected",
                 registry: "#registry"
             });
         }

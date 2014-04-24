@@ -289,6 +289,10 @@ COMPUTER_FAMILY = {
 
 class Computer(Node):
     memberof = ObjectIdList(missing=[], default=[])
+    family = colander.SchemaNode(colander.String(),
+                                 default='desktop',
+                                 validator=colander.OneOf(
+                                     COMPUTER_FAMILY.keys()))
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
