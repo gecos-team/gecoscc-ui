@@ -345,19 +345,12 @@
     };
 
     constructors.computer = function (path) {
-        var ip = random_int(256) + '.' + random_int(256) + '.' +
-                random_int(256) + '.' + random_int(256),
-            types = ['desktop', 'laptop', 'netbook', 'tablet'],
+        var types = ['desktop', 'laptop', 'netbook', 'tablet'],
             oid;
 
         oid = constructors.base(path, 'computer', {
-            identifier: 'id_computer_' + counters.computer,
-            ip: ip,
-            mac: '98:5C:29:31:CF:07',
             family: choice(types),
-            serial: 'SN' + random_int(100000),
             registry: 'JDA' + random_int(10000),
-            extra: '',
             memberof: [],
             policies: somePolicies('computer')
         });
@@ -378,8 +371,6 @@
             registry: 'JDA' + random_int(10000),
             location: 'Dep' + random_int(999),
             printerpath: 'http://servidorimpresion:631/ipp/port' + random_int(65000),
-            driver: 'auto',
-            duplex: choice([true, false]),
             memberof: []
         });
         return oid;
@@ -392,12 +383,7 @@
             oid;
 
         oid = constructors.base(path, 'storage', {
-            server: ip,
-            port: random_int(65535) + 1,
-            protocol: choice(protocols),
-            localpath: '/some/path/',
-            mount: choice(['fstab', 'gvfs']),
-            extraops: '',
+            connection_string: choice(protocols) + "://" + ip + ":" + (random_int(65535) + 1) + '/some/path/',
             memberof: []
         });
         return oid;
