@@ -372,22 +372,8 @@ STORAGE_MOUNT_TYPE = {
 
 class Storage(Node):
     memberof = ObjectIdList(missing=[], default=[])
-    server = colander.SchemaNode(colander.String())
-    port = colander.SchemaNode(colander.Integer(),
-                               validator=colander.Range(min=1, max=65535),
-                               default='',
-                               missing='')
-    protocol = colander.SchemaNode(colander.String(),
-                                   validator=colander.OneOf(
-                                       STORAGE_PROTOCOLS.keys()))
-    localpath = colander.SchemaNode(colander.String())
-    mount = colander.SchemaNode(colander.String(),
-                                validator=colander.OneOf(
-                                    STORAGE_MOUNT_TYPE.keys()),
-                                default='gvfs')
-    extraops = colander.SchemaNode(colander.String(),
-                                   default='',
-                                   missing='')
+    connection_string = colander.SchemaNode(colander.String(),
+                                            default='')
 
 
 class Storages(colander.SequenceSchema):

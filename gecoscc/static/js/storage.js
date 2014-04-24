@@ -31,12 +31,7 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             lock: false,
             source: "gecos",
             name: "",
-            server: "",
-            port: 21,
-            protocol: "ftp",
-            localpath: "",
-            mount: "fstab",
-            extraops: ""
+            connection_string: "",
         },
 
         parse: function (response) {
@@ -65,10 +60,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
-            "click button.refresh": "refresh",
-            "keyup input": "updateConnect",
-            "change @ui.protocol": "updateConnect",
-            "change @ui.port": "updateConnect"
+            "click button.refresh": "refresh"
         },
 
         onRender: function () {
@@ -77,18 +69,6 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
                 checked: this.model.get("memberof")
             });
             this.groupsWidget.render();
-
-            this.updateConnect();
-        },
-
-        updateConnect: function () {
-            var connect = this.ui.protocol.val() + "://";
-//             connect += this.$el.find("#user").val() + '@';
-            connect += this.$el.find("#server").val() + ':';
-            connect += this.ui.port.val() + ':';
-            connect += this.$el.find("#localpath").val();
-            connect += " " + this.$el.find("#extraops").val();
-            this.$el.find("#connect").val(connect);
         },
 
         saveForm: function (evt) {
@@ -98,14 +78,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.saveModel($(evt.target), {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
-                server: "#server",
-                port: function () {
-                    return parseInt(that.$el.find("#port").val(), 10);
-                },
-                extraops: "#extraops",
-                protocol: "#protocol option:selected",
-                localpath: "#localpath",
-                mount: "#mount option:selected"
+                connection_string: "#connection_string"
             });
         }
     });
