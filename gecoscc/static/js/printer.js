@@ -40,14 +40,7 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             location: "",
             connection: "network",
             printerpath: "",
-            driver: "auto",
-            driverBrand: "",
-            driverModel: "",
             driverFile: "", // FIXME mockup
-            pageSize: "A4",
-            quality: "medium",
-            paperTray: "1", // FIXME mockup
-            duplex: false
         }
     });
 });
@@ -67,8 +60,6 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh",
-            "change #ppdfile": "onChangePPDFile",
-            "change #installation input[type=radio]": "onChangeInstallation",
             "click #cleanfile": "cleanFile"
         },
 
@@ -78,35 +69,6 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 checked: this.model.get("memberof")
             });
             this.groupsWidget.render();
-        },
-
-        onChangePPDFile: function (evt) {
-            var $file = $(evt.target),
-                $container = this.$el.find("#driver");
-
-            if ($file.val() !== "") {
-                $container.find("select").attr("disabled", true);
-            } else {
-                $container.find("select").attr("disabled", false);
-            }
-        },
-
-        onChangeInstallation: function (evt) {
-            var $radio = this.$el.find("#nodriver"),
-                $container = this.$el.find("#driver"),
-                $select = $container.find("select"),
-                $ppdfile = this.$el.find("#ppdfile"),
-                $cleanfile = this.$el.find("#cleanfile");
-
-            if ($radio.is(":checked")) {
-                $select.attr("disabled", true);
-                $ppdfile.attr("disabled", true);
-                $cleanfile.attr("disabled", true);
-            } else {
-                $container.find("select").attr("disabled", false);
-                $ppdfile.attr("disabled", false);
-                $cleanfile.attr("disabled", false);
-            }
         },
 
         cleanFile: function (evt) {
@@ -139,15 +101,8 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 location: "#location",
                 connection: "#connection option:selected",
                 printerpath: "#path",
-                driver: getDriver,
-                driverBrand: "#printerBrand option:selected",
-                driverModel: "#printersA option:selected", // FIXME mockup
                 driverFile: "#ppdfile", // TODO probably not
-                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
-                pageSize: "#pageSize option:selected",
-                quality: "#resolution option:selected",
-                paperTray: "#paper option:selected",
-                duplex: isDuplex
+                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget)
             });
         }
     });

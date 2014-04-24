@@ -312,18 +312,6 @@ PRINTER_CONN_TYPE = {
     'local': _('Local'),
 }
 
-PRINTER_DRIVER = {
-    'auto': _('Automatic installation'),
-    'manual': _('Manual installation'),
-}
-
-PRINTER_QUALITIES = {
-    'low': _('Low'),
-    'medium': _('Medium'),
-    'high': _('High'),
-    'ultra': _('Very high'),
-}
-
 
 class Printer(Node):
     printtype = colander.SchemaNode(colander.String(),
@@ -358,32 +346,10 @@ class Printer(Node):
     printerpath = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
-    driver = colander.SchemaNode(colander.String(),
-                                 default='auto',
-                                 validator=colander.OneOf(
-                                     PRINTER_DRIVER.keys()))
-    driverBrand = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')  # TODO choices?
-    driverModel = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')  # TODO choices?
     driverFile = colander.SchemaNode(colander.String(),
                                      default='',
                                      missing='')  # TODO url? host the file?
     memberof = ObjectIdList(missing=[], default=[])
-    pageSize = colander.SchemaNode(colander.String(),
-                                   default='',
-                                   missing='')  # TODO choices?
-    quality = colander.SchemaNode(colander.String(),
-                                  default='auto',
-                                  validator=colander.OneOf(
-                                      PRINTER_QUALITIES.keys()))
-    paperTray = colander.SchemaNode(colander.String(),
-                                    default='',
-                                    missing='')  # TODO remove this field?
-    duplex = colander.SchemaNode(colander.Boolean(),
-                                 default=False)
 
 
 class Printers(colander.SequenceSchema):
