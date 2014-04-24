@@ -127,7 +127,9 @@ class ChefTask(Task):
         updated = False
         attributes_updated = []
         for field_chef, field_ui in rules.items():
-            if obj_ui.get(field_ui, None) == node.attributes.get_dotted(field_chef):
+            if obj_ui.get(field_ui, None) is None:
+                continue
+            elif obj_ui.get(field_ui, None) == node.attributes.get_dotted(field_chef):
                 continue
             elif obj['type'] != 'computer':
                 try:
@@ -143,12 +145,16 @@ class ChefTask(Task):
         return (node, updated)
 
     def update_node_job_id(self, user, obj, action, node, attr, attributes_updated):
-        job_ids = node.attributes.get_dotted(attr)
+        if node.attributes.has_dotted(attr):
+            job_ids = node.attributes.get_dotted(attr)
+        else:
+            job_ids = []
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'processing'
         job_id = job_storage.create(objid=obj['_id'], type=obj['type'], op=action, status=job_status)
         job_ids.append({'id': unicode(job_id), 'status': job_status})
         attributes_updated.append(attr)
+        node.attributes.set_dotted(attr, job_ids)
 
     def update_node(self, user, computer, obj, objold, node, action):
         updated = False
