@@ -289,28 +289,9 @@ COMPUTER_FAMILY = {
 
 class Computer(Node):
     memberof = ObjectIdList(missing=[], default=[])
-    identifier = colander.SchemaNode(colander.String(),
-                                     default='',
-                                     missing='')
-    ip = colander.SchemaNode(colander.String(),
-                             default='',
-                             missing='')
-    mac = colander.SchemaNode(colander.String(),
-                              default='',
-                              missing='')
-    family = colander.SchemaNode(colander.String(),
-                                 default='desktop',
-                                 validator=colander.OneOf(
-                                     COMPUTER_FAMILY.keys()))
-    serial = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
-    extra = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})

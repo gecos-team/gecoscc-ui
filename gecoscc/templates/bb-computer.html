@@ -50,43 +50,6 @@
                             </div>
                             <div class="col-sm-6 col-xs-12">
                                 <div class="form-group">
-                                    <label for="identifier">{{ gettext('Identifier') }}</label>
-                                    <input id="identifier" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john') }}-laptop" required value="<%= identifier %>">
-                                </div>
-                            </div>
-                        </div><div class="row">
-                            <div class="col-md-4 col-sm-4 col-xs-12">
-                                <div class="form-group">
-                                    <label for="ip">{{ gettext('IP') }}</label>
-                                    <input id="ip" type="text" class="form-control ip" placeholder="{{ gettext('e.g.') }} 192.168.210.134" value="<%= ip %>">
-                                </div>
-                            </div>
-                            <div class="col-md-4 col-sm-4 col-xs-12">
-                                <div class="form-group">
-                                    <label for="mac">{{ gettext('MAC') }}</label>
-                                    <input id="mac" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} 98:5C:29:31:CF:07" value="<%= mac %>">
-                                </div>
-                            </div>
-                            <div class="col-md-3 col-md-offset-1 col-sm-4 col-xs-12">
-                                <div class="form-group">
-                                    <label for="family">{{ gettext('Type') }}</label>
-                                    <select id="family" class="form-control">
-                                        <option value="desktop" <% if (family === "desktop") { print("selected"); } %>>{{ gettext('Desktop') }}</option>
-                                        <option value="laptop" <% if (family === "laptop") { print("selected"); } %>>{{ gettext('Laptop') }}</option>
-                                        <option value="netbook" <% if (family === "netbook") { print("selected"); } %>>{{ gettext('Netbook') }}</option>
-                                        <option value="tablet" <% if (family === "tablet") { print("selected"); } %>>{{ gettext('Tablet') }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div><div class="row">
-                            <div class="col-sm-6 col-xs-12">
-                                <div class="form-group">
-                                    <label for="serial">{{ gettext('Serial number') }}</label>
-                                    <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} SN1234567890ABC" value="<%= serial %>">
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-xs-12">
-                                <div class="form-group">
                                     <label for="registry">{{ gettext('Registry number') }}</label>
                                     <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA123DEP03" value="<%= registry %>">
                                 </div>
@@ -97,14 +60,6 @@
                                 <p style="font-size: 1.5em;">
                                     <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                                 </p>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <div class="form-group">
-                                    <label for="extra">{{ gettext('Extra information') }}</label>
-                                    <textarea id="extra" class="form-control" rows="6"><%= extra %></textarea>
-                                </div>
                             </div>
                         </div>
                         <div class="row"><div class="col-sm-12">
