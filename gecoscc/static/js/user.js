@@ -92,7 +92,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 email: "#email",
                 first_name: "#firstname",
                 last_name: "#lastname",
-                address: "#address",
+                address: "#address"
             });
         }
     });

@@ -89,7 +89,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.saveModel($(evt.target), {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
-                registry: "#registry",
+                registry: "#registry"
             });
         }
     });
