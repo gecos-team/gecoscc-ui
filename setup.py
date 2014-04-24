@@ -9,7 +9,7 @@ CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 requires = [
     'pyramid==1.5b1',
     'pyramid_jinja2==1.10',
-    'pyramid_debugtoolbar==2.0,2',
+    'pyramid_debugtoolbar==2.0.2',
     'pyramid_beaker==0.7',
     'pyramid_tm==0.7',
     'colander==1.0b1',
