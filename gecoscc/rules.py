@@ -44,16 +44,29 @@ for attr in rules_scripts_launch_res_attrs:
     RULES_SCRIPTS_LAUNCH_RES['%s.%s' % (rules_scripts_launch_res_path, attr)] = attr
 # End Scripts launch rules
 
+# Desktop background res
+
+rules_desktop_background_res_path = 'gecos_ws_mgmt.misc_mgmt.desktop_background_res'
+rules_desktop_background_res_attrs = ('desktop_file',)
+
+RULES_DESKTOP_BACKGROUND_RES = {}
+
+for attr in rules_desktop_background_res_attrs:
+    RULES_DESKTOP_BACKGROUND_RES['%s.%s' % (rules_desktop_background_res_path, attr)] = attr
+# End desktop background res
+
 
 RULES_NODE = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_address': 'ip'},
                            'policies': {'network_res': RULES_NETWORK_RES,
                                         'package_res': RULES_PACKAGE_RES,
                                         'local_file_res': RULES_LOCAL_FILE_RES,
-                                        'scripts_launch_res': RULES_SCRIPTS_LAUNCH_RES}},
+                                        'scripts_launch_res': RULES_SCRIPTS_LAUNCH_RES,
+                                        'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES}},
               'ou': {'save': {},
                      'policies': {'network_res': RULES_NETWORK_RES,
                                   'package_res': RULES_PACKAGE_RES,
-                                  'local_file_res': RULES_LOCAL_FILE_RES}},
+                                  'local_file_res': RULES_LOCAL_FILE_RES,
+                                  'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES}},
               'group': {'save': {},
                         'policies': {}},
               'user': {'save': {},
