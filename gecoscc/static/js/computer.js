@@ -31,13 +31,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             lock: false,
             source: "gecos",
             name: "",
-            identifier: "",
-            ip: "",
-            mac: "",
-            family: "laptop",
-            serial: "",
             registry: "",
-            extra: "",
+            family: "",
             policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
@@ -95,13 +90,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.saveModel($(evt.target), {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
-                identifier: "#identifier",
-                ip: "#ip",
-                mac: "#mac",
                 family: "#family option:selected",
-                serial: "#serial",
-                registry: "#registry",
-                extra: "#extra"
+                registry: "#registry"
             });
         }
     });

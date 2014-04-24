@@ -32,7 +32,10 @@ App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, 
             source: "gecos",
             name: "",
             url: "",
-            description: ""
+            distribution: "",
+            deb_src: "",
+            key: "",
+            key_server: ""
         },
 
         url: function () {
@@ -63,10 +66,19 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
         saveForm: function (evt) {
             evt.preventDefault();
 
+            var that = this, isSrc;
+
+            isSrc = function () {
+                return that.$el.find("#deb_src").is(":checked");
+            };
+
             this.saveModel($(evt.target), {
                 name: "#name",
                 url: "#url",
-                description: "#description"
+                distribution: "#distribution",
+                deb_src: isSrc,
+                key: "#key",
+                key_server: "#key_server"
             });
         }
     });

@@ -8,25 +8,55 @@
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form">
             <div class="row">
-                <div class="col-sm-4">
+                <div class="col-sm-12">
                     <div class="form-group <% if (!name) { print('has-error'); } %>">
                         <label for="name">{{ gettext('Name') }}</label>
                         <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} main" required value="<%= name %>">
                     </div>
                 </div>
-                <div class="col-sm-8">
+                <div class="col-sm-6">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="distribution">{{ gettext('Distribution') }}</label>
+                        <input id="distribution" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Debian 7.4 (i386)" value="<%= distribution %>">
+                    </div>
+                </div>
+                <div class="col-sm-6">
                     <div class="form-group <% if (!url) { print('has-error'); } %>">
                         <label for="url">{{ gettext('Url') }}</label>
                         <input id="url" type="url" class="form-control" placeholder="{{ gettext('e.g.') }} http://packages.linuxmint.com/pool/main/" required value="<%= url %>">
                     </div>
                 </div>
             </div>
-            <div class="row"><div class="col-sm-12">
-                <div class="form-group">
-                    <label for="description">{{ gettext('Description') }}</label>
-                    <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('The main Linux Mint repository') }}" value="<%= description %>">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="name">{{ gettext('Key') }}</label>
+                        <input id="key" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} C0061A4A" value="<%= key %>">
+                    </div>
                 </div>
-            </div></div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="key_server">{{ gettext('Key server') }}</label>
+                        <input id="key_server" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} keyring.debian.org" value="<%= key_server %>">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="form-group">
+                        <label for="deb_src">{{ gettext('Deb sources') }}</label><br />
+                        <label for="deb_src" class="group checkbox-inline">
+                          <input id="deb_src" type="checkbox" placeholder="{{ gettext('e.g.') }} http://packages.linuxmint.com/pool/main/" value="true" <% if (deb_src) { %>checked="checked"<% } %> />
+
+                          {{ gettext('Deb sources') }}
+                        </label>
+                    </div>
+                </div>
+            </div>
             <div class="row"><div class="col-sm-12">
                 <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
                 <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>

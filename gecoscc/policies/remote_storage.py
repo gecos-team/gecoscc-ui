@@ -17,14 +17,9 @@ class RemoteStoragePolicy(BasePolicy):
                 'type': 'object',
                 'properties':  {
                     'memberof': {'type': 'array'},
-                    'server': {'type': 'string'},
-                    'port': {'type': 'integer'},
-                    'protocol': {'type': 'string'},
-                    'localpath': {'type': 'string'},
-                    'mount': {'type': 'string'},
-                    'extraops': {'type': 'string'},
+                    'connection_string': {'type': 'string'},
                 },
-                'required': ['server', 'protocol', 'localpath', 'mount']
+                'required': ['connection_string']
             }
         },
         'required': ['name', 'node', 'storage_id']

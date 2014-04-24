@@ -289,28 +289,13 @@ COMPUTER_FAMILY = {
 
 class Computer(Node):
     memberof = ObjectIdList(missing=[], default=[])
-    identifier = colander.SchemaNode(colander.String(),
-                                     default='',
-                                     missing='')
-    ip = colander.SchemaNode(colander.String(),
-                             default='',
-                             missing='')
-    mac = colander.SchemaNode(colander.String(),
-                              default='',
-                              missing='')
     family = colander.SchemaNode(colander.String(),
                                  default='desktop',
                                  validator=colander.OneOf(
                                      COMPUTER_FAMILY.keys()))
-    serial = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
-    extra = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
@@ -329,18 +314,6 @@ PRINTER_TYPE = {
 PRINTER_CONN_TYPE = {
     'network': _('Network'),
     'local': _('Local'),
-}
-
-PRINTER_DRIVER = {
-    'auto': _('Automatic installation'),
-    'manual': _('Manual installation'),
-}
-
-PRINTER_QUALITIES = {
-    'low': _('Low'),
-    'medium': _('Medium'),
-    'high': _('High'),
-    'ultra': _('Very high'),
 }
 
 
@@ -377,32 +350,10 @@ class Printer(Node):
     printerpath = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
-    driver = colander.SchemaNode(colander.String(),
-                                 default='auto',
-                                 validator=colander.OneOf(
-                                     PRINTER_DRIVER.keys()))
-    driverBrand = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')  # TODO choices?
-    driverModel = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')  # TODO choices?
     driverFile = colander.SchemaNode(colander.String(),
                                      default='',
                                      missing='')  # TODO url? host the file?
     memberof = ObjectIdList(missing=[], default=[])
-    pageSize = colander.SchemaNode(colander.String(),
-                                   default='',
-                                   missing='')  # TODO choices?
-    quality = colander.SchemaNode(colander.String(),
-                                  default='auto',
-                                  validator=colander.OneOf(
-                                      PRINTER_QUALITIES.keys()))
-    paperTray = colander.SchemaNode(colander.String(),
-                                    default='',
-                                    missing='')  # TODO remove this field?
-    duplex = colander.SchemaNode(colander.Boolean(),
-                                 default=False)
 
 
 class Printers(colander.SequenceSchema):
@@ -425,22 +376,8 @@ STORAGE_MOUNT_TYPE = {
 
 class Storage(Node):
     memberof = ObjectIdList(missing=[], default=[])
-    server = colander.SchemaNode(colander.String())
-    port = colander.SchemaNode(colander.Integer(),
-                               validator=colander.Range(min=1, max=65535),
-                               default='',
-                               missing='')
-    protocol = colander.SchemaNode(colander.String(),
-                                   validator=colander.OneOf(
-                                       STORAGE_PROTOCOLS.keys()))
-    localpath = colander.SchemaNode(colander.String())
-    mount = colander.SchemaNode(colander.String(),
-                                validator=colander.OneOf(
-                                    STORAGE_MOUNT_TYPE.keys()),
-                                default='gvfs')
-    extraops = colander.SchemaNode(colander.String(),
-                                   default='',
-                                   missing='')
+    connection_string = colander.SchemaNode(colander.String(),
+                                            default='')
 
 
 class Storages(colander.SequenceSchema):
@@ -449,9 +386,14 @@ class Storages(colander.SequenceSchema):
 
 class Repository(Node):
     url = colander.SchemaNode(colander.String())
-    description = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')
+    distribution = colander.SchemaNode(colander.String(),
+                                       default='')
+    deb_src = colander.SchemaNode(colander.Boolean(),
+                                  default=False)
+    key = colander.SchemaNode(colander.String(),
+                              default='')
+    key_server = colander.SchemaNode(colander.String(),
+                                     default='')
 
 
 class Repositories(colander.SequenceSchema):

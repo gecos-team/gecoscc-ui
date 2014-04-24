@@ -8,65 +8,16 @@
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form">
             <div class="row"><div class="col-sm-12">
-                <div class="form-group">
+                <div class="form-group <% if (!name) { print('has-error'); } %>">
                     <label for="name">{{ gettext('Name') }}</label>
-                    <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Access to the network storage S01') }}" value="<%= name %>">
+                    <input id="name" type="text" class="form-control" required placeholder="{{ gettext('e.g.') }} {{ gettext('Access to the network storage S01') }}" value="<%= name %>">
                 </div>
             </div></div>
             <div class="row">
                 <div class="col-sm-12">
-                    <div class="form-group">
-                        <label for="connect">{{ gettext('Connection string') }}</label>
-                        <input id="connect" type="text" class="form-control" disabled>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-5 col-xs-12">
-                    <div class="form-group">
-                        <label for="server">{{ gettext('Server') }}</label>
-                        <input id="server" type="text" class="form-control ip" placeholder="{{ gettext('e.g.') }} 192.168.12.078" value="<%= server %>">
-                    </div>
-                </div>
-                <div class="col-sm-3 col-xs-12">
-                    <div class="form-group">
-                        <label for="port">{{ gettext('Port') }}</label>
-                        <input id="port" type="number" step="1" min="0" max="65535" class="form-control" placeholder="{{ gettext('e.g.') }} 9100" value="<%= port %>">
-                    </div>
-                </div>
-                <div class="col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label for="extraops">{{ gettext('Extra options') }}</label>
-                        <input id="extraops" type="text" class="form-control" value="<%= extraops %>">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-3 col-xs-12">
-                    <div class="form-group">
-                        <label for="protocol">{{ gettext('Connection protocol') }}</label>
-                        <select id="protocol" class="form-control">
-                            <option value="ftp" <% if (protocol === 'ftp') { print('selected'); } %>>FTP</option>
-                            <option value="sshfs" <% if (protocol === 'sshfs') { print('selected'); } %>>SSHFS</option>
-                            <option value="nfs" <% if (protocol === 'nfs') { print('selected'); } %>>NFS</option>
-                            <option value="smb" <% if (protocol === 'smb') { print('selected'); } %>>SAMBA v3</option>
-                            <option value="smb4" <% if (protocol === 'smb4') { print('selected'); } %>>SAMBA v4</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xs-12">
-                    <div class="form-group">
-                        <label for="localpath">{{ gettext('Path of local directory') }}</label>
-                        <input id="localpath" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('/path/to/the/directory') }}" value="<%= localpath %>">
-                    </div>
-                </div>
-                <div class="col-sm-3 col-xs-12">
-                    <div class="form-group">
-                        <label for="mount">{{ gettext('Mount') }}</label>
-                        <select id="mount" class="form-control">
-                            <option value="fstab" <% if (mount === 'fstab') { print('selected'); } %>>{{ gettext('When booting (fstab)') }}</option>
-                            <option value="gvfs" <% if (mount === 'gvfs') { print('selected'); } %>>{{ gettext('In user space (gvfs)') }}</option>
-                        </select>
+                    <div class="form-group <% if (!connection_string) { print('has-error'); } %>">
+                        <label for="connection_string">{{ gettext('Connection string') }}</label>
+                        <input id="connection_string" type="text" class="form-control" required placeholder="{{ gettext('e.g.') }} sshfs://192.168.12.078:9100{{ gettext('/path/to/the/directory') }}/" value="<%= connection_string %>">
                     </div>
                 </div>
             </div>
