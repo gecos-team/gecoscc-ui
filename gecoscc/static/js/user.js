@@ -52,8 +52,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         groupsWidget: undefined,
 
         ui: {
-            passwd1: "input#passwd1",
-            passwd2: "input#passwd2",
             policies: "div#policies div.bootstrap-admin-panel-content"
         },
 
@@ -62,7 +60,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh",
-            "keyup input:password": "checkPasswords"
         },
 
         policiesList: undefined,
@@ -86,10 +83,6 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.policiesList.render();
         },
 
-        customValidate: function () {
-            return this.checkPasswords();
-        },
-
         saveForm: function (evt) {
             evt.preventDefault();
             this.saveModel($(evt.target), {
@@ -100,25 +93,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 first_name: "#firstname",
                 last_name: "#lastname",
                 address: "#address",
-                password: "#passwd1"
             });
-        },
-
-        checkPasswords: function () {
-            var result = false,
-                p1 = this.ui.passwd1.val(),
-                p2 = this.ui.passwd2.val();
-
-            if (p1 === p2) {
-                result = true;
-                this.ui.passwd1.parents(".form-group").first().removeClass("has-error");
-                this.ui.passwd2.parents(".form-group").first().removeClass("has-error");
-            } else {
-                this.ui.passwd1.parents(".form-group").first().addClass("has-error");
-                this.ui.passwd2.parents(".form-group").first().addClass("has-error");
-            }
-
-            return result;
         }
     });
 });
