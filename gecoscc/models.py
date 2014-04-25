@@ -299,6 +299,7 @@ class Computer(Node):
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
+    node_chef_id = colander.SchemaNode(colander.String())
 
 
 class Computers(colander.SequenceSchema):
@@ -441,6 +442,7 @@ class Jobs(colander.SequenceSchema):
 class Policy(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     name = colander.SchemaNode(colander.String())
+    slug = colander.SchemaNode(colander.String())
     schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                  default={},
                                  missing={})

@@ -1,4 +1,6 @@
 import os
+from chef import ChefAPI
+from chef.exceptions import ChefError
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -31,6 +33,20 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
                 remote_attribute: obj[keyname]
             }
         }, multi=False)
+
+
+def get_chef_api(settings, user):
+    username = user['username']
+    url = user.get('variables', {}).get('chef_server_uri', None) or settings.get('chef.url')
+    chef_client_pem = get_pem_path_for_username(settings, user['username'], 'chef_client.pem')
+    chef_user_pem = get_pem_path_for_username(settings, user['username'], 'chef_user.pem')
+    if os.path.exists(chef_client_pem):
+        api = ChefAPI(url, chef_client_pem, username)
+    elif os.path.exists(chef_user_pem):
+        api = ChefAPI(url, chef_user_pem, username)
+    else:
+        raise ChefError('User has no pem to access chef server')
+    return api
 
 
 def get_pem_for_username(settings, username, pem_name):
