@@ -235,7 +235,7 @@ AUTH_TYPE_CHOICES = (('LDAP', 'LDAP'),
 
 class AdminUserVariables(colander.MappingSchema):
     uri_ntp = colander.SchemaNode(colander.String(),
-                                  default='http://URL_NTP_SERVER.EX',
+                                  default='URI_NTP_SERVER.EX',
                                   title=_('URI ntp'))
     chef_server_uri = colander.SchemaNode(colander.String(),
                                           title=_('Chef server uri'),
