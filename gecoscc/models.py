@@ -299,7 +299,9 @@ class Computer(Node):
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
-    node_chef_id = colander.SchemaNode(colander.String())
+    node_chef_id = colander.SchemaNode(colander.String(),
+                                       default='',
+                                       missing='')
 
 
 class Computers(colander.SequenceSchema):
