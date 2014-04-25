@@ -33,9 +33,19 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
         }, multi=False)
 
 
-def get_pem_for_username(settings, username):
+def get_pem_for_username(settings, username, pem_name):
+    return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
+
+
+def get_pem_path_for_username(settings, username, pem_name):
     first_boot_media = settings.get('firstboot_api.media')
     user_media = os.path.join(first_boot_media, username)
     if not os.path.exists(user_media):
         os.makedirs(user_media)
-    return os.path.join(user_media, 'chef_server.pem')
+    return os.path.join(user_media, pem_name)
+
+
+def save_pem_for_username(settings, username, pem_name, pem_text):
+    fileout = open(get_pem_path_for_username(settings, username, pem_name), 'w')
+    fileout.write(pem_text)
+    fileout.close()

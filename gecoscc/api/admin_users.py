@@ -25,11 +25,11 @@ class AdminUserResource(BaseAPI):
 
         chef = {}
         chef['chef_server_uri'] = settings.get('chef.url')
-        chef['chef_validation'] = open(get_pem_for_username(settings, user['username']), 'r').read().encode('base64')
+        chef['chef_link'] = True
+        chef['chef_validation'] = get_pem_for_username(settings, user['username'], 'chef_user.pem')
 
         gcc = {}
         gcc['gcc_link'] = True
-        gcc['chef_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
         # TODO Softcode it
