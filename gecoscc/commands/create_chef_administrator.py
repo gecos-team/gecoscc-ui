@@ -23,7 +23,7 @@ class Command(BaseCommand):
        If you provide the -n option, a password is generated and printed to the shell.
     """
 
-    usage = "usage: %prog config_uri create_chef_administrator --username user --email user@example.com --chef_user user --chef_pem file.pem"
+    usage = "usage: %prog config_uri create_chef_administrator --username user --email user@example.com --administrator user --key file.pem"
 
     option_list = [
         make_option(
@@ -46,13 +46,13 @@ class Command(BaseCommand):
             help=("Don't ask the password")
         ),
         make_option(
-            '-c', '--chef_user',
+            '-a', '--administrator',
             dest='chef_username',
             action='store',
             help=('An existing chef administrator username')
         ),
         make_option(
-            '-p', '--chef_pem',
+            '-k', '--key',
             dest='chef_pem',
             action='store',
             help=('The pem file that contains the chef administrator private key')
