@@ -352,7 +352,8 @@
             family: choice(types),
             registry: 'JDA' + random_int(10000),
             memberof: [],
-            policies: somePolicies('computer')
+            policies: somePolicies('computer'),
+            node_chef_id: ''
         });
         potential_group_members.push(oid);
         return oid;
