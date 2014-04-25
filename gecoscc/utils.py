@@ -1,3 +1,4 @@
+import os
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -30,3 +31,11 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
                 remote_attribute: obj[keyname]
             }
         }, multi=False)
+
+
+def get_pem_for_username(settings, username):
+    first_boot_media = settings.get('firstboot_api.media')
+    user_media = os.path.join(first_boot_media, username)
+    if not os.path.exists(user_media):
+        os.makedirs(user_media)
+    return os.path.join(user_media, 'chef_server.pem')

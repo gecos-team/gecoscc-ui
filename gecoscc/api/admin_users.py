@@ -2,36 +2,17 @@ import os
 
 from cornice.resource import resource
 
-from pyramid.httpexceptions import HTTPForbidden
-from pyramid.security import remember
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import AdminUserVariables
-from gecoscc.permissions import api_login_required
-from gecoscc.userdb import UserDoesNotExist
-
-
-def admin_user_login_required(request):
-    try:
-        api_login_required(request)
-    except HTTPForbidden, e:
-        authorization = request.headers.get('Authorization')
-        if not authorization:
-            raise e
-        username, password = authorization.replace('Basic ', '').decode('base64').split(':')
-        try:
-            user = request.userdb.login(username, password)
-            if not user:
-                raise e
-        except UserDoesNotExist:
-            raise e
-        remember(request, username)
+from gecoscc.permissions import http_basic_login_required
+from gecoscc.utils import get_pem_for_username
 
 
 @resource(path='/auth/config/',
           description='Auth config',
-          validators=admin_user_login_required)
+          validators=http_basic_login_required)
 class AdminUserResource(BaseAPI):
 
     schema_detail = AdminUserVariables
@@ -44,8 +25,7 @@ class AdminUserResource(BaseAPI):
 
         chef = {}
         chef['chef_server_uri'] = settings.get('chef.url')
-        # TODO Update when there will be chef multiuser
-        chef['chef_validation'] = open(settings.get('chef.pem'), 'r').read().encode('base64')
+        chef['chef_validation'] = open(get_pem_for_username(settings, user['username']), 'r').read().encode('base64')
 
         gcc = {}
         gcc['gcc_link'] = True

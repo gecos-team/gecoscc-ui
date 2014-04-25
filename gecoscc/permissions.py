@@ -1,7 +1,11 @@
+from pyramid.httpexceptions import HTTPForbidden
+from pyramid.security import remember
 from pyramid.security import authenticated_userid
 from pyramid.security import (Allow, Authenticated, Everyone,
                               ALL_PERMISSIONS)
-from pyramid.httpexceptions import HTTPForbidden
+
+
+from gecoscc.userdb import UserDoesNotExist
 
 
 def is_logged(request):
@@ -11,6 +15,23 @@ def is_logged(request):
 def api_login_required(request):
     if not is_logged(request):
         raise HTTPForbidden('Login required')
+
+
+def http_basic_login_required(request):
+    try:
+        api_login_required(request)
+    except HTTPForbidden, e:
+        authorization = request.headers.get('Authorization')
+        if not authorization:
+            raise e
+        username, password = authorization.replace('Basic ', '').decode('base64').split(':')
+        try:
+            user = request.userdb.login(username, password)
+            if not user:
+                raise e
+        except UserDoesNotExist:
+            raise e
+        remember(request, username)
 
 
 def get_user_permissions(request):

@@ -11,6 +11,7 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
+from gecoscc.utils import get_pem_for_username
 
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
@@ -180,17 +181,10 @@ class ChefTask(Task):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
-    def get_pem_for_username(self, username):
-        first_boot_media = self.app.conf.get('firstboot_api.media')
-        user_media = os.path.join(first_boot_media, username)
-        if not os.path.exists(user_media):
-            os.makedirs(user_media)
-        return os.path.join(user_media, 'chef_server.pem')
-
     def get_api(self, user=None):
         username = user['username']
         url = user.get('variables', {}).get('chef_server_uri', None) or self.app.conf.get('chef.url')
-        chef_pem = self.get_pem_for_username(user['username'])
+        chef_pem = get_pem_for_username(self.app.conf, user['username'])
         if not os.path.exists(chef_pem):
             raise ChefError('User has no pem to access chef server')
         api = ChefAPI(url, chef_pem, username)
