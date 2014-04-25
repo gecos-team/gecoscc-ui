@@ -32,8 +32,16 @@ class AdminUserResource(BaseAPI):
         gcc['gcc_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
-        # TODO Softcode it
-        gcc['ou_username'] = ['HARD_CODE_OU1', 'HARD_CODE_OU1']
+        # TODO Change when the user have perms
+        ous = self.request.db.nodes.find({'type': 'ou'})
+        if ous.count() > 1:
+            ous = [ous[0]['name'], ous[1]['name']]
+        elif ous.count() == 1:
+            ous = [ous[0]['name']]
+        else:
+            ous = []
+        # End TODO
+        gcc['ou_username'] = ous
 
         auth_type = variables.get('auth_type', 'LDAP')
         if auth_type == 'LDAP':
