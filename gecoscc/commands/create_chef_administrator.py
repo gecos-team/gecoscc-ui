@@ -72,20 +72,6 @@ class Command(BaseCommand):
                 'admin': True}
         return api.api_request('POST', '/users', data=data)
 
-    def create_root_ou(self):
-        data = {'name': 'ou_0',
-                'type': 'ou'}
-        if self.db.nodes.find_one(data):
-            print "OU with name 'ou_0' already exists in mongo"
-        else:
-            data.update({'extra': '',
-                         'path': 'root',
-                         'lock': False,
-                         'policies': {},
-                         'source': 'gecos'})
-            self.db.nodes.insert(data)
-            print "OU with name 'ou_0' created in mongo"
-
     def get_pem_for_username(self, username):
         first_boot_media = self.settings.get('firstboot_api.media')
         user_media = os.path.join(first_boot_media, username)
@@ -140,5 +126,3 @@ class Command(BaseCommand):
             print "The user already exists in mongo"
         else:
             print "User %s created in mongo" % self.options.username
-
-        self.create_root_ou()

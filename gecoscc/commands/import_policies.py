@@ -26,7 +26,7 @@ class Command(BaseCommand):
        If you dont add any -p option then all the policies will be imported.
     """
 
-    usage = "usage: %prog config_uri create_chef_administrator --administrator user --key file.pem -p policy_key1 -p policy_key2"
+    usage = "usage: %prog config_uri import_policies --administrator user --key file.pem -p policy_key1 -p policy_key2"
 
     option_list = [
         make_option(

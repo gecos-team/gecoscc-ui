@@ -2,12 +2,10 @@ from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
 
-from chef import Node as ChefNode
-
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import get_chef_api
+from gecoscc.utils import get_chef_api, register_node
 
 
 @resource(path='/register/computer/',
@@ -27,19 +25,8 @@ class RegisterComputerResource(BaseAPI):
             return {'ok': False,
                     'error': 'Ou does not exists'}
         api = get_chef_api(settings, self.request.user)
-        node = ChefNode(node_id, api)
-        if not node.attributes.to_dict():
+        node_id = register_node(api, node_id, ou, self.collection)
+        if not node_id:
             return {'ok': False,
                     'error': 'Node does not exists (in chef)'}
-        computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
-        self.collection.insert({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
-                                'name': computer_name,
-                                'type': 'computer',
-                                'lock': False,
-                                'source': 'gecos',
-                                'memberof': [],
-                                'policies': {},
-                                'registry': '',
-                                'family': 'desktop',
-                                'node_chef_id': node_id})
         return {'ok': True}

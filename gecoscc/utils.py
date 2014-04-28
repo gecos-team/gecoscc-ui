@@ -1,5 +1,6 @@
 import os
 from chef import ChefAPI, Client
+from chef import Node as ChefNode
 from chef.exceptions import ChefError
 
 
@@ -90,4 +91,23 @@ def save_pem_for_username(settings, username, pem_name, pem_text):
 def get_cookbook(api, cookbook_name):
     return api['/cookbooks/%s/_latest/' % cookbook_name]
 
-    
+
+def register_node(api, node_id, ou, collection_nodes):
+    node = ChefNode(node_id, api)
+    if not node.attributes.to_dict():
+        return False
+    try:
+        computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
+    except KeyError:
+        computer_name = node_id
+    node_id = collection_nodes.insert({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
+                                       'name': computer_name,
+                                       'type': 'computer',
+                                       'lock': False,
+                                       'source': 'gecos',
+                                       'memberof': [],
+                                       'policies': {},
+                                       'registry': '',
+                                       'family': 'desktop',
+                                       'node_chef_id': node_id})
+    return node_id
