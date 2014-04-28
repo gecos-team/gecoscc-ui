@@ -33,7 +33,7 @@ requires = [
 ]
 
 setup(name='gecoscc',
-      version='0.3',
+      version='0.4.1',
       description='gecoscc',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
