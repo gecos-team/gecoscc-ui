@@ -160,6 +160,28 @@ introducir la siguiente URL en su navegador.
    http://localhost:6543/
 
 
+Carga de datos reales
++++++++++++++++++++++
+
+Tras configurar en nuestro development.ini el chef.url correspondiente a
+nuestro chef server y tras obtener y colocar en nuestra máquina la clave
+privada de un super usuario podemos ejecutar los siguientes comandos para
+tener una carga real de datos.
+
+.. code-block:: none
+
+    # Crear administrador en la UI y en chef server
+    pmanage config-templates/development.ini create_chef_administrator -u new_admin -e new_admin@example.com -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem -n
+
+    # Importar las politicas que haya en chef server (tiene parámetro p para importar una sola política)
+    pmanage config-templates/development.ini import_policies -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem
+
+    # Importar nodos chef
+    pmanage config-templates/development.ini import_chef_nodes -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem
+
+
+
+
 Carga de datos de prueba
 ++++++++++++++++++++++++
 
