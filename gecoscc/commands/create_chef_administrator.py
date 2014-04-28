@@ -3,13 +3,13 @@ import random
 import string
 import sys
 
-from chef import ChefAPI
-from chef.exceptions import ChefError, ChefServerNotFoundError, ChefServerError
+from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from getpass import getpass
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
+from gecoscc.utils import _get_chef_api, create_chef_admin_user
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -66,15 +66,6 @@ class Command(BaseCommand):
         'chef_pem',
     )
 
-    def get_api(self):
-        url = self.settings.get('chef.url')
-        username = self.options.chef_username
-        chef_pem = self.options.chef_pem
-        if not os.path.exists(chef_pem):
-            raise ChefError('User has no pem to access chef server')
-        api = ChefAPI(url, chef_pem, username)
-        return api
-
     def create_chef_admin_user(self, api, username, password):
         data = {'name': username,
                 'password': password,
@@ -103,7 +94,9 @@ class Command(BaseCommand):
         return os.path.join(user_media, 'chef_user.pem')
 
     def command(self):
-        api = self.get_api()
+        api = _get_chef_api(self.settings.get('chef.url'),
+                            self.options.chef_username,
+                            self.options.chef_pem)
         try:
             api['/users/%s' % self.options.username]
             print "The username %s already exists in the chef sever" % self.options.username
@@ -130,13 +123,7 @@ class Command(BaseCommand):
             print "The generated password is: {0}\n".format(password)
 
         try:
-            chef_user = self.create_chef_admin_user(api, self.options.username, password)
-            private_key = chef_user.get('private_key', None)
-            if private_key:
-                fileout = open(self.get_pem_for_username(self.options.username), 'w')
-                fileout.write(private_key)
-                fileout.close()
-
+            create_chef_admin_user(api, self.settings, self.options.username, password)
         except ChefServerError, e:
             print "User not created in chef, error was: %s" % e
             sys.exit(1)

@@ -2,7 +2,7 @@ from copy import deepcopy
 
 from bson import ObjectId
 
-from chef import Client, Node
+from chef import Node
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -12,7 +12,7 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
-from gecoscc.utils import save_pem_for_username, get_chef_api
+from gecoscc.utils import get_chef_api, create_chef_admin_user
 
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
@@ -280,16 +280,7 @@ class ChefTask(Task):
 
     def adminuser_created(self, user, objnew):
         api = get_chef_api(self.app.conf, user)
-        username = objnew['username']
-        data = {'name': username, 'password': objnew['plain_password'], 'admin': True}
-        chef_user = api.api_request('POST', '/users', data=data)
-        user_private_key = chef_user.get('private_key', None)
-        if user_private_key:
-            save_pem_for_username(self.app.conf, username, 'chef_user.pem', user_private_key)
-        chef_client = Client.create(name=username, api=api, admin=True)
-        client_private_key = getattr(chef_client, 'private_key', None)
-        if client_private_key:
-            save_pem_for_username(self.app.conf, username, 'chef_client.pem', client_private_key)
+        create_chef_admin_user(api, self.app.conf, objnew['username'], objnew['plain_password'])
         self.log_action('created', 'AdminUser', objnew)
 
 

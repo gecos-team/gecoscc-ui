@@ -1,5 +1,5 @@
 import os
-from chef import ChefAPI
+from chef import ChefAPI, Client
 from chef.exceptions import ChefError
 
 
@@ -34,19 +34,39 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
             }
         }, multi=False)
 
+# Chef utils
+
 
 def get_chef_api(settings, user):
     username = user['username']
-    url = user.get('variables', {}).get('chef_server_uri', None) or settings.get('chef.url')
+    chef_url = user.get('variables', {}).get('chef_server_uri', None) or settings.get('chef.url')
     chef_client_pem = get_pem_path_for_username(settings, user['username'], 'chef_client.pem')
     chef_user_pem = get_pem_path_for_username(settings, user['username'], 'chef_user.pem')
     if os.path.exists(chef_client_pem):
-        api = ChefAPI(url, chef_client_pem, username)
-    elif os.path.exists(chef_user_pem):
-        api = ChefAPI(url, chef_user_pem, username)
+        chef_pem = chef_client_pem
     else:
-        raise ChefError('User has no pem to access chef server')
+        chef_pem = chef_user_pem
+    api = _get_chef_api(chef_url, username, chef_pem)
     return api
+
+
+def _get_chef_api(chef_url, username, chef_pem):
+    if not os.path.exists(chef_pem):
+        raise ChefError('User has no pem to access chef server')
+    api = ChefAPI(chef_url, chef_pem, username)
+    return api
+
+
+def create_chef_admin_user(api, settings, username, password):
+    data = {'name': username, 'password': password, 'admin': True}
+    chef_user = api.api_request('POST', '/users', data=data)
+    user_private_key = chef_user.get('private_key', None)
+    if user_private_key:
+        save_pem_for_username(settings, username, 'chef_user.pem', user_private_key)
+    chef_client = Client.create(name=username, api=api, admin=True)
+    client_private_key = getattr(chef_client, 'private_key', None)
+    if client_private_key:
+        save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
 
 def get_pem_for_username(settings, username, pem_name):
