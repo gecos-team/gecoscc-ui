@@ -16,6 +16,8 @@ POLICY_NAMES = {
     'local_groups_res': 'Group policy',
     'local_file_res': 'Local file policy',
     'tz_date_res': 'Date policy',
+    'network_res': 'Network policy',
+    'package_res': 'Package policy'
 }
 
 
@@ -87,10 +89,10 @@ class Command(BaseCommand):
         for key, value in policies.items():
             if policies_to_import and key not in policies_to_import:
                 continue
-            if 'job_ids' in value:
-                del(value['job_ids'])
-            if 'jobs_id' in value:
-                del(value['jobs_id'])
+            if 'job_ids' in value['properties']:
+                del(value['properties']['job_ids'])
+            if 'jobs_id' in value['properties']:
+                del(value['properties']['jobs_id'])
             path = value['path']
             del(value['path'])
             policy = {
