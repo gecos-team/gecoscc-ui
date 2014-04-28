@@ -449,6 +449,9 @@ class Policy(colander.MappingSchema):
                                  default={},
                                  missing={})
     targets = StringList(missing=[], default=[])
+    path = colander.SchemaNode(colander.String(),
+                               default='',
+                               missing='')
 
 
 class Policies(colander.SequenceSchema):

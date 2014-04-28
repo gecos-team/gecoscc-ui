@@ -411,6 +411,7 @@
             _id: new ObjectId(),
             name: "Policy " + i,
             slug: "policy_" + i,
+            path: "example.policy.policy_" + i,
             schema: choice(POLICY_SCHEMAS),
             targets: [choice(TYPES.slice(0, 2))]
         };
