@@ -12,7 +12,7 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
-from gecoscc.utils import get_chef_api, create_chef_admin_user
+from gecoscc.utils import get_chef_api, create_chef_admin_user, get_cookbook
 
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
@@ -102,15 +102,6 @@ class ChefTask(Task):
         get_realted_computers_of_type = getattr(self, 'get_related_computers_of_%s' % obj_type)
         return get_realted_computers_of_type(obj, related_computers, related_objects)
 
-    def get_related_cookbook(self, api):
-        cookbook_name = self.app.conf.get('chef.cookbook_name')
-        cookbook = api['/cookbooks/' + cookbook_name]
-        cookbook[cookbook_name]['versions'].sort(key=lambda s: map(int, s['version'].split('.')),
-                                                 reverse=True)
-        last_cookbook = cookbook[cookbook_name]['versions'][0]
-        return api['/cookbooks/%s/%s' % (cookbook_name,
-                                         last_cookbook['version'])]
-
     def is_adding_policy(self, obj, objold):
         new_policies = obj.get('policies', None)
         old_policies = objold.get('policies', None)
@@ -184,7 +175,7 @@ class ChefTask(Task):
 
     def object_action(self, user, obj, objold=None, action=None):
         api = get_chef_api(self.app.conf, user)
-        cookbook = self.get_related_cookbook(api)
+        cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = self.get_related_computers(obj)
         for computer in computers:
             node = Node(computer['node_chef_id'], api)

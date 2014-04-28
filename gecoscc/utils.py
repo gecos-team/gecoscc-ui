@@ -85,3 +85,9 @@ def save_pem_for_username(settings, username, pem_name, pem_text):
     fileout = open(get_pem_path_for_username(settings, username, pem_name), 'w')
     fileout.write(pem_text)
     fileout.close()
+
+
+def get_cookbook(api, cookbook_name):
+    return api['/cookbooks/%s/_latest/' % cookbook_name]
+
+    

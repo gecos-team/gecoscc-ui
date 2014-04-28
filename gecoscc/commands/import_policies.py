@@ -1,11 +1,9 @@
-import os
 import sys
 
-from chef import ChefAPI
-from chef.exceptions import ChefError
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
+from gecoscc.utils import _get_chef_api, get_cookbook
 
 
 DEFAULT_TARGETS = ['ou', 'computer']
@@ -57,20 +55,13 @@ class Command(BaseCommand):
         'chef_pem',
     )
 
-    def get_api(self):
-        url = self.settings.get('chef.url')
-        username = self.options.chef_username
-        chef_pem = self.options.chef_pem
-        if not os.path.exists(chef_pem):
-            raise ChefError('User has no pem to access chef server')
-        api = ChefAPI(url, chef_pem, username)
-        return api
-
     def command(self):
-        api = self.get_api()
+        api = _get_chef_api(self.settings.get('chef.url'),
+                            self.options.chef_username,
+                            self.options.chef_pem)
         cookbook_name = self.settings['chef.cookbook_name']
 
-        cookbook = api['/cookbooks/%s/_latest/' % cookbook_name]
+        cookbook = get_cookbook(api, cookbook_name)
 
         try:
             policies = cookbook['metadata']['attributes']['json_schema']['object']['properties']['gecos_ws_mgmt']['properties']['misc_mgmt']['properties']
