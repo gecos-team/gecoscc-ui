@@ -63,8 +63,12 @@ class Command(BaseCommand):
 
         cookbook = get_cookbook(api, cookbook_name)
 
+        policies = {}
         try:
-            policies = cookbook['metadata']['attributes']['json_schema']['object']['properties']['gecos_ws_mgmt']['properties']['misc_mgmt']['properties']
+            for key, value in cookbook['metadata']['attributes']['json_schema']['object']['properties']['gecos_ws_mgmt']['properties'].items():
+                for k, policy in value['properties'].items():
+                    policy['path'] = '%s.%s.%s' % (cookbook_name, key, k)
+                    policies[k] = policy
         except KeyError:
             print "Can not found policies in cookbook %s" % cookbook_name
             sys.exit(1)
@@ -83,11 +87,16 @@ class Command(BaseCommand):
         for key, value in policies.items():
             if policies_to_import and key not in policies_to_import:
                 continue
+            if 'job_ids' in value:
+                del(value['job_ids'])
             if 'jobs_id' in value:
                 del(value['jobs_id'])
+            path = value['path']
+            del(value['path'])
             policy = {
                 'name': POLICY_NAMES.get(key, key),
                 'slug': key,
+                'path': path,
                 'schema': value,
                 'targets': DEFAULT_TARGETS,
             }
