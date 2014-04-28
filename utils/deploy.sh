@@ -18,7 +18,7 @@ useradd gecoscc --home /opt/gecoscc/
 
 easy_install virtualenv
 sudo -u gecoscc virtualenv /opt/gecoscc
-sudo -u /opt/gecoscc/bin/pip install https://github.com/surfly/gevent/releases/download/1.0rc3/gevent-1.0rc3.tar.gz
+sudo -u gecoscc /opt/gecoscc/bin/pip install https://github.com/surfly/gevent/releases/download/1.0rc3/gevent-1.0rc3.tar.gz
 
 lokkit -s http
 lokkit -s https
