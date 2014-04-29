@@ -26,7 +26,7 @@ requires = [
     'cornice==0.16.2',
     'jsonschema==2.3.0',
     'gevent==1.0',
-    'gevent-websocket==0.9.3',
+    'gevent-websocket==0.3.6',
     'WebHelpers==1.3',
     'Paste==1.7.5.1',
     'PyChef==0.2.3',
@@ -34,7 +34,7 @@ requires = [
 ]
 
 setup(name='gecoscc',
-      version='0.4.3',
+      version='0.4.4',
       description='gecoscc',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
