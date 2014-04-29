@@ -126,8 +126,9 @@ class ChefTask(Task):
                 continue
             elif obj['type'] != 'computer':
                 try:
-                    node.default.get_dotted(field_chef)
-                    continue
+                    val = node.default.get_dotted(field_chef)
+                    if val or val is False:
+                        continue
                 except KeyError:
                     pass
             node.attributes.set_dotted(field_chef, obj_ui[field_ui])

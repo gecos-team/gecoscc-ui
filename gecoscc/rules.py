@@ -66,6 +66,7 @@ RULES_NODE = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_a
                      'policies': {'network_res': RULES_NETWORK_RES,
                                   'package_res': RULES_PACKAGE_RES,
                                   'local_file_res': RULES_LOCAL_FILE_RES,
+                                  'scripts_launch_res': RULES_SCRIPTS_LAUNCH_RES,
                                   'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES}},
               'group': {'save': {},
                         'policies': {}},
