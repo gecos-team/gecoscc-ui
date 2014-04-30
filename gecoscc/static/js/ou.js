@@ -32,7 +32,7 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             lock: false,
             policies: [],
             extra: "",
-            policiesCollection: new App.Policies.Models.PolicyCollection()
+            policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
 });
