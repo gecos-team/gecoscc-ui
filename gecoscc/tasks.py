@@ -180,11 +180,14 @@ class ChefTask(Task):
         computers = self.get_related_computers(obj)
         for computer in computers:
             node = Node(computer['node_chef_id'], api)
-            node, updated = self.update_node(user, computer, obj, objold, node, action)
-            if not updated:
-                continue
-            self.validate_data(node, cookbook, api)
-            node.save()
+            if obj['type'] == 'computer' and action == 'deleted':
+                node.delete()
+            else:
+                node, updated = self.update_node(user, computer, obj, objold, node, action)
+                if not updated:
+                    continue
+                self.validate_data(node, cookbook, api)
+                node.save()
 
     def object_created(self, user, objnew):
         self.object_action(user, objnew, action='created')
