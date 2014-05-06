@@ -30,7 +30,6 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             type: "ou",
             source: "gecos",
             lock: false,
-            policies: [],
             extra: "",
             policyCollection: new App.Policies.Models.PolicyCollection()
         }
