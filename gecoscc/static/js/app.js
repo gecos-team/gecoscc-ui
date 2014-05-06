@@ -320,7 +320,7 @@ var App;
                 App.main.show(App.instances.loaderView);
 
                 if (_.isUndefined(policy)) {
-                    policy = new App.Policies.Models.PolicyModel({ id: policyid });
+                    policy = new App.Policies.Models.PolicyModel({ id: policyid, ou_id: containerid });
                     promise = policy.fetch();
                     App.instances.cache.set(policyid, policy);
                 } else {

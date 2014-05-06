@@ -89,6 +89,9 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             if (this.has("id")) {
                 url += this.get("id") + '/';
             }
+            if (this.has("ou_id")) {
+                url += "?ou_id=" + this.get("ou_id");
+            }
             return url;
         },
 
@@ -136,6 +139,8 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         },
 
         server_api: {
+            target: function () { return this.resource.resourceType; },
+            ou_id: function () { return _.last(this.resource.get("path").split(',')) },
             page: function () { return this.currentPage; },
             pagesize: function () { return this.perPage; }
         },
@@ -152,6 +157,10 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                 throw "Search collections require a keyword attribute";
             }
             this.keyword = options.keyword;
+            if (!_.isObject(options.resource)) {
+                throw "Search collections require a resource attribute";
+            }
+            this.resource = options.resource;
         },
 
         paginator_core: {
@@ -239,6 +248,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             this.collection = new App.Policies.Models.SearchPolicyCollection({
+                resource: this.resource,
                 keyword: ""
             });
             this.collection.goTo(1, {
