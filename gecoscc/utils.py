@@ -40,6 +40,15 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
             }
         }, multi=False)
 
+# mongo utils
+
+
+def get_filter_nodes_belonging_ou(ou_id):
+    if ou_id == 'root':
+        return {'$regex': '%s.*' % ou_id}
+    return {'$regex': '.*,%s.*' % ou_id}
+
+
 # Chef utils
 
 

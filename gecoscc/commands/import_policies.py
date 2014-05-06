@@ -21,13 +21,18 @@ POLICY_NAMES = {
     'package_res': 'Package policy'
 }
 
-SCHEMA_EMITER = {
+SCHEMA_EMITTER = {
     "required": ["object_related"],
     "type": "object",
     "properties": {
         "object_related": {
-            "enum": [],
-            "type": "string",
+            "minItems": 1,
+            "uniqueItems": True,
+            "items": {
+                "enum": [],
+                "type": "string",
+            },
+            "type": "array",
             "title": "Object related"
         }
     }
@@ -127,7 +132,7 @@ class Command(BaseCommand):
             }
             self.treatment_policy(policy)
         for emiter in RESOURCES_EMITTERS_TYPES:
-            schema = deepcopy(SCHEMA_EMITER)
+            schema = deepcopy(SCHEMA_EMITTER)
             schema['properties']['object_related']['title'] = '%ss' % emiter.capitalize()
             slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
             policy = {

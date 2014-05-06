@@ -12,7 +12,8 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
-from gecoscc.utils import (get_chef_api, create_chef_admin_user, get_cookbook,
+from gecoscc.utils import (get_chef_api, create_chef_admin_user,
+                           get_cookbook, get_filter_nodes_belonging_ou,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES)
 
 
@@ -61,7 +62,7 @@ class ChefTask(Task):
                 related_objects.append(ou)
             else:
                 return related_computers
-        computers = self.db.nodes.find({'path': {'$regex': '.*,%s.*' % ou['_id']},
+        computers = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(ou['_id']),
                                         'type': 'computer'})
         for computer in computers:
             self.get_related_computers_of_computer(computer,
