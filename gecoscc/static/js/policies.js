@@ -37,12 +37,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     };
                 })
             );
-            this.resolvePoliciesNames(result.policyCollection);
+            this.resolvePoliciesNames(result.policyCollection, result.path);
 
             return result;
         },
 
-        resolvePoliciesNames: function (collection) {
+        resolvePoliciesNames: function (collection, path) {
             var that = this,
                 oids;
 
@@ -52,7 +52,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             if (!collection.hasUnknownPolicies()) { return; }
 
             oids = collection.getOids().join(',');
-            $.ajax("/api/policies/?oids=" + oids).done(function (response) {
+            var url = "/api/policies/?oids=" + oids;
+            var ou_id = _.last(path.split(','));
+            if (ou_id) {
+                url += "&ou_id=" + ou_id;
+            }
+            $.ajax(url).done(function (response) {
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
 
