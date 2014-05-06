@@ -46,7 +46,7 @@ class Command(BaseCommand):
        If you dont add any -p option then all the policies will be imported.
     """
 
-    usage = "usage: %prog config_uri import_policies --administrator user --key file.pem -p policy_key1 -p policy_key2"
+    usage = "usage: %prog config_uri import_policies --administrator user --key file.pem -p policy_key1 -p policy_key2 --ignore-emitter-policies"
 
     option_list = [
         make_option(
@@ -55,6 +55,13 @@ class Command(BaseCommand):
             action='append',
             default=[],
             help=('Key of the policy to import. Use multiple times to import multiple policies')
+        ),
+        make_option(
+            '-i', '--ignore-emitter-policies',
+            dest='ignore_emitter_policies',
+            action='store_true',
+            default=False,
+            help=('Ignore emitter policies')
         ),
         make_option(
             '-a', '--administrator',
@@ -131,16 +138,17 @@ class Command(BaseCommand):
                 'is_emitter_policy': False
             }
             self.treatment_policy(policy)
-        for emiter in RESOURCES_EMITTERS_TYPES:
-            schema = deepcopy(SCHEMA_EMITTER)
-            schema['properties']['object_related']['title'] = '%ss' % emiter.capitalize()
-            slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
-            policy = {
-                'name': '%s can view policy' % emiter,
-                'slug': slug,
-                'path': slug,
-                'targets': DEFAULT_TARGETS,
-                'is_emitter_policy': True,
-                'schema': schema,
-            }
-            self.treatment_policy(policy)
+        if not self.options.ignore_emitter_policies:
+            for emiter in RESOURCES_EMITTERS_TYPES:
+                schema = deepcopy(SCHEMA_EMITTER)
+                schema['properties']['object_related']['title'] = '%ss' % emiter.capitalize()
+                slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
+                policy = {
+                    'name': '%s can view policy' % emiter,
+                    'slug': slug,
+                    'path': slug,
+                    'targets': DEFAULT_TARGETS,
+                    'is_emitter_policy': True,
+                    'schema': schema,
+                }
+                self.treatment_policy(policy)
