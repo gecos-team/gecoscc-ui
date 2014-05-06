@@ -1,9 +1,10 @@
 import sys
 
+from copy import deepcopy
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, get_cookbook
+from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX
 
 
 DEFAULT_TARGETS = ['ou', 'computer']
@@ -18,6 +19,18 @@ POLICY_NAMES = {
     'tz_date_res': 'Date policy',
     'network_res': 'Network policy',
     'package_res': 'Package policy'
+}
+
+SCHEMA_EMITER = {
+    "required": ["object_related"],
+    "type": "object",
+    "properties": {
+        "object_related": {
+            "enum": [],
+            "type": "string",
+            "title": "Object related"
+        }
+    }
 }
 
 
@@ -57,6 +70,16 @@ class Command(BaseCommand):
         'chef_pem',
     )
 
+    def treatment_policy(self, new_policy):
+        policy_slug = new_policy['slug']
+        db_policy = self.db.policies.find_one({'slug': policy_slug})
+        if not db_policy:
+            self.db.policies.insert(new_policy)
+            print "Imported policy: %s" % policy_slug
+        else:
+            self.db.policies.update({'slug': policy_slug}, new_policy)
+            print "Updated policy: %s" % policy_slug
+
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             self.options.chef_username,
@@ -93,14 +116,26 @@ class Command(BaseCommand):
                 del(value['properties']['job_ids'])
             if 'jobs_id' in value['properties']:
                 del(value['properties']['jobs_id'])
-            path = value['path']
-            del(value['path'])
+            path = value.pop('path')
             policy = {
                 'name': POLICY_NAMES.get(key, key),
                 'slug': key,
                 'path': path,
                 'schema': value,
                 'targets': DEFAULT_TARGETS,
+                'is_emitter_policy': False
             }
-            self.db.policies.insert(policy)
-            print "Imported policy: %s" % key
+            self.treatment_policy(policy)
+        for emiter in RESOURCES_EMITTERS_TYPES:
+            schema = deepcopy(SCHEMA_EMITER)
+            schema['properties']['object_related']['title'] = '%ss' % emiter.capitalize()
+            slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
+            policy = {
+                'name': '%s can view policy' % emiter,
+                'slug': slug,
+                'path': slug,
+                'targets': DEFAULT_TARGETS,
+                'is_emitter_policy': True,
+                'schema': schema,
+            }
+            self.treatment_policy(policy)

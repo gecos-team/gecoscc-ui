@@ -452,6 +452,8 @@ class Policy(colander.MappingSchema):
     path = colander.SchemaNode(colander.String(),
                                default='',
                                missing='')
+    is_emitter_policy = colander.SchemaNode(colander.Boolean(),
+                                            default=False)
 
 
 class Policies(colander.SequenceSchema):

@@ -4,6 +4,11 @@ from chef import Node as ChefNode
 from chef.exceptions import ChefError
 
 
+RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
+RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
+POLICY_EMITTER_SUBFIX = '_can_view'
+
+
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
     """
         Merge a list of relations in a two ways relation model.

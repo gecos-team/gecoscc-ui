@@ -12,11 +12,8 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
-from gecoscc.utils import get_chef_api, create_chef_admin_user, get_cookbook
-
-
-RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
-RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
+from gecoscc.utils import (get_chef_api, create_chef_admin_user, get_cookbook,
+                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES)
 
 
 class ChefTask(Task):
