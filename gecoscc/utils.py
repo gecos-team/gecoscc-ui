@@ -54,7 +54,7 @@ def get_filter_nodes_belonging_ou(ou_id):
 
 def get_chef_api(settings, user):
     username = user['username']
-    chef_url = user.get('variables', {}).get('chef_server_uri', None) or settings.get('chef.url')
+    chef_url = settings.get('chef.url')
     chef_client_pem = get_pem_path_for_username(settings, user['username'], 'chef_client.pem')
     chef_user_pem = get_pem_path_for_username(settings, user['username'], 'chef_user.pem')
     if os.path.exists(chef_client_pem):
