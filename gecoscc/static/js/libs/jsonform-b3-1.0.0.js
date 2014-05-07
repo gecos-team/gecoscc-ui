@@ -217,7 +217,7 @@ jsonform.fieldTemplate = function(inner) {
         '<% if (node.description) { %>' +
             '<span class="help-block"><%= node.description %></span>' +
         '<% } %>' +
-        '<span class="help-block jsonform-errortext text-danger" style="display:none;"></span>' +
+        '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
     '</div>';
 };
 
@@ -3487,6 +3487,7 @@ jsonform.getFormValue = function (formelt) {
  */
 $.fn.jsonFormErrors = function(errors, options) {
   $(".error", this).removeClass("error");
+  $(".has-error", this).removeClass("has-error");
   $(".warning", this).removeClass("warning");
 
   $(".jsonform-errortext", this).hide();
@@ -3512,7 +3513,7 @@ $.fn.jsonFormErrors = function(errors, options) {
 
     var errorType = errors[i].type || "error";
     $(errormarkerclass, this).addClass(errorType);
-    $(errormarkerclass + " .jsonform-errortext", this).html(errors[i].message).show();
+    $(errormarkerclass + " > .jsonform-errortext", this).html(errors[i].message).show();
   }
 
   // Look for the first error in the DOM and ensure the element
