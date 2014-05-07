@@ -39,21 +39,46 @@ RULES_PRINTER_CAN_VIEW_RES['gecos_ws_mgmt.printers_mgmt.printers_res.printers_li
 
 # End desktop background res
 
+# end emitter policies
 
-RULES_NODE = {'computer': {'save': {},
-                           'policies': {'network_res': RULES_NETWORK_RES}},
-              'ou': {'save': {},
-                     'policies': {}},
-              'group': {'save': {},
-                        'policies': {}},
-              'user': {'save': {},
-                       'policies': {}},
-              'printer': {'save': {},
-                          'policies': {},
-                          'related': {}},
-              'storage': {'save': {},
-                          'policies': {}}
-              }
+
+RULES_NODE = {
+    'computer': {
+        'save': {},
+        'policies': {
+            'network_res': RULES_NETWORK_RES,
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+        },
+    },
+    'ou': {
+        'save': {},
+        'policies': {
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+        },
+    },
+    'group': {
+        'save': {},
+        'policies': {
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+        },
+    },
+    'user': {
+        'save': {},
+        'policies': {},
+    },
+    'printer': {
+        'save': {},
+        'policies': {},
+    },
+    'storage': {
+        'save': {},
+        'policies': {},
+    },
+    'repository': {
+        'save': {},
+        'policies': {},
+    },
+}
 
 
 def get_specific_rules(obj_type, rule_type, policy_slug=None):
