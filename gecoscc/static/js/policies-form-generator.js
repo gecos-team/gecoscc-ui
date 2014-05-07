@@ -78,6 +78,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 onSubmitValid: _.bind(this.processForm, this)
             };
             if (_.has(data, "values")) { options.value = data.values; }
+            options.validate = jjv();
             $html.find("form").jsonForm(options);
 
             this.$el.html($html);
