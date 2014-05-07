@@ -337,9 +337,6 @@ class Printer(Node):
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
-    name = colander.SchemaNode(colander.String(),
-                               default='',
-                               missing='')
     description = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')

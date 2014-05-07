@@ -22,10 +22,10 @@ POLICY_NAMES = {
 }
 
 SCHEMA_EMITTER = {
-    "required": ["object_related"],
+    "required": ["object_related_list"],
     "type": "object",
     "properties": {
-        "object_related": {
+        "object_related_list": {
             "minItems": 1,
             "uniqueItems": True,
             "items": {
@@ -141,7 +141,7 @@ class Command(BaseCommand):
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
                 schema = deepcopy(SCHEMA_EMITTER)
-                schema['properties']['object_related']['title'] = '%ss' % emiter.capitalize()
+                schema['properties']['object_related_list']['title'] = '%ss' % emiter.capitalize()
                 slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
                 policy = {
                     'name': '%s can view policy' % emiter,

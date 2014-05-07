@@ -64,8 +64,9 @@ class PoliciesResource(ResourcePaginatedReadOnly):
             node_type = obj['slug'].replace(POLICY_EMITTER_SUBFIX, '')
             nodes = self.request.db.nodes.find({'type': node_type,
                                                 'path': get_filter_nodes_belonging_ou(ou_id)})
-            obj['schema']['properties']['object_related']['items']['enum'] = [{"title": node["name"],
-                                                                               "value": unicode(node["_id"])} for node in nodes]
+            object_related_items = obj['schema']['properties']['object_related_list']['items']
+            object_related_items['enum'] = [{"title": node["name"],
+                                            "value": unicode(node["_id"])} for node in nodes]
         return obj
 
     def parse_item(self, obj):

@@ -14,7 +14,8 @@ from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import RULES_NODE
 from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            get_cookbook, get_filter_nodes_belonging_ou,
-                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES)
+                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
+                           POLICY_EMITTER_SUBFIX)
 
 
 class ChefTask(Task):
@@ -107,10 +108,19 @@ class ChefTask(Task):
 
     def get_rules(self, rule_type, obj, policy_id=None):
         if rule_type == 'save':
-            return (RULES_NODE[obj['type']][rule_type], obj)
+            return (RULES_NODE[obj['type']][rule_type], [obj])
         elif rule_type == 'policy':
             policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-            return (RULES_NODE[obj['type']]['policies'][policy['slug']],
+            rules = RULES_NODE[obj['type']]['policies'][policy['slug']]
+            if policy.get('is_emitter_policy', False):
+                object_related_id_list = obj['policies'][policy_id]['object_related_list']
+                object_related_list = []
+                for object_related_id in object_related_id_list:
+                    object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
+                    object_related_list.append(object_related)
+                return (rules, {'object_related_list': object_related_list,
+                                'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')})
+            return (rules,
                     obj['policies'][policy_id])
         return ValueError("The rule type should be save or policy")
 
@@ -118,9 +128,13 @@ class ChefTask(Task):
         updated = False
         attributes_updated = []
         for field_chef, field_ui in rules.items():
-            if obj_ui.get(field_ui, None) is None:
+            if callable(field_ui):
+                obj_ui_field = field_ui(obj_ui, None)
+            else:
+                obj_ui_field = obj_ui.get(field_ui, None)
+            if obj_ui_field is None:
                 continue
-            elif obj_ui.get(field_ui, None) == node.attributes.get_dotted(field_chef):
+            elif obj_ui_field == node.attributes.get_dotted(field_chef):
                 continue
             elif obj['type'] != 'computer':
                 try:
@@ -129,7 +143,7 @@ class ChefTask(Task):
                         continue
                 except KeyError:
                     pass
-            node.attributes.set_dotted(field_chef, obj_ui[field_ui])
+            node.attributes.set_dotted(field_chef, obj_ui_field)
             updated = True
             attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             if attr not in attributes_updated:

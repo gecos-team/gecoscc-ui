@@ -56,25 +56,57 @@ for attr in rules_desktop_background_res_attrs:
 # End desktop background res
 
 
-RULES_NODE = {'computer': {'save': {'gecos_ws_mgmt.network_mgmt.network_res.ip_address': 'ip'},
+# Emitter policies
+
+
+EMITTER_OBJECT_RULES = {
+    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd', 'ppd_uri')
+}
+
+
+def object_related_list(objs_ui, default=None):
+    attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
+    objs = []
+    if isinstance(attrs, tuple):
+        for obj_ui in objs_ui['object_related_list']:
+            obj = {}
+            for attr in attrs:
+                obj[attr] = obj_ui[attr]
+            objs.append(obj)
+    else:
+        # if attrs is a dictionary
+        raise NotImplementedError
+    return objs
+
+# Printer can view
+
+RULES_PRINTER_CAN_VIEW_RES = {}
+RULES_PRINTER_CAN_VIEW_RES['gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'] = object_related_list
+
+# End desktop background res
+
+
+RULES_NODE = {'computer': {'save': {},
                            'policies': {'network_res': RULES_NETWORK_RES,
                                         'package_res': RULES_PACKAGE_RES,
                                         'local_file_res': RULES_LOCAL_FILE_RES,
                                         'scripts_launch_res': RULES_SCRIPTS_LAUNCH_RES,
-                                        'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES}},
+                                        'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES,
+                                        'printer_can_view': RULES_PRINTER_CAN_VIEW_RES}},
               'ou': {'save': {},
                      'policies': {'network_res': RULES_NETWORK_RES,
                                   'package_res': RULES_PACKAGE_RES,
                                   'local_file_res': RULES_LOCAL_FILE_RES,
                                   'scripts_launch_res': RULES_SCRIPTS_LAUNCH_RES,
-                                  'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES}},
+                                  'desktop_background_res': RULES_DESKTOP_BACKGROUND_RES,
+                                  'printer_can_view': RULES_PRINTER_CAN_VIEW_RES}},
               'group': {'save': {},
                         'policies': {}},
               'user': {'save': {},
                        'policies': {}},
               'printer': {'save': {},
                           'policies': {},
-                          'related': {'gecos_ws_mgmt.printer_use.network_res.ip_address': 'ip'}},
+                          'related': {}},
               'storage': {'save': {},
                           'policies': {}}
               }
