@@ -11,7 +11,7 @@ from jsonschema import validate
 
 
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.rules import RULES_NODE
+from gecoscc.rules import get_rules
 from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
@@ -106,14 +106,14 @@ class ChefTask(Task):
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def get_rules(self, rule_type, obj, policy_id=None):
+    def get_rules_and_object(self, rule_type, obj, node, policy_id=None):
         if rule_type == 'save':
-            return (RULES_NODE[obj['type']][rule_type], [obj])
-        elif rule_type == 'policy':
+            return get_rules(obj['type'], rule_type, node)
+        elif rule_type == 'policies':
             policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-            rules = RULES_NODE[obj['type']]['policies'][policy['slug']]
+            rules = get_rules(obj['type'], rule_type, node, policy)
             if policy.get('is_emitter_policy', False):
-                object_related_id_list = obj['policies'][policy_id]['object_related_list']
+                object_related_id_list = obj[rule_type][policy_id]['object_related_list']
                 object_related_list = []
                 for object_related_id in object_related_id_list:
                     object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
@@ -121,7 +121,7 @@ class ChefTask(Task):
                 return (rules, {'object_related_list': object_related_list,
                                 'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')})
             return (rules,
-                    obj['policies'][policy_id])
+                    obj[rule_type][policy_id])
         return ValueError("The rule type should be save or policy")
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node):
@@ -169,16 +169,16 @@ class ChefTask(Task):
         elif action in ['changed', 'created']:
             if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
                 if self.is_adding_policy(obj, objold):
-                    rule_type = 'policy'
-                    for policy_id in obj['policies'].keys():
-                        rules, obj_ui = self.get_rules(rule_type, obj, policy_id)
+                    rule_type = 'policies'
+                    for policy_id in obj[rule_type].keys():
+                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy_id)
                         node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
                         if not updated and updated_policy:
                             updated = True
                 return (node, updated)
             else:  # printer, storage, repo
                 rule_type = 'save'
-                rules, obj = self.get_rules(rule_type, obj)
+                rules, obj = self.get_rules_and_object(rule_type, obj, node)
                 return self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
         raise ValueError('The action should be deleted, changed or created')
 
