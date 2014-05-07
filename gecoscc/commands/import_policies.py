@@ -8,6 +8,7 @@ from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES,
 
 
 DEFAULT_TARGETS = ['ou', 'computer']
+
 POLICY_NAMES = {
     'local_users_res': 'User policy',
     'local_admin_users_res': 'Administrator policy',
@@ -18,7 +19,14 @@ POLICY_NAMES = {
     'local_file_res': 'Local file policy',
     'tz_date_res': 'Date policy',
     'network_res': 'Network policy',
-    'package_res': 'Package policy'
+    'package_res': 'Package policy',
+    'repository_can_view': 'Repository can view policy',
+    'storage_can_view': 'Storage can view policy',
+    'printer_can_view': 'Printer can view policy'
+}
+
+POLICY_EMITTER_PATH = {
+    'printer_can_view': 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'
 }
 
 SCHEMA_EMITTER = {
@@ -141,12 +149,12 @@ class Command(BaseCommand):
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
                 schema = deepcopy(SCHEMA_EMITTER)
-                schema['properties']['object_related_list']['title'] = '%ss' % emiter.capitalize()
+                schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
                 slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
                 policy = {
-                    'name': '%s can view policy' % emiter,
+                    'name': POLICY_NAMES.get(slug, slug),
                     'slug': slug,
-                    'path': slug,
+                    'path': POLICY_EMITTER_PATH.get(slug, slug),
                     'targets': DEFAULT_TARGETS,
                     'is_emitter_policy': True,
                     'schema': schema,
