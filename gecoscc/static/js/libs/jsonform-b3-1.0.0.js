@@ -780,7 +780,7 @@ jsonform.elementTypes = {
   },
   'array': {
     'template': '' +
-        '<div id="<%= id %>"><ul class="_jsonform-array-ul" style="list-style-type:none;"><%= children %></ul>' +
+        '<div id="<%= id %>"><input type="hidden" name="<%= node.name %>" value="[]" /><ul class="_jsonform-array-ul" style="list-style-type:none;"><%= children %></ul>' +
             '<span class="_jsonform-array-buttons">' +
                 '<a href="#" class="btn btn-default btn-xs _jsonform-array-addmore"><span class="fa fa-plus" title="Add new"></span></a> ' +
                 '<a href="#" class="btn btn-default btn-xs _jsonform-array-deletelast"><span class="fa fa-minus" title="Delete last"></span></a>' +
@@ -2462,6 +2462,13 @@ formNode.prototype.getFormValues = function (updateArrayPath) {
         formArray[i].value = {};
       }
     }
+    if ((eltSchema.type === 'array') &&
+      (formArray[i].value === '[]') &&
+      _.isUndefined(values[formArray[i].name])) {
+      jsonform.util.setObjKey(values, formArray[i].name, []);
+      continue;
+    }
+
     //TODO is this due to a serialization bug?
     if ((eltSchema.type === 'object') &&
       (formArray[i].value === 'null' || formArray[i].value === '')) {
