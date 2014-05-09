@@ -259,6 +259,8 @@
             return true;
       } else {
         for (i = 0, len = p.length; i < len; i++)
+          if (p[i].hasOwnProperty('value') && v == p[i]['value']) 
+            return true;
           if (v === p[i])
             return true;
       }
