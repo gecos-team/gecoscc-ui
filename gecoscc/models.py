@@ -382,12 +382,13 @@ class Storages(colander.SequenceSchema):
 
 
 class Repository(Node):
-    url = colander.SchemaNode(colander.String())
+    uri = colander.SchemaNode(colander.String())
+    components = StringList(missing=[], default=[])
     distribution = colander.SchemaNode(colander.String(),
                                        default='')
     deb_src = colander.SchemaNode(colander.Boolean(),
                                   default=False)
-    key = colander.SchemaNode(colander.String(),
+    repo_key = colander.SchemaNode(colander.String(),
                               default='')
     key_server = colander.SchemaNode(colander.String(),
                                      default='')

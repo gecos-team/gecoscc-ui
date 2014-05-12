@@ -397,7 +397,7 @@
             oid;
 
         oid = constructors.base(path, 'repository', {
-            url: choice(urls)
+            uri: choice(urls)
         });
         return oid;
     };

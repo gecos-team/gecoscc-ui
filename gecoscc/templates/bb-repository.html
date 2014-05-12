@@ -25,9 +25,9 @@
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <div class="form-group <% if (!url) { print('has-error'); } %>">
-                        <label for="url">{{ gettext('Url') }}</label>
-                        <input id="url" type="url" class="form-control" placeholder="{{ gettext('e.g.') }} http://packages.linuxmint.com/pool/main/" required value="<%= url %>">
+                    <div class="form-group <% if (!uri) { print('has-error'); } %>">
+                        <label for="uri">{{ gettext('Url') }}</label>
+                        <input id="uri" type="uri" class="form-control" placeholder="{{ gettext('e.g.') }} http://packages.linuxmint.com/pool/main/" required value="<%= uri %>">
                     </div>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label for="name">{{ gettext('Key') }}</label>
-                        <input id="key" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} C0061A4A" value="<%= key %>">
+                        <input id="repo_key" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} C0061A4A" value="<%= repo_key %>">
                     </div>
                 </div>
                 <div class="col-sm-6">
