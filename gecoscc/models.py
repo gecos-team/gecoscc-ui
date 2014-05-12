@@ -322,7 +322,7 @@ class Printer(Node):
                                     default='laser',
                                     validator=colander.OneOf(
                                         PRINTER_TYPE.keys()))
-    brand = colander.SchemaNode(colander.String(),
+    manufacturer = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
     model = colander.SchemaNode(colander.String(),
@@ -344,10 +344,13 @@ class Printer(Node):
                                      default='network',
                                      validator=colander.OneOf(
                                          PRINTER_CONN_TYPE.keys()))
-    printerpath = colander.SchemaNode(colander.String(),
+    uri = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
-    driverFile = colander.SchemaNode(colander.String(),
+    ppd_uri = colander.SchemaNode(colander.String(),
+                                      default='',
+                                      missing='')
+    ppd = colander.SchemaNode(colander.String(),
                                      default='',
                                      missing='')  # TODO url? host the file?
     memberof = ObjectIdList(missing=[], default=[])

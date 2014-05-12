@@ -22,8 +22,8 @@
                     </div>
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label for="brand">{{ gettext('Manufacturer') }}</label>
-                            <input id="brand" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP" value="<%= brand %>">
+                            <label for="manufacturer">{{ gettext('Manufacturer') }}</label>
+                            <input id="manufacturer" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP" value="<%= manufacturer %>">
                         </div>
                     </div>
                     <div class="col-sm-4">
@@ -82,20 +82,23 @@
                     </div>
                     <div class="col-md-9 col-sm-8 col-xs-12">
                         <div class="form-group">
-                            <label for="path">{{ gettext('Printer path') }}</label>
-                            <input id="path" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://computer_name:631/ipp/port1') }}" value="<%= printerpath %>">
+                            <label for="uri">{{ gettext('Printer path') }}</label>
+                            <input id="uri" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://computer_name:631/ipp/port1') }}" value="<%= uri %>">
                         </div>
                     </div>
                 </div>
-                <label>{{ gettext('Controller') }}</label>
                 <div class="row">
                     <div class="col-lg-7 col-md-8 col-sm-9 col-xs-12">
                         <div class="form-group">
-                            <input type="file" id="ppdfile" value="<%= driverFile %>">
-                            <p class="help-block">{{ gettext('It is also possible to upload a PPD file, instead of choosing a controller') }}</p>
+                            <label for="ppd_uri">{{ gettext('PPD URI') }}</label>
+                            <input id="ppd_uri" type="text" class="form-control" value="<%= ppd_uri %>">
                         </div>
                     </div>
                     <div class="col-lg-5 col-md-4 col-sm-3 col-xs-12">
+                        <div class="form-group">
+                            <label>{{ gettext('PPD') }}</label>
+                            <input type="file" id="ppd" value="<%= ppd %>">
+                        </div>
                         <div class="form-group">
                             <button id="cleanfile" title="{{ gettext('Clear the selected file') }}" class="btn btn-default">
                                 <span class="fa fa-times-circle"></span> {{ gettext('Clear') }}
