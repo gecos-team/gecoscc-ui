@@ -8,26 +8,22 @@ from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES,
 
 
 DEFAULT_TARGETS = ['ou', 'computer', 'group']
-POLICY_EMITTER_TARGETS = ['ou', 'computer', 'group', 'user']
+POLICY_EMITTER_TARGETS = {
+    'printer_can_view': ['ou', 'computer', 'group'],
+    'repository_can_view': ['ou', 'computer', 'group'],
+    'storage_can_view': ['user', 'group'],
+}
 
-POLICY_NAMES = {
-    'local_users_res': 'User policy',
-    'local_admin_users_res': 'Administrator policy',
-    'desktop_background_res': 'Desktop policy',
-    'auto_updates_res': 'Auto update policy',
-    'scripts_launch_res': 'Script Launch policy',
-    'local_groups_res': 'Group policy',
-    'local_file_res': 'Local file policy',
-    'tz_date_res': 'Date policy',
-    'network_res': 'Network policy',
-    'package_res': 'Package policy',
+POLICY_EMITTER_NAMES = {
+    'printer_can_view': 'Printer can view policy',
     'repository_can_view': 'Repository can view policy',
     'storage_can_view': 'Storage can view policy',
-    'printer_can_view': 'Printer can view policy'
 }
 
 POLICY_EMITTER_PATH = {
-    'printer_can_view': 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'
+    'printer_can_view': 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list',
+    'repository_can_view': 'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list',
+    'storage_can_view': 'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users',
 }
 
 SCHEMA_EMITTER = {
@@ -145,7 +141,7 @@ class Command(BaseCommand):
             else:
                 targets = DEFAULT_TARGETS
             policy = {
-                'name': POLICY_NAMES.get(key, key),
+                'name': value['title'],
                 'slug': key,
                 'path': path,
                 'schema': value,
@@ -159,9 +155,9 @@ class Command(BaseCommand):
                 schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
                 slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
                 policy = {
-                    'name': POLICY_NAMES.get(slug, slug),
+                    'name': POLICY_EMITTER_NAMES[slug],
                     'slug': slug,
-                    'path': POLICY_EMITTER_PATH.get(slug, slug),
+                    'path': POLICY_EMITTER_PATH[slug],
                     'targets': POLICY_EMITTER_TARGETS,
                     'is_emitter_policy': True,
                     'schema': schema,
