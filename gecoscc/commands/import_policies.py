@@ -158,7 +158,7 @@ class Command(BaseCommand):
                     'name': POLICY_EMITTER_NAMES[slug],
                     'slug': slug,
                     'path': POLICY_EMITTER_PATH[slug],
-                    'targets': POLICY_EMITTER_TARGETS,
+                    'targets': POLICY_EMITTER_TARGETS[slug],
                     'is_emitter_policy': True,
                     'schema': schema,
                 }
