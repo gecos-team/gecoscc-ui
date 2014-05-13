@@ -12,9 +12,11 @@ for attr in rules_network_res_attrs:
 
 # Emitter policies
 
-
 EMITTER_OBJECT_RULES = {
-    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd', 'ppd_uri')
+    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd', 'ppd_uri'),
+    'repository': ('name', 'uri', 'components', 'distribution', 'deb_src', 'repo_key', 'key_server'),
+    'storage': {'name': 'title',
+                'uri': 'uri'}
 }
 
 
@@ -33,14 +35,15 @@ def object_related_list(objs_ui, default=None):
     return objs
 
 # Printer can view
+RULES_PRINTER_CAN_VIEW_RES = {'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list': object_related_list}
 
-RULES_PRINTER_CAN_VIEW_RES = {}
-RULES_PRINTER_CAN_VIEW_RES['gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'] = object_related_list
+# Software can view
+RULES_SOFTWARE_CAN_VIEW_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list': object_related_list}
 
-# End desktop background res
+# Storage can view
+RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': object_related_list}
 
-# end emitter policies
-
+# End emitter policies
 
 RULES_NODE = {
     'computer': {
@@ -48,23 +51,29 @@ RULES_NODE = {
         'policies': {
             'network_res': RULES_NETWORK_RES,
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
         },
     },
     'ou': {
         'save': {},
         'policies': {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
         },
     },
     'group': {
         'save': {},
         'policies': {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
+            'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
         },
     },
     'user': {
         'save': {},
-        'policies': {},
+        'policies': {
+            'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
+        },
     },
     'printer': {
         'save': {},
