@@ -7,7 +7,8 @@ from gecoscc.management import BaseCommand
 from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX
 
 
-DEFAULT_TARGETS = ['ou', 'computer']
+DEFAULT_TARGETS = ['ou', 'computer', 'group']
+POLICY_EMITTER_TARGETS = ['ou', 'computer', 'group', 'user']
 
 POLICY_NAMES = {
     'local_users_res': 'User policy',
@@ -137,12 +138,18 @@ class Command(BaseCommand):
             if 'jobs_id' in value['properties']:
                 del(value['properties']['jobs_id'])
             path = value.pop('path')
+            if 'users_mgmt' in path:
+                targets = ['user']
+            elif 'network_mgmt' in path:
+                targets = ['computer']
+            else:
+                targets = DEFAULT_TARGETS
             policy = {
                 'name': POLICY_NAMES.get(key, key),
                 'slug': key,
                 'path': path,
                 'schema': value,
-                'targets': DEFAULT_TARGETS,
+                'targets': targets,
                 'is_emitter_policy': False
             }
             self.treatment_policy(policy)
@@ -155,7 +162,7 @@ class Command(BaseCommand):
                     'name': POLICY_NAMES.get(slug, slug),
                     'slug': slug,
                     'path': POLICY_EMITTER_PATH.get(slug, slug),
-                    'targets': DEFAULT_TARGETS,
+                    'targets': POLICY_EMITTER_TARGETS,
                     'is_emitter_policy': True,
                     'schema': schema,
                 }
