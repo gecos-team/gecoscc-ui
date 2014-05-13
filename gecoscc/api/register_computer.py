@@ -1,4 +1,7 @@
+import cgi
+
 from cornice.resource import resource
+from webob.multidict import MultiDict
 
 from pyramid.threadlocal import get_current_registry
 
@@ -28,5 +31,26 @@ class RegisterComputerResource(BaseAPI):
         node_id = register_node(api, node_id, ou, self.collection)
         if not node_id:
             return {'ok': False,
-                    'error': 'Node does not exists (in chef)'}
+                    'error': 'Node does not exist (in chef)'}
         return {'ok': True}
+
+    def set_delete(self):
+        request = self.request
+        fs = cgi.FieldStorage(fp=request.body_file,
+                              environ=request.environ.copy(),
+                              keep_blank_values=True)
+        setattr(self.request, 'DELETE', MultiDict.from_fieldstorage(fs))
+
+    def delete(self):
+        self.set_delete()
+        node_id = self.request.DELETE.get('node_id')
+        node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
+        num_node_deleted = node_deleted['n']
+        if num_node_deleted == 1:
+            return {'ok': True}
+        elif num_node_deleted < 1:
+            return {'ok': False,
+                    'error': 'This node does not exist (mongodb)'}
+        elif num_node_deleted > 1:
+            return {'ok': False,
+                    'error': 'Deleted %s computers' % num_node_deleted}
