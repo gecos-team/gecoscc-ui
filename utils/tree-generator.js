@@ -384,7 +384,7 @@
             oid;
 
         oid = constructors.base(path, 'storage', {
-            connection_string: choice(protocols) + "://" + ip + ":" + (random_int(65535) + 1) + '/some/path/',
+            uri: choice(protocols) + "://" + ip + ":" + (random_int(65535) + 1) + '/some/path/',
             memberof: []
         });
         return oid;

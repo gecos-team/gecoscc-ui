@@ -17,9 +17,9 @@ class RemoteStoragePolicy(BasePolicy):
                 'type': 'object',
                 'properties':  {
                     'memberof': {'type': 'array'},
-                    'connection_string': {'type': 'string'},
+                    'uri': {'type': 'string'},
                 },
-                'required': ['connection_string']
+                'required': ['uri']
             }
         },
         'required': ['name', 'node', 'storage_id']

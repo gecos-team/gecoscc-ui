@@ -31,7 +31,7 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             lock: false,
             source: "gecos",
             name: "",
-            connection_string: "",
+            uri: "",
         },
 
         parse: function (response) {
@@ -78,7 +78,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.saveModel($(evt.target), {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
-                connection_string: "#connection_string"
+                uri: "#uri"
             });
         }
     });
