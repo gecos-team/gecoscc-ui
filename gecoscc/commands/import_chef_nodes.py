@@ -1,14 +1,11 @@
-import sys
-
 from optparse import make_option
 
 from chef import Node as ChefNode
 
+from pymongo.errors import DuplicateKeyError
+
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, register_node
-
-
-DEFAULT_TARGETS = ['ou', 'computer']
+from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node
 
 
 class Command(BaseCommand):
@@ -63,6 +60,9 @@ class Command(BaseCommand):
         ou_name = 'ou_0'
         ou = self.create_root_ou(ou_name)
         for node_id in ChefNode.list():
-            node_mongo_id = register_node(api, node_id, ou, self.db.nodes)
+            try:
+                node_mongo_id = register_or_updated_node(api, node_id, ou, self.db.nodes)
+            except DuplicateKeyError:
+                node_mongo_id = update_node(api, node_id, ou, self.db.nodes)
             if not node_mongo_id:
                 print "%s does not exists" % node_id

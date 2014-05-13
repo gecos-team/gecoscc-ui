@@ -125,3 +125,32 @@ def register_node(api, node_id, ou, collection_nodes):
                                        'family': 'desktop',
                                        'node_chef_id': node_id})
     return node_id
+
+
+def update_node(api, node_id, ou, collection_nodes):
+    node = ChefNode(node_id, api)
+    if not node.attributes.to_dict():
+        return False
+    try:
+        computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
+    except KeyError:
+        computer_name = node_id
+    node_id = collection_nodes.update({'node_chef_id': node_id},
+                                      {'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
+                                       'name': computer_name,
+                                       'type': 'computer',
+                                       'lock': False,
+                                       'source': 'gecos',
+                                       'memberof': [],
+                                       'policies': {},
+                                       'registry': '',
+                                       'family': 'desktop',
+                                       'node_chef_id': node_id})
+    return node_id
+
+
+def register_or_updated_node(api, node_id, ou, collection_nodes):
+    mongo_node = collection_nodes.find({'node_chef_id': node_id})
+    if mongo_node:
+        update_node(api, node_id, ou, collection_nodes)
+    return register_node(api, node_id, ou, collection_nodes)
