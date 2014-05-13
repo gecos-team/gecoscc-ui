@@ -31,7 +31,7 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             lock: false,
             source: "gecos",
             printtype: "laser",
-            brand: "",
+            manufacturer: "",
             model: "",
             serial: "",
             registry: "",
@@ -39,8 +39,9 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             description: "",
             location: "",
             connection: "network",
-            printerpath: "",
-            driverFile: "", // FIXME mockup
+            uri: "",
+            ppd_uri: "",
+            ppd: ""
         }
     });
 });
@@ -73,7 +74,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         cleanFile: function (evt) {
             evt.preventDefault();
-            this.$el.find("#ppdfile").val("").trigger("change");
+            this.$el.find("#ppd").val("").trigger("change");
         },
 
         saveForm: function (evt) {
@@ -92,7 +93,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.saveModel($(evt.target), {
                 printtype: "#type option:selected",
-                brand: "#brand",
+                manufacturer: "#manufacturer",
                 model: "#model",
                 serial: "#serial",
                 registry: "#registry",
@@ -100,8 +101,9 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 description: "#description",
                 location: "#location",
                 connection: "#connection option:selected",
-                printerpath: "#path",
-                driverFile: "#ppdfile", // TODO probably not
+                uri: "#uri",
+                ppd_uri: "#ppd_uri",
+                ppd: "#ppd",
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget)
             });
         }

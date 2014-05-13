@@ -366,12 +366,12 @@
 
         brand = choice(brands);
         oid = constructors.base(path, 'printer', {
-            brand: brand,
+            manufacturer: brand,
             model: brand.slice(0, 2).toUpperCase() + random_int(256),
             serial: brand.slice(0, 2).toUpperCase() + random_int(100000),
             registry: 'JDA' + random_int(10000),
             location: 'Dep' + random_int(999),
-            printerpath: 'http://servidorimpresion:631/ipp/port' + random_int(65000),
+            uri: 'http://servidorimpresion:631/ipp/port' + random_int(65000),
             memberof: []
         });
         return oid;
@@ -397,7 +397,7 @@
             oid;
 
         oid = constructors.base(path, 'repository', {
-            url: choice(urls)
+            uri: choice(urls)
         });
         return oid;
     };

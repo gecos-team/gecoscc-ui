@@ -31,10 +31,10 @@ App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, 
             lock: false,
             source: "gecos",
             name: "",
-            url: "",
+            uri: "",
             distribution: "",
             deb_src: "",
-            key: "",
+            repo_key: "",
             key_server: ""
         },
 
@@ -74,10 +74,10 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
 
             this.saveModel($(evt.target), {
                 name: "#name",
-                url: "#url",
+                uri: "#uri",
                 distribution: "#distribution",
                 deb_src: isSrc,
-                key: "#key",
+                repo_key: "#repo_key",
                 key_server: "#key_server"
             });
         }
