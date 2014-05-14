@@ -22,13 +22,12 @@ class RegisterUserResource(BaseAPI):
             return {'ok': False,
                     'error': 'This node does not exist (mongodb)'}
         users_does_not_find = []
-        users_find = []
+        users_recalculate_policies = []
         for username in usernames:
             user = self.collection.find_one({'name': username})
             if not user:
                 users_does_not_find.append(username)
                 continue
-            users_find.append(user)
             if 'computers' not in user:
                 computers = []
             else:
@@ -36,8 +35,9 @@ class RegisterUserResource(BaseAPI):
             if node['_id'] not in computers:
                 computers.append(node['_id'])
                 self.collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                users_recalculate_policies.append(user)
 
-        for user in users_find:
+        for user in users_recalculate_policies:
             object_changed.delay(self.request.user, 'user', user, {})
 
         if users_does_not_find:
