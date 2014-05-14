@@ -63,20 +63,11 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.refresh": "refresh"
         },
 
-        onRender: function () {
-            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                el: this.$el.find("div#groups-widget")[0],
-                checked: this.model.get("memberof")
-            });
-            this.groupsWidget.render();
-        },
-
         saveForm: function (evt) {
             evt.preventDefault();
             var that = this;
 
             this.saveModel($(evt.target), {
-                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
                 uri: "#uri"
             });

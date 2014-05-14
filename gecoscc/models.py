@@ -353,7 +353,6 @@ class Printer(Node):
     ppd = colander.SchemaNode(colander.String(),
                                      default='',
                                      missing='')  # TODO url? host the file?
-    memberof = ObjectIdList(missing=[], default=[])
 
 
 class Printers(colander.SequenceSchema):
