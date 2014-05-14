@@ -51,7 +51,6 @@ RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.
 
 
 def users_list(obj_ui, obj, node, field_chef, *kwargs):
-    import ipdb; ipdb.set_trace()
     users = deepcopy(node.attributes.get_dotted(field_chef))
     obj_ui['username'] = obj['name']
     update = False
