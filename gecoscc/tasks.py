@@ -37,19 +37,22 @@ class ChefTask(Task):
         else:
             self.jid = unicode(ObjectId())
 
-    def get_related_computers_of_computer(self, obj, related_computers, related_objects):
+    def walking_here(self, obj, related_objects):
         if related_objects is not None:
             if obj not in related_objects:
                 related_objects.append(obj)
             else:
-                return related_computers
+                return True
+        return False
+
+    def get_related_computers_of_computer(self, obj, related_computers, related_objects):
+        if self.walking_here(obj, related_objects):
+            return related_computers
         related_computers.append(obj)
         return related_computers
 
     def get_related_computers_of_group(self, obj, related_computers, related_objects):
-        if obj not in related_objects:
-            related_objects.append(obj)
-        else:
+        if self.walking_here(obj, related_objects):
             return related_computers
         for node_id in obj['members']:
             node = self.db.nodes.find_one({'_id': node_id})
@@ -58,11 +61,8 @@ class ChefTask(Task):
         return related_computers
 
     def get_related_computers_of_ou(self, ou, related_computers, related_objects):
-        if related_objects is not None:
-            if ou not in related_objects:
-                related_objects.append(ou)
-            else:
-                return related_computers
+        if self.walking_here(ou, related_objects):
+            return related_computers
         computers = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(ou['_id']),
                                         'type': 'computer'})
         for computer in computers:
@@ -72,20 +72,18 @@ class ChefTask(Task):
         return related_computers
 
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
-        if related_objects is not None:
-            if obj not in related_objects:
-                related_objects.append(obj)
-            else:
-                return related_computers
+        if self.walking_here(obj, related_objects):
+            return related_computers
         raise NotImplementedError
 
     def get_related_computers_of_user(self, obj, related_computers, related_objects):
-        if related_objects is not None:
-            if obj not in related_objects:
-                related_objects.append(obj)
-            else:
-                return related_computers
-        raise NotImplementedError
+        if self.walking_here(obj, related_objects):
+            return related_computers
+        user_computers = self.db.nodes.find({'_id': {'$in': obj['computers']}})
+        for computer in user_computers:
+            if computer not in related_computers:
+                related_computers.append(computer)
+        return related_computers
 
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
         if related_objects is None and obj['type'] == 'group':
@@ -129,16 +127,17 @@ class ChefTask(Task):
         attributes_updated = []
         for field_chef, field_ui in rules.items():
             if callable(field_ui):
-                obj_ui_field = field_ui(obj_ui, None)
+                obj_ui_field = field_ui(obj_ui, obj=obj, node=node, field_chef=field_chef)
             else:
                 obj_ui_field = obj_ui.get(field_ui, None)
             if obj_ui_field is None:
                 continue
             elif obj_ui_field == node.attributes.get_dotted(field_chef):
                 continue
-            elif obj['type'] != 'computer':
+            elif obj['type'] != 'computer' and obj['type'] != 'user':
+                # TODO mandatory poplicies
                 try:
-                    val = node.default.get_dotted(field_chef)
+                    val = node.attributes.get_dotted(field_chef)
                     if val or val is False:
                         continue
                 except KeyError:

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 # Network rules
 
 rules_network_res_path = 'gecos_ws_mgmt.network_mgmt.network_res'
@@ -20,7 +22,7 @@ EMITTER_OBJECT_RULES = {
 }
 
 
-def object_related_list(objs_ui, default=None):
+def object_related_list(objs_ui, *kwargs):
     attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
     objs = []
     if isinstance(attrs, tuple):
@@ -44,6 +46,32 @@ RULES_SOFTWARE_CAN_VIEW_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res
 RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': object_related_list}
 
 # End emitter policies
+
+# User policies
+
+
+def users_list(obj_ui, obj, node, field_chef, *kwargs):
+    import ipdb; ipdb.set_trace()
+    users = deepcopy(node.attributes.get_dotted(field_chef))
+    obj_ui['username'] = obj['name']
+    update = False
+    for i, user in enumerate(users):
+        if user['username'] == obj['name']:
+            users[i] = obj_ui
+            update = True
+            break
+    if not update:
+        users.append(obj_ui)
+    return users
+
+
+def get_generic_user_rules(node, policy):
+    rules = {}
+    rules['%s.users' % policy['path']] = users_list
+    return rules
+
+
+# End user policies
 
 RULES_NODE = {
     'computer': {
@@ -99,7 +127,7 @@ def get_specific_rules(obj_type, rule_type, policy_slug=None):
 
 
 def get_generic_rules(node, policy):
-    exclude_attrs = ['job_ids', 'jobs_id']
+    exclude_attrs = ['job_ids']
     attrs = node.default.get_dotted(policy['path']).to_dict().keys()
     rules = {}
     for attr in attrs:
@@ -111,5 +139,8 @@ def get_generic_rules(node, policy):
 def get_rules(obj_type, rule_type, node, policy=None):
     rules = get_specific_rules(obj_type, rule_type, policy['slug'])
     if not rules:
-        rules = get_generic_rules(node, policy)
+        if obj_type == 'user':
+            rules = get_generic_user_rules(node, policy)
+        else:
+            rules = get_generic_rules(node, policy)
     return rules

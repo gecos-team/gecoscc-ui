@@ -159,6 +159,7 @@ class User(Node, BaseUser):
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
+    computers = ObjectIdList(missing=[], default=[])
 
 
 class Users(colander.SequenceSchema):

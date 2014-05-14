@@ -131,11 +131,16 @@ class Command(BaseCommand):
                 continue
             if 'job_ids' in value['properties']:
                 del(value['properties']['job_ids'])
-            if 'jobs_id' in value['properties']:
-                del(value['properties']['jobs_id'])
             path = value.pop('path')
             if 'users_mgmt' in path:
                 targets = ['user']
+                title = value['title']
+                value = value['properties']['users']['items']
+                if 'required' in value and 'username' in value['required']:
+                    value['required'].pop(value['required'].index('username'))
+                if 'username' in value['properties'] and 'username' in value['properties']:
+                    value['properties'].pop('username')
+                value['title'] = title
             elif 'network_mgmt' in path:
                 targets = ['computer']
             else:

@@ -1,11 +1,12 @@
+import cgi
+
 from bson import ObjectId
 from copy import deepcopy
 
-from pymongo.errors import DuplicateKeyError
-
 from cornice.schemas import CorniceSchema
-
+from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
+from webob.multidict import MultiDict
 
 from gecoscc.tasks import object_created, object_changed, object_deleted
 
@@ -31,6 +32,13 @@ class BaseAPI(object):
         if collection is None:
             collection = self.collection_name
         return self.request.db[collection]
+
+    def set_variables(self, method):
+        request = self.request
+        fs = cgi.FieldStorage(fp=request.body_file,
+                              environ=request.environ.copy(),
+                              keep_blank_values=True)
+        setattr(self.request, method, MultiDict.from_fieldstorage(fs))
 
 
 class ResourcePaginatedReadOnly(BaseAPI):
