@@ -54,22 +54,12 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
 
-        groupsWidget: undefined,
-
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh",
             "click #cleanfile": "cleanFile"
-        },
-
-        onRender: function () {
-            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                el: this.$el.find("div#groups-widget")[0],
-                checked: this.model.get("memberof")
-            });
-            this.groupsWidget.render();
         },
 
         cleanFile: function (evt) {
@@ -103,8 +93,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 connection: "#connection option:selected",
                 uri: "#uri",
                 ppd_uri: "#ppd_uri",
-                ppd: "#ppd",
-                memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget)
+                ppd: "#ppd"
             });
         }
     });

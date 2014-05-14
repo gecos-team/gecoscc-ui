@@ -20,8 +20,8 @@
             <div class="row">
                 <div class="col-sm-6">
                     <div class="form-group">
-                        <label for="distribution">{{ gettext('Distribution') }}</label>
-                        <input id="distribution" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Debian 7.4 (i386)" value="<%= distribution %>">
+                        <label for="distribution <% if (!distribution) { print('has-error'); } %>">{{ gettext('Distribution') }}</label>
+                        <input id="distribution" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Debian 7.4 (i386)" required value="<%= distribution %>">
                     </div>
                 </div>
                 <div class="col-sm-6">
@@ -33,15 +33,15 @@
             </div>
             <div class="row">
                 <div class="col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group <% if (!repo_key) { print('has-error'); } %>">
                         <label for="name">{{ gettext('Key') }}</label>
-                        <input id="repo_key" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} C0061A4A" value="<%= repo_key %>">
+                        <input id="repo_key" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} C0061A4A" required value="<%= repo_key %>">
                     </div>
                 </div>
                 <div class="col-sm-6">
-                    <div class="form-group">
+                    <div class="form-group <% if (!key_server) { print('has-error'); } %>">
                         <label for="key_server">{{ gettext('Key server') }}</label>
-                        <input id="key_server" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} keyring.debian.org" value="<%= key_server %>">
+                        <input id="key_server" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} keyring.debian.org" required value="<%= key_server %>">
                     </div>
                 </div>
             </div>
