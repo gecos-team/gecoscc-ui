@@ -17,7 +17,7 @@
                 <form role="form">
                     <div class="row">
                         <div class="col-sm-6">
-                            <div class="form-group <% if (!name) { print('has-error'); } %>">
+                            <div class="form-group">
                                 <label for="username">{{ gettext('Username') }}</label>
                                 <input id="username" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john') }}" required value="<%= name %>">
                             </div>
@@ -31,7 +31,7 @@
                                 </div>
                         </div>
                         <div class="col-sm-6">
-                            <div class="form-group <% if (!email) { print('has-error'); } %>">
+                            <div class="form-group">
                                 <label for="email">{{ gettext('Email') }}</label>
                                 <input id="email" type="email" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('john.doe') }}@example.com" required value="<%= email %>">
                             </div>

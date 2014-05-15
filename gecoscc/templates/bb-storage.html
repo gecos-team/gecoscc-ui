@@ -8,14 +8,14 @@
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form">
             <div class="row"><div class="col-sm-12">
-                <div class="form-group <% if (!name) { print('has-error'); } %>">
+                <div class="form-group">
                     <label for="name">{{ gettext('Name') }}</label>
                     <input id="name" type="text" class="form-control" required placeholder="{{ gettext('e.g.') }} {{ gettext('Access to the network storage S01') }}" value="<%= name %>">
                 </div>
             </div></div>
             <div class="row">
                 <div class="col-sm-12">
-                    <div class="form-group <% if (!uri) { print('has-error'); } %>">
+                    <div class="form-group">
                         <label for="uri">{{ gettext('URI') }}</label>
                         <input id="uri" type="text" class="form-control" required placeholder="{{ gettext('e.g.') }} sshfs://192.168.12.078:9100{{ gettext('/path/to/the/directory') }}/" value="<%= uri %>">
                     </div>
