@@ -15,26 +15,37 @@ for attr in rules_network_res_attrs:
 # Emitter policies
 
 EMITTER_OBJECT_RULES = {
-    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd', 'ppd_uri'),
-    'repository': ('name', 'uri', 'components', 'distribution', 'deb_src', 'repo_key', 'key_server'),
-    'storage': {'name': 'title',
+    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd_uri'),
+    'repository': {'repo_name': 'name',
+                   'uri': 'uri',
+                   'components': 'components',
+                   'distribution': 'distribution',
+                   'deb_src': 'deb_src',
+                   'repo_key': 'repo_key',
+                   'key_server': 'key_server'},
+    'storage': {'title': 'name',
                 'uri': 'uri'}
 }
 
 
-def object_related_list(objs_ui, *kwargs):
+def object_related_list(objs_ui, **kwargs):
     attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
     objs = []
-    if isinstance(attrs, tuple):
-        for obj_ui in objs_ui['object_related_list']:
-            obj = {}
+    for obj_ui in objs_ui['object_related_list']:
+        obj = {}
+        if isinstance(attrs, tuple):
             for attr in attrs:
                 obj[attr] = obj_ui[attr]
-            objs.append(obj)
-    else:
-        # if attrs is a dictionary
-        raise NotImplementedError
+        elif isinstance(attrs, dict):
+            for obj_attr, obj_ui_attr in attrs.items():
+                obj[obj_attr] = obj_ui[obj_ui_attr]
+        objs.append(obj)
     return objs
+
+
+def storage_related(objs_ui, obj, node, field_chef, **kwargs):
+    user_storage = object_related_list(objs_ui, obj=obj, node=node, field_chef=field_chef, **kwargs)
+    return users_list({'gtkbookmarks': user_storage}, obj=obj,  node=node, field_chef=field_chef, *kwargs)
 
 # Printer can view
 RULES_PRINTER_CAN_VIEW_RES = {'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list': object_related_list}
@@ -43,7 +54,7 @@ RULES_PRINTER_CAN_VIEW_RES = {'gecos_ws_mgmt.printers_mgmt.printers_res.printers
 RULES_SOFTWARE_CAN_VIEW_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list': object_related_list}
 
 # Storage can view
-RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': object_related_list}
+RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related}
 
 # End emitter policies
 

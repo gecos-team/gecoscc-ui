@@ -284,6 +284,18 @@ class ChefTask(Task):
         self.object_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
 
+    def repository_created(self, user, objnew):
+        self.object_created(user, objnew)
+        self.log_action('created', 'Storage', objnew)
+
+    def repository_changed(self, user, objnew, objold):
+        self.object_changed(user, objnew, objold)
+        self.log_action('changed', 'Storage', objnew)
+
+    def repository_deleted(self, user, obj):
+        self.object_deleted(user, obj)
+        self.log_action('deleted', 'Storage', obj)
+
     def adminuser_created(self, user, objnew):
         api = get_chef_api(self.app.conf, user)
         create_chef_admin_user(api, self.app.conf, objnew['username'], objnew['plain_password'])
