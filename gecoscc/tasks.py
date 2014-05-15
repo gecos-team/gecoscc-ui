@@ -157,7 +157,7 @@ class ChefTask(Task):
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'processing'
         job_id = job_storage.create(objid=obj['_id'], type=obj['type'], op=action, status=job_status)
-        job_ids.append({'id': unicode(job_id), 'status': job_status})
+        job_ids.append(unicode(job_id))
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
 
