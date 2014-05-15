@@ -351,9 +351,6 @@ class Printer(Node):
     ppd_uri = colander.SchemaNode(colander.String(),
                                       default='',
                                       missing='')
-    ppd = colander.SchemaNode(colander.String(),
-                                     default='',
-                                     missing='')  # TODO url? host the file?
 
 
 class Printers(colander.SequenceSchema):

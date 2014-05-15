@@ -40,8 +40,7 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             location: "",
             connection: "network",
             uri: "",
-            ppd_uri: "",
-            ppd: ""
+            ppd_uri: ""
         }
     });
 });
@@ -59,12 +58,6 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh",
-            "click #cleanfile": "cleanFile"
-        },
-
-        cleanFile: function (evt) {
-            evt.preventDefault();
-            this.$el.find("#ppd").val("").trigger("change");
         },
 
         saveForm: function (evt) {
@@ -92,8 +85,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 location: "#location",
                 connection: "#connection option:selected",
                 uri: "#uri",
-                ppd_uri: "#ppd_uri",
-                ppd: "#ppd"
+                ppd_uri: "#ppd_uri"
             });
         }
     });
