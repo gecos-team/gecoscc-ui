@@ -33,6 +33,7 @@ App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, 
             name: "",
             uri: "",
             distribution: "",
+            components: [],
             deb_src: "",
             repo_key: "",
             key_server: ""
@@ -66,10 +67,14 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
         saveForm: function (evt) {
             evt.preventDefault();
 
-            var that = this, isSrc;
+            var that = this, isSrc, getComponents;
 
             isSrc = function () {
                 return that.$el.find("#deb_src").is(":checked");
+            };
+
+            getComponents = function() {
+                return that.$el.find("#components").val().split(/ *, */);
             };
 
             this.saveModel($(evt.target), {
@@ -78,6 +83,7 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
                 distribution: "#distribution",
                 deb_src: isSrc,
                 repo_key: "#repo_key",
+                components: getComponents,
                 key_server: "#key_server"
             });
         }
