@@ -2,13 +2,11 @@ from cornice.resource import resource
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
-from gecoscc.permissions import http_basic_login_required
 from gecoscc.tasks import object_changed
 
 
 @resource(path='/register/user/',
-          description='Register users',
-          validators=http_basic_login_required)
+          description='Register users')
 class RegisterUserResource(BaseAPI):
 
     schema_detail = MongoNode
