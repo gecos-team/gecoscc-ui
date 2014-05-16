@@ -323,12 +323,8 @@ class Printer(Node):
                                     default='laser',
                                     validator=colander.OneOf(
                                         PRINTER_TYPE.keys()))
-    manufacturer = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
-    model = colander.SchemaNode(colander.String(),
-                                default='',
-                                missing='')
+    manufacturer = colander.SchemaNode(colander.String())
+    model = colander.SchemaNode(colander.String())
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
@@ -346,11 +342,9 @@ class Printer(Node):
                                      validator=colander.OneOf(
                                          PRINTER_CONN_TYPE.keys()))
     uri = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')
-    ppd_uri = colander.SchemaNode(colander.String(),
-                                      default='',
-                                      missing='')
+                              default='',
+                              missing='')
+    ppd_uri = colander.SchemaNode(colander.String())
 
 
 class Printers(colander.SequenceSchema):
@@ -383,14 +377,11 @@ class Storages(colander.SequenceSchema):
 class Repository(Node):
     uri = colander.SchemaNode(colander.String())
     components = StringList(missing=[], default=[])
-    distribution = colander.SchemaNode(colander.String(),
-                                       default='')
+    distribution = colander.SchemaNode(colander.String())
     deb_src = colander.SchemaNode(colander.Boolean(),
                                   default=False)
-    repo_key = colander.SchemaNode(colander.String(),
-                              default='')
-    key_server = colander.SchemaNode(colander.String(),
-                                     default='')
+    repo_key = colander.SchemaNode(colander.String())
+    key_server = colander.SchemaNode(colander.String())
 
 
 class Repositories(colander.SequenceSchema):
