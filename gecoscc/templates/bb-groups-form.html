@@ -21,6 +21,19 @@
                                 <label for="name">{{ gettext('Name') }}</label>
                                 <input type="text" class="form-control" id="name" placeholder="{{ gettext('e.g.') }} {{ gettext('Administrators') }}" required value="<%= name %>">
                             </div>
+                        </div>
+                        <div class="col-sm-6 col-xs-12">
+                            <div class="form-group">
+                                <label>{{ gettext('Type') }}</label>
+                                <select id="group_type" class="form-control" required>
+                                    <option value="user" <% if (group_type === "user") { print("selected"); } %>>{{ gettext('Users') }}</option>
+                                    <option value="computer" <% if (group_type === "computer") { print("selected"); } %>>{{ gettext('OU and computers') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-6 col-xs-12">
                             <label>Pertenece a</label>
                             <div id="memberof">
                                 <p style="font-size: 1.5em;">

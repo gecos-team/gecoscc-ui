@@ -117,6 +117,9 @@ class StringList(colander.SequenceSchema):
                                missing=[])
 
 
+GROUP_TYPES = (('user', _('Users')),
+               ('computer', _('OU and computers')))
+
 class Group(Node):
 
     # Group object members
@@ -129,6 +132,10 @@ class Group(Node):
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
+    group_type = colander.SchemaNode(colander.String(),
+                                     title=_('Type'),
+                                     default='user',
+                                     widget=deform.widget.SelectWidget(values=GROUP_TYPES))
 
 
 class Groups(colander.SequenceSchema):

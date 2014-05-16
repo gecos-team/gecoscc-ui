@@ -44,6 +44,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         regions: {
             memberof: "#memberof",
+            grouptype: "#group_type",
             members: "#members"
         },
 
@@ -54,11 +55,18 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click button#delete": "deleteModel",
             "click button#save": "save",
+            "change #group_type": "filterGroups",
             "click button.refresh": "refresh"
         },
 
         helperView: undefined,
         policiesList: undefined,
+        groupWidget: undefined,
+
+        filterGroups: function(evt) {
+            this.groupWidget.setFilter({group_type: this.$el.find('#group_type').val()});
+            this.groupWidget.render();
+        },
 
         initialize: function (options) {
             this.helperView = new App.GecosFormItemView({
@@ -132,6 +140,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.renderMembers("members", Views.Members);
             this.renderPolicies();
+            this.groupWidget = widget;
+            this.$el.find("#group_type").trigger("change");
         },
 
         deleteModel: function (evt) {
@@ -151,6 +161,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this.helperView.saveModel($(evt.target), {
                 memberof: memberof,
+                group_type: "#group_type",
                 name: "#name"
             });
         }
@@ -160,11 +171,16 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#groups-widget-template",
 
         checked: undefined,
+        filter: undefined,
 
         initialize: function (options) {
             if (_.has(options, "checked")) {
                 this.checked = options.checked;
             }
+        },
+
+        setFilter: function(filter) {
+            this.filter = filter;
         },
 
         serializeData: function () {
@@ -180,7 +196,13 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
 
                 // Sort the groups, checked first
-                groups = this.collection.toJSON();
+                if (!_.isUndefined(this.filter)) {
+                    groups = _.map(this.collection.where(this.filter), function(item) {
+                        return item.toJSON();
+                    });
+                } else {
+                    groups = this.collection.toJSON();
+                }
                 groups = _.sortBy(groups, function (g) {
                     return that.checked === g.id ? 0 : 1;
                 });
