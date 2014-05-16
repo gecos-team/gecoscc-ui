@@ -49,6 +49,9 @@ def get_filter_nodes_belonging_ou(ou_id):
     return {'$regex': '.*,%s.*' % ou_id}
 
 
+def emiter_police_slug(emiter_type):
+    return '%s%s' % (emiter_type, POLICY_EMITTER_SUBFIX)
+
 # Chef utils
 
 

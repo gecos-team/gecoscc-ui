@@ -14,6 +14,7 @@ from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules
 from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            get_cookbook, get_filter_nodes_belonging_ou,
+                           emiter_police_slug,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -74,7 +75,11 @@ class ChefTask(Task):
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
         if self.walking_here(obj, related_objects):
             return related_computers
-        raise NotImplementedError
+        policy_id = unicode(self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id'])
+        object_related_list = self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+        for object_related in object_related_list:
+            self.get_related_computers(object_related, related_computers, related_objects)
+        return related_computers
 
     def get_related_computers_of_user(self, obj, related_computers, related_objects):
         if self.walking_here(obj, related_objects):
@@ -104,11 +109,19 @@ class ChefTask(Task):
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
 
-    def get_rules_and_object(self, rule_type, obj, node, policy_id=None):
+    def is_updated_node(self, obj, objold):
+        return obj != objold
+
+    def get_rules_and_object(self, rule_type, obj, node, policy):
         if rule_type == 'save':
-            return get_rules(obj['type'], rule_type, node)
+            rules = get_rules(obj['type'], rule_type, node, policy)
+            if policy.get('is_emitter_policy', False):
+                obj = self.db.nodes.find_one({'node_chef_id': node.name})
+                if not obj:
+                    rules = {}
+            return (rules, obj)
         elif rule_type == 'policies':
-            policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+            policy_id = unicode(policy['_id'])
             rules = get_rules(obj['type'], rule_type, node, policy)
             if policy.get('is_emitter_policy', False):
                 object_related_id_list = obj[rule_type][policy_id]['object_related_list']
@@ -172,15 +185,19 @@ class ChefTask(Task):
                 if self.is_adding_policy(obj, objold):
                     rule_type = 'policies'
                     for policy_id in obj[rule_type].keys():
-                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy_id)
+                        policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
                         node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
                         if not updated and updated_policy:
                             updated = True
                 return (node, updated)
-            else:  # printer, storage, repo
+            elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
                 rule_type = 'save'
-                rules, obj = self.get_rules_and_object(rule_type, obj, node)
-                return self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
+                if self.is_updated_node(obj, objold):
+                    policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
+                    rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
+                    node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node)
+                return (node, updated)
         raise ValueError('The action should be deleted, changed or created')
 
     def validate_data(self, node, cookbook, api):

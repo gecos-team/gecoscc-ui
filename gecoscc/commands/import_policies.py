@@ -4,7 +4,7 @@ from copy import deepcopy
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX
+from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug
 
 
 DEFAULT_TARGETS = ['ou', 'computer', 'group']
@@ -158,7 +158,7 @@ class Command(BaseCommand):
             for emiter in RESOURCES_EMITTERS_TYPES:
                 schema = deepcopy(SCHEMA_EMITTER)
                 schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
-                slug = '%s%s' % (emiter, POLICY_EMITTER_SUBFIX)
+                slug = emiter_police_slug(emiter)
                 policy = {
                     'name': POLICY_EMITTER_NAMES[slug],
                     'slug': slug,

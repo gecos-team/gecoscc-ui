@@ -43,6 +43,10 @@ def object_related_list(objs_ui, **kwargs):
     return objs
 
 
+def object_related_list_reverse(obj_emiter, obj_receptor, node, field_chef, **kwargs):
+    raise NotImplementedError
+
+
 def storage_related(objs_ui, obj, node, field_chef, **kwargs):
     user_storage = object_related_list(objs_ui, obj=obj, node=node, field_chef=field_chef, **kwargs)
     return users_list({'gtkbookmarks': user_storage}, obj=obj,  node=node, field_chef=field_chef, *kwargs)
@@ -55,6 +59,14 @@ RULES_SOFTWARE_CAN_VIEW_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res
 
 # Storage can view
 RULES_STORAGE_CAN_VIEW_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related}
+
+RULES_PRINTER_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list': object_related_list_reverse}
+
+# Software can view
+RULES_SOFTWARE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list': object_related_list_reverse}
+
+# Storage can view
+RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related}
 
 # End emitter policies
 
@@ -114,26 +126,32 @@ RULES_NODE = {
         },
     },
     'printer': {
-        'save': {},
+        'save': {
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
+        },
         'policies': {},
     },
     'storage': {
-        'save': {},
+        'save': {
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
+        },
         'policies': {},
     },
     'repository': {
-        'save': {},
+        'save': {
+            'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
+            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
+        },
         'policies': {},
     },
 }
 
 
-def get_specific_rules(obj_type, rule_type, policy_slug=None):
+def get_specific_rules(obj_type, rule_type, policy_slug):
     type_rules = RULES_NODE[obj_type][rule_type]
-    if rule_type == 'save':
-        return type_rules
-    if policy_slug in type_rules:
-        return type_rules[policy_slug]
+    return type_rules[policy_slug]
 
 
 def get_generic_rules(node, policy):
@@ -146,7 +164,7 @@ def get_generic_rules(node, policy):
     return rules
 
 
-def get_rules(obj_type, rule_type, node, policy=None):
+def get_rules(obj_type, rule_type, node, policy):
     rules = get_specific_rules(obj_type, rule_type, policy['slug'])
     if not rules:
         if obj_type == 'user':
