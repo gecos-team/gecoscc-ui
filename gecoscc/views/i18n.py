@@ -1,6 +1,10 @@
+import os
+
+import gettext as gettext_module
 import simplejson as json
 import six
-import gettext as gettext_module
+
+import gecoscc
 
 from pyramid.threadlocal import get_current_registry
 from pyramid.view import view_config
@@ -12,11 +16,13 @@ def i18n_catalog(context, request):
     current_language = locale_language = request._LOCALE_
     plural = None
     catalog = {}
-    if not gettext_module.find('gecoscc_js', 'gecoscc/locale/', [current_language]):
+    catalog_js = 'gecoscc_js'
+    locale_path = os.path.join(os.sep.join(gecoscc.__file__.split(os.sep)[:-1]), 'locale')
+    if not gettext_module.find(catalog_js, locale_path, [current_language]):
         settings = get_current_registry().settings
         locale_language = settings['pyramid.default_locale_name']
     # Inspirated by https://github.com/django/django/blob/master/django/views/i18n.py#L192
-    t = gettext_module.translation('gecoscc_js', 'gecoscc/locale/', [locale_language])._catalog
+    t = gettext_module.translation(catalog_js, locale_path, [locale_language])._catalog
     if '' in t:
         for l in t[''].split('\n'):
             if l.startswith('Plural-Forms:'):
