@@ -345,6 +345,7 @@ class Printer(Node):
                               default='',
                               missing='')
     ppd_uri = colander.SchemaNode(colander.String())
+    affected_receptor_nodes = ObjectIdList(missing=[], default=[])
 
 
 class Printers(colander.SequenceSchema):
@@ -368,6 +369,7 @@ STORAGE_MOUNT_TYPE = {
 class Storage(Node):
     uri = colander.SchemaNode(colander.String(),
                               default='')
+    affected_receptor_nodes = ObjectIdList(missing=[], default=[])
 
 
 class Storages(colander.SequenceSchema):
@@ -382,6 +384,7 @@ class Repository(Node):
                                   default=False)
     repo_key = colander.SchemaNode(colander.String())
     key_server = colander.SchemaNode(colander.String())
+    affected_receptor_nodes = ObjectIdList(missing=[], default=[])
 
 
 class Repositories(colander.SequenceSchema):

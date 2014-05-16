@@ -372,7 +372,8 @@
             registry: 'JDA' + random_int(10000),
             location: 'Dep' + random_int(999),
             uri: 'http://servidorimpresion:631/ipp/port' + random_int(65000),
-            memberof: []
+            memberof: [],
+            affected_receptor_nodes: []
         });
         return oid;
     };
@@ -385,7 +386,8 @@
 
         oid = constructors.base(path, 'storage', {
             uri: choice(protocols) + "://" + ip + ":" + (random_int(65535) + 1) + '/some/path/',
-            memberof: []
+            memberof: [],
+            affected_receptor_nodes: []
         });
         return oid;
     };
@@ -397,7 +399,8 @@
             oid;
 
         oid = constructors.base(path, 'repository', {
-            uri: choice(urls)
+            uri: choice(urls),
+            affected_receptor_nodes: []
         });
         return oid;
     };
