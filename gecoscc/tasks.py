@@ -117,12 +117,6 @@ class ChefTask(Task):
                     object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
                     if not object_related:
                         continue
-                    affected_receptor_nodes = object_related.get('affected_receptor_nodes', [])
-                    affected_receptor_nodes = []
-                    if not obj['_id'] in affected_receptor_nodes:
-                        affected_receptor_nodes.append(obj['_id'])
-                        self.db.nodes.update({'_id': ObjectId(object_related_id)},
-                                             {'$set': {'affected_receptor_nodes': affected_receptor_nodes}})
                     object_related_list.append(object_related)
                 return (rules, {'object_related_list': object_related_list,
                                 'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')})
