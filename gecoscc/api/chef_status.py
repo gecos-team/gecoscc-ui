@@ -1,3 +1,5 @@
+import datetime
+
 from bson import ObjectId
 
 from chef import Node
@@ -34,11 +36,13 @@ class ChefStatusResource(BaseAPI):
                 continue
             if job_status['status'] == 0:
                 self.collection.update({'_id': job['_id']},
-                                       {'$set': {'status': 'finished'}})
+                                       {'$set': {'status': 'finished',
+                                                 'last_update': datetime.datetime.now()}})
             else:
                 self.collection.update({'_id': job['_id']},
                                        {'$set': {'status': 'errors',
-                                                 'message': job_status.get('message', 'Error')}})
+                                                 'message': job_status.get('message', 'Error'),
+                                                 'last_update': datetime.datetime.now()}})
         node.attributes.set_dotted('job_status', {})
         node.save()
         return {'ok': True}
