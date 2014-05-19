@@ -23,28 +23,64 @@ EMITTER_OBJECT_RULES = {
                    'deb_src': 'deb_src',
                    'repo_key': 'repo_key',
                    'key_server': 'key_server'},
-    'storage': {'title': 'name',
-                'uri': 'uri'}
+    'storage': ('name', 'uri')
 }
+
+
+def get_object_related(obj_related, attrs=None):
+    if attrs is None:
+        attrs = EMITTER_OBJECT_RULES.get(obj_related['type'])
+    obj = {}
+    if isinstance(attrs, tuple):
+        for attr in attrs:
+            obj[attr] = obj_related[attr]
+    elif isinstance(attrs, dict):
+        for obj_attr, obj_ui_attr in attrs.items():
+            obj[obj_attr] = obj_related[obj_ui_attr]
+    return obj
 
 
 def object_related_list(objs_ui, **kwargs):
     attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
     objs = []
     for obj_ui in objs_ui['object_related_list']:
-        obj = {}
-        if isinstance(attrs, tuple):
-            for attr in attrs:
-                obj[attr] = obj_ui[attr]
-        elif isinstance(attrs, dict):
-            for obj_attr, obj_ui_attr in attrs.items():
-                obj[obj_attr] = obj_ui[obj_ui_attr]
-        objs.append(obj)
+        objs.append(get_object_related(obj_ui, attrs))
     return objs
 
 
-def object_related_list_reverse(obj_emiter, obj_receptor, node, field_chef, **kwargs):
-    raise NotImplementedError
+def object_related_list_reverse(obj_emiter, obj, node, field_chef, **kwargs):
+    objects_related = deepcopy(node.attributes.get_dotted(field_chef))
+    new_object_related = get_object_related(obj_emiter)
+    obj_type = obj_emiter['type']
+    if isinstance(EMITTER_OBJECT_RULES[obj_type], tuple):
+        field_pk = 'name'
+    else:
+        inv_rules = dict(zip(EMITTER_OBJECT_RULES[obj_type].values(),
+                             EMITTER_OBJECT_RULES[obj_type].keys()))
+        field_pk = inv_rules['name']
+    for i, object_related in enumerate(objects_related):
+        if new_object_related[field_pk] == object_related[field_pk]:
+            objects_related[i] = new_object_related
+            break
+    return objects_related
+
+
+def storage_related_reverse(obj_emiter, obj, node, field_chef, **kwargs):
+    objects_related = deepcopy(node.attributes.get_dotted(field_chef))
+    new_object_related = get_object_related(obj_emiter)
+    obj_type = obj_emiter['type']
+    if isinstance(EMITTER_OBJECT_RULES[obj_type], tuple):
+        field_pk = 'name'
+    else:
+        inv_rules = dict(zip(EMITTER_OBJECT_RULES[obj_type].values(),
+                             EMITTER_OBJECT_RULES[obj_type].keys()))
+        field_pk = inv_rules['name']
+    for object_related in objects_related:
+        for i, storage in enumerate(object_related.get('gtkbookmarks', [])):
+            if new_object_related[field_pk] == storage[field_pk]:
+                object_related['gtkbookmarks'][i] = new_object_related
+                break
+    return objects_related
 
 
 def storage_related(objs_ui, obj, node, field_chef, **kwargs):
@@ -66,7 +102,7 @@ RULES_PRINTER_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.printers_mgmt.printers_res.
 RULES_SOFTWARE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list': object_related_list_reverse}
 
 # Storage can view
-RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related}
+RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related_reverse}
 
 # End emitter policies
 
@@ -128,20 +164,17 @@ RULES_NODE = {
     'printer': {
         'save': {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
-            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
         },
         'policies': {},
     },
     'storage': {
         'save': {
-            'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
-            'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
+            'storage_can_view': RULES_STORAGE_CAN_VIEW_REVERSE_RES,
         },
         'policies': {},
     },
     'repository': {
         'save': {
-            'printer_can_view': RULES_PRINTER_CAN_VIEW_REVERSE_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_REVERSE_RES,
         },
         'policies': {},
@@ -151,7 +184,7 @@ RULES_NODE = {
 
 def get_specific_rules(obj_type, rule_type, policy_slug):
     type_rules = RULES_NODE[obj_type][rule_type]
-    return type_rules[policy_slug]
+    return type_rules.get(policy_slug, None)
 
 
 def get_generic_rules(node, policy):
