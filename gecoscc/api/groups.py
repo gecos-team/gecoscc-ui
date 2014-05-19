@@ -46,7 +46,11 @@ class GroupResource(TreeLeafResourcePaginated):
         if 'oids' in self.request.GET:
             oid_filters = groups_oids_filter(self.request.GET)
             if oid_filters:
-                filters += (oid_filters)
+                filters += [oid_filters]
+        if 'group_type' in self.request.GET:
+            group_type = self.request.GET.get('group_type')
+            if group_type:
+                filters += [{'group_type': group_type}]
 
         return filters
 
@@ -92,6 +96,10 @@ class GroupResource(TreeLeafResourcePaginated):
     def pre_save(self, obj, old_obj=None):
         if make_cycles(self.collection, obj, old_obj):
             raise HTTPBadRequest('This groups combination can create cycles')
+        if obj['memberof']:
+            parent = self.request.db.nodes.find_one({'_id': obj['memberof'][0]})
+            if parent and parent['group_type'] != obj['group_type']:
+                raise HTTPBadRequest('This group can not belong to a group with a diferent group type')
 
         return obj
 

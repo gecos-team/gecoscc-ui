@@ -65,6 +65,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (_.isUndefined(this.groupsWidget)) {
                 this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                     el: this.ui.groups[0],
+                    groupType: 'computer',
                     checked: this.model.get("memberof")
                 });
             }
