@@ -1,3 +1,4 @@
+from bson import ObjectId
 
 from cornice.resource import resource
 
@@ -18,9 +19,9 @@ class RegisterComputerResource(BaseAPI):
     collection_name = 'nodes'
 
     def post(self):
-        ou_name = self.request.POST.get('ou_name')
+        ou_id = self.request.POST.get('ou_id')
         node_id = self.request.POST.get('node_id')
-        ou = self.collection.find_one({'name': ou_name, 'type': 'ou'})
+        ou = self.collection.find_one({'_id': ObjectId(ou_id), 'type': 'ou'})
         settings = get_current_registry().settings
         if not ou:
             return {'ok': False,

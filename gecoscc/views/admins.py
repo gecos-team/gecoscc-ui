@@ -77,7 +77,8 @@ def admin_delete(context, request):
 
 
 def _admin_edit(request, form_class, username=None):
-    admin_user_schema = AdminUser()
+    ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou'})]
+    admin_user_schema = AdminUser().bind(ou_choices=ou_choices)
     admin_user_form = form_class(schema=admin_user_schema,
                                  collection=request.db['adminusers'],
                                  username=username,

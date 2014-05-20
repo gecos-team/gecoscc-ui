@@ -1,5 +1,6 @@
 import os
 
+from bson import ObjectId
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
@@ -32,15 +33,11 @@ class AdminUserResource(BaseAPI):
         gcc['gcc_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
-        # TODO Change when the user have perms
-        ous = self.request.db.nodes.find({'type': 'ou'})
-        if ous.count() > 1:
-            ous = [ous[0]['name'], ous[1]['name']]
-        elif ous.count() == 1:
-            ous = [ous[0]['name']]
-        else:
-            ous = []
-        # End TODO
+        ou_ids_availables = self.request.user.get('ou_availables', []) or []
+        ous = []
+        if ou_ids_availables:
+            ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
+            ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou', '_id': {'$in': ou_ids_availables}})]
         gcc['ou_username'] = ous
 
         auth_type = variables.get('auth_type', 'LDAP')

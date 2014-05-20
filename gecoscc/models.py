@@ -120,6 +120,7 @@ class StringList(colander.SequenceSchema):
 GROUP_TYPES = (('user', _('Users')),
                ('computer', _('OU and computers')))
 
+
 class Group(Node):
 
     # Group object members
@@ -173,6 +174,12 @@ class Users(colander.SequenceSchema):
     users = User()
 
 
+@colander.deferred
+def deferred_choices_widget(node, kw):
+    choices = kw.get('ou_choices')
+    return deform.widget.CheckboxChoiceWidget(values=choices)
+
+
 class AdminUser(BaseUser):
     validator = AdminUserValidator()
     username = colander.SchemaNode(colander.String(),
@@ -192,6 +199,12 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            _('There is a user with this email: ${val}'))))
+    ou_managed = colander.SchemaNode(colander.List(),
+                                     title=_('OU managed by this user'),
+                                     widget=deferred_choices_widget)
+    ou_availables = colander.SchemaNode(colander.List(),
+                                        title=_('OU availables to register computers by this user'),
+                                        widget=deferred_choices_widget)
 
 
 class AdminUsers(colander.SequenceSchema):

@@ -63,7 +63,8 @@ class GecosTwoColumnsForm(GecosForm):
 class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
-                     'repeat_password', 'first_name', 'last_name')
+                     'repeat_password', 'first_name', 'last_name',
+                     'ou_managed', 'ou_availables',)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
         self.collection = collection

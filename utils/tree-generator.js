@@ -453,7 +453,9 @@
         last_name: 'Min',
         password: '$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu',
         email: 'admin@example.com',
-        permissions: [rootId]
+        permissions: [rootId],
+        ou_managed: [],
+        ou_availables: []
     };
 
     db.adminusers.drop();
