@@ -17,9 +17,11 @@
                     <li class="{% block nav_bar_home %}active{% endblock %}">
                         <a href="{{ request.route_url('home') }}">{{ gettext('Home') }}</a>
                     </li>
-                    <li class="{% block nav_bar_admins %}{% endblock %}">
-                        <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
-                    </li>
+                    {% if request.user.get('is_superuser') %}
+                        <li class="{% block nav_bar_admins %}{% endblock %}">
+                            <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
+                        </li>
+                    {% endif %}
                     <li class="{% block nav_bar_reports %}{% endblock %}">
                         <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
                     </li>

@@ -8,7 +8,9 @@
         <h1>{{ gettext('Administrators') }}</h1>
         {% block breadcrumbs %}
             <ol class="breadcrumb">
-                <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
+                {% if request.user.get('is_superuser') %}
+                    <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
+                {% endif %}
                 <li class="active">{{ gettext('Set variables') }}</li>
             </ol>
         {% endblock %}
