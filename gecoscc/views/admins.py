@@ -64,6 +64,20 @@ def admins_set_variables(context, request):
             'username': username}
 
 
+@view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='edit')
+def admins_superuser(context, request):
+    username = request.matchdict['username']
+    if '_superuser' in request.POST:
+        is_superuser = True
+        message = _('Now the user is a super user')
+    elif '_no_superuser' in request.POST:
+        is_superuser = False
+        message = _('Now the user is not a super user')
+    request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
+    messages.created_msg(request, message, 'success')
+    return HTTPFound(location=request.route_url('admins'))
+
+
 @view_config(route_name='admin_delete', permission='edit',  xhr=True, renderer='json')
 def admin_delete(context, request):
     if request.method != 'DELETE':
@@ -99,4 +113,5 @@ def _admin_edit(request, form_class, username=None):
     else:
         form_render = admin_user_form.render()
     return {'admin_user_form': form_render,
-            'username': username}
+            'username': username,
+            'instance': instance}

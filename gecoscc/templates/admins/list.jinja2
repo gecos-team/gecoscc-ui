@@ -32,6 +32,7 @@
                         <th>{{ gettext('E-mail') }}</th>
                         <th>{{ gettext('First name') }}</th>
                         <th>{{ gettext('Last name') }}</th>
+                        <th>{{ gettext('Is superuser?') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,6 +42,13 @@
                             <td>{% if 'email' in admin_user %}{{ admin_user.email }}{% endif %}</td>
                             <td>{% if 'first_name' in admin_user %}{{ admin_user.first_name }}{% endif %}</td>
                             <td>{% if 'last_name' in admin_user %}{{ admin_user.last_name }}{% endif %}</td>
+                            <td>
+                                {% if  admin_user.get('is_superuser') %}
+                                    {{ gettext('Yes') }}
+                                {% else %}
+                                    {{ gettext('No') }}
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
