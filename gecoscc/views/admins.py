@@ -12,7 +12,7 @@ from gecoscc.pagination import create_pagination_mongo_collection
 
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
-             permission='edit')
+             permission='is_superuser')
 def admins(context, request):
     filters = None
     q = request.GET.get('q', None)
@@ -24,21 +24,35 @@ def admins(context, request):
             'page': page}
 
 
+@view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='is_superuser')
+def admins_superuser(context, request):
+    username = request.matchdict['username']
+    if '_superuser' in request.POST:
+        is_superuser = True
+        message = _('Now the user is a super user')
+    elif '_no_superuser' in request.POST:
+        is_superuser = False
+        message = _('Now the user is not a super user')
+    request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
+    messages.created_msg(request, message, 'success')
+    return HTTPFound(location=request.route_url('admins'))
+
+
 @view_config(route_name='admins_add', renderer='templates/admins/add.jinja2',
-             permission='edit')
+             permission='is_superuser')
 def admin_add(context, request):
     return _admin_edit(request, AdminUserAddForm)
 
 
 @view_config(route_name='admins_edit', renderer='templates/admins/edit.jinja2',
-             permission='edit')
+             permission='is_superuser_or_my_profile')
 def admin_edit(context, request):
     return _admin_edit(request, AdminUserEditForm,
                        username=request.matchdict['username'])
 
 
 @view_config(route_name='admins_set_variables', renderer='templates/admins/variables.jinja2',
-             permission='edit')
+             permission='is_superuser_or_my_profile')
 def admins_set_variables(context, request):
     username = request.matchdict['username']
     schema = AdminUserVariables()
@@ -64,21 +78,7 @@ def admins_set_variables(context, request):
             'username': username}
 
 
-@view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='edit')
-def admins_superuser(context, request):
-    username = request.matchdict['username']
-    if '_superuser' in request.POST:
-        is_superuser = True
-        message = _('Now the user is a super user')
-    elif '_no_superuser' in request.POST:
-        is_superuser = False
-        message = _('Now the user is not a super user')
-    request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
-    messages.created_msg(request, message, 'success')
-    return HTTPFound(location=request.route_url('admins'))
-
-
-@view_config(route_name='admin_delete', permission='edit',  xhr=True, renderer='json')
+@view_config(route_name='admin_delete', permission='is_superuser_or_my_profile',  xhr=True, renderer='json')
 def admin_delete(context, request):
     if request.method != 'DELETE':
         raise HTTPMethodNotAllowed("Only delete mthod is accepted")

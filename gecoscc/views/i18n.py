@@ -10,8 +10,7 @@ from pyramid.threadlocal import get_current_registry
 from pyramid.view import view_config
 
 
-@view_config(route_name='i18n_catalog', renderer='templates/i18n.jinja2',
-             permission='edit')
+@view_config(route_name='i18n_catalog', renderer='templates/i18n.jinja2')
 def i18n_catalog(context, request):
     current_language = locale_language = request._LOCALE_
     plural = None

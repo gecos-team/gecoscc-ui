@@ -10,7 +10,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import EventsManager, get_jobstorage
-from gecoscc.permissions import is_logged, LoggedFactory
+from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -24,15 +24,17 @@ def read_setting_from_env(settings, key, default=None):
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
-    config.add_route('admins', '/admins/', factory=LoggedFactory)
-    config.add_route('admins_add', '/admins/add/', factory=LoggedFactory)
-    config.add_route('admins_edit', '/admins/edit/{username}/', factory=LoggedFactory)
-    config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=LoggedFactory)
-    config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=LoggedFactory)
-    config.add_route('admin_delete', '/admins/delete/', factory=LoggedFactory)
+    config.add_route('admins', '/admins/', factory=SuperUserFactory)
+    config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
+    config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)
+
+    config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
+    config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
+    config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
+
     config.add_route('groups', '/groups/', factory=LoggedFactory)
     config.add_route('reports', '/reports/', factory=LoggedFactory)
-    config.add_route('i18n_catalog', '/i18n-catalog/', factory=LoggedFactory)
+    config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
     config.add_sockjs_route('sockjs', prefix='/sockjs',

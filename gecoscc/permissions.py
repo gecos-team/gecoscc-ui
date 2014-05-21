@@ -74,3 +74,26 @@ class LoggedFactory(object):
 
     def get_groups(self, userid, request):
         return []
+
+
+class SuperUserFactory(LoggedFactory):
+
+    def __acl__(self):
+        user = self.request.user
+        if user:
+            is_superuser = user.get('is_superuser')
+            if is_superuser:
+                return [(Allow, Authenticated, ALL_PERMISSIONS)]
+        return [(Allow, Authenticated, [])]
+
+
+class SuperUserOrMyProfileFactory(LoggedFactory):
+
+    def __acl__(self):
+        user = self.request.user
+        if user:
+            username = self.request.matchdict.get('username') or self.request.GET.get('username')
+            is_superuser = user.get('is_superuser')
+            if is_superuser or user.get('username') == username:
+                return [(Allow, Authenticated, ALL_PERMISSIONS)]
+        return [(Allow, Authenticated, [])]
