@@ -53,7 +53,11 @@
                         'callback': function () {
                             $.ajax("{{ request.route_url('admin_delete') }}?username={{ username }}",
                                    {"type": "DELETE"}).done(function() {
-                                window.location = "{{ request.route_url('admins') }}";
+                                {% if request.user.get('is_superuser') %}
+                                    window.location = "{{ request.route_url('admins') }}";
+                                {% else %}
+                                    window.location = "{{ request.route_url('home') }}";
+                                {% endif %}
                             });
                         }
                     });

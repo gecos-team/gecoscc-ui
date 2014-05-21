@@ -1,8 +1,6 @@
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.security import remember
-from pyramid.security import authenticated_userid
-from pyramid.security import (Allow, Authenticated, Everyone,
-                              ALL_PERMISSIONS)
+from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
+                              authenticated_userid, forget, remember)
 
 
 from gecoscc.userdb import UserDoesNotExist
@@ -71,6 +69,10 @@ class LoggedFactory(object):
 
     def __init__(self, request):
         self.request = request
+        try:
+            user = self.request.user
+        except UserDoesNotExist:
+            forget(request)
 
     def get_groups(self, userid, request):
         return []

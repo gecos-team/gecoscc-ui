@@ -67,7 +67,7 @@ def admins_set_variables(context, request):
         try:
             variables = form.validate(data)
             form.save(variables)
-            return HTTPFound(location=request.route_url('admins'))
+            return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure, e:
             form = e
     if instance and not data:
@@ -105,7 +105,7 @@ def _admin_edit(request, form_class, username=None):
         try:
             admin_user = admin_user_form.validate(data)
             admin_user_form.save(admin_user)
-            return HTTPFound(location=request.route_url('admins'))
+            return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure, e:
             admin_user_form = e
     if instance and not data:
@@ -115,3 +115,12 @@ def _admin_edit(request, form_class, username=None):
     return {'admin_user_form': form_render,
             'username': username,
             'instance': instance}
+
+
+def get_url_redirect(request):
+    user = request.user
+    if user.get('is_superuser'):
+        redirect_view = 'admins'
+    else:
+        redirect_view = 'home'
+    return request.route_url(redirect_view)

@@ -21,21 +21,14 @@
                 {{ message }}
             </div>
             {% endif %}
-            <h1>GECOS CC Login</h1>
-            <h4 class="bootstrap-admin-light-padding-bottom">Consejería de Hacienda</h4>
+            <h1>{{ gettext('GECOS CC Login') }}</h1>
             <div class="form-group">
-                <input class="form-control" type="text" name="username" placeholder="Nombre de usuario">
+                <input class="form-control" type="text" name="username" placeholder="{{ gettext('Username') }}">
             </div>
             <div class="form-group">
-                <input class="form-control" type="password" name="password" placeholder="Contraseña">
+                <input class="form-control" type="password" name="password" placeholder="{{ gettext('Password') }}">
             </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" name="remember_me">
-                    Recuérdame
-                </label>
-            </div>
-            <input type="submit" value="Enviar" class="btn btn-primary btn-lg">
+            <input type="submit" value="{{ gettext('Submit') }}" class="btn btn-primary btn-lg">
         </form>
     </div>
 </div>
