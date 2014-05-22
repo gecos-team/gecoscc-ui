@@ -320,7 +320,7 @@ var App;
                 App.main.show(App.instances.loaderView);
 
                 if (_.isUndefined(policy) || policy.get('is_emitter_policy')) {
-                    policy = new App.Policies.Models.PolicyModel({ id: policyid, ou_id: containerid });
+                    policy = new App.Policies.Models.PolicyModel({ id: policyid, ou_id: containerid, item_id: itemid });
                     promise = policy.fetch();
                     App.instances.cache.set(policyid, policy);
                 } else {

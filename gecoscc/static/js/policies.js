@@ -57,6 +57,9 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             if (ou_id) {
                 url += "&ou_id=" + ou_id;
             }
+            if (this.has('id')) {
+                url += "&item_id=" + this.id;
+            }
             $.ajax(url).done(function (response) {
                 _.each(response.policies, function (p) {
                     var model = collection.get(p._id);
@@ -92,10 +95,13 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         url: function () {
             var url = "/api/policies/";
             if (this.has("id")) {
-                url += this.get("id") + '/';
+                url += this.get("id") + '/?';
             }
             if (this.has("ou_id")) {
-                url += "?ou_id=" + this.get("ou_id");
+                url += "ou_id=" + this.get("ou_id") + '&';
+            }
+            if (this.has("item_id")) {
+                url += "item_id=" + this.get("item_id");
             }
             return url;
         },
@@ -146,6 +152,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         server_api: {
             target: function () { return this.resource.resourceType; },
             ou_id: function () { return _.last(this.resource.get("path").split(',')) },
+            item_id: function () { return this.resource.id; },
             page: function () { return this.currentPage; },
             pagesize: function () { return this.perPage; }
         },
