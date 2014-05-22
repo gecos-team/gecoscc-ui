@@ -42,8 +42,7 @@ class RegisterComputerResource(BaseAPI):
         return {'ok': True}
 
     def delete(self):
-        self.set_variables('DELETE')
-        node_id = self.request.DELETE.get('node_id')
+        node_id = self.request.GET.get('node_id')
         node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
         num_node_deleted = node_deleted['n']
         if num_node_deleted == 1:
