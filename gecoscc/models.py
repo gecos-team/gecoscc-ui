@@ -199,6 +199,9 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            _('There is a user with this email: ${val}'))))
+
+
+class AdminUserOUManage(colander.MappingSchema):
     ou_managed = colander.SchemaNode(colander.List(),
                                      title=_('OU managed by this user'),
                                      widget=deferred_choices_widget)

@@ -5,9 +5,9 @@ from pyramid.security import forget
 from deform import ValidationFailure
 
 from gecoscc import messages
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm
+from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm
 from gecoscc.i18n import TranslationString as _
-from gecoscc.models import AdminUser, AdminUserVariables
+from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage
 from gecoscc.pagination import create_pagination_mongo_collection
 
 
@@ -36,6 +36,34 @@ def admins_superuser(context, request):
     request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
     messages.created_msg(request, message, 'success')
     return HTTPFound(location=request.route_url('admins'))
+
+
+@view_config(route_name='admins_ou_manage', renderer='templates/admins/ou_manage.jinja2',
+             permission='is_superuser')
+def admins_ou_manage(context, request):
+    ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou'})]
+    username = request.matchdict['username']
+    schema = AdminUserOUManage().bind(ou_choices=ou_choices)
+    form = AdminUserOUManageForm(schema=schema,
+                                 collection=request.db['adminusers'],
+                                 username=username,
+                                 request=request)
+    data = {}
+    instance = request.userdb.get_user(username)
+    if '_submit' in request.POST:
+        data = request.POST.items()
+        try:
+            variables = form.validate(data)
+            form.save(variables)
+            return HTTPFound(location=get_url_redirect(request))
+        except ValidationFailure, e:
+            form = e
+    if instance and not data:
+        form_render = form.render(instance)
+    else:
+        form_render = form.render()
+    return {'ou_manage_form': form_render,
+            'username': username}
 
 
 @view_config(route_name='admins_add', renderer='templates/admins/add.jinja2',
@@ -91,8 +119,7 @@ def admin_delete(context, request):
 
 
 def _admin_edit(request, form_class, username=None):
-    ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou'})]
-    admin_user_schema = AdminUser().bind(ou_choices=ou_choices)
+    admin_user_schema = AdminUser()
     admin_user_form = form_class(schema=admin_user_schema,
                                  collection=request.db['adminusers'],
                                  username=username,

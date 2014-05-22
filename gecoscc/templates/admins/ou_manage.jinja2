@@ -1,0 +1,22 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container" id="admin-container">
+        <h1>{{ gettext('Administrators') }}</h1>
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                {% if request.user.get('is_superuser') %}
+                    <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
+                {% endif %}
+                <li><a href="{{ request.route_url('admins_edit', username=username) }}">{{ gettext('Edit %s'  % username) }}</a></li>
+                <li class="active">{{ gettext('Set OU managed by this user') }}</li>
+            </ol>
+        {% endblock %}
+        {% block form_content %}
+            {{ ou_manage_form|safe }}
+        {% endblock %}
+    </div>
+{% endblock %}

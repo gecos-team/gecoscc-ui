@@ -27,6 +27,7 @@ def route_config(config):
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
     config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)
+    config.add_route('admins_ou_manage', '/admins/manage_ou/{username}/', factory=SuperUserFactory)
 
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)

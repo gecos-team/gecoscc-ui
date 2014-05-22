@@ -115,6 +115,14 @@ class AdminUserEditForm(BaseAdminUserForm):
         self.created_msg(_('User edited successfully'))
 
 
+class AdminUserOUManageForm(GecosTwoColumnsForm):
+
+    def save(self, ous_managed):
+        self.collection.update({'username': self.username},
+                               {'$set': ous_managed})
+        self.created_msg(_('User edited successfully'))
+
+
 class AdminUserVariablesForm(GecosForm):
 
     def validate(self, data):
