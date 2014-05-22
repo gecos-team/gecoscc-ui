@@ -1,6 +1,6 @@
 from bson import ObjectId
 
-from gecoscc.permissions import api_login_required, get_user_permissions
+from gecoscc.permissions import api_login_required
 
 from cornice.resource import resource
 
@@ -8,8 +8,8 @@ from gecoscc.models import Nodes, Node
 from gecoscc.api import ResourcePaginatedReadOnly
 
 
-def nodes_type_filter(params):
-    type = params.get('type')
+def nodes_type_filter(request):
+    type = request.GET.get('type')
     if type:
         return {
             'type': type,
@@ -17,10 +17,18 @@ def nodes_type_filter(params):
     return {}
 
 
-def nodes_maxdepth_filter(params):
+def nodes_path_filter(request):
+    params = request.GET
     maxdepth = int(params.get('maxdepth'))
-    path = params.get('path', 'root')
+    path = request.GET.get('path', 'root')
     range_depth = '0,{0}'.format(maxdepth)
+    ou_managed_ids = request.user.get('ou_managed')
+    if not request.user.get('is_superuser') or ou_managed_ids:
+        ou_managed_ids = [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]
+        if path == 'root':
+            return {
+                '_id': {'$in': ou_managed_ids}
+            }
     return {
         'path': {
             '$regex': r'^{0}(,[^,]*){{{1}}}$'.format(path, range_depth),
@@ -28,19 +36,8 @@ def nodes_maxdepth_filter(params):
     }
 
 
-def nodes_path_filter(params):
-    path = params.get('path')
-    if path:
-        return {
-            'path': {
-                '$regex': '^{0}'.format(path),
-            }
-        }
-    return {}
-
-
-def nodes_oids_filter(params):
-    oids = params.get('oids')
+def nodes_oids_filter(request):
+    oids = request.GET.get('oids')
     return {
         '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
     }
@@ -48,17 +45,17 @@ def nodes_oids_filter(params):
 
 node_filters = {
     'type': nodes_type_filter,
-    'maxdepth': nodes_maxdepth_filter,
     'path': nodes_path_filter,
     'oids': nodes_oids_filter,
 }
 
 
-def get_filters(node_filters, params):
+def get_filters(node_filters, request):
     filters = []
+    params = request.GET
     for (filter_name, filter_func) in node_filters.iteritems():
         if filter_name in params:
-            filter_dict = filter_func(params)
+            filter_dict = filter_func(request)
             if filter_dict:
                 filters.append(filter_dict)
     return filters
@@ -104,7 +101,7 @@ class NodesResource(ResourcePaginatedReadOnly):
 
         permissions_filters = []
 
-        local_filters = get_filters(node_filters, self.request.GET)
+        local_filters = get_filters(node_filters, self.request)
 
         if local_filters:
             filters += local_filters
