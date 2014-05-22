@@ -21,11 +21,19 @@ class RegisterComputerResource(BaseAPI):
     def post(self):
         ou_id = self.request.POST.get('ou_id')
         node_id = self.request.POST.get('node_id')
-        ou = self.collection.find_one({'_id': ObjectId(ou_id), 'type': 'ou'})
-        settings = get_current_registry().settings
+        if ou_id:
+            ou = self.collection.find_one({'_id': ObjectId(ou_id), 'type': 'ou'})
+        else:
+            ou_availables = self.request.user.get('ou_availables')
+            if len(ou_availables) > 0:
+                ou = self.collection.find_one({'_id': ObjectId(ou_availables[0]), 'type': 'ou'})
+            else:
+                ou = None
         if not ou:
             return {'ok': False,
                     'error': 'Ou does not exists'}
+
+        settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
         node_id = register_node(api, node_id, ou, self.collection)
         if not node_id:
