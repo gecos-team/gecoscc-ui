@@ -38,6 +38,8 @@ class AdminUserResource(BaseAPI):
         if ou_ids_availables:
             ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
             ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou', '_id': {'$in': ou_ids_availables}})]
+        elif user.get('is_superuser'):
+            ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou'})]
         gcc['ou_username'] = ous
 
         auth_type = variables.get('auth_type', 'LDAP')
