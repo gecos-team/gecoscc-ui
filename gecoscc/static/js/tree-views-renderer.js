@@ -58,10 +58,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    <span class="fa fa-chevron-<%= type %>"></span>\n' +
             '    <div class="tree-name">' + gettext('More') + '</div>\n' +
             '</div>\n',
-        emptyTree =
-            '<a href="#newroot">\n' +
-            '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
-            '</a>\n',
         extraOpts =
             '<div class="tree-extra-options">\n' +
             '    <ul class="nav nav-pills nav-stacked">\n' +
