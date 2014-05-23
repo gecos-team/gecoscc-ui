@@ -62,6 +62,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            if (!_.isUndefined(this.model.id)) {
+                this.$el.find("#name").attr('disabled', 'disabled');
+            }
+
             if (_.isUndefined(this.groupsWidget)) {
                 this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                     el: this.ui.groups[0],

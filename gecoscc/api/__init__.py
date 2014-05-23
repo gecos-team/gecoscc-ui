@@ -157,6 +157,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         return True
 
     def pre_save(self, obj, old_obj=None):
+        if old_obj and 'name' in old_obj:
+            obj['name'] = old_obj['name']
         return obj
 
     def post_save(self, obj, old_obj=None):

@@ -104,6 +104,12 @@
             this.listenTo(App, 'action_delete', this.onActionDelete);
         },
 
+        onRender: function() {
+            if (!_.isUndefined(this.model.id)) {
+                this.$el.find("#name").attr('disabled', 'disabled');
+            }
+        },
+
         onActionChange: function(obj) {
             if (this.model.id === obj._id) {
                 App.showAlert(
