@@ -24,7 +24,7 @@
 // possible
 var App;
 
-(function (Backbone, $, _, gettext) {
+(function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
 
     var HomeView, NewElementView, LoaderView, Router;
@@ -360,4 +360,14 @@ var App;
             Backbone.history.start();
         }
     });
-}(Backbone, jQuery, _, gettext));
+
+    App.instances.message_manager = MessageManager();
+    App.instances.message_manager.bind('change', function(obj) {
+        App.instances.cache.drop(obj._id);
+        App.trigger('action_change', obj);
+    });
+    App.instances.message_manager.bind('delete', function(obj) {
+        App.instances.cache.drop(obj._id);
+        App.trigger('action_delete', obj);
+    });
+}(Backbone, jQuery, _, gettext, MessageManager));

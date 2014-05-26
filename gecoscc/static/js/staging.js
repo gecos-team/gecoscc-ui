@@ -28,6 +28,15 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.promiseIndex = {};
             this.argumentsIndex = {};
             this.toDelete = [];
+            this.listenTo(App, 'action_change', this.onAction);
+            this.listenTo(App, 'action_delete', this.onAction);
+        },
+
+        onAction: function(obj) {
+            var model = this.get(obj._id);
+            if (!_.isUndefined(model)) {
+                this.dropModel(model);
+            }
         },
 
         add: function (models, options) {

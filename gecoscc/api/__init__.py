@@ -9,6 +9,7 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from webob.multidict import MultiDict
 
 from gecoscc.tasks import object_created, object_changed, object_deleted
+from gecoscc.socks import invalidate_change, invalidate_delete
 
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
@@ -156,6 +157,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         return True
 
     def pre_save(self, obj, old_obj=None):
+        if old_obj and 'name' in old_obj:
+            obj['name'] = old_obj['name']
         return obj
 
     def post_save(self, obj, old_obj=None):
@@ -198,9 +201,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def notify_changed(self, obj, old_obj):
         object_changed.delay(self.request.user, self.objtype, obj, old_obj)
+        invalidate_change(self.request, self.schema_detail, self.objtype, obj, old_obj)
 
     def notify_deleted(self, obj):
         object_deleted.delay(self.request.user, self.objtype, obj)
+        invalidate_delete(self.request, self.schema_detail, self.objtype, obj)
 
     def put(self):
         obj = self.request.validated

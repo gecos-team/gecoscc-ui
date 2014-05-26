@@ -114,6 +114,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            if (!_.isUndefined(this.model.id)) {
+                this.$el.find("#name").attr('disabled', 'disabled');
+            }
+
             var that = this,
                 memberof = this.model.get("memberof"),
                 groups,
