@@ -5,7 +5,7 @@ from cornice.resource import resource
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Policy, Policies
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import POLICY_EMITTER_SUBFIX, get_filter_nodes_belonging_ou
+from gecoscc.utils import POLICY_EMITTER_SUBFIX, get_filter_nodes_parents_ou
 
 
 def policies_oids_filter(params):
@@ -60,13 +60,14 @@ class PoliciesResource(ResourcePaginatedReadOnly):
 
     def parse_emitter_policy(self, obj):
         ou_id = self.request.GET.get('ou_id', None)
-        if ou_id:
+        item_id = self.request.GET.get('item_id', None)
+        if ou_id and item_id:
             node_type = obj['slug'].replace(POLICY_EMITTER_SUBFIX, '')
             nodes = self.request.db.nodes.find({'type': node_type,
-                                                'path': get_filter_nodes_belonging_ou(ou_id)})
+                                                'path': get_filter_nodes_parents_ou(self.request.db, ou_id, item_id)})
             object_related_items = obj['schema']['properties']['object_related_list']['items']
             object_related_items['enum'] = [{"title": node["name"],
-                                            "value": unicode(node["_id"])} for node in nodes]
+                                             "value": unicode(node["_id"])} for node in nodes]
         return obj
 
     def parse_item(self, obj):
