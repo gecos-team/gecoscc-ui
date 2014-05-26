@@ -11,7 +11,7 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
     manager.broadcast(json.dumps({
         'action': 'change',
         'object': schema_detail().serialize(objnew)
-        }))
+    }))
 
 
 def invalidate_delete(request, schema_detail, objtype, obj):
@@ -19,4 +19,4 @@ def invalidate_delete(request, schema_detail, objtype, obj):
     manager.broadcast(json.dumps({
         'action': 'delete',
         'object': schema_detail().serialize(obj)
-        }))
+    }))
