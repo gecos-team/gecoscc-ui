@@ -22,7 +22,7 @@ def nodes_path_filter(request):
     maxdepth = int(params.get('maxdepth'))
     path = request.GET.get('path', 'root')
     range_depth = '0,{0}'.format(maxdepth)
-    ou_managed_ids = request.user.get('ou_managed')
+    ou_managed_ids = request.user.get('ou_managed', [])
     if not request.user.get('is_superuser') or ou_managed_ids:
         ou_managed_ids = [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]
         if path == 'root':
