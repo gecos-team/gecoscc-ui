@@ -421,7 +421,8 @@
             slug: "policy_" + i,
             path: "example.policy.policy_" + i,
             schema: choice(POLICY_SCHEMAS),
-            targets: [choice(TYPES.slice(0, 2))]
+            targets: [choice(TYPES.slice(0, 2))],
+            is_emitter_policy: false
         };
 
         if (i % 2) {
