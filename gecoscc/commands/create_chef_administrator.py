@@ -57,6 +57,13 @@ class Command(BaseCommand):
             action='store',
             help=('The pem file that contains the chef administrator private key')
         ),
+        make_option(
+            '-s', '--is-superuser',
+            dest='is_superuser',
+            action='store_true',
+            default=False,
+            help=("is superuser?")
+        ),
     ]
 
     required_options = (
@@ -120,7 +127,8 @@ class Command(BaseCommand):
             self.pyramid.userdb.create_user(
                 self.options.username,
                 password,
-                self.options.email
+                self.options.email,
+                {'is_superuser': self.options.is_superuser}
             )
         except UserAlreadyExists:
             print "The user already exists in mongo"

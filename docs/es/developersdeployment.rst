@@ -171,7 +171,7 @@ tener una carga real de datos.
 .. code-block:: none
 
     # Crear administrador en la UI y en chef server
-    pmanage config-templates/development.ini create_chef_administrator -u new_admin -e new_admin@example.com -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem -n
+    pmanage config-templates/development.ini create_chef_administrator -u new_admin -e new_admin@example.com -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem -n -s
 
     # Importar las politicas que haya en chef server (tiene parámetro p para importar una sola política)
     pmanage config-templates/development.ini import_policies -a SUPERUSER_USERNAME -k MY/PEM/PATH/chef_user.pem
