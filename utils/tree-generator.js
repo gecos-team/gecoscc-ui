@@ -456,7 +456,8 @@
         email: 'admin@example.com',
         permissions: [rootId],
         ou_managed: [],
-        ou_availables: []
+        ou_availables: [],
+        is_superuser: true
     };
 
     db.adminusers.drop();
@@ -473,6 +474,7 @@
         user.email = 'user' + i + '@example.com';
         user.permissions = [];
         user.password = '$2a$12$30QKDVBuIC8Ji4r5uXCjDehVdDI1ozCYyUiX6JHQ4iQB4n5DWZbsu';
+        user.is_superuser = true;
         user._id = new ObjectId();
 
         limit = random_int(10);
