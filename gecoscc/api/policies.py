@@ -53,7 +53,7 @@ class PoliciesResource(ResourcePaginatedReadOnly):
 
     def parse_collection(self, objects):
         for obj in objects:
-            is_emitter_policy = obj['is_emitter_policy']
+            is_emitter_policy = obj.get('is_emitter_policy', False)
             if is_emitter_policy:
                 self.parse_emitter_policy(obj)
         return super(PoliciesResource, self).parse_collection(objects)
@@ -71,7 +71,7 @@ class PoliciesResource(ResourcePaginatedReadOnly):
         return obj
 
     def parse_item(self, obj):
-        is_emitter_policy = obj['is_emitter_policy']
+        is_emitter_policy = obj.get('is_emitter_policy', False)
         if is_emitter_policy:
             obj = self.parse_emitter_policy(obj)
         return super(PoliciesResource, self).parse_item(obj)
