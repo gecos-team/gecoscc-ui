@@ -20,7 +20,7 @@
 // permissions and limitations under the Licence.
 
 var MessageManager = function() {
-    var Sock = new SockJS('http://localhost:6543/sockjs');
+    var Sock = new SockJS('/sockjs');
     var manager_handlers = {};
 
     Sock.onopen = function() {
