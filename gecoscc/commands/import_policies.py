@@ -4,6 +4,7 @@ from copy import deepcopy
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
+from gecoscc.rules import EXCLUDE_GENERIC_ATTRS
 from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug
 
 
@@ -129,8 +130,9 @@ class Command(BaseCommand):
         for key, value in policies.items():
             if policies_to_import and key not in policies_to_import:
                 continue
-            if 'job_ids' in value['properties']:
-                del(value['properties']['job_ids'])
+            for ex_attr in EXCLUDE_GENERIC_ATTRS:
+                if ex_attr in value['properties']:
+                    del(value['properties'][ex_attr])
             path = value.pop('path')
             if 'users_mgmt' in path:
                 targets = ['user']

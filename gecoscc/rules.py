@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by']
+
 # Network rules
 
 rules_network_res_path = 'gecos_ws_mgmt.network_mgmt.network_res'
@@ -188,11 +190,10 @@ def get_specific_rules(obj_type, rule_type, policy_slug):
 
 
 def get_generic_rules(node, policy):
-    exclude_attrs = ['job_ids']
     attrs = node.default.get_dotted(policy['path']).to_dict().keys()
     rules = {}
     for attr in attrs:
-        if attr not in exclude_attrs:
+        if attr not in EXCLUDE_GENERIC_ATTRS:
             rules['%s.%s' % (policy['path'], attr)] = attr
     return rules
 
