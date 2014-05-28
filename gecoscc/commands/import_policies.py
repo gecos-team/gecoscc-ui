@@ -44,6 +44,8 @@ SCHEMA_EMITTER = {
     }
 }
 
+EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders_res')
+
 
 class Command(BaseCommand):
     description = """
@@ -129,6 +131,8 @@ class Command(BaseCommand):
 
         for key, value in policies.items():
             if policies_to_import and key not in policies_to_import:
+                continue
+            elif key in EXCLUDE_POLICIES:
                 continue
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
