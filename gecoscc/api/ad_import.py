@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
@@ -18,6 +17,7 @@ from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
 
 logger = logging.getLogger(__name__)
+
 
 @resource(path='/api/ad_import/',
           description='Active Directory import',
@@ -202,8 +202,7 @@ class ADImport(BaseAPI):
                     'name': {
                         '$regex': u'{0}(_\d+)?'.format(newObj['name'])
                     },
-                    'type': objSchema['nodeType']
-                },{
+                    'type': objSchema['nodeType']}, {
                     'name': 1
                 }).sort('name', -1)
                 if collection.count() > 0:
@@ -223,8 +222,8 @@ class ADImport(BaseAPI):
             newObj['source'] = source
             newObj['type'] = objSchema['nodeType']
             newObj['lock'] = 'false'
-            newObj['policies'] = {} # TODO: Get the proper policies
-            newObj['path'] = 'root,5383163097e930c61d5a0750' # TODO: Get the proper root ("root,{0}._id,{1}._id,{2}._id...")
+            newObj['policies'] = {}  # TODO: Get the proper policies
+            newObj['path'] = 'root,5383163097e930c61d5a0750'  # TODO: Get the proper root ("root,{0}._id,{1}._id,{2}._id...")
 
             fixDuplicateName(objSchema, newObj)
 
@@ -247,8 +246,6 @@ class ADImport(BaseAPI):
 
     def post(self):
         try:
-
-            import pudb; pudb.set_trace()
 
             # Read GZIP data
             postedfile = self.request.POST['media'].file
