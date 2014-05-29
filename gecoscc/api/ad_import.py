@@ -30,134 +30,127 @@ class ADImport(BaseAPI):
       importSchema (list of Object): Import schema from AD XML dump.
 
     """
-
-    collection_name = None
-
+    mongoCollectionName = 'nodes'
     importSchema = [
         {
             'adName': 'OrganizationalUnit',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'ou',
+            'mongoType': 'ou',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 }
             ],
             'staticAttributes': []
         },
         {
             'adName': 'User',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'user',
+            'mongoType': 'user',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 }
             ],
             'staticAttributes': []
         },
         {
             'adName': 'Group',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'group',
+            'mongoType': 'group',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 }
             ],
             'staticAttributes': []
         },
         {
             'adName': 'Computer',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'computer',
+            'mongoType': 'computer',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 }
             ],
             'staticAttributes': []
         },
         {
             'adName': 'Printer',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'printer',
+            'mongoType': 'printer',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 },
                 {
                     'ad': 'url',
-                    'node': 'uri'
+                    'mongo': 'uri'
                 },
                 {
                     'ad': 'printerName',
-                    'node': 'model'
+                    'mongo': 'model'
                 }
             ],
             'staticAttributes': [
@@ -177,114 +170,127 @@ class ADImport(BaseAPI):
         },
         {
             'adName': 'Volume',
-            'nodeCollectionName': 'nodes',
-            'nodeType': 'storage',
+            'mongoType': 'storage',
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
-                    'node': 'adObjectGUID'
+                    'mongo': 'adObjectGUID'
                 },
                 {
                     'ad': 'DistinguishedName',
-                    'node': 'adDistinguishedName'
+                    'mongo': 'adDistinguishedName'
                 },
                 {
                     'ad': 'Name',
-                    'node': 'name'
+                    'mongo': 'name'
                 },
                 {
                     'ad': 'Description',
-                    'node': 'extra'
+                    'mongo': 'extra'
                 }
             ],
             'staticAttributes': []
         }
     ]
 
-    def _processObject(self, rootOU, objSchema, adObj):
+    def _fixDuplicateName(self, mongoObjects, objSchema, newObj):
+        """
+        Fix duplicate name append an _counter to the name
+        """
+        contador = 0;
+        m = re.match(ur'^(.+)(_\d+)$', newObj['name'])
+        if m:
+            nombreBase = m.group(1)
+        else:
+            nombreBase = newObj['name']
 
-        def update(self, rootOU, objSchema, nodeObj, adObj):
+        for mongoObject in mongoObjects:
+            m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
+            if m and m.group(2):
+                nuevoContador = int(m.group(2)[1:]) + 1
+                if (nuevoContador > contador):
+                    contador = nuevoContador
+            elif m and 1 > contador:
+                contador = 1
+
+        collection = self.request.db[self.mongoCollectionName].find({
+            'name': {
+                '$regex': u'{0}(_\d+)?'.format(nombreBase)
+            },
+            'type': objSchema['mongoType']}, {
+            'name': 1
+        })
+        for mongoObject in collection:
+            m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
+            if m and m.group(2):
+                nuevoContador = int(m.group(2)[1:]) + 1
+                if (nuevoContador > contador):
+                    contador = nuevoContador
+            elif m and 1 > contador:
+                contador = 1
+
+        if contador > 0:
+            newObj['name'] = u'{0}_{1}'.format(nombreBase, contador)
+
+    def _convertADObjectToMongoObject(self, rootOU, mongoObjects, objSchema, adObj):
+
+        def update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj):
             """
             Update an object from a collection with a GUID in common.
             """
 
-            # Update NODEJS object with ACTIVE DIRECTORY attributes
+            # Update MONGODB object with ACTIVE DIRECTORY attributes
             for attrib in objSchema['attributes']:
-                if adObj.hasAttribute(attrib['ad']):
-                    nodeObj[attrib['node']] = adObj.attributes[attrib['ad']].value
+                if attrib['mongo'] != 'name' and adObj.hasAttribute(attrib['ad']): #TODO: Proper update the object name
+                    mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
 
-            # TODO: Save the changes
-            return False
+            # self._fixDuplicateName(mongoObjects, objSchema, mongoObj)
 
-        def create(self, rootOU, objSchema, adObj):
+            return mongoObj
+
+        def new_object(self, rootOU, mongoObjects, objSchema, adObj):
             """
             Create an object into a collection.
             """
 
-            def fixDuplicateName(objSchema, newObj):
-                """
-                Fix ACTIVE DIRECTORY duplicate name append an _counter to the name
-                """
-                collection = self.request.db[objSchema['nodeCollectionName']].find({
-                    'name': {
-                        '$regex': u'{0}(_\d+)?'.format(newObj['name'])
-                    },
-                    'type': objSchema['nodeType']}, {
-                    'name': 1
-                }).sort('name', -1)
-                if collection.count() > 0:
-                    m = re.match(r'{0}(_\d+)'.format(newObj['name']), collection[0]['name'])
-                    if m:
-                        newObj['name'] = '{0}_{1}'.format(newObj['name'], int(m.group(1)[1:]) + 1)
-                    else:
-                        newObj['name'] = '{0}_1'.format(newObj['name'])
-
-            # Create the new NODEJS object.
+            # Create the new MONGODB object.
             newObj = {}
             for attrib in objSchema['attributes']:
                 if adObj.hasAttribute(attrib['ad']):
-                    newObj[attrib['node']] = adObj.attributes[attrib['ad']].value
+                    newObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
             # Add static attributes
             for attrib in objSchema['staticAttributes']:
                 newObj[attrib['key']] = attrib['value']
 
             # Add additional attributes.
             newObj['source'] = rootOU['source']
-            newObj['type'] = objSchema['nodeType']
+            newObj['type'] = objSchema['mongoType']
             newObj['lock'] = 'false'
             newObj['policies'] = {}  # TODO: Get the proper policies
-            newObj['path'] = 'root,{0}'.format(rootOU['_id'])  # TODO: Get the proper root ("root,{0}._id,{1}._id,{2}._id...")
 
-            fixDuplicateName(objSchema, newObj)
+            self._fixDuplicateName(mongoObjects, objSchema, newObj)
 
             # Save the new object
-            return self.request.db[objSchema['nodeCollectionName']].insert(newObj)
-
-        # An AD object must has 'ObjectGUID' attrib.
-        if not adObj.hasAttribute('ObjectGUID'):
-            return False
+            return newObj
 
         # Try to get an already exist object
-        nodeObj = self.request.db[objSchema['nodeCollectionName']].find_one({
-            'adObjectGUID': adObj.attributes['ObjectGUID'].value,
-            'type': objSchema['nodeType']
-        })
-        if nodeObj is not None:
-            return update(self, rootOU, objSchema, nodeObj, adObj)
+        mongoObj = self.request.db[self.mongoCollectionName].find_one({'adObjectGUID': adObj.attributes['ObjectGUID'].value})
+        if mongoObj is not None:
+            return update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj)
         else:
-            return create(self, rootOU, objSchema, adObj)
+            return new_object(self, rootOU, mongoObjects, objSchema, adObj)
 
     def _getRootOU(self, ouSchema, xmlDomain):
         filterRootOU = {
             'path': 'root',
-            'type': ouSchema['nodeType']
+            'type': ouSchema['mongoType']
         }
-        rootOU = self.request.db[ouSchema['nodeCollectionName']].find_one(filterRootOU)
+        rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
         newRootOU = {
             'name': xmlDomain.attributes['Name'].value,
             'extra': xmlDomain.attributes['DistinguishedName'].value,
-            'source': 'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value),
-            'type': ouSchema['nodeType'],
+            'source': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value),
+            'type': ouSchema['mongoType'],
             'lock': 'false',
             'policies': {},  # TODO: Get the proper policies
             'path': 'root',
@@ -292,17 +298,25 @@ class ADImport(BaseAPI):
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value
         }
         if rootOU is None:
-            self.request.db[ouSchema['nodeCollectionName']].insert(newRootOU)
+            self.request.db[self.mongoCollectionName].insert(newRootOU)
             return newRootOU
         else:
             for key,value in newRootOU.items():
                 rootOU[key] = value
-            self.request.db[ouSchema['nodeCollectionName']].update(filterRootOU, rootOU)
+            self.request.db[self.mongoCollectionName].update(filterRootOU, rootOU)
             return rootOU
+
+    def _saveMongoObject(self, mongoObject):
+        if '_id' not in mongoObject.keys():
+            # Insert object
+            return self.request.db[self.mongoCollectionName].insert(mongoObject)
+        else:
+            # Update object
+            return self.request.db[self.mongoCollectionName].update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
 
     def post(self):
         try:
-            import pudb; pudb.set_trace()
+            #import pudb; pudb.set_trace()
 
             # Read GZIP data
             postedfile = self.request.POST['media'].file
@@ -315,24 +329,44 @@ class ADImport(BaseAPI):
             xmlDomain = xmldoc.getElementsByTagName('Domain')[0]
             rootOU = self._getRootOU(self.importSchema[0], xmlDomain)
 
-            # Import each object from AD
-            totalCounter = 0
-            successCounter = 0
+            # Convert from AD objects to MongoDB objects
+            mongoObjects = []
             for objSchema in self.importSchema:
                 objs = xmldoc.getElementsByTagName(objSchema['adName'])
                 for adObj in objs:
-                    totalCounter += 1
-                    if self._processObject(rootOU, objSchema, adObj):
+                    if not adObj.hasAttribute('ObjectGUID'):
+                        raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
+                    mongoObjects.append(self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj))
+
+            # Get & set the path for each MongoDB objects
+            successCounter = 0
+            mongoObjectsAlreadySaved = []
+            for mongoObject in mongoObjects:
+                path = ['root', str(rootOU['_id'])]
+                # TODO: Get the proper path ("root,{0}._id,{1}._id,{2}._id...")
+                #subPath = mongoObject['adDistinguishedName'].replace(rootOU['adDistinguishedName'], '')
+                #m = re.match(ur'([^, ]+=(?:(?:\\,)|[^,])+)', subPath)
+                #if m and len(m.groups()) > 1:
+                #    for index in xrange(1, len(m.groups())):
+                mongoObject['path'] = ','.join(path)
+
+            # TODO: MemberOf
+
+            # Save each MongoDB objects
+            for mongoObject in mongoObjects:
+                if mongoObject not in mongoObjectsAlreadySaved:
+                    if self._saveMongoObject(mongoObject):
                         successCounter += 1
 
             # Return result
+            totalCounter = len(mongoObjects)
             return {
                 'status': '{0} of {1} objects imported successfully.'.format(successCounter, totalCounter),
                 'ok': True if successCounter == totalCounter else False
             }
         except Exception as e:
             return {
-                'status': '{0}'.format(e),
+                'status': u'{0}'.format(e),
                 'ok': False
             }
 
