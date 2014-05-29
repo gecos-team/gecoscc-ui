@@ -21,14 +21,16 @@ class RegisterComputerResource(BaseAPI):
     def post(self):
         ou_id = self.request.POST.get('ou_id')
         node_id = self.request.POST.get('node_id')
+        ou = None
         if ou_id:
             ou = self.collection.find_one({'_id': ObjectId(ou_id), 'type': 'ou'})
         else:
             ou_availables = self.request.user.get('ou_availables')
-            if len(ou_availables) > 0:
+            if isinstance(ou_availables, list) and len(ou_availables) > 0:
                 ou = self.collection.find_one({'_id': ObjectId(ou_availables[0]), 'type': 'ou'})
             else:
-                ou = None
+                if self.request.user.get('is_superuser'):
+                    ou = self.collection.find_one({'path': 'root', 'type': 'ou'})
         if not ou:
             return {'ok': False,
                     'error': 'Ou does not exists'}
