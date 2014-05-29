@@ -55,7 +55,8 @@ class ADImport(BaseAPI):
                     'ad': 'Description',
                     'node': 'extra'
                 }
-            ]
+            ],
+            'staticAttributes': []
         },
         {
             'adName': 'User',
@@ -78,7 +79,8 @@ class ADImport(BaseAPI):
                     'ad': 'Description',
                     'node': 'extra'
                 }
-            ]
+            ],
+            'staticAttributes': []
         },
         {
             'adName': 'Group',
@@ -101,7 +103,8 @@ class ADImport(BaseAPI):
                     'ad': 'Description',
                     'node': 'extra'
                 }
-            ]
+            ],
+            'staticAttributes': []
         },
         {
             'adName': 'Computer',
@@ -124,7 +127,8 @@ class ADImport(BaseAPI):
                     'ad': 'Description',
                     'node': 'extra'
                 }
-            ]
+            ],
+            'staticAttributes': []
         },
         {
             'adName': 'Printer',
@@ -146,6 +150,28 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Description',
                     'node': 'extra'
+                },
+                {
+                    'ad': 'url',
+                    'node': 'uri'
+                },
+                {
+                    'ad': 'printerName',
+                    'node': 'model'
+                }
+            ],
+            'staticAttributes': [
+                {
+                    'key': 'connection',
+                    'value': 'network'
+                },
+                {
+                    'key': 'ppd_uri',
+                    'value': 'null'
+                },
+                {
+                    'key': 'printtype',
+                    'value': 'ink'
                 }
             ]
         },
@@ -170,13 +196,14 @@ class ADImport(BaseAPI):
                     'ad': 'Description',
                     'node': 'extra'
                 }
-            ]
+            ],
+            'staticAttributes': []
         }
     ]
 
-    def _processObject(self, source, objSchema, adObj):
+    def _processObject(self, rootOU, objSchema, adObj):
 
-        def update(self, source, objSchema, nodeObj, adObj):
+        def update(self, rootOU, objSchema, nodeObj, adObj):
             """
             Update an object from a collection with a GUID in common.
             """
@@ -189,7 +216,7 @@ class ADImport(BaseAPI):
             # TODO: Save the changes
             return False
 
-        def create(self, source, objSchema, adObj):
+        def create(self, rootOU, objSchema, adObj):
             """
             Create an object into a collection.
             """
@@ -217,13 +244,16 @@ class ADImport(BaseAPI):
             for attrib in objSchema['attributes']:
                 if adObj.hasAttribute(attrib['ad']):
                     newObj[attrib['node']] = adObj.attributes[attrib['ad']].value
+            # Add static attributes
+            for attrib in objSchema['staticAttributes']:
+                newObj[attrib['key']] = attrib['value']
 
             # Add additional attributes.
-            newObj['source'] = source
+            newObj['source'] = rootOU['source']
             newObj['type'] = objSchema['nodeType']
             newObj['lock'] = 'false'
             newObj['policies'] = {}  # TODO: Get the proper policies
-            newObj['path'] = 'root,5383163097e930c61d5a0750'  # TODO: Get the proper root ("root,{0}._id,{1}._id,{2}._id...")
+            newObj['path'] = 'root,{0}'.format(rootOU['_id'])  # TODO: Get the proper root ("root,{0}._id,{1}._id,{2}._id...")
 
             fixDuplicateName(objSchema, newObj)
 
@@ -240,12 +270,39 @@ class ADImport(BaseAPI):
             'type': objSchema['nodeType']
         })
         if nodeObj is not None:
-            return update(self, source, objSchema, nodeObj, adObj)
+            return update(self, rootOU, objSchema, nodeObj, adObj)
         else:
-            return create(self, source, objSchema, adObj)
+            return create(self, rootOU, objSchema, adObj)
+
+    def _getRootOU(self, ouSchema, xmlDomain):
+        filterRootOU = {
+            'path': 'root',
+            'type': ouSchema['nodeType']
+        }
+        rootOU = self.request.db[ouSchema['nodeCollectionName']].find_one(filterRootOU)
+        newRootOU = {
+            'name': xmlDomain.attributes['Name'].value,
+            'extra': xmlDomain.attributes['DistinguishedName'].value,
+            'source': 'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value),
+            'type': ouSchema['nodeType'],
+            'lock': 'false',
+            'policies': {},  # TODO: Get the proper policies
+            'path': 'root',
+            'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
+            'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value
+        }
+        if rootOU is None:
+            self.request.db[ouSchema['nodeCollectionName']].insert(newRootOU)
+            return newRootOU
+        else:
+            for key,value in newRootOU.items():
+                rootOU[key] = value
+            self.request.db[ouSchema['nodeCollectionName']].update(filterRootOU, rootOU)
+            return rootOU
 
     def post(self):
         try:
+            import pudb; pudb.set_trace()
 
             # Read GZIP data
             postedfile = self.request.POST['media'].file
@@ -254,9 +311,9 @@ class ADImport(BaseAPI):
             # Read XML data
             xmldoc = minidom.parseString(xmldata)
 
-            # Get global domain info.
+            # Get the root OU
             xmlDomain = xmldoc.getElementsByTagName('Domain')[0]
-            source = 'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value)
+            rootOU = self._getRootOU(self.importSchema[0], xmlDomain)
 
             # Import each object from AD
             totalCounter = 0
@@ -265,7 +322,7 @@ class ADImport(BaseAPI):
                 objs = xmldoc.getElementsByTagName(objSchema['adName'])
                 for adObj in objs:
                     totalCounter += 1
-                    if self._processObject(source, objSchema, adObj):
+                    if self._processObject(rootOU, objSchema, adObj):
                         successCounter += 1
 
             # Return result
@@ -273,8 +330,11 @@ class ADImport(BaseAPI):
                 'status': '{0} of {1} objects imported successfully.'.format(successCounter, totalCounter),
                 'ok': True if successCounter == totalCounter else False
             }
-        except:
-            raise HTTPInternalServerError("An internal error has occurred.")
+        except Exception as e:
+            return {
+                'status': '{0}'.format(e),
+                'ok': False
+            }
 
     def get_collection(self, collection=None):
         return {}
