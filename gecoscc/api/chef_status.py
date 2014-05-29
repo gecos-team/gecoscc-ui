@@ -21,9 +21,14 @@ class ChefStatusResource(BaseAPI):
 
     def put(self):
         node_id = self.request.POST.get('node_id')
+        username = self.request.POST.get('gcc_username')
         if not node_id:
             return {'ok': False,
                     'message': 'Please set a node id (node_id)'}
+        if not username:
+            return {'ok': False,
+                    'message': 'Please set a admin username (gcc_username)'}
+        self.request.user = self.request.db.adminusers.find_one({'username': username})
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
