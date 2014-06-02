@@ -344,10 +344,34 @@ class ADImport(BaseAPI):
             for mongoObject in mongoObjects:
                 path = ['root', str(rootOU['_id'])]
                 # TODO: Get the proper path ("root,{0}._id,{1}._id,{2}._id...")
-                #subPath = mongoObject['adDistinguishedName'].replace(rootOU['adDistinguishedName'], '')
-                #m = re.match(ur'([^, ]+=(?:(?:\\,)|[^,])+)', subPath)
-                #if m and len(m.groups()) > 1:
-                #    for index in xrange(1, len(m.groups())):
+                subPath = mongoObject['adDistinguishedName'].replace(',{0}'.format(rootOU['adDistinguishedName']), '')
+                m = re.findall(ur'([^, ]+=(?:(?:\\,)|[^,])+)', subPath)
+                if m:
+                    groupsCounter = len(m)
+                    if groupsCounter > 1:
+                        for i in xrange(1, groupsCounter):
+                            nodePath = [rootOU['adDistinguishedName']]
+                            for j in xrange(groupsCounter, i, -1):
+                                nodePath.insert(0, m[j - 1])
+                            nodePath = ','.join(nodePath)
+                            # Find parent
+                            for mongoObject2 in mongoObjects:
+                                if mongoObject2['adDistinguishedName'] == nodePath:
+                                    if mongoObject2 not in mongoObjectsAlreadySaved:
+                                        # Save parent
+                                        if self._saveMongoObject(mongoObject2):
+                                            successCounter += 1
+                                            mongoObjectsAlreadySaved.append(mongoObject2)
+                                            path.append(str(mongoObject2['_id']))
+                                            break
+                                        else:
+                                            return {
+                                                'status': u'Can\'t save object "{0}" in db'.format(mongoObject2['adDistinguishedName']),
+                                                'ok': False
+                                            }
+                                    else:
+                                        path.append(str(mongoObject2['_id']))
+                                        break
                 mongoObject['path'] = ','.join(path)
 
             # TODO: MemberOf
