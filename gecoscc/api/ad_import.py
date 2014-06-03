@@ -75,6 +75,22 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Description',
                     'mongo': 'extra'
+                },
+                {
+                    'ad': 'MemberOf',
+                    'mongo': 'adMemberOf'
+                },
+                {
+                    'ad': 'PrimaryGroup',
+                    'mongo': 'adPrimaryGroup'
+                },
+                {
+                    'ad': 'EmailAddress',
+                    'mongo': 'adEmailAddress'
+                },
+                {
+                    'ad': 'mail',
+                    'mongo': 'email'
                 }
             ],
             'staticAttributes': []
@@ -98,9 +114,18 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Description',
                     'mongo': 'extra'
+                },
+                {
+                    'ad': 'MemberOf',
+                    'mongo': 'adMemberOf'
                 }
             ],
-            'staticAttributes': []
+            'staticAttributes': [
+                {
+                    'key': 'group_type',
+                    'value': 'user' # TODO: Get the real value (softcode it)
+                }
+            ]
         },
         {
             'adName': 'Computer',
@@ -121,6 +146,14 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Description',
                     'mongo': 'extra'
+                },
+                {
+                    'ad': 'MemberOf',
+                    'mongo': 'adMemberOf'
+                },
+                {
+                    'ad': 'PrimaryGroup',
+                    'mongo': 'adPrimaryGroup'
                 }
             ],
             'staticAttributes': []
@@ -252,6 +285,9 @@ class ADImport(BaseAPI):
             for attrib in objSchema['attributes']:
                 if attrib['mongo'] != 'name' and adObj.hasAttribute(attrib['ad']): #TODO: Proper update the object name
                     mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+            for attrib in objSchema['staticAttributes']:
+                if attrib['key'] not in mongoObj.keys():
+                    mongoObj[attrib['key']] = attrib['value']
 
             # self._fixDuplicateName(mongoObjects, objSchema, mongoObj)
 
@@ -374,8 +410,6 @@ class ADImport(BaseAPI):
             mongoObjects[rootOU['adDistinguishedName']] = rootOU
             mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
 
-            # TODO: MemberOf
-
             # Save each MongoDB objects
             successCounter = 1 # root OU already saved
             properRootOUADDN = rootOU['adDistinguishedName']
@@ -394,6 +428,41 @@ class ADImport(BaseAPI):
                 # Save mongoObject
                 self._saveMongoObject(mongoObject)
                 successCounter += 1
+
+            # AD Fixes
+            for index, mongoObject in mongoObjects.items():
+                updateMongoObject = False
+
+                # Emails
+                if mongoObject['type'] == 'user':
+                    if ('email' not in mongoObject.keys() or mongoObject['email'] == '') and 'adEmailAddress' in mongoObject.keys():
+                        mongoObject['email'] = mongoObject['adEmailAddress']
+                    del mongoObject['adEmailAddress']
+                    # Check that email are unique and not empty
+                    if mongoObject['email'] == '':
+                        mongoObject['email'] = '{0}@example.com'.format(mongoObject['name'])
+                    updateMongoObject = True
+
+                # MemberOf
+                if mongoObject['type'] in ['user', 'group', 'computer']:
+                    if 'memberof' not in mongoObject.keys():
+                        mongoObject['memberof'] = []
+                    if 'adPrimaryGroup' in mongoObject.keys() and mongoObject['adPrimaryGroup']:
+                        mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
+                        del mongoObject['adPrimaryGroup']
+                        updateMongoObject = True
+                    if 'adMemberOf' in mongoObject.keys() and mongoObject['adMemberOf']:
+                        groups = mongoObject['adMemberOf'].split(' CN=')
+                        if len(groups) > 1:
+                            groups = [groups[0]] + ['CN=%s' % group for i, group in enumerate(groups) if i != 0]
+                        for group in groups:
+                            mongoObject['memberof'].append(mongoObjects[group]['_id'])
+                        del mongoObject['adMemberOf']
+                        updateMongoObject = True
+
+                # Save changes
+                if updateMongoObject:
+                    self._saveMongoObject(mongoObject)
 
             # Return result
             totalCounter = len(mongoObjects)
