@@ -3,8 +3,9 @@
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
 
-import re
+import collections
 import logging
+import re
 
 from gzip import GzipFile
 from xml.dom import minidom
@@ -150,6 +151,10 @@ class ADImport(BaseAPI):
                 },
                 {
                     'ad': 'printerName',
+                    'mongo': 'manufacturer'
+                },
+                {
+                    'ad': 'driverName',
                     'mongo': 'model'
                 }
             ],
@@ -187,6 +192,10 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Description',
                     'mongo': 'extra'
+                },
+                {
+                    'ad': 'uNCName',
+                    'mongo': 'uri'
                 }
             ],
             'staticAttributes': []
@@ -204,7 +213,7 @@ class ADImport(BaseAPI):
         else:
             nombreBase = newObj['name']
 
-        for mongoObject in mongoObjects:
+        for mongoObject in mongoObjects.values():
             m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
             if m and m.group(2):
                 nuevoContador = int(m.group(2)[1:]) + 1
@@ -314,9 +323,31 @@ class ADImport(BaseAPI):
             # Update object
             return self.request.db[self.mongoCollectionName].update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
 
+    def _orderByDependencesMongoObjects(self, mongoObjects, rootOU):
+
+        # Order by size
+        orderedBySize = {}
+        er = re.compile(r'([^, ]+=(?:(?:\\,)|[^,])+)')
+        for index, mongoObject in mongoObjects.items():
+            if mongoObject['adDistinguishedName'] == rootOU['adDistinguishedName']: # Jump root OU
+                mongoObjectRoot = mongoObject
+                continue
+            subADDN = er.findall(mongoObject['adDistinguishedName'])
+            size = len(subADDN)
+            if size not in orderedBySize.keys():
+                orderedBySize[size] = []
+            orderedBySize[size].append(mongoObject)
+
+        # Merge results in one dimensional dict
+        mongoObjects = collections.OrderedDict()
+        mongoObjects[mongoObjectRoot['adDistinguishedName']] = mongoObjectRoot
+        for size, listMongoObjects in orderedBySize.items():
+            for mongoObject in listMongoObjects:
+                mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
+        return mongoObjects
+
     def post(self):
         try:
-            #import pudb; pudb.set_trace()
 
             # Read GZIP data
             postedfile = self.request.POST['media'].file
@@ -330,57 +361,39 @@ class ADImport(BaseAPI):
             rootOU = self._getRootOU(self.importSchema[0], xmlDomain)
 
             # Convert from AD objects to MongoDB objects
-            mongoObjects = []
+            mongoObjects = {}
             for objSchema in self.importSchema:
                 objs = xmldoc.getElementsByTagName(objSchema['adName'])
                 for adObj in objs:
                     if not adObj.hasAttribute('ObjectGUID'):
                         raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
-                    mongoObjects.append(self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj))
+                    mongoObject = self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj)
+                    mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
 
-            # Get & set the path for each MongoDB objects
-            successCounter = 0
-            mongoObjectsAlreadySaved = []
-            for mongoObject in mongoObjects:
-                path = ['root', str(rootOU['_id'])]
-                # TODO: Get the proper path ("root,{0}._id,{1}._id,{2}._id...")
-                subPath = mongoObject['adDistinguishedName'].replace(',{0}'.format(rootOU['adDistinguishedName']), '')
-                m = re.findall(ur'([^, ]+=(?:(?:\\,)|[^,])+)', subPath)
-                if m:
-                    groupsCounter = len(m)
-                    if groupsCounter > 1:
-                        for i in xrange(1, groupsCounter):
-                            nodePath = [rootOU['adDistinguishedName']]
-                            for j in xrange(groupsCounter, i, -1):
-                                nodePath.insert(0, m[j - 1])
-                            nodePath = ','.join(nodePath)
-                            # Find parent
-                            for mongoObject2 in mongoObjects:
-                                if mongoObject2['adDistinguishedName'] == nodePath:
-                                    if mongoObject2 not in mongoObjectsAlreadySaved:
-                                        # Save parent
-                                        if self._saveMongoObject(mongoObject2):
-                                            successCounter += 1
-                                            mongoObjectsAlreadySaved.append(mongoObject2)
-                                            path.append(str(mongoObject2['_id']))
-                                            break
-                                        else:
-                                            return {
-                                                'status': u'Can\'t save object "{0}" in db'.format(mongoObject2['adDistinguishedName']),
-                                                'ok': False
-                                            }
-                                    else:
-                                        path.append(str(mongoObject2['_id']))
-                                        break
-                mongoObject['path'] = ','.join(path)
+            # Order mongoObjects by dependences
+            mongoObjects[rootOU['adDistinguishedName']] = rootOU
+            mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
 
             # TODO: MemberOf
 
             # Save each MongoDB objects
-            for mongoObject in mongoObjects:
-                if mongoObject not in mongoObjectsAlreadySaved:
-                    if self._saveMongoObject(mongoObject):
-                        successCounter += 1
+            successCounter = 1 # root OU already saved
+            properRootOUADDN = rootOU['adDistinguishedName']
+            for index, mongoObject in mongoObjects.items():
+                if index == properRootOUADDN:
+                    continue
+                # Get the proper path ("root,{0}._id,{1}._id,{2}._id...")
+                listPath = re.findall(ur'([^, ]+=(?:(?:\\,)|[^,])+)', index)
+                nodePath = ','.join(listPath[1:])
+
+                # Find parent
+                mongoObjectParent = mongoObjects[nodePath]
+                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
+                path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
+                mongoObject['path'] = path
+                # Save mongoObject
+                self._saveMongoObject(mongoObject)
+                successCounter += 1
 
             # Return result
             totalCounter = len(mongoObjects)
