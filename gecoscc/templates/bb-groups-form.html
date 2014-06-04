@@ -28,6 +28,7 @@
                                 <select id="group_type" class="form-control" required>
                                     <option value="user" <% if (group_type === "user") { print("selected"); } %>>{{ gettext('Users') }}</option>
                                     <option value="computer" <% if (group_type === "computer") { print("selected"); } %>>{{ gettext('Computers') }}</option>
+                                    <option value="ad" <% if (group_type === "ad") { print("selected"); } %>>{{ gettext('Active Directory') }}</option>
                                 </select>
                             </div>
                         </div>

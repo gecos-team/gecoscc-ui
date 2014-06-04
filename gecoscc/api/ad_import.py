@@ -91,6 +91,14 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'mail',
                     'mongo': 'email'
+                },
+                {
+                    'ad': 'DisplayName',
+                    'mongo': 'first_name'
+                },
+                {
+                    'ad': 'OfficePhone',
+                    'mongo': 'phone'
                 }
             ],
             'staticAttributes': []
@@ -123,7 +131,7 @@ class ADImport(BaseAPI):
             'staticAttributes': [
                 {
                     'key': 'group_type',
-                    'value': 'user' # TODO: Get the real value (softcode it)
+                    'value': 'ad'
                 }
             ]
         },
