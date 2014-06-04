@@ -11,11 +11,14 @@ from gzip import GzipFile
 from xml.dom import minidom
 from StringIO import StringIO
 
+from chef import Node
 from cornice.resource import resource
 from pyramid.httpexceptions import HTTPInternalServerError
+from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
+from gecoscc.utils import get_chef_api
 
 logger = logging.getLogger(__name__)
 
@@ -438,6 +441,7 @@ class ADImport(BaseAPI):
                 successCounter += 1
 
             # AD Fixes
+            chef_server_api = get_chef_api(get_current_registry().settings, self.request.user)
             for index, mongoObject in mongoObjects.items():
                 updateMongoObject = False
 
@@ -467,6 +471,13 @@ class ADImport(BaseAPI):
                             mongoObject['memberof'].append(mongoObjects[group]['_id'])
                         del mongoObject['adMemberOf']
                         updateMongoObject = True
+
+                # Create Chef-Server Nodes
+                if mongoObject['type'] == 'computer':
+                    chef_server_node = Node(mongoObject['name'], api=chef_server_api)
+                    if not chef_server_node.exists:
+                        chef_server_node.save()
+                    mongoObject['node_chef_id'] = mongoObject['name']
 
                 # Save changes
                 if updateMongoObject:
