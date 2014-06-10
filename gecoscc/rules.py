@@ -5,7 +5,7 @@ EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by']
 # Network rules
 
 rules_network_res_path = 'gecos_ws_mgmt.network_mgmt.network_res'
-rules_network_res_attrs = ('use_dhcp', 'netmask', 'ip_address', 'gateway', 'network_type', 'dns_servers')
+rules_network_res_attrs = ('use_dhcp', 'netmask', 'ip_address', 'gateway', 'network_type', 'dns_servers_array')
 
 RULES_NETWORK_RES = {}
 

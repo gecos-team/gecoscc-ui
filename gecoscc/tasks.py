@@ -3,6 +3,8 @@ from copy import deepcopy
 from bson import ObjectId
 
 from chef import Node
+from chef.node import NodeAttributes
+from chef.exceptions import ChefError
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -152,6 +154,7 @@ class ChefTask(Task):
         attributes_updated = []
         for field_chef, field_ui in rules.items():
             priority_obj_ui = obj_ui
+            obj_ui_field = None
             priority_obj = self.priority_object(node, field_chef, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
@@ -164,9 +167,12 @@ class ChefTask(Task):
                 if obj_ui_field is None and action != 'deleted':
                     continue
                 elif obj_ui_field is None and action == 'deleted':
-                    obj_ui_field = node.default.get_dotted(field_chef)
-
-                if obj_ui_field != node.attributes.get_dotted(field_chef):
+                    try:
+                        obj_ui_field = delete_dotted(node.attributes, field_chef)
+                        updated = True
+                    except KeyError:
+                        pass
+                elif obj_ui_field != node.attributes.get_dotted(field_chef):
                     node.attributes.set_dotted(field_chef, obj_ui_field)
                     updated = True
             attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
@@ -194,7 +200,10 @@ class ChefTask(Task):
         except KeyError:
             updated_by = {}
         if not updated_by:
-            return obj
+            if action == 'deleted':
+                return {}
+            else:
+                return obj
         priority_object = {}
 
         if updated_by.get('computer', None):
@@ -490,3 +499,22 @@ def dict_merge(a, b):
         else:
             result[k] = deepcopy(v)
     return result
+
+
+def delete_dotted(dest, key):
+    """Set an attribute using a dotted key path. See :meth:`.get_dotted`
+    for more information on dotted paths.
+
+    Example::
+
+        node.attributes.set_dotted('apache.log_dir', '/srv/log')
+    """
+    keys = key.split('.')
+    last_key = keys.pop()
+    for k in keys:
+        if k not in dest:
+            dest[k] = {}
+        dest = dest[k]
+        if not isinstance(dest, NodeAttributes):
+            raise ChefError
+    del dest[last_key]
