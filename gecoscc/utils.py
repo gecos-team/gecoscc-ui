@@ -47,11 +47,12 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
 
 
 def get_filter_nodes_parents_ou(db, ou_id, item_id):
-    ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
     item = db.nodes.find_one({'_id': ObjectId(item_id)})
     if item['type'] == 'ou':
         ou = item
         ou_id = ou['_id']
+    else:
+        ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
     ou_path = ou['path']
     filters = {'$regex': '%s,%s$' % (ou_path, ou_id)}
     path_split = ou_path.split(',')

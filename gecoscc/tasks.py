@@ -112,6 +112,14 @@ class ChefTask(Task):
     def is_updated_node(self, obj, objold):
         return obj != objold
 
+    def get_object_ui(self, rule_type, obj, policy):
+        if rule_type == 'save':
+            return obj
+        elif rule_type == 'policies':
+            policy_id = unicode(policy['_id'])
+            return obj[rule_type][policy_id]
+        return ValueError("The rule type should be save or policy")
+
     def get_rules_and_object(self, rule_type, obj, node, policy):
         if rule_type == 'save':
             rules = get_rules(obj['type'], rule_type, node, policy)
@@ -119,7 +127,7 @@ class ChefTask(Task):
                 obj = self.db.nodes.find_one({'node_chef_id': node.name})
                 if not obj:
                     rules = {}
-            return (rules, obj)
+            return (rules, self.get_object_ui(rule_type, obj, policy))
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
             rules = get_rules(obj['type'], rule_type, node, policy)
@@ -134,35 +142,100 @@ class ChefTask(Task):
                 return (rules, {'object_related_list': object_related_list,
                                 'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')})
             return (rules,
-                    obj[rule_type][policy_id])
+                    self.get_object_ui(rule_type, obj, policy))
         return ValueError("The rule type should be save or policy")
 
-    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node):
+    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type):
         updated = False
         attributes_updated = []
         for field_chef, field_ui in rules.items():
-            if callable(field_ui):
-                obj_ui_field = field_ui(obj_ui, obj=obj, node=node, field_chef=field_chef)
-            else:
-                obj_ui_field = obj_ui.get(field_ui, None)
-            if obj_ui_field is None:
-                continue
-            elif obj_ui_field == node.attributes.get_dotted(field_chef):
-                continue
-            elif obj['type'] != 'computer' and obj['type'] != 'user':
-                # TODO mandatory poplicies
-                try:
-                    val = node.attributes.get_dotted(field_chef)
-                    if val or val is False:
-                        continue
-                except KeyError:
-                    pass
-            node.attributes.set_dotted(field_chef, obj_ui_field)
-            updated = True
+            priority_obj_ui = obj_ui
+            priority_obj = self.priority_object(node, field_chef, obj, action)
+            if priority_obj != obj:
+                priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
+            if priority_obj == obj or action == 'deleted':
+                if callable(field_ui):
+                    obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+                else:
+                    obj_ui_field = priority_obj_ui.get(field_ui, None)
+
+                if obj_ui_field is None:
+                    continue
+                if obj_ui_field != node.attributes.get_dotted(field_chef):
+                    node.attributes.set_dotted(field_chef, obj_ui_field)
+                    updated = True
             attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             if attr not in attributes_updated:
-                self.update_node_job_id(user, obj, action, node, attr, attributes_updated)
+                updated_updated_by = self.update_node_updated_by(node, field_chef, obj, action)
+                if updated_updated_by or updated:
+                    self.update_node_job_id(user, priority_obj, action, node, attr, attributes_updated)
+                    updated = True
         return (node, updated)
+
+    def get_first_exists_node(self, ids, obj, action):
+        for mongo_id in ids:
+            node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
+            if node:
+                if action != 'deleted' or unicode(obj.get('_id')) != mongo_id:
+                    return node
+        return None
+
+    def priority_object(self, node, field_chef, obj, action):
+        if obj['type'] in ['computer', 'user'] and action != 'deleted':
+            return obj
+        updated_by_fieldname = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
+        try:
+            updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
+        except KeyError:
+            updated_by = {}
+        if not updated_by:
+            return obj
+        priority_object = None
+
+        if updated_by.get('computer', None):
+            if action != 'deleted' or unicode(obj.get('_id')) != updated_by['computer']:
+                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
+        if not priority_object and updated_by.get('user', None):
+            priority_object = self.get_first_exists_node(updated_by.get('user', None), obj, action)
+        if not priority_object and updated_by.get('group', None):
+            priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
+        if not priority_object and updated_by.get('ou', None):
+            priority_object = self.get_first_exists_node(updated_by.get('ou', None), obj, action)
+        return priority_object or obj
+
+    def update_node_updated_by(self, node, field_chef, obj, action):
+        updated = False
+        updated_by_fieldname = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
+        try:
+            updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
+        except KeyError:
+            updated_by = {}
+        obj_id = unicode(obj['_id'])
+        if obj['type'] == 'computer':
+            if action == 'deleted':
+                del updated_by['computer']
+            else:
+                updated_by['computer'] = obj_id
+            updated = True
+        else:
+            updated_by_type = updated_by.get(obj['type'], [])
+            if action == 'deleted':
+                try:
+                    updated_by_type.remove(obj_id)
+                    updated = True
+                except ValueError:
+                    pass
+            elif obj_id not in updated_by_type:
+                updated = True
+                if obj['type'] == 'ou':
+                    updated_by_type.append(obj_id)
+                    # TODO Order by depth
+                else:
+                    updated_by_type.append(obj_id)
+            updated_by[obj['type']] = updated_by_type
+        if updated:
+            node.attributes.set_dotted(updated_by_fieldname, updated_by)
+        return updated
 
     def update_node_job_id(self, user, obj, action, node, attr, attributes_updated):
         if node.attributes.has_dotted(attr):
@@ -176,6 +249,14 @@ class ChefTask(Task):
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
 
+    def get_policies(self, rule_type, action, obj, objold):
+        policies_add = [(policy_id, action) for policy_id in obj[rule_type].keys()]
+        if not objold:
+            return policies_add
+        policies_delete = set(objold[rule_type].keys()) - set(obj[rule_type].keys())
+        policies_delete = [(policy_id, 'deleted') for policy_id in policies_delete]
+        return policies_add + policies_delete
+
     def update_node(self, user, computer, obj, objold, node, action):
         updated = False
         if action == 'deleted':
@@ -184,10 +265,13 @@ class ChefTask(Task):
             if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
                 if self.is_adding_policy(obj, objold):
                     rule_type = 'policies'
-                    for policy_id in obj[rule_type].keys():
+                    for policy_id, action in self.get_policies(rule_type, action, obj, objold):
                         policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                        node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node)
+                        if action == 'deleted':
+                            rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
+                        else:
+                            rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
+                        node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type)
                         if not updated and updated_policy:
                             updated = True
                 return (node, updated)
@@ -196,7 +280,7 @@ class ChefTask(Task):
                 if self.is_updated_node(obj, objold):
                     policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                     rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
-                    node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node)
+                    node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type)
                 return (node, updated)
         raise ValueError('The action should be deleted, changed or created')
 
@@ -209,15 +293,19 @@ class ChefTask(Task):
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = self.get_related_computers(obj)
         for computer in computers:
-            node = Node(computer['node_chef_id'], api)
-            if obj['type'] == 'computer' and action == 'deleted':
-                node.delete()
-            else:
-                node, updated = self.update_node(user, computer, obj, objold, node, action)
-                if not updated:
-                    continue
-                self.validate_data(node, cookbook, api)
-                node.save()
+            try:
+                node = Node(computer['node_chef_id'], api)
+                if obj['type'] == 'computer' and action == 'deleted':
+                    node.delete()
+                else:
+                    node, updated = self.update_node(user, computer, obj, objold, node, action)
+                    if not updated:
+                        continue
+                    self.validate_data(node, cookbook, api)
+                    node.save()
+            except Exception as e:
+                #TODO Report this error
+                print e
 
     def object_created(self, user, objnew):
         self.object_action(user, objnew, action='created')
