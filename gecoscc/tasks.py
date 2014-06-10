@@ -113,6 +113,8 @@ class ChefTask(Task):
         return obj != objold
 
     def get_object_ui(self, rule_type, obj, policy):
+        if obj == {}:
+            return {}
         if rule_type == 'save':
             return obj
         elif rule_type == 'policies':
@@ -159,8 +161,11 @@ class ChefTask(Task):
                 else:
                     obj_ui_field = priority_obj_ui.get(field_ui, None)
 
-                if obj_ui_field is None:
+                if obj_ui_field is None and action != 'deleted':
                     continue
+                elif obj_ui_field is None and action == 'deleted':
+                    obj_ui_field = node.default.get_dotted(field_chef)
+
                 if obj_ui_field != node.attributes.get_dotted(field_chef):
                     node.attributes.set_dotted(field_chef, obj_ui_field)
                     updated = True
@@ -168,7 +173,7 @@ class ChefTask(Task):
             if attr not in attributes_updated:
                 updated_updated_by = self.update_node_updated_by(node, field_chef, obj, action)
                 if updated_updated_by or updated:
-                    self.update_node_job_id(user, priority_obj, action, node, attr, attributes_updated)
+                    self.update_node_job_id(user, obj, action, node, attr, attributes_updated)
                     updated = True
         return (node, updated)
 
@@ -178,7 +183,7 @@ class ChefTask(Task):
             if node:
                 if action != 'deleted' or unicode(obj.get('_id')) != mongo_id:
                     return node
-        return None
+        return {}
 
     def priority_object(self, node, field_chef, obj, action):
         if obj['type'] in ['computer', 'user'] and action != 'deleted':
@@ -190,7 +195,7 @@ class ChefTask(Task):
             updated_by = {}
         if not updated_by:
             return obj
-        priority_object = None
+        priority_object = {}
 
         if updated_by.get('computer', None):
             if action != 'deleted' or unicode(obj.get('_id')) != updated_by['computer']:
@@ -201,7 +206,7 @@ class ChefTask(Task):
             priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
         if not priority_object and updated_by.get('ou', None):
             priority_object = self.get_first_exists_node(updated_by.get('ou', None), obj, action)
-        return priority_object or obj
+        return priority_object
 
     def update_node_updated_by(self, node, field_chef, obj, action):
         updated = False
@@ -232,7 +237,10 @@ class ChefTask(Task):
                     # TODO Order by depth
                 else:
                     updated_by_type.append(obj_id)
-            updated_by[obj['type']] = updated_by_type
+            if updated_by_type:
+                updated_by[obj['type']] = updated_by_type
+            elif updated_by.get(obj['type'], None) is not None:
+                del updated_by[obj['type']]
         if updated:
             node.attributes.set_dotted(updated_by_fieldname, updated_by)
         return updated
