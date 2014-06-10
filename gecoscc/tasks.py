@@ -243,7 +243,7 @@ class ChefTask(Task):
                 updated = True
                 if obj['type'] == 'ou':
                     updated_by_type.append(obj_id)
-                    # TODO Order by depth
+                    updated_by_type = self.order_ou_by_depth(updated_by_type)
                 else:
                     updated_by_type.append(obj_id)
             if updated_by_type:
@@ -253,6 +253,12 @@ class ChefTask(Task):
         if updated:
             node.attributes.set_dotted(updated_by_fieldname, updated_by)
         return updated
+
+    def order_ou_by_depth(self, ou_ids):
+        ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
+        ous = [ou for ou in self.db.nodes.find({'_id': {'$in': ou_ids}})]
+        ous.sort(key=lambda x: x['path'].count(','), reverse=True)
+        return [unicode(ou['_id']) for ou in ous]
 
     def update_node_job_id(self, user, obj, action, node, attr, attributes_updated):
         if node.attributes.has_dotted(attr):
