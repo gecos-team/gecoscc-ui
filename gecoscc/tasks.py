@@ -150,11 +150,16 @@ class ChefTask(Task):
         return ValueError("The rule type should be save or policy")
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type):
-        updated = False
-        attributes_updated = []
+        updated = updated_updated_by = False
+        attributes_jobs_updated = []
+        attributes_updated_by_updated = []
         for field_chef, field_ui in rules.items():
+            job_attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
+            updated_by_attr = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
             priority_obj_ui = obj_ui
             obj_ui_field = None
+            if updated_by_attr not in attributes_updated_by_updated:
+                updated_updated_by = self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, field_chef, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
@@ -175,13 +180,10 @@ class ChefTask(Task):
                 elif obj_ui_field != node.attributes.get_dotted(field_chef):
                     node.attributes.set_dotted(field_chef, obj_ui_field)
                     updated = True
-            attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
-            if attr not in attributes_updated:
-                updated_updated_by = self.update_node_updated_by(node, field_chef, obj, action)
-                if updated_updated_by or updated:
-                    self.update_node_job_id(user, obj, action, node, attr, attributes_updated)
-                    updated = True
-        return (node, updated)
+            if job_attr not in attributes_jobs_updated:
+                if updated:
+                    self.update_node_job_id(user, obj, action, node, job_attr, attributes_jobs_updated)
+        return (node, (updated or updated_updated_by))
 
     def get_first_exists_node(self, ids, obj, action):
         for mongo_id in ids:
@@ -217,11 +219,10 @@ class ChefTask(Task):
             priority_object = self.get_first_exists_node(updated_by.get('ou', None), obj, action)
         return priority_object
 
-    def update_node_updated_by(self, node, field_chef, obj, action):
+    def update_node_updated_by(self, node, field_chef, obj, action, attr, attributes_updated):
         updated = False
-        updated_by_fieldname = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
         try:
-            updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
+            updated_by = node.attributes.get_dotted(attr).to_dict()
         except KeyError:
             updated_by = {}
         obj_id = unicode(obj['_id'])
@@ -251,7 +252,8 @@ class ChefTask(Task):
             elif updated_by.get(obj['type'], None) is not None:
                 del updated_by[obj['type']]
         if updated:
-            node.attributes.set_dotted(updated_by_fieldname, updated_by)
+            node.attributes.set_dotted(attr, updated_by)
+            attributes_updated.append(attr)
         return updated
 
     def order_ou_by_depth(self, ou_ids):
@@ -327,7 +329,7 @@ class ChefTask(Task):
                     self.validate_data(node, cookbook, api)
                     node.save()
             except Exception as e:
-                #TODO Report this error
+                # TODO Report this error
                 print e
 
     def object_created(self, user, objnew):
