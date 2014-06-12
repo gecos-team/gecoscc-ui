@@ -118,8 +118,7 @@ class StringList(colander.SequenceSchema):
 
 
 GROUP_TYPES = (('user', _('Users')),
-               ('computer', _('OU and computers')),
-               ('ad', _('Active Directory')))
+               ('computer', _('OU and computers')))
 
 
 class Group(Node):
