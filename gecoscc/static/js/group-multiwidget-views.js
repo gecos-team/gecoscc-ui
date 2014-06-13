@@ -72,7 +72,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         checked: undefined,
         filteredGroups: null,
         currentFilter: "",
-        groupType: undefined,
 
         initialize: function (options) {
             var that = this,
@@ -83,11 +82,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 checked = options.checked;
             }
 
-            if (!_.isUndefined(options.groupType)) {
-                this.groupType = options.groupType;
-            }
-
-            this.checked = new App.Group.Models.GroupCollection([], {groupType: this.groupType});
+            this.checked = new App.Group.Models.GroupCollection();
             view = new Views.GroupTags({
                 collection: this.checked,
                 widget: this
@@ -105,7 +100,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.checked.add(group);
             });
 
-            this.collection = new App.Group.Models.PaginatedGroupCollection([], {groupType: this.groupType});
+            this.collection = new App.Group.Models.PaginatedGroupCollection();
             this.collection.goTo(1, {
                 success: function () { that.render(); }
             });
@@ -181,7 +176,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.currentFilter = keyword;
             if (keyword.length > 0) {
                 $.ajax("/api/groups/?pagesize=99999&iname=" + keyword).done(function (response) {
-                    that.filteredGroups = new App.Group.Models.GroupCollection([], {groupType: this.groupType});
+                    that.filteredGroups = new App.Group.Models.GroupCollection();
                     _.each(response.nodes, function (g) {
                         var group;
                         g = App.Group.Models.GroupWithoutPoliciesModel.prototype.parse(g);

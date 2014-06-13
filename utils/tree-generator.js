@@ -48,14 +48,8 @@
             storage: 0,
             repository: 0
         },
-        potential_group_members = {
-            computer: [],
-            user: []
-        },
-        existing_groups = {
-          computer: [],
-          user: []
-        },
+        potential_group_members = [],
+        existing_groups = [],
         constructors = {},
         random_int,
         choice,
@@ -283,12 +277,11 @@
                 memberof: [],
                 policies: somePolicies('user')
             });
-        potential_group_members['user'].push(oid);
+        potential_group_members.push(oid);
         return oid;
     };
 
     constructors.group = function (path) {
-        var type = choice(['computer', 'user']);
         if (counters.group >= MAX_GROUPS) { return; }
 
         var oid = new ObjectId(),
@@ -302,7 +295,6 @@
                 source: 'gecos',
                 members: [],
                 memberof: [],
-                group_type: type,
                 policies: somePolicies('group')
             },
             count = 0,
@@ -312,9 +304,9 @@
 
         counters.group += 1;
 
-        if (existing_groups[type].length > 0 && Math.random() < GROUP_NESTED_PROBABILITY) {
+        if (existing_groups.length > 0 && Math.random() < GROUP_NESTED_PROBABILITY) {
             // This group is going to be a child of another group
-            parent_oid = choice(existing_groups[type]);
+            parent_oid = choice(existing_groups);
             group.memberof = [parent_oid];
             db.nodes.update({
                 _id: parent_oid
@@ -325,11 +317,11 @@
             });
         }
 
-        existing_groups[type].push(oid);
+        existing_groups.push(oid);
 
         // Add some nodes to this group
         for (count; count < max_nodes_to_add; count += 1) {
-            node_oid = choice(potential_group_members[type]);
+            node_oid = choice(potential_group_members);
             if (node_oid) {
                 l = db.nodes.findOne({ _id: node_oid }).memberof.length;
                 if (l < MAX_GROUPS_PER_NODE && !contains(group.members, node_oid)) {
@@ -363,7 +355,7 @@
             policies: somePolicies('computer'),
             node_chef_id: ''
         });
-        potential_group_members['computer'].push(oid);
+        potential_group_members.push(oid);
         return oid;
     };
 

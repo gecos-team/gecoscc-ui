@@ -28,7 +28,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         defaults: {
             type: "group",
-            group_type: "user",
             lock: false,
             source: "gecos",
             name: "",
@@ -54,20 +53,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.GroupCollection = Backbone.Collection.extend({
         model: Models.GroupWithoutPoliciesModel,
 
-        groupType: undefined,
-
-        initialize: function(models, options) {
-            if (!_.isUndefined(options) && _.has(options, "groupType")) {
-                this.groupType = options.groupType;
-            }
-        },
-
         url: function () {
-            if (!_.isUndefined(this.groupType)) {
-                return "/api/groups/?pagesize=99999&group_type=" + this.groupType;
-            } else {
-                return "/api/groups/?pagesize=99999";
-            }
+            return "/api/groups/?pagesize=99999";
         },
 
         parse: function (response) {
@@ -77,14 +64,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.PaginatedGroupCollection = Backbone.Paginator.requestPager.extend({
         model: Models.GroupWithoutPoliciesModel,
-
-        groupType: undefined,
-
-        initialize: function(models, options) {
-            if (!_.isUndefined(options) && _.has(options, "groupType")) {
-                this.groupType = options.groupType;
-            }
-        },
 
         paginator_core: {
             type: "GET",
@@ -103,7 +82,6 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         server_api: {
             page: function () { return this.currentPage; },
-            group_type: function () { return this.groupType; },
             pagesize: function () { return this.perPage; }
         },
 
@@ -111,6 +89,5 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             this.totalPages = response.pages;
             return response.nodes;
         }
-    })
-
+    });
 });
