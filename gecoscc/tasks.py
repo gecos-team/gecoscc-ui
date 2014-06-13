@@ -121,7 +121,10 @@ class ChefTask(Task):
             return obj
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
-            return obj[rule_type][policy_id]
+            try:
+                return obj[rule_type][policy_id]
+            except KeyError:
+                return {}
         return ValueError("The rule type should be save or policy")
 
     def get_rules_and_object(self, rule_type, obj, node, policy):
@@ -159,7 +162,7 @@ class ChefTask(Task):
             priority_obj_ui = obj_ui
             obj_ui_field = None
             if updated_by_attr not in attributes_updated_by_updated:
-                updated_updated_by = self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
+                updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, field_chef, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
@@ -226,14 +229,15 @@ class ChefTask(Task):
         except KeyError:
             updated_by = {}
         obj_id = unicode(obj['_id'])
-        if obj['type'] == 'computer':
+        obj_type = obj['type']
+        if obj_type == 'computer':
             if action == 'deleted':
                 del updated_by['computer']
             else:
                 updated_by['computer'] = obj_id
             updated = True
         else:
-            updated_by_type = updated_by.get(obj['type'], [])
+            updated_by_type = updated_by.get(obj_type, [])
             if action == 'deleted':
                 try:
                     updated_by_type.remove(obj_id)
@@ -242,15 +246,15 @@ class ChefTask(Task):
                     pass
             elif obj_id not in updated_by_type:
                 updated = True
-                if obj['type'] == 'ou':
+                if obj_type == 'ou':
                     updated_by_type.append(obj_id)
                     updated_by_type = self.order_ou_by_depth(updated_by_type)
                 else:
                     updated_by_type.append(obj_id)
             if updated_by_type:
-                updated_by[obj['type']] = updated_by_type
-            elif updated_by.get(obj['type'], None) is not None:
-                del updated_by[obj['type']]
+                updated_by[obj_type] = updated_by_type
+            else:
+                del updated_by[obj_type]
         if updated:
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
@@ -319,6 +323,8 @@ class ChefTask(Task):
         computers = self.get_related_computers(obj)
         for computer in computers:
             try:
+                if computer['node_chef_id'] != '01cca86bdea1c278e69a775a6669852c':
+                    continue
                 node = Node(computer['node_chef_id'], api)
                 if obj['type'] == 'computer' and action == 'deleted':
                     node.delete()
