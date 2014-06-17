@@ -14,7 +14,7 @@
                         <span class="fa fa-refresh"></span>
                     </button>
                 </div>
-                <div class="bootstrap-admin-panel-content dashboard">
+                <div class="bootstrap-admin-panel-content dashboard" id="computer-basic-info">
                     <form role="form">
                         <div class="row"><div class="col-sm-12">
                             <div class="well well-sm">
@@ -25,17 +25,15 @@
                                     <div class="col-sm-5">
                                         <dl>
                                             <dt>{{ gettext('Users that have logged in') }}</dt>
-                                            <dd>juan, anabel</dd> <!-- TODO this is a mockup -->
+                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd> 
                                             <dt>{{ gettext('Uptime') }}</dt>
-                                            <dd>7h 12m</dd>
+                                            <dd><%= uptime %></dd>
                                         </dl>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
-                                            <dt>{{ gettext('Last execution') }}</dt>
-                                            <dd><span class="text-warning">Hoy, 9:23:12</span></dd>
                                             <dt>{{ gettext('Manufacturer and model') }}</dt>
-                                            <dd>HP Pavilion 14-b100</dd>
+                                            <dd><%= manufacturer %> <%= product_name %></dd>
                                         </dl>
                                     </div>
                                 </div>
@@ -93,40 +91,47 @@
                 <div class="bootstrap-admin-panel-content dashboard">
                     <form role="form">
                         <div class="row">
-                            <div class="col-xs-12 col-sm-4"><div class="form-group">
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
                                 <label>{{ gettext('CPU') }}</label>
-                                <p class="form-control-static">Intel i5 4200H (2 cores)</p>
+                                <p class="form-control-static"><%= cpu %></p>
                             </div></div>
-                            <div class="col-xs-12 col-sm-4"><div class="form-group">
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
                                 <label>{{ gettext('RAM') }}</label>
-                                <p class="form-control-static">Kingston DDR3 1333 (4GB, 1 slot)</p>
-                            </div></div>
-                            <div class="col-xs-12 col-sm-4"><div class="form-group">
-                                <label>{{ gettext('Graphics card') }}</label>
-                                <p class="form-control-static">Intel HD 4600</p>
+                                <p class="form-control-static"><%= ram %></p>
                             </div></div>
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-6"><div class="form-group">
-                                <label>{{ gettext('Hard disk') }} 1</label>
-                                <p class="form-control-static mb10">Samsung 840 (250GB)</p>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%;">
-                                        <span>60% {{ gettext('used') }}</span>
-                                    </div>
-                                </div>
+                                <label>{{ gettext('Distribution') }}</label>
+                                <p class="form-control-static"><%= lsb.id %> <%= lsb.release %></p>
                             </div></div>
                             <div class="col-xs-12 col-sm-6"><div class="form-group">
-                                <label>{{ gettext('Hard disk') }} 2</label>
-                                <p class="form-control-static mb10">Seagate 7200 SATA3 (1TB)</p>
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" aria-valuenow="23" aria-valuemin="0" aria-valuemax="100" style="width: 23%;">
-                                        <span>23% {{ gettext('used') }}</span>
-                                    </div>
-                                </div>
+                                <label>{{ gettext('Kernel') }}</label>
+                                <p class="form-control-static"><%= kernel.release %> <%= kernel.version %></p>
                             </div></div>
                         </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12">
+                                <label>{{ gettext('File system') }}</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-3"><label>{{ gettext('Device') }}</label></div>
+                            <div class="col-xs-12 col-sm-3"><label>{{ gettext('Type') }}</label></div>
+                            <div class="col-xs-12 col-sm-3"><label>{{ gettext('Mount point') }}</label></div>
+                            <div class="col-xs-12 col-sm-3"><label>{{ gettext('Used') }}</label></div>
+                        </div>
+                        <% for (key in filesystem) {
+                           if (filesystem.hasOwnProperty(key)) { %>
+                        <div class="row">
+                           <div class="col-xs-12 col-sm-3"><%= key %></div>
+                           <div class="col-xs-12 col-sm-3"><% if (filesystem[key].fs_type) { %><%= filesystem[key].fs_type %><% } else { %>&nbsp;<% } %></div>
+                           <div class="col-xs-12 col-sm-3"><% if (filesystem[key].mount) { %><%= filesystem[key].mount %><% } else { %>&nbsp;<% } %></div>
+                           <div class="col-xs-12 col-sm-3"><% if (filesystem[key].percent_used) { %><%= filesystem[key].percent_used %><% } else { %>&nbsp;<% } %></div>
+                        </div>
+                        <% }} %>
                     </form>
+                    <div class="row"><div class="form-group"></div></div>
                     <div class="row"><div class="col-sm-12">
                         <div class="panel panel-default">
                             <div class="panel-heading">
@@ -138,134 +143,8 @@
                             </div>
                             <div id="collapseOne" class="panel-collapse collapse">
                                 <div class="panel-body">
-                                    <pre>[
-    {
-        "id": 0,
-        "guid": "b395e33e-336f-4dd7-a8d9-8a95b4d10e11",
-        "isActive": true,
-        "balance": "$3,156.00",
-        "picture": "http://placehold.it/32x32",
-        "age": 27,
-        "name": "Lesley Hoffman",
-        "gender": "female",
-        "company": "Klugger",
-        "email": "lesleyhoffman@klugger.com",
-        "phone": "+1 (985) 599-3545",
-        "address": "259 Conover Street, Leroy, North Dakota, 215",
-        "about": "Qui tempor ullamco ad consectetur irure incididunt commodo sint fugiat. Commodo labore culpa quis aliquip voluptate officia nisi eiusmod mollit laborum duis. Commodo voluptate proident labore duis veniam nostrud sunt eiusmod do culpa. Laboris culpa officia commodo elit consequat dolore nulla in ea in qui.\r\n",
-        "registered": "2002-12-19T01:04:45 -01:00",
-        "latitude": 31.172473,
-        "longitude": 11.874995,
-        "tags": [
-            "eiusmod",
-            "elit",
-            "consectetur",
-            "cillum",
-            "enim",
-            "consectetur",
-            "exercitation"
-        ],
-        "friends": [
-            {
-                "id": 0,
-                "name": "Betty Graham"
-            },
-            {
-                "id": 1,
-                "name": "Pittman Daniel"
-            },
-            {
-                "id": 2,
-                "name": "Lynch Montgomery"
-            }
-        ],
-        "randomArrayItem": "apple"
-    },
-    {
-        "id": 1,
-        "guid": "c6c2a0e2-15de-42c6-ade5-33416c815189",
-        "isActive": false,
-        "balance": "$1,026.00",
-        "picture": "http://placehold.it/32x32",
-        "age": 39,
-        "name": "Carroll Rowland",
-        "gender": "male",
-        "company": "Opticall",
-        "email": "carrollrowland@opticall.com",
-        "phone": "+1 (990) 410-2984",
-        "address": "812 Canal Avenue, Goldfield, Georgia, 5002",
-        "about": "Exercitation cillum Lorem aliqua deserunt irure amet exercitation velit proident id. In ad dolor ea cupidatat consequat ullamco duis. Proident mollit anim consectetur ad consectetur incididunt id laborum labore sint consequat amet. Anim ipsum deserunt ex consectetur enim adipisicing officia sit duis laborum voluptate sint.\r\n",
-        "registered": "2011-03-27T07:35:03 -02:00",
-        "latitude": -87.678871,
-        "longitude": 36.558914,
-        "tags": [
-            "qui",
-            "cupidatat",
-            "fugiat",
-            "adipisicing",
-            "elit",
-            "nisi",
-            "labore"
-        ],
-        "friends": [
-            {
-                "id": 0,
-                "name": "Tabitha Gross"
-            },
-            {
-                "id": 1,
-                "name": "Barnett Durham"
-            },
-            {
-                "id": 2,
-                "name": "Norton Cotton"
-            }
-        ],
-        "randomArrayItem": "cherry"
-    },
-    {
-        "id": 2,
-        "guid": "8e12e99e-f339-4324-811b-8ed9d2f33408",
-        "isActive": true,
-        "balance": "$3,661.00",
-        "picture": "http://placehold.it/32x32",
-        "age": 24,
-        "name": "Flora Berger",
-        "gender": "female",
-        "company": "Zillacom",
-        "email": "floraberger@zillacom.com",
-        "phone": "+1 (853) 581-3641",
-        "address": "539 Banner Avenue, Chase, North Carolina, 8821",
-        "about": "Quis anim velit adipisicing excepteur laboris veniam enim aliqua qui duis. Esse do cillum proident deserunt fugiat id dolor occaecat excepteur nostrud aute dolor eu non. Exercitation anim est aliqua eu sit. Ut duis cillum non in anim cupidatat ut proident laborum elit. Sint duis sint voluptate ea culpa est.\r\n",
-        "registered": "1998-03-17T14:40:19 -01:00",
-        "latitude": 26.425646,
-        "longitude": 146.658595,
-        "tags": [
-            "quis",
-            "esse",
-            "aute",
-            "proident",
-            "do",
-            "consequat",
-            "est"
-        ],
-        "friends": [
-            {
-                "id": 0,
-                "name": "Bass Joseph"
-            },
-            {
-                "id": 1,
-                "name": "Emily Moss"
-            },
-            {
-                "id": 2,
-                "name": "Simone Stevenson"
-            }
-        ],
-        "randomArrayItem": "apple"
-    }
-]</pre>
+                                    <pre><%= JSON.stringify(ohai) %></pre>
+</pre>
                                 </div>
                             </div>
                         </div>
