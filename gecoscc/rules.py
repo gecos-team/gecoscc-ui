@@ -112,16 +112,10 @@ RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_fold
 
 
 def users_list(obj_ui, obj, node, field_chef, *kwargs):
-    users = deepcopy(node.attributes.get_dotted(field_chef))
-    obj_ui['username'] = obj['name']
-    update = False
-    for i, user in enumerate(users):
-        if user['username'] == obj['name']:
-            users[i] = obj_ui
-            update = True
-            break
-    if not update:
-        users.append(obj_ui)
+    users = deepcopy(node.attributes.get_dotted(field_chef)) or {}  # TODO: Quitarlo si funciona
+    node_obj = users[obj['name']].to_dict()
+    node_obj.update(obj_ui)
+    users[obj['name']] = node_obj
     return users
 
 
@@ -201,8 +195,12 @@ def get_generic_rules(node, policy):
 def get_rules(obj_type, rule_type, node, policy):
     rules = get_specific_rules(obj_type, rule_type, policy['slug'])
     if not rules:
-        if obj_type == 'user':
+        if is_user_policy(policy['path']):
             rules = get_generic_user_rules(node, policy)
         else:
             rules = get_generic_rules(node, policy)
     return rules
+
+
+def is_user_policy(policy_path):
+    return 'users_mgmt' in policy_path

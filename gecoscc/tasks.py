@@ -13,7 +13,7 @@ from jsonschema import validate
 
 
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.rules import get_rules
+from gecoscc.rules import get_rules, is_user_policy
 from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug,
@@ -72,6 +72,21 @@ class ChefTask(Task):
             self.get_related_computers_of_computer(computer,
                                                    related_computers,
                                                    related_objects)
+
+        users = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(ou['_id']),
+                                    'type': 'user'})
+        for user in users:
+            self.get_related_computers_of_user(user,
+                                               related_computers,
+                                               related_objects)
+
+        groups = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(ou['_id']),
+                                     'type': 'group'})
+        for group in groups:
+            self.get_related_computers_of_group(group,
+                                                related_computers,
+                                                related_objects)
+
         return related_computers
 
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
@@ -89,6 +104,7 @@ class ChefTask(Task):
         user_computers = self.db.nodes.find({'_id': {'$in': obj['computers']}})
         for computer in user_computers:
             if computer not in related_computers:
+                computer['user'] = obj
                 related_computers.append(computer)
         return related_computers
 
@@ -158,16 +174,18 @@ class ChefTask(Task):
         attributes_updated_by_updated = []
         for field_chef, field_ui in rules.items():
             job_attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
-            updated_by_attr = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
+            updated_by_attr = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
             priority_obj_ui = obj_ui
             obj_ui_field = None
             if updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
-            priority_obj = self.priority_object(node, field_chef, obj, action)
+            priority_obj = self.priority_object(node, updated_by_attr, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
             if priority_obj == obj or action == 'deleted':
                 if callable(field_ui):
+                    if is_user_policy(field_chef):
+                        priority_obj = computer['user']
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
                 else:
                     obj_ui_field = priority_obj_ui.get(field_ui, None)
@@ -196,10 +214,20 @@ class ChefTask(Task):
                     return node
         return {}
 
-    def priority_object(self, node, field_chef, obj, action):
+    def get_updated_by_fieldname(self, field_chef, policy, obj, computer):
+        updated_path = '.'.join(field_chef.split('.')[:3])
+        if is_user_policy(field_chef):
+            if obj['type'] != 'user':
+                user = computer['user']
+            else:
+                user = obj
+            updated_path += '.users.' + user['name']
+        updated_path += '.updated_by'
+        return updated_path
+
+    def priority_object(self, node, updated_by_fieldname, obj, action):
         if obj['type'] in ['computer', 'user'] and action != 'deleted':
             return obj
-        updated_by_fieldname = '.'.join(field_chef.split('.')[:3]) + '.updated_by'
         try:
             updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
         except KeyError:
@@ -215,7 +243,8 @@ class ChefTask(Task):
             if action != 'deleted' or unicode(obj.get('_id')) != updated_by['computer']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
         if not priority_object and updated_by.get('user', None):
-            priority_object = self.get_first_exists_node(updated_by.get('user', None), obj, action)
+            if action != 'deleted' or unicode(obj.get('_id')) != updated_by['user']:
+                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
         if not priority_object and updated_by.get('group', None):
             priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
         if not priority_object and updated_by.get('ou', None):
@@ -230,13 +259,13 @@ class ChefTask(Task):
             updated_by = {}
         obj_id = unicode(obj['_id'])
         obj_type = obj['type']
-        if obj_type == 'computer':
+        if obj_type in ['computer', 'user']:
             if action == 'deleted':
-                del updated_by['computer']
+                del updated_by[obj_type]
             else:
-                updated_by['computer'] = obj_id
+                updated_by[obj_type] = obj_id
             updated = True
-        else:
+        else:  # Ous or groups
             updated_by_type = updated_by.get(obj_type, [])
             if action == 'deleted':
                 try:
@@ -256,6 +285,13 @@ class ChefTask(Task):
             else:
                 del updated_by[obj_type]
         if updated:
+            # TODO: Remove it when the users attr is a dictionary
+            if is_user_policy(attr):
+                users_dict_path = '.'.join(attr.split('.')[:-2])
+                try:
+                    node.attributes.get_dotted(users_dict_path)
+                except KeyError:
+                    node.attributes.set_dotted(users_dict_path, {})
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
         return updated
@@ -323,8 +359,6 @@ class ChefTask(Task):
         computers = self.get_related_computers(obj)
         for computer in computers:
             try:
-                if computer['node_chef_id'] != '01cca86bdea1c278e69a775a6669852c':
-                    continue
                 node = Node(computer['node_chef_id'], api)
                 if obj['type'] == 'computer' and action == 'deleted':
                     node.delete()
@@ -332,7 +366,8 @@ class ChefTask(Task):
                     node, updated = self.update_node(user, computer, obj, objold, node, action)
                     if not updated:
                         continue
-                    self.validate_data(node, cookbook, api)
+                    # TODO: Uncomment it when the users attr is a dictionary
+                    #self.validate_data(node, cookbook, api)
                     node.save()
             except Exception as e:
                 # TODO Report this error
