@@ -33,6 +33,16 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             name: "",
             registry: "",
             family: "",
+            users: "",
+            uptime: "",
+            product_name: "",
+            manufacturer: "",
+            cpu: "",
+            ohai: "",
+            ram: "",
+            lsb: {},
+            kernel: {},
+            filesystem: {},
             policyCollection: new App.Policies.Models.PolicyCollection()
         }
     });
