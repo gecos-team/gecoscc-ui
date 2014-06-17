@@ -12,7 +12,7 @@ DEFAULT_TARGETS = ['ou', 'computer', 'group']
 POLICY_EMITTER_TARGETS = {
     'printer_can_view': ['ou', 'computer', 'group'],
     'repository_can_view': ['ou', 'computer', 'group'],
-    'storage_can_view': ['user', 'group'],
+    'storage_can_view': ['ou', 'user', 'group'],
 }
 
 POLICY_EMITTER_NAMES = {
@@ -139,7 +139,7 @@ class Command(BaseCommand):
                     del(value['properties'][ex_attr])
             path = value.pop('path')
             if 'users_mgmt' in path:
-                targets = ['user']
+                targets = ['ou', 'user', 'group']
                 title = value['title']
                 value = value['properties']['users']['items']
                 if 'required' in value and 'username' in value['required']:
