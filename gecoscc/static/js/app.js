@@ -47,6 +47,18 @@ var App;
     HomeView = Backbone.Marionette.ItemView.extend({
         template: "#home-template",
 
+        initialize: function(options) {
+            this.collection.on('sync', function() {
+             this.render();
+            }, this);
+        },
+        serializeData: function(){
+            return {
+                "success": this.collection.where({status: 'finished'}).length,
+                "error": this.collection.where({status: 'errors'}).length,
+                "total": this.collection.length
+            }
+        },
         onRender: function () {
             this.$el.find('.easyPieChart').easyPieChart({
                 animate: 1000
@@ -97,7 +109,11 @@ var App;
                 App.tree.$el
                     .find(".tree-selected")
                     .removeClass("tree-selected");
-                App.main.show(new HomeView());
+                if (_.isUndefined(App.instances.job_collection)) {
+                    App.instances.job_collection = new App.Job.Models.JobCollection();
+                    App.instances.job_collection.fetch();
+                }
+                App.main.show(new HomeView({collection: App.instances.job_collection}));
             },
 
             newRoot: function () {
