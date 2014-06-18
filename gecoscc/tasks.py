@@ -283,7 +283,7 @@ class ChefTask(Task):
                     updated_by_type.append(obj_id)
             if updated_by_type:
                 updated_by[obj_type] = updated_by_type
-            else:
+            elif obj_type in updated_by:
                 del updated_by[obj_type]
         if updated:
             # TODO: Remove it when the users attr is a dictionary
