@@ -4,7 +4,7 @@ from copy import deepcopy
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
-from gecoscc.rules import EXCLUDE_GENERIC_ATTRS
+from gecoscc.rules import EXCLUDE_GENERIC_ATTRS, is_user_policy
 from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug
 
 
@@ -138,9 +138,9 @@ class Command(BaseCommand):
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
             path = value.pop('path')
-            if 'users_mgmt' in path:
+            if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
-                title = value['title']
+                title = value['title'] + ' (User)'
                 value = value['properties']['users']['items']
                 if 'required' in value and 'username' in value['required']:
                     value['required'].pop(value['required'].index('username'))
