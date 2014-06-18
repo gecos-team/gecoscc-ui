@@ -122,7 +122,7 @@ class ChefTask(Task):
         get_realted_computers_of_type = getattr(self, 'get_related_computers_of_%s' % obj_type)
         return get_realted_computers_of_type(obj, related_computers, related_objects)
 
-    def is_adding_policy(self, obj, objold):
+    def is_updating_policies(self, obj, objold):
         new_policies = obj.get('policies', None)
         old_policies = objold.get('policies', None)
         return new_policies != old_policies
@@ -130,30 +130,15 @@ class ChefTask(Task):
     def is_updated_node(self, obj, objold):
         return obj != objold
 
-    def get_object_ui(self, rule_type, obj, policy):
+    def get_object_ui(self, rule_type, obj, node, policy):
         if obj == {}:
             return {}
         if rule_type == 'save':
+            if policy.get('is_emitter_policy', False):
+                obj = self.db.nodes.find_one({'node_chef_id': node.name})
             return obj
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
-            try:
-                return obj[rule_type][policy_id]
-            except KeyError:
-                return {}
-        return ValueError("The rule type should be save or policy")
-
-    def get_rules_and_object(self, rule_type, obj, node, policy):
-        if rule_type == 'save':
-            rules = get_rules(obj['type'], rule_type, node, policy)
-            if policy.get('is_emitter_policy', False):
-                obj = self.db.nodes.find_one({'node_chef_id': node.name})
-                if not obj:
-                    rules = {}
-            return (rules, self.get_object_ui(rule_type, obj, policy))
-        elif rule_type == 'policies':
-            policy_id = unicode(policy['_id'])
-            rules = get_rules(obj['type'], rule_type, node, policy)
             if policy.get('is_emitter_policy', False):
                 object_related_id_list = obj[rule_type][policy_id]['object_related_list']
                 object_related_list = []
@@ -162,10 +147,26 @@ class ChefTask(Task):
                     if not object_related:
                         continue
                     object_related_list.append(object_related)
-                return (rules, {'object_related_list': object_related_list,
-                                'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')})
+                return {'object_related_list': object_related_list,
+                        'type': policy['slug'].replace(POLICY_EMITTER_SUBFIX, '')}
+            else:
+                try:
+                    return obj[rule_type][policy_id]
+                except KeyError:
+                    return {}
+        return ValueError("The rule type should be save or policy")
+
+    def get_rules_and_object(self, rule_type, obj, node, policy):
+        if rule_type == 'save':
+            rules = get_rules(obj['type'], rule_type, node, policy)
+            obj = self.get_object_ui(rule_type, obj, node, policy)
+            if not obj:
+                rules = {}
+            return (rules, obj)
+        elif rule_type == 'policies':
+            rules = get_rules(obj['type'], rule_type, node, policy)
             return (rules,
-                    self.get_object_ui(rule_type, obj, policy))
+                    self.get_object_ui(rule_type, obj, node, policy))
         return ValueError("The rule type should be save or policy")
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type):
@@ -177,11 +178,11 @@ class ChefTask(Task):
             updated_by_attr = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
             priority_obj_ui = obj_ui
             obj_ui_field = None
-            if updated_by_attr not in attributes_updated_by_updated:
+            if (rule_type == 'policies' or not policy.get('is_emitter_policy', False)) and updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
             if priority_obj != obj:
-                priority_obj_ui = self.get_object_ui(rule_type, priority_obj, policy)
+                priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
             if priority_obj == obj or action == 'deleted':
                 if callable(field_ui):
                     if is_user_policy(field_chef):
@@ -328,8 +329,9 @@ class ChefTask(Task):
             return (None, False)
         elif action in ['changed', 'created']:
             if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
-                if self.is_adding_policy(obj, objold):
+                if self.is_updating_policies(obj, objold):
                     rule_type = 'policies'
+                    import ipdb; ipdb.set_trace()
                     for policy_id, action in self.get_policies(rule_type, action, obj, objold):
                         policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                         if action == 'deleted':
