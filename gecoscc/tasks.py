@@ -290,7 +290,8 @@ class ChefTask(Task):
             if is_user_policy(attr):
                 users_dict_path = '.'.join(attr.split('.')[:-2])
                 try:
-                    node.attributes.get_dotted(users_dict_path)
+                    if not node.attributes.get_dotted(users_dict_path):
+                        node.attributes.set_dotted(users_dict_path, {})
                 except KeyError:
                     node.attributes.set_dotted(users_dict_path, {})
             node.attributes.set_dotted(attr, updated_by)
@@ -331,7 +332,6 @@ class ChefTask(Task):
             if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
                 if self.is_updating_policies(obj, objold):
                     rule_type = 'policies'
-                    import ipdb; ipdb.set_trace()
                     for policy_id, action in self.get_policies(rule_type, action, obj, objold):
                         policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                         if action == 'deleted':

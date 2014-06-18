@@ -43,10 +43,11 @@ def get_object_related(obj_related, attrs=None):
 
 
 def object_related_list(objs_ui, **kwargs):
-    attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
     objs = []
-    for obj_ui in objs_ui['object_related_list']:
-        objs.append(get_object_related(obj_ui, attrs))
+    if objs_ui:
+        attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
+        for obj_ui in objs_ui['object_related_list']:
+            objs.append(get_object_related(obj_ui, attrs))
     return objs
 
 
@@ -134,6 +135,7 @@ RULES_NODE = {
             'network_res': RULES_NETWORK_RES,
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
+            'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
         },
     },
     'ou': {
@@ -141,6 +143,7 @@ RULES_NODE = {
         'policies': {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
+            'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
         },
     },
     'group': {
