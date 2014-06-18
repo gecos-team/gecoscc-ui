@@ -114,9 +114,14 @@ RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_fold
 
 def users_list(obj_ui, obj, node, field_chef, *kwargs):
     users = deepcopy(node.attributes.get_dotted(field_chef)) or {}  # TODO: Quitarlo si funciona
-    node_obj = users[obj['name']].to_dict()
-    node_obj.update(obj_ui)
-    users[obj['name']] = node_obj
+    username = obj['name']
+    if username in users:
+        node_obj = users[username].to_dict()
+        if obj_ui:
+            node_obj.update(obj_ui)
+            users[username] = node_obj
+        else:
+            del users[username]
     return users
 
 
