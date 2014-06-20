@@ -177,6 +177,10 @@ class ChefTask(Task):
         attributes_jobs_updated = []
         attributes_updated_by_updated = []
         for field_chef, field_ui in rules.items():
+            if is_user_policy(field_chef) and 'user' not in computer:
+                continue
+            elif not is_user_policy(field_chef) and 'user' in computer:
+                continue
             job_attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             updated_by_attr = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
             priority_obj_ui = obj_ui
