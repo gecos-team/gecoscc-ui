@@ -46,6 +46,11 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
 # mongo utils
 
 
+def get_filter_ous_from_path(path):
+    ou_ids = [ObjectId(ou_id) for ou_id in path.split(',') if ou_id != 'root']
+    return {'_id': {'$in': ou_ids}}
+
+
 def get_filter_nodes_parents_ou(db, ou_id, item_id):
     item = db.nodes.find_one({'_id': ObjectId(item_id)})
     if item['type'] == 'ou':
@@ -173,5 +178,5 @@ def update_node(api, node_id, ou, collection_nodes):
 def register_or_updated_node(api, node_id, ou, collection_nodes):
     mongo_node = collection_nodes.find({'node_chef_id': node_id})
     if mongo_node:
-        update_node(api, node_id, ou, collection_nodes)
+        return update_node(api, node_id, ou, collection_nodes)
     return register_node(api, node_id, ou, collection_nodes)

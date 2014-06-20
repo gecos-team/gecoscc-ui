@@ -109,7 +109,7 @@ class ChefTask(Task):
         return related_computers
 
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
-        if related_objects is None and obj['type'] == 'group':
+        if related_objects is None:
             related_objects = []
 
         if related_computers is None:
@@ -123,8 +123,11 @@ class ChefTask(Task):
         return get_realted_computers_of_type(obj, related_computers, related_objects)
 
     def is_updating_policies(self, obj, objold):
-        new_policies = obj.get('policies', None)
-        old_policies = objold.get('policies', None)
+        new_policies = obj.get('policies', {})
+        if objold is None:
+            old_policies = {}
+        else:
+            old_policies = objold.get('policies', {})
         return new_policies != old_policies
 
     def is_updated_node(self, obj, objold):
@@ -355,15 +358,17 @@ class ChefTask(Task):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
-    def object_action(self, user, obj, objold=None, action=None):
+    def object_action(self, user, obj, objold=None, action=None, computers=None):
         api = get_chef_api(self.app.conf, user)
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
-        computers = self.get_related_computers(obj)
+        computers = computers or self.get_related_computers(obj)
         for computer in computers:
             try:
-                node = Node(computer['node_chef_id'], api)
+                node_chef_id = computer.get('node_chef_id', None)
+                node = Node(node_chef_id, api)
                 if obj['type'] == 'computer' and action == 'deleted':
                     node.delete()
+                    pass
                 else:
                     node, updated = self.update_node(user, computer, obj, objold, node, action)
                     if not updated:
@@ -375,103 +380,103 @@ class ChefTask(Task):
                 # TODO Report this error
                 print e
 
-    def object_created(self, user, objnew):
-        self.object_action(user, objnew, action='created')
+    def object_created(self, user, objnew, computers=None):
+        self.object_action(user, objnew, action='created', computers=computers)
 
-    def object_changed(self, user, objnew, objold):
-        self.object_action(user, objnew, objold, action='changed')
+    def object_changed(self, user, objnew, objold, computers=None):
+        self.object_action(user, objnew, objold, action='changed', computers=computers)
 
-    def object_deleted(self, user, obj):
-        self.object_action(user, obj, action='deleted')
+    def object_deleted(self, user, obj, computers=None):
+        self.object_action(user, obj, action='deleted', computers=computers)
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
 
-    def group_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def group_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Group', objnew)
 
-    def group_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def group_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Group', objnew)
 
-    def group_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def group_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Group', obj)
 
-    def user_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def user_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'User', objnew)
 
-    def user_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def user_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'User', objnew)
 
-    def user_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def user_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'User', obj)
 
-    def computer_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def computer_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Computer', objnew)
 
-    def computer_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def computer_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Computer', objnew)
 
-    def computer_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def computer_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Computer', obj)
 
-    def ou_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def ou_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'OU', objnew)
 
-    def ou_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def ou_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'OU', objnew)
 
-    def ou_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def ou_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'OU', obj)
 
-    def printer_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def printer_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Printer', objnew)
 
-    def printer_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def printer_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Printer', objnew)
 
-    def printer_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def printer_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Printer', obj)
 
-    def storage_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def storage_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Storage', objnew)
 
-    def storage_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def storage_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
-    def storage_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def storage_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Storage', obj)
 
-    def repository_created(self, user, objnew):
-        self.object_created(user, objnew)
+    def repository_created(self, user, objnew, computers=None):
+        self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Storage', objnew)
 
-    def repository_changed(self, user, objnew, objold):
-        self.object_changed(user, objnew, objold)
+    def repository_changed(self, user, objnew, objold, computers=None):
+        self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
-    def repository_deleted(self, user, obj):
-        self.object_deleted(user, obj)
+    def repository_deleted(self, user, obj, computers=None):
+        self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Storage', obj)
 
-    def adminuser_created(self, user, objnew):
+    def adminuser_created(self, user, objnew, computers=None):
         api = get_chef_api(self.app.conf, user)
         create_chef_admin_user(api, self.app.conf, objnew['username'], objnew['plain_password'])
         self.log_action('created', 'AdminUser', objnew)
@@ -491,12 +496,12 @@ def task_test(value):
 
 
 @task(base=ChefTask)
-def object_created(user, objtype, obj):
+def object_created(user, objtype, obj, computers=None):
     self = object_created
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
-        return func(user, obj)
+        return func(user, obj, computers=computers)
 
     else:
         self.log('error', 'The method {0}_created does not exist'.format(
@@ -504,11 +509,11 @@ def object_created(user, objtype, obj):
 
 
 @task(base=ChefTask)
-def object_changed(user, objtype, objnew, objold):
+def object_changed(user, objtype, objnew, objold, computers=None):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
-        return func(user, objnew, objold)
+        return func(user, objnew, objold, computers=computers)
 
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
@@ -516,12 +521,12 @@ def object_changed(user, objtype, objnew, objold):
 
 
 @task(base=ChefTask)
-def object_deleted(user, objtype, obj):
+def object_deleted(user, objtype, obj, computers=None):
     self = object_changed
 
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
-        return func(user, obj)
+        return func(user, obj, computers=computers)
 
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
