@@ -368,7 +368,6 @@ class ChefTask(Task):
                 node = Node(node_chef_id, api)
                 if obj['type'] == 'computer' and action == 'deleted':
                     node.delete()
-                    pass
                 else:
                     node, updated = self.update_node(user, computer, obj, objold, node, action)
                     if not updated:
