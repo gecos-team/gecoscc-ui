@@ -29,7 +29,7 @@ class ComputerResource(TreeLeafResourcePaginated):
         computer_node = ChefNode(result['node_chef_id'], api)
         ohai = computer_node.attributes.to_dict()
         result.update({'ohai': ohai,
-                       'users': ','.join([i['username'] for i in ohai['ohai_gecos'].get('users', [])]),
+                       'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
                        'uptime': ohai['uptime'],
                        'cpu': '%s %s' % (ohai['cpu']['0']['vendor_id'], ohai['cpu']['0']['model_name']),
                        'product_name': ohai['dmi']['system']['product_name'],
@@ -40,6 +40,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                        'filesystem': ohai.get('filesystem', {}),
                        })
         return result
+
 
 @resource(path='/computers/ohai/{oid}/',
           description='Computers public API',
@@ -61,6 +62,5 @@ class ComputerOahiResource(TreeLeafResourcePaginated):
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
         node = self.collection.find_one(collection_filter)
-
 
         return computer_node.attributes.to_dict()
