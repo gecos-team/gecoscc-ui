@@ -42,7 +42,13 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     });
 
     Models.JobCollection = Backbone.Collection.extend({
-        model: Models.JobModel
+        model: Models.JobModel,
+        url: function () {
+            return "/api/jobs/";
+        },
+        parse: function (response) {
+            return response.jobs;
+        }
     });
 });
 

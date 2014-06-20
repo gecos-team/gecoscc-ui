@@ -40,27 +40,3 @@ class ComputerResource(TreeLeafResourcePaginated):
                        'filesystem': ohai.get('filesystem', {}),
                        })
         return result
-
-
-@resource(path='/computers/ohai/{oid}/',
-          description='Computers public API',
-          validators=(api_login_required,))
-class ComputerOahiResource(TreeLeafResourcePaginated):
-
-    schema_collection = Computers
-    schema_detail = Computer
-    objtype = 'computer'
-
-    mongo_filter = {
-        'type': objtype,
-    }
-    collection_name = 'nodes'
-
-    def get(self):
-        oid = self.request.matchdict['oid']
-        collection_filter = self.get_oid_filter(oid)
-        collection_filter.update(self.get_object_filter())
-        collection_filter.update(self.mongo_filter)
-        node = self.collection.find_one(collection_filter)
-
-        return computer_node.attributes.to_dict()
