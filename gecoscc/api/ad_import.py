@@ -11,7 +11,9 @@ from gzip import GzipFile
 from xml.dom import minidom
 from StringIO import StringIO
 
+from bson import ObjectId
 from chef import Node
+from chef import Client
 from cornice.resource import resource
 from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.threadlocal import get_current_registry
@@ -34,6 +36,9 @@ class ADImport(BaseAPI):
       importSchema (list of Object): Import schema from AD XML dump.
 
     """
+    RECIPE_NAME_OHAI_GECOS = 'recipe[ohai-gecos]'
+    RECIPE_NAME_GECOS_WS_MGMT = 'recipe[gecos_ws_mgmt]'
+
     mongoCollectionName = 'nodes'
     importSchema = [
         {
@@ -131,12 +136,7 @@ class ADImport(BaseAPI):
                     'mongo': 'adMemberOf'
                 }
             ],
-            'staticAttributes': [
-                {
-                    'key': 'group_type',
-                    'value': 'ad'
-                }
-            ]
+            'staticAttributes': []
         },
         {
             'adName': 'Computer',
@@ -246,7 +246,7 @@ class ADImport(BaseAPI):
         }
     ]
 
-    def _fixDuplicateName(self, mongoObjects, objSchema, newObj):
+    def _fixDuplicateName(self, mongoObjects, mongoType, newObj):
         """
         Fix duplicate name append an _counter to the name
         """
@@ -257,20 +257,23 @@ class ADImport(BaseAPI):
         else:
             nombreBase = newObj['name']
 
-        for mongoObject in mongoObjects.values():
-            m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
-            if m and m.group(2):
-                nuevoContador = int(m.group(2)[1:]) + 1
-                if (nuevoContador > contador):
-                    contador = nuevoContador
-            elif m and 1 > contador:
-                contador = 1
+        # Each object to import
+        if mongoObjects is not None:
+            for mongoObject in mongoObjects.values():
+                m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
+                if m and m.group(2):
+                    nuevoContador = int(m.group(2)[1:]) + 1
+                    if (nuevoContador > contador):
+                        contador = nuevoContador
+                elif m and 1 > contador:
+                    contador = 1
 
+        # Each object already in database
         collection = self.request.db[self.mongoCollectionName].find({
             'name': {
                 '$regex': u'{0}(_\d+)?'.format(nombreBase)
             },
-            'type': objSchema['mongoType']}, {
+            'type': mongoType}, {
             'name': 1
         })
         for mongoObject in collection:
@@ -294,13 +297,21 @@ class ADImport(BaseAPI):
 
             # Update MONGODB object with ACTIVE DIRECTORY attributes
             for attrib in objSchema['attributes']:
-                if attrib['mongo'] != 'name' and adObj.hasAttribute(attrib['ad']): #TODO: Proper update the object name
-                    mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                if attrib['mongo'] != 'name': #TODO: Proper update the object name
+                    if adObj.hasAttribute(attrib['ad']):
+                        mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                    else:
+                        elements = adObj.getElementsByTagName(attrib['ad'])
+                        if elements.length > 0:
+                            mongoObj[attrib['mongo']] = []
+                            items = elements[0].getElementsByTagName('Item')
+                            for item in items:
+                                mongoObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             for attrib in objSchema['staticAttributes']:
                 if attrib['key'] not in mongoObj.keys():
                     mongoObj[attrib['key']] = attrib['value']
 
-            # self._fixDuplicateName(mongoObjects, objSchema, mongoObj)
+            # self._fixDuplicateName(mongoObjects, objSchema['mongoType'], mongoObj)
 
             return mongoObj
 
@@ -314,6 +325,13 @@ class ADImport(BaseAPI):
             for attrib in objSchema['attributes']:
                 if adObj.hasAttribute(attrib['ad']):
                     newObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                else:
+                    elements = adObj.getElementsByTagName(attrib['ad'])
+                    if elements.length > 0:
+                        newObj[attrib['mongo']] = []
+                        items = elements[0].getElementsByTagName('Item')
+                        for item in items:
+                            newObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             # Add static attributes
             for attrib in objSchema['staticAttributes']:
                 newObj[attrib['key']] = attrib['value']
@@ -324,7 +342,7 @@ class ADImport(BaseAPI):
             newObj['lock'] = 'false'
             newObj['policies'] = {}  # TODO: Get the proper policies
 
-            self._fixDuplicateName(mongoObjects, objSchema, newObj)
+            self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj)
 
             # Save the new object
             return newObj
@@ -337,11 +355,23 @@ class ADImport(BaseAPI):
             return new_object(self, rootOU, mongoObjects, objSchema, adObj)
 
     def _getRootOU(self, ouSchema, xmlDomain):
-        filterRootOU = {
-            'path': 'root',
-            'type': ouSchema['mongoType']
-        }
-        rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        # Get already exists root OU
+        rootOUID = self.request.POST['rootOU']
+        rootOU = None
+        if rootOUID not in [None, '', 'root']:
+            filterRootOU = {
+                '_id': ObjectId(rootOUID),
+                'type': ouSchema['mongoType']
+            }
+            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        if rootOU is None:
+            filterRootOU = {
+                'path': 'root',
+                'type': ouSchema['mongoType']
+            }
+            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+
+        # Save changes to root OU
         newRootOU = {
             'name': xmlDomain.attributes['Name'].value,
             'extra': xmlDomain.attributes['DistinguishedName'].value,
@@ -358,7 +388,8 @@ class ADImport(BaseAPI):
             return newRootOU
         else:
             for key,value in newRootOU.items():
-                rootOU[key] = value
+                if key not in ['name', 'path']: #TODO: Proper update the object name
+                    rootOU[key] = value
             self.request.db[self.mongoCollectionName].update(filterRootOU, rootOU)
             return rootOU
 
@@ -395,7 +426,6 @@ class ADImport(BaseAPI):
 
     def post(self):
         try:
-
             # Read GZIP data
             postedfile = self.request.POST['media'].file
             xmldata = GzipFile('', 'r', 9, StringIO(postedfile.read())).read()
@@ -433,7 +463,7 @@ class ADImport(BaseAPI):
 
                 # Find parent
                 mongoObjectParent = mongoObjects[nodePath]
-                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
+                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': ObjectId(mongoObjectParent['_id'])})
                 path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
                 mongoObject['path'] = path
                 # Save mongoObject
@@ -464,10 +494,7 @@ class ADImport(BaseAPI):
                         del mongoObject['adPrimaryGroup']
                         updateMongoObject = True
                     if 'adMemberOf' in mongoObject.keys() and mongoObject['adMemberOf']:
-                        groups = mongoObject['adMemberOf'].split(' CN=')
-                        if len(groups) > 1:
-                            groups = [groups[0]] + ['CN=%s' % group for i, group in enumerate(groups) if i != 0]
-                        for group in groups:
+                        for group in mongoObject['adMemberOf']:
                             mongoObject['memberof'].append(mongoObjects[group]['_id'])
                         del mongoObject['adMemberOf']
                         updateMongoObject = True
@@ -475,8 +502,19 @@ class ADImport(BaseAPI):
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
                     chef_server_node = Node(mongoObject['name'], api=chef_server_api)
-                    if not chef_server_node.exists:
-                        chef_server_node.save()
+                    ohai_gecos_in_runlist = self.RECIPE_NAME_OHAI_GECOS in chef_server_node.run_list
+                    gecos_ws_mgmt_in_runlist = self.RECIPE_NAME_GECOS_WS_MGMT in chef_server_node.run_list
+                    if not ohai_gecos_in_runlist and not gecos_ws_mgmt_in_runlist:
+                        chef_server_node.run_list.append(self.RECIPE_NAME_OHAI_GECOS)
+                        chef_server_node.run_list.append(self.RECIPE_NAME_GECOS_WS_MGMT)
+                    elif not ohai_gecos_in_runlist and gecos_ws_mgmt_in_runlist:
+                        chef_server_node.run_list.insert(chef_server_node.run_list.index(self.RECIPE_NAME_GECOS_WS_MGMT), self.RECIPE_NAME_OHAI_GECOS)
+                    elif ohai_gecos_in_runlist and not gecos_ws_mgmt_in_runlist:
+                        chef_server_node.run_list.insert(chef_server_node.run_list.index(self.RECIPE_NAME_OHAI_GECOS) + 1, self.RECIPE_NAME_GECOS_WS_MGMT)
+                    chef_server_node.save()
+                    chef_server_client = Client(mongoObject['name'], api=chef_server_api)
+                    if not chef_server_client.exists:
+                        chef_server_client.save()
                     mongoObject['node_chef_id'] = mongoObject['name']
 
                 # Save changes
