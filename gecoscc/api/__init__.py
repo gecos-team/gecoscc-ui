@@ -10,6 +10,7 @@ from webob.multidict import MultiDict
 
 from gecoscc.tasks import object_created, object_changed, object_deleted
 from gecoscc.socks import invalidate_change, invalidate_delete
+from gecoscc.utils import get_computer_of_user
 
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
@@ -311,6 +312,10 @@ class TreeResourcePaginated(ResourcePaginated):
 
         return True
 
+# TODO: Only have to extends this class the ComputerResource and UserResource
+# Now there are another class that extends it. I don't make it, because this
+# could break another things
+
 
 class TreeLeafResourcePaginated(TreeResourcePaginated):
 
@@ -335,8 +340,14 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         result = result and self.check_memberof_integrity(obj)
         return result
 
-    def post_save(self, obj, old_obj=None):
+    def computers_to_group(self, obj):
+        if obj['type'] == 'computer':
+            return [obj]
+        elif obj['type'] == 'user':
+            return get_computer_of_user(self.collection, obj)
+        raise ValueError("The object type should be computer or user")
 
+    def post_save(self, obj, old_obj=None):
         if self.request.method == 'DELETE':
             newmemberof = []
         else:
@@ -357,6 +368,11 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     'members': obj['_id']
                 }
             }, multi=False)
+            group = self.request.db.nodes.find_one({'_id': group_id})
+            group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
+            group_without_policies['policies'] = {}
+            computers = self.computers_to_group(obj)
+            object_changed.delay(self.request.user, 'group', group_without_policies, group, computers)
 
         for group_id in adds:
 
@@ -368,5 +384,8 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     'members': obj['_id']
                 }
             }, multi=False)
+            group = self.request.db.nodes.find_one({'_id': group_id})
+            computers = self.computers_to_group(obj)
+            object_changed.delay(self.request.user, 'group', group, {}, computers)
 
         return super(TreeLeafResourcePaginated, self).post_save(obj, old_obj)

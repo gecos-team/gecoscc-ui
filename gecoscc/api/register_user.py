@@ -3,7 +3,7 @@ from cornice.resource import resource
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.tasks import object_changed
-from gecoscc.utils import get_filter_ous_from_path
+from gecoscc.utils import get_filter_ous_from_path, get_computer_of_user
 
 
 @resource(path='/register/user/',
@@ -13,19 +13,9 @@ class RegisterUserResource(BaseAPI):
     schema_detail = MongoNode
     collection_name = 'nodes'
 
-    def get_computer_from_user(self, user):
-        computers = []
-        for comp_id in user['computers']:
-            computer = self.collection.find_one({'_id': comp_id})
-            if not computer:
-                continue
-            computer['user'] = user
-            computers.append(computer)
-        return computers
-
     def apply_policies_to_computer(self, user):
         ous = self.collection.find(get_filter_ous_from_path(user['path']))
-        computers = self.get_computer_from_user(user)
+        computers = get_computer_of_user(self.collection, user)
         for ou in ous:
             object_changed.delay(self.request.user, 'ou', ou, {}, computers=computers)
         object_changed.delay(self.request.user, 'user', user, {}, computers=computers)

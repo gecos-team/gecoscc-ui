@@ -16,7 +16,7 @@ from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy
 from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            get_cookbook, get_filter_nodes_belonging_ou,
-                           emiter_police_slug,
+                           emiter_police_slug, get_computer_of_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -59,7 +59,7 @@ class ChefTask(Task):
             return related_computers
         for node_id in obj['members']:
             node = self.db.nodes.find_one({'_id': node_id})
-            if node not in related_objects:
+            if node and node not in related_objects:
                 self.get_related_computers(node, related_computers, related_objects)
         return related_computers
 
@@ -101,12 +101,7 @@ class ChefTask(Task):
     def get_related_computers_of_user(self, obj, related_computers, related_objects):
         if self.walking_here(obj, related_objects):
             return related_computers
-        user_computers = self.db.nodes.find({'_id': {'$in': obj['computers']}})
-        for computer in user_computers:
-            if computer not in related_computers:
-                computer['user'] = obj
-                related_computers.append(computer)
-        return related_computers
+        return get_computer_of_user(self.db.nodes, obj, related_computers)
 
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
         if related_objects is None:
@@ -124,11 +119,14 @@ class ChefTask(Task):
 
     def is_updating_policies(self, obj, objold):
         new_policies = obj.get('policies', {})
+        new_memberof = obj.get('memberof', {})
         if objold is None:
             old_policies = {}
+            old_memberof = {}
         else:
             old_policies = objold.get('policies', {})
-        return new_policies != old_policies
+            old_memberof = objold.get('memberof', {})
+        return new_policies != old_policies or new_memberof != old_memberof
 
     def is_updated_node(self, obj, objold):
         return obj != objold
@@ -324,12 +322,12 @@ class ChefTask(Task):
         node.attributes.set_dotted(attr, job_ids)
 
     def get_policies(self, rule_type, action, obj, objold):
-        policies_add = [(policy_id, action) for policy_id in obj[rule_type].keys()]
+        policies_apply = [(policy_id, action) for policy_id in obj[rule_type].keys()]
         if not objold:
-            return policies_add
+            return policies_apply
         policies_delete = set(objold[rule_type].keys()) - set(obj[rule_type].keys())
         policies_delete = [(policy_id, 'deleted') for policy_id in policies_delete]
-        return policies_add + policies_delete
+        return policies_apply + policies_delete
 
     def update_node(self, user, computer, obj, objold, node, action):
         updated = False
@@ -377,7 +375,7 @@ class ChefTask(Task):
                     if not updated:
                         continue
                     # TODO: Uncomment it when the users attr is a dictionary
-                    #self.validate_data(node, cookbook, api)
+                    # self.validate_data(node, cookbook, api)
                     node.save()
             except Exception as e:
                 # TODO Report this error

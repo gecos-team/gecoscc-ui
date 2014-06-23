@@ -46,6 +46,17 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
 # mongo utils
 
 
+def get_computer_of_user(collection_nodes, user, related_computers=None):
+    if related_computers is None:
+        related_computers = []
+    user_computers = collection_nodes.find({'_id': {'$in': user['computers']}})
+    for computer in user_computers:
+        if computer not in related_computers:
+            computer['user'] = user
+            related_computers.append(computer)
+    return related_computers
+
+
 def get_filter_ous_from_path(path):
     ou_ids = [ObjectId(ou_id) for ou_id in path.split(',') if ou_id != 'root']
     return {'_id': {'$in': ou_ids}}
