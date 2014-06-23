@@ -13,11 +13,16 @@ class RegisterUserResource(BaseAPI):
     schema_detail = MongoNode
     collection_name = 'nodes'
 
-    def apply_policies_to_computer(self, user):
-        ous = self.collection.find(get_filter_ous_from_path(user['path']))
+    def apply_policies_to_user(self, user):
         computers = get_computer_of_user(self.collection, user)
+        if not computers:
+            return
+        ous = self.collection.find(get_filter_ous_from_path(user['path']))
         for ou in ous:
             object_changed.delay(self.request.user, 'ou', ou, {}, computers=computers)
+        groups = self.collection.find({'_id': {'$in': user.get('memberof', [])}})
+        for group in groups:
+            object_changed.delay(self.request.user, 'group', group, {}, computers=computers)
         object_changed.delay(self.request.user, 'user', user, {}, computers=computers)
 
     def put(self):
@@ -50,7 +55,7 @@ class RegisterUserResource(BaseAPI):
                 users_recalculate_policies.append(user)
 
         for user in users_recalculate_policies:
-            self.apply_policies_to_computer(user)
+            self.apply_policies_to_user(user)
 
         if users_does_not_find:
             return {'ok': False,
