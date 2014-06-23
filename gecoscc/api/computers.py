@@ -1,3 +1,5 @@
+import urllib2
+
 from cornice.resource import resource
 from chef import Node as ChefNode
 from gecoscc.utils import get_chef_api
@@ -26,17 +28,22 @@ class ComputerResource(TreeLeafResourcePaginated):
     def get(self):
         result = super(ComputerResource, self).get()
         api = get_chef_api(self.request.registry.settings, self.request.user)
-        computer_node = ChefNode(result['node_chef_id'], api)
-        ohai = computer_node.attributes.to_dict()
-        result.update({'ohai': ohai,
-                       'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
-                       'uptime': ohai['uptime'],
-                       'cpu': '%s %s' % (ohai['cpu']['0']['vendor_id'], ohai['cpu']['0']['model_name']),
-                       'product_name': ohai['dmi']['system']['product_name'],
-                       'manufacturer': ohai['dmi']['system']['manufacturer'],
-                       'ram': ohai['dmi']['processor'].get('size', ''),
-                       'lsb': ohai.get('lsb', {}),
-                       'kernel': ohai.get('kernel', {}),
-                       'filesystem': ohai.get('filesystem', {}),
-                       })
+        try:
+            computer_node = ChefNode(result['node_chef_id'], api)
+            ohai = computer_node.attributes.to_dict()
+            cpu = ohai.get('cpu', {}).get('0', {})
+            dmi = ohai.get('dmi', {})
+            result.update({'ohai': ohai,
+                           'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
+                           'uptime': ohai.get('uptime', ''),
+                           'cpu': '%s %s' % (cpu.geT('vendor_id', ''), cpu.get('model_name', '')),
+                           'product_name': dmi.get('system', {}).get('product_name', ''),
+                           'manufacturer': dmi.get('system', {}).get('manufacturer', ''),
+                           'ram': dmi.get('processor', {}).get('size', ''),
+                           'lsb': ohai.get('lsb', {}),
+                           'kernel': ohai.get('kernel', {}),
+                           'filesystem': ohai.get('filesystem', {}),
+                           })
+        except urllib2.URLError:
+            pass
         return result
