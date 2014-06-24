@@ -496,14 +496,20 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     parent = _.last(data.path.split(','));
 
                 node = tree.first({ strategy: 'breadth' }, function (n) {
-                    return n.model.id === parent;
+                    return n.model.id === id;
                 });
-                node = node.model.paginatedChildren.get(id);
+                if (node.model.id != id && _.has(node.model, "paginatedChildren")) {
+                    node = node.model.paginatedChildren.get(id);
+                }
                 if (_.isUndefined(node)) {
                     // Maybe the node is not in the loaded page
                     return;
                 }
-                node.set("name", data.name);
+                if (_.has(node, "set")) {
+                    node.set("name", data.name);
+                } else if (_.has(node.model, "name")) {
+                    node.model.name = data.name;
+                }
 
                 if (!silent) { that.trigger("change"); }
             });
