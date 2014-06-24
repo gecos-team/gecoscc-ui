@@ -8,6 +8,7 @@ from cornice.resource import resource
 from gecoscc.api import BaseAPI
 from gecoscc.models import Job
 from gecoscc.utils import get_chef_api
+from gecoscc.socks import invalidate_jobs
 
 from pyramid.threadlocal import get_current_registry
 
@@ -43,11 +44,13 @@ class ChefStatusResource(BaseAPI):
                 self.collection.update({'_id': job['_id']},
                                        {'$set': {'status': 'finished',
                                                  'last_update': datetime.datetime.now()}})
+                invalidate_jobs(self.request)
             else:
                 self.collection.update({'_id': job['_id']},
                                        {'$set': {'status': 'errors',
                                                  'message': job_status.get('message', 'Error'),
                                                  'last_update': datetime.datetime.now()}})
+                invalidate_jobs(self.request)
         node.attributes.set_dotted('job_status', {})
         node.save()
         return {'ok': True}

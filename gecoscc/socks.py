@@ -20,3 +20,11 @@ def invalidate_delete(request, schema_detail, objtype, obj):
         'action': 'delete',
         'object': schema_detail().serialize(obj)
     }))
+
+
+def invalidate_jobs(request):
+    manager = get_manager(request)
+    manager.broadcast(json.dumps({
+        'action': 'jobs',
+        'object': None
+    }))

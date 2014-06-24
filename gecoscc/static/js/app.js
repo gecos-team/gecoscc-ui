@@ -432,4 +432,7 @@ var App;
         App.instances.cache.drop(obj._id);
         App.trigger('action_delete', obj);
     });
+    App.instances.message_manager.bind('jobs', function(obj) {
+        App.instances.job_collection.fetch();
+    });
 }(Backbone, jQuery, _, gettext, MessageManager));
