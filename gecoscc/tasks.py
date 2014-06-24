@@ -92,11 +92,17 @@ class ChefTask(Task):
 
         return related_computers
 
+    def get_policy_emiter_id(self, obj):
+        return self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
+
+    def get_object_related_list(self, obj):
+        policy_id = unicode(self.get_policy_emiter_id(obj))
+        return self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
         if self.walking_here(obj, related_objects):
             return related_computers
-        policy_id = unicode(self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id'])
-        object_related_list = self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+        object_related_list = self.get_object_related_list(obj)
         for object_related in object_related_list:
             self.get_related_computers(object_related, related_computers, related_objects)
         return related_computers
@@ -385,11 +391,29 @@ class ChefTask(Task):
     def object_changed(self, user, objnew, objold, computers=None):
         self.object_action(user, objnew, objold, action='changed', computers=computers)
 
-    def object_deleted(self, user, obj, computers=None):
+    def object_deleted(self, user, obj):
         obj_without_policies = deepcopy(obj)
         obj_without_policies['policies'] = {}
         object_changed = getattr(self, '%s_changed' % obj['type'])
         object_changed(user, obj_without_policies, obj)
+
+    def object_emiter_deleted(self, user, obj):
+        obj_id = unicode(obj['_id'])
+        policy_id = unicode(self.get_policy_emiter_id(obj))
+        object_related_list = self.get_object_related_list(obj)
+        for obj_related in object_related_list:
+            obj_old_related = deepcopy(obj_related)
+            if not obj_related['type'] == 'storage':
+                object_related_list = obj_related['policies'][policy_id]['object_related_list']
+                if obj_id in object_related_list:
+                    object_related_list.remove(obj_id)
+                    if object_related_list:
+                        self.db.nodes.update({'_id': obj_related['_id']}, {'$set': {'policies.%s.object_related_list' % policy_id: object_related_list}})
+                    else:
+                        self.db.nodes.update({'_id': obj_related['_id']}, {'$unset': {'policies.%s' % policy_id: ""}})
+                        obj_related = self.db.nodes.find_one({'_id': obj_related['_id']})
+                    node_changed_function = getattr(self, '%s_changed' % obj_related['type'])
+                    node_changed_function(user, obj_related, obj_old_related)
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
@@ -460,8 +484,8 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Printer', objnew)
 
-    def printer_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def printer_deleted(self, user, obj):
+        self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Printer', obj)
 
     def storage_created(self, user, objnew, computers=None):
@@ -472,8 +496,8 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
-    def storage_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def storage_deleted(self, user, obj):
+        self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
 
     def repository_created(self, user, objnew, computers=None):
@@ -484,8 +508,8 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
-    def repository_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def repository_deleted(self, user, obj):
+        self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
 
     def adminuser_created(self, user, objnew, computers=None):
