@@ -463,7 +463,7 @@ class ADImport(BaseAPI):
 
                 # Find parent
                 mongoObjectParent = mongoObjects[nodePath]
-                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': ObjectId(mongoObjectParent['_id'])})
+                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
                 path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
                 mongoObject['path'] = path
                 # Save mongoObject
