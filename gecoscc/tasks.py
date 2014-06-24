@@ -403,17 +403,16 @@ class ChefTask(Task):
         object_related_list = self.get_object_related_list(obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
-            if not obj_related['type'] == 'storage':
-                object_related_list = obj_related['policies'][policy_id]['object_related_list']
-                if obj_id in object_related_list:
-                    object_related_list.remove(obj_id)
-                    if object_related_list:
-                        self.db.nodes.update({'_id': obj_related['_id']}, {'$set': {'policies.%s.object_related_list' % policy_id: object_related_list}})
-                    else:
-                        self.db.nodes.update({'_id': obj_related['_id']}, {'$unset': {'policies.%s' % policy_id: ""}})
-                        obj_related = self.db.nodes.find_one({'_id': obj_related['_id']})
-                    node_changed_function = getattr(self, '%s_changed' % obj_related['type'])
-                    node_changed_function(user, obj_related, obj_old_related)
+            object_related_list = obj_related['policies'][policy_id]['object_related_list']
+            if obj_id in object_related_list:
+                object_related_list.remove(obj_id)
+                if object_related_list:
+                    self.db.nodes.update({'_id': obj_related['_id']}, {'$set': {'policies.%s.object_related_list' % policy_id: object_related_list}})
+                else:
+                    self.db.nodes.update({'_id': obj_related['_id']}, {'$unset': {'policies.%s' % policy_id: ""}})
+                    obj_related = self.db.nodes.find_one({'_id': obj_related['_id']})
+                node_changed_function = getattr(self, '%s_changed' % obj_related['type'])
+                node_changed_function(user, obj_related, obj_old_related)
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
