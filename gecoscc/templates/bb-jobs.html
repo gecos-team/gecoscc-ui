@@ -1,0 +1,16 @@
+            <div class="panel-heading">
+                <div class="text-muted bootstrap-admin-box-title">{{ gettext('Events and queue') }}</div>
+                <button id="maximize" class="btn btn-xs btn-default pull-right" title="{{ gettext('Maximize') }}"><span class="fa fa-plus"></span></button>
+                <button id="minimize" class="btn btn-xs btn-default pull-right hide" title="{{ gettext('Minimize') }}"><span class="fa fa-minus"></span></button>
+                <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}"><span class="fa fa-repeat"></span></button>
+            </div>
+            <div class="bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
+                <ul class="list-unstyled">
+    <% _.each(items, function (item) { %>
+<li class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> error <% } %>">
+                        {{ gettext('Change') }} <%= item.index %> - <span class="fa fa-<%= iconClasses[item.type] %> type-icon"></span> <span class="short"><%= item.node_name %></span><span class="long hide"><%= item.node_name %>: <%= item.message %></span>
+                        <span class="pull-right fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
+</li>
+    <% }); %>
+                </ul>
+            </div>

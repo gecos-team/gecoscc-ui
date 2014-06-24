@@ -27,7 +27,7 @@ var App;
 (function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
 
-    var HomeView, NewElementView, LoaderView, Router;
+    var HomeView, NewElementView, LoaderView, Router, JobsView;
 
     App = new Backbone.Marionette.Application();
 
@@ -42,6 +42,51 @@ var App;
         breadcrumb: "#breadcrumb",
         alerts: "#alerts-area",
         main: "#viewport-main"
+    });
+
+    JobsView = Backbone.Marionette.ItemView.extend({
+        template: "#jobs-template",
+
+        events: {
+            "click #maximize": "maximize",
+            "click #minimize": "minimize",
+            "click button.refresh": "refresh"
+        },
+
+        refresh: function () {
+            App.instances.job_collection.fetch();
+        },
+        maximize: function (evt) {
+            var events = this.$el.parent();
+            evt.preventDefault();
+            events.find("#maximize").addClass("hide");
+            events.find("#minimize").removeClass("hide");
+            $(document.body).append(events);
+            events.find(".short").addClass("hide");
+            events.find(".long").removeClass("hide");
+            events.addClass("maximize");
+        },
+        minimize: function(evt) {
+            var events = this.$el.parent();
+            evt.preventDefault();
+            events.find("#maximize").removeClass("hide");
+            events.find("#minimize").addClass("hide");
+            $("#sidebar").append(events);
+            events.find(".short").removeClass("hide");
+            events.find(".long").addClass("hide");
+            events.removeClass("maximize");
+        },
+        serializeData: function(){
+            return {
+                "iconClasses": App.Tree.Views.iconClasses,
+                "items": this.collection.toJSON().slice(-8)
+            }
+        },
+        initialize: function(options) {
+            this.collection.on('sync', function() {
+             this.render();
+            }, this);
+        }
     });
 
     HomeView = Backbone.Marionette.ItemView.extend({
@@ -114,6 +159,7 @@ var App;
                     App.instances.job_collection.fetch();
                 }
                 App.main.show(new HomeView({collection: App.instances.job_collection}));
+                App.events.show(new JobsView({collection: App.instances.job_collection}));
             },
 
             newRoot: function () {
