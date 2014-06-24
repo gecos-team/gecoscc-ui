@@ -21,6 +21,9 @@ from gecoscc.utils import (get_chef_api, create_chef_admin_user,
                            POLICY_EMITTER_SUBFIX)
 
 
+DELETED_POLICY_ACTION = 'deleted'
+
+
 class ChefTask(Task):
     abstract = True
 
@@ -188,7 +191,7 @@ class ChefTask(Task):
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-            if priority_obj == obj or action == 'deleted':
+            if priority_obj == obj or action == DELETED_POLICY_ACTION:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
@@ -196,9 +199,9 @@ class ChefTask(Task):
                 else:
                     obj_ui_field = priority_obj_ui.get(field_ui, None)
 
-                if obj_ui_field is None and action != 'deleted':
+                if obj_ui_field is None and action != DELETED_POLICY_ACTION:
                     continue
-                elif obj_ui_field is None and action == 'deleted':
+                elif obj_ui_field is None and action == DELETED_POLICY_ACTION:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
@@ -216,7 +219,7 @@ class ChefTask(Task):
         for mongo_id in ids:
             node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
             if node:
-                if action != 'deleted' or unicode(obj.get('_id')) != mongo_id:
+                if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
                     return node
         return {}
 
@@ -232,24 +235,24 @@ class ChefTask(Task):
         return updated_path
 
     def priority_object(self, node, updated_by_fieldname, obj, action):
-        if obj['type'] in ['computer', 'user'] and action != 'deleted':
+        if obj['type'] in ['computer', 'user'] and action != DELETED_POLICY_ACTION:
             return obj
         try:
             updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
         except KeyError:
             updated_by = {}
         if not updated_by:
-            if action == 'deleted':
+            if action == DELETED_POLICY_ACTION:
                 return {}
             else:
                 return obj
         priority_object = {}
 
         if updated_by.get('computer', None):
-            if action != 'deleted' or unicode(obj.get('_id')) != updated_by['computer']:
+            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
         if not priority_object and updated_by.get('user', None):
-            if action != 'deleted' or unicode(obj.get('_id')) != updated_by['user']:
+            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
         if not priority_object and updated_by.get('group', None):
             priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
@@ -266,14 +269,14 @@ class ChefTask(Task):
         obj_id = unicode(obj['_id'])
         obj_type = obj['type']
         if obj_type in ['computer', 'user']:
-            if action == 'deleted':
+            if action == DELETED_POLICY_ACTION:
                 del updated_by[obj_type]
             else:
                 updated_by[obj_type] = obj_id
             updated = True
         else:  # Ous or groups
             updated_by_type = updated_by.get(obj_type, [])
-            if action == 'deleted':
+            if action == DELETED_POLICY_ACTION:
                 try:
                     updated_by_type.remove(obj_id)
                     updated = True
@@ -326,35 +329,33 @@ class ChefTask(Task):
         if not objold:
             return policies_apply
         policies_delete = set(objold[rule_type].keys()) - set(obj[rule_type].keys())
-        policies_delete = [(policy_id, 'deleted') for policy_id in policies_delete]
+        policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
 
     def update_node(self, user, computer, obj, objold, node, action):
         updated = False
-        if action == 'deleted':
-            return (None, False)
-        elif action in ['changed', 'created']:
-            if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
-                if self.is_updating_policies(obj, objold):
-                    rule_type = 'policies'
-                    for policy_id, action in self.get_policies(rule_type, action, obj, objold):
-                        policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-                        if action == 'deleted':
-                            rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
-                        else:
-                            rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                        node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type)
-                        if not updated and updated_policy:
-                            updated = True
-                return (node, updated)
-            elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
-                rule_type = 'save'
-                if self.is_updated_node(obj, objold):
-                    policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
-                    rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
-                    node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type)
-                return (node, updated)
-        raise ValueError('The action should be deleted, changed or created')
+        if action not in ['changed', 'created']:
+            raise ValueError('The action should be changed or created')
+        if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            if self.is_updating_policies(obj, objold):
+                rule_type = 'policies'
+                for policy_id, action in self.get_policies(rule_type, action, obj, objold):
+                    policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                    if action == DELETED_POLICY_ACTION:
+                        rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
+                    else:
+                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
+                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type)
+                    if not updated and updated_policy:
+                        updated = True
+            return (node, updated)
+        elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
+            rule_type = 'save'
+            if self.is_updated_node(obj, objold):
+                policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
+                rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
+                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type)
+            return (node, updated)
 
     def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
@@ -368,15 +369,12 @@ class ChefTask(Task):
             try:
                 node_chef_id = computer.get('node_chef_id', None)
                 node = Node(node_chef_id, api)
-                if obj['type'] == 'computer' and action == 'deleted':
-                    node.delete()
-                else:
-                    node, updated = self.update_node(user, computer, obj, objold, node, action)
-                    if not updated:
-                        continue
-                    # TODO: Uncomment it when the users attr is a dictionary
-                    # self.validate_data(node, cookbook, api)
-                    node.save()
+                node, updated = self.update_node(user, computer, obj, objold, node, action)
+                if not updated:
+                    continue
+                # TODO: Uncomment it when the users attr is a dictionary
+                # self.validate_data(node, cookbook, api)
+                node.save()
             except Exception as e:
                 # TODO Report this error
                 print e
@@ -388,7 +386,10 @@ class ChefTask(Task):
         self.object_action(user, objnew, objold, action='changed', computers=computers)
 
     def object_deleted(self, user, obj, computers=None):
-        self.object_action(user, obj, action='deleted', computers=computers)
+        obj_without_policies = deepcopy(obj)
+        obj_without_policies['policies'] = {}
+        object_changed = getattr(self, '%s_changed' % obj['type'])
+        object_changed(user, obj_without_policies, obj)
 
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
@@ -401,8 +402,8 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Group', objnew)
 
-    def group_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def group_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'Group', obj)
 
     def user_created(self, user, objnew, computers=None):
@@ -413,8 +414,8 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'User', objnew)
 
-    def user_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def user_deleted(self, user, obj):
+        self.object_deleted(user, obj)
         self.log_action('deleted', 'User', obj)
 
     def computer_created(self, user, objnew, computers=None):
@@ -425,8 +426,12 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Computer', objnew)
 
-    def computer_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def computer_deleted(self, user, obj):
+        node_chef_id = obj.get('node_chef_id', None)
+        if node_chef_id:
+            api = get_chef_api(self.app.conf, user)
+            node = Node(node_chef_id, api)
+            node.delete()
         self.log_action('deleted', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
@@ -437,8 +442,14 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'OU', objnew)
 
-    def ou_deleted(self, user, obj, computers=None):
-        self.object_deleted(user, obj, computers=computers)
+    def ou_deleted(self, user, obj):
+        self.object_deleted(user, obj)
+        ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
+        nodes = self.db.nodes.find({'path': ou_path})
+        for node in nodes:
+            node_deleted_function = getattr(self, '%s_deleted' % node['type'])
+            node_deleted_function(user, node)
+        self.db.nodes.remove({'path': ou_path})
         self.log_action('deleted', 'OU', obj)
 
     def printer_created(self, user, objnew, computers=None):
@@ -522,12 +533,12 @@ def object_changed(user, objtype, objnew, objold, computers=None):
 
 
 @task(base=ChefTask)
-def object_deleted(user, objtype, obj, computers=None):
+def object_deleted(user, objtype, obj):
     self = object_changed
 
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
-        return func(user, obj, computers=computers)
+        return func(user, obj)
 
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(

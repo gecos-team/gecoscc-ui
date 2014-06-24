@@ -36,17 +36,6 @@ class OrganisationalUnitResource(TreeResourcePaginated):
             return False
         return True
 
-    def post_delete(self, obj, old_obj=None):
-        """This step delete the children nodes"""
-        path = obj['path']
-        children_path = ','.join([path, str(obj[self.key])])
-        self.collection.remove({
-            'path': {
-                '$regex': '^{0}'.format(children_path)
-            }
-        })
-        return obj
-
     def post_save(self, obj, old_obj=None):
         """ Check if path has changed to refresh children nodes """
         if (self.request.method == 'PUT' and old_obj and
