@@ -125,6 +125,7 @@ footer {
 
 /* EVENTS */
 
+#events-container { display: inline; }
 #events {
     height: 30%;
 }

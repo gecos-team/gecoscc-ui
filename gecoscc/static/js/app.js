@@ -37,7 +37,7 @@ var App;
     App.addRegions({
         // sidebar
         tree: "#ex-tree",
-        events: "#events",
+        events: "#events-container",
         // main area
         breadcrumb: "#breadcrumb",
         alerts: "#alerts-area",
@@ -46,7 +46,8 @@ var App;
 
     JobsView = Backbone.Marionette.ItemView.extend({
         template: "#jobs-template",
-
+        id: 'events',
+        className: 'panel panel-default bootstrap-admin-no-table-panel',
         events: {
             "click #maximize": "maximize",
             "click #minimize": "minimize",
@@ -57,7 +58,7 @@ var App;
             App.instances.job_collection.fetch();
         },
         maximize: function (evt) {
-            var events = this.$el.parent();
+            var events = this.$el;
             evt.preventDefault();
             events.find("#maximize").addClass("hide");
             events.find("#minimize").removeClass("hide");
@@ -67,7 +68,7 @@ var App;
             events.addClass("maximize");
         },
         minimize: function(evt) {
-            var events = this.$el.parent();
+            var events = this.$el;
             evt.preventDefault();
             events.find("#maximize").removeClass("hide");
             events.find("#minimize").addClass("hide");
@@ -79,7 +80,7 @@ var App;
         serializeData: function(){
             return {
                 "iconClasses": App.Tree.Views.iconClasses,
-                "items": this.collection.toJSON().slice(-8)
+                "items": this.collection.toJSON()
             }
         },
         initialize: function(options) {
