@@ -102,6 +102,7 @@ var App;
             return {
                 "success": this.collection.where({status: 'finished'}).length,
                 "error": this.collection.where({status: 'errors'}).length,
+                "processing": this.collection.where({status: 'processing'}).length,
                 "total": this.collection.length
             }
         },
