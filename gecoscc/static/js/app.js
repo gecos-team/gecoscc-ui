@@ -160,7 +160,6 @@ var App;
                     App.instances.job_collection.fetch();
                 }
                 App.main.show(new HomeView({collection: App.instances.job_collection}));
-                App.events.show(new JobsView({collection: App.instances.job_collection}));
             },
 
             newRoot: function () {
@@ -422,6 +421,11 @@ var App;
         if (Backbone.history) {
             Backbone.history.start();
         }
+        if (_.isUndefined(App.instances.job_collection)) {
+            App.instances.job_collection = new App.Job.Models.JobCollection();
+            App.instances.job_collection.fetch();
+        }
+        App.events.show(new JobsView({collection: App.instances.job_collection}));
     });
 
     App.instances.message_manager = MessageManager();
