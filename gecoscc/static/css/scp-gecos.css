@@ -138,6 +138,7 @@ footer {
     bottom: 0;
     left: 0;
     border-radius: 0;
+    z-index: 99;
 }
 
 #events.maximize .panel-heading {
