@@ -54,6 +54,9 @@ def get_computer_of_user(collection_nodes, user, related_computers=None):
         if computer not in related_computers:
             computer['user'] = user
             related_computers.append(computer)
+        elif 'user' not in computer:
+            computer_index = related_computers.index(computer)
+            related_computers[computer_index]['user'] = user
     return related_computers
 
 
