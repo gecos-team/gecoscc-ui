@@ -46,7 +46,7 @@ class ChefTask(Task):
     def walking_here(self, obj, related_objects):
         if related_objects is not None:
             if obj not in related_objects:
-                related_objects.append(obj)
+                related_objects.append(deepcopy(obj))
             else:
                 return True
         return False
@@ -300,14 +300,6 @@ class ChefTask(Task):
             elif obj_type in updated_by:
                 del updated_by[obj_type]
         if updated:
-            # TODO: Remove it when the users attr is a dictionary
-            if is_user_policy(attr):
-                users_dict_path = '.'.join(attr.split('.')[:-2])
-                try:
-                    if not node.attributes.get_dotted(users_dict_path):
-                        node.attributes.set_dotted(users_dict_path, {})
-                except KeyError:
-                    node.attributes.set_dotted(users_dict_path, {})
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
         return updated
@@ -378,8 +370,7 @@ class ChefTask(Task):
                 node, updated = self.update_node(user, computer, obj, objold, node, action)
                 if not updated:
                     continue
-                # TODO: Uncomment it when the users attr is a dictionary
-                # self.validate_data(node, cookbook, api)
+                self.validate_data(node, cookbook, api)
                 node.save()
             except Exception as e:
                 # TODO Report this error
