@@ -140,11 +140,11 @@ class Command(BaseCommand):
             path = value.pop('path')
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
-                title = value['title'] + ' (User)'
-                value = value['properties']['users']['items']
+                title = value['title']
+                value = {'properties': value['properties']['users']['patternProperties']['.*']['properties']}
                 if 'required' in value and 'username' in value['required']:
                     value['required'].pop(value['required'].index('username'))
-                if 'username' in value['properties'] and 'username' in value['properties']:
+                if 'username' in value.get('properties', []):
                     value['properties'].pop('username')
                 value['title'] = title
             elif 'network_mgmt' in path:
