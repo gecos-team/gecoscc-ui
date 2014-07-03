@@ -11,6 +11,8 @@ from deform.widget import FileUploadWidget
 from gecoscc.i18n import TranslationString as _
 from pyramid.threadlocal import get_current_registry
 
+OU_ORDER = 1
+
 
 class MemoryTmpStore(dict):
 
@@ -286,6 +288,9 @@ class OrganisationalUnit(Node):
     extra = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
+    node_order = colander.SchemaNode(colander.Integer(),
+                                     default=OU_ORDER,
+                                     missing=OU_ORDER)
 
 
 class OrganisationalUnits(colander.SequenceSchema):

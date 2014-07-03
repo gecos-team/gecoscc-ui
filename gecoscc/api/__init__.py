@@ -20,6 +20,8 @@ SCHEMA_METHODS = ('POST', 'PUT', )
 
 class BaseAPI(object):
 
+    order_field = '_id'
+
     def __init__(self, request):
         self.request = request
         self.collection = self.get_collection()
@@ -55,6 +57,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
     collection_name = 'nodes'
     objtype = None
     key = '_id'
+    order_field = 'node_order'
 
     def __init__(self, request):
         super(ResourcePaginatedReadOnly, self).__init__(request)
@@ -116,12 +119,11 @@ class ResourcePaginatedReadOnly(BaseAPI):
             {'type': 1}
         ).count()
 
-        objects = self.collection.find(mongo_query, **extraargs).sort("_id", 1)
+        objects = self.collection.find(mongo_query, **extraargs).sort(self.order_field)
         pages = int(nodes_count / pagesize)
         if nodes_count % pagesize > 0:
             pages += 1
         parsed_objects = self.parse_collection(list(objects))
-
         return {
             'pagesize': pagesize,
             'pages': pages,
