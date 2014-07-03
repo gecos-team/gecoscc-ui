@@ -7,7 +7,7 @@ from cornice.resource import resource
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Group, Groups
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import merge_lists
+from gecoscc.utils import get_filter_nodes_parents_ou, merge_lists
 
 
 def groups_oids_filter(params):
@@ -47,7 +47,12 @@ class GroupResource(TreeLeafResourcePaginated):
             oid_filters = groups_oids_filter(self.request.GET)
             if oid_filters:
                 filters += (oid_filters)
-
+        if 'ou_id' in self.request.GET and 'item_id' in self.request.GET:
+            ou_id = self.request.GET['ou_id']
+            item_id = self.request.GET['item_id']
+            filters += [{'path': get_filter_nodes_parents_ou(self.request.db, ou_id, item_id)}]
+        else:
+            filters += [{'path': 'none'}]
         return filters
 
     def remove_relations(self, obj):
