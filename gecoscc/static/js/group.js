@@ -65,10 +65,22 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.PaginatedGroupCollection = Backbone.Paginator.requestPager.extend({
         model: Models.GroupWithoutPoliciesModel,
 
+        initialize: function (models, options) {
+            if (!_.isUndefined(options)) {
+                this.item_id = options.item_id || null;
+                this.ou_id = options.ou_id || null;
+            }
+        },
+
         paginator_core: {
             type: "GET",
             dataType: "json",
-            url: "/api/groups/"
+            url: function() {
+                if (this.item_id && this.ou_id ) {
+                    return "/api/groups/?item_id=" + this.item_id + "&ou_id=" + this.ou_id;
+                }
+                return "/api/groups/";
+            }
         },
 
         paginator_ui: {

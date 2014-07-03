@@ -100,7 +100,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.checked.add(group);
             });
 
-            this.collection = new App.Group.Models.PaginatedGroupCollection();
+            this.collection = new App.Group.Models.PaginatedGroupCollection(null, { item_id: options.item_id, ou_id: options.ou_id });
             this.collection.goTo(1, {
                 success: function () { that.render(); }
             });
