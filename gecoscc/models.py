@@ -5,10 +5,12 @@ import pyramid
 
 from bson import ObjectId
 from bson.objectid import InvalidId
+from colander import null
 
-from deform.widget import FileUploadWidget
+from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 
 from gecoscc.i18n import TranslationString as _
+from gecoscc.utils import get_items_ou_children
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
@@ -168,10 +170,50 @@ class Users(colander.SequenceSchema):
     users = User()
 
 
+class ChainedSelectWidget(SelectWidget):
+
+    null_value = ['']
+
+    def serialize(self, field, cstruct, **kw):
+        html = ""
+        if cstruct in (null, None, []):
+            cstruct = self.null_value
+        request = pyramid.threadlocal.get_current_request()
+        from gecoscc.db import get_db
+        mongodb = get_db(request)
+
+        for cstruct_item in cstruct:
+            if cstruct_item:
+                ou = mongodb.nodes.find_one({'_id': ObjectId(cstruct_item)})
+                if not ou:
+                    continue
+                path = ou['path'].split(',')
+                path.append(cstruct_item)
+            else:
+                path = [cstruct_item]
+            for i, item_path in enumerate(path):
+                readonly = kw.get('readonly', self.readonly)
+                if item_path:
+                    values = get_items_ou_children(item_path, mongodb.nodes, 'ou')
+                    values = [('', 'Select an Organisational Unit')] + [(item['_id'], item['name']) for item in values]
+                    if i == len(path) - 1:
+                        select_value = ''
+                    else:
+                        select_value = path[i + 1]
+                else:
+                    values = kw.get('values', self.values)
+                    select_value = item_path
+                template = readonly and self.readonly_template or self.template
+                kw['values'] = _normalize_choices(values)
+                tmpl_values = self.get_template_values(field, select_value, kw)
+                html += field.renderer(template, **tmpl_values)
+        return html
+
+
 @colander.deferred
 def deferred_choices_widget(node, kw):
     choices = kw.get('ou_choices')
-    return deform.widget.CheckboxChoiceWidget(values=choices)
+    return ChainedSelectWidget(values=choices)
 
 
 class AdminUser(BaseUser):

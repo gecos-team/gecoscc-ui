@@ -1,5 +1,7 @@
-import deform
 import os
+
+import colander
+import deform
 
 from pkg_resources import resource_filename
 
@@ -116,6 +118,26 @@ class AdminUserEditForm(BaseAdminUserForm):
 
 
 class AdminUserOUManageForm(GecosTwoColumnsForm):
+
+    ou_managed_count = colander.SchemaNode(colander.Integer(),
+                                           title='',
+                                           name='ou_managed_count',
+                                           widget=deform.widget.HiddenWidget(),
+                                           default=1)
+    ou_availables_count = colander.SchemaNode(colander.Integer(),
+                                              title='',
+                                              name='ou_availables_count',
+                                              widget=deform.widget.HiddenWidget(),
+                                              default=1)
+
+    def __init__(self, schema, collection, username, request, *args, **kwargs):
+        schema.get('ou_managed').title += '<p><a href ="#ou-managed">Add another</a></p>'
+        schema.get('ou_availables').title += '<p><a href ="#ou-availables">Add another</a></p>'
+        schema.children.append(self.ou_managed_count)
+        schema.children.append(self.ou_availables_count)
+        super(AdminUserOUManageForm, self).__init__(schema, collection=collection,
+                                                    username=username, request=request,
+                                                    *args, **kwargs)
 
     def save(self, ous_managed):
         self.collection.update({'username': self.username},

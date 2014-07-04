@@ -86,6 +86,25 @@ def get_filter_nodes_belonging_ou(ou_id):
     return {'$regex': '.*,%s.*' % ou_id}
 
 
+def get_filter_children_ou(ou_id):
+    if ou_id == 'root':
+        return ou_id
+    return {'$regex': '.*,%s$' % ou_id}
+
+
+def get_items_ou_children(ou_id, collection_nodes, objtype=None):
+    filters = {}
+    if objtype:
+        filters['type'] = objtype
+    if ou_id:
+        filters['path'] = get_filter_children_ou(ou_id)
+    else:
+        filters['path'] = 'no-root'
+    ous = collection_nodes.find(filters)
+    return [{'_id': unicode(ou['_id']),
+             'name': ou['name']} for ou in ous]
+
+
 def emiter_police_slug(emiter_type):
     return '%s%s' % (emiter_type, POLICY_EMITTER_SUBFIX)
 

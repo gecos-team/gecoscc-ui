@@ -20,3 +20,31 @@
         {% endblock %}
     </div>
 {% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function () {
+                $(document).on("change", "#deform select", function(){
+                    var that = $(this);
+                    var ajax_url = "/ou/list/?ou_id=" +  that.val();
+                    $.ajax({"url": ajax_url,
+                            "success": function (response) {
+                                that.nextAll("select").remove();
+                                if (response.length > 0) {
+                                    var html = "<select class='form-control' name=" + that.attr("name") +">";
+                                    var i;
+                                    html += "<option value=\"\">{{ gettext('Select an Organisational Unit') }}</option>";
+                                    for (i in response) {
+                                        var ou = response[i];
+                                        html += "<option value=\""+ ou["_id"] +"\">" + ou["name"] + "</option>";
+                                    }
+                                    html += "</select>";
+                                    $(html).insertAfter(that);
+                                }
+                            }});
+                        });
+                });
+        })(jQuery);
+    </script>
+{% endblock %}

@@ -41,7 +41,8 @@ def admins_superuser(context, request):
 @view_config(route_name='admins_ou_manage', renderer='templates/admins/ou_manage.jinja2',
              permission='is_superuser')
 def admins_ou_manage(context, request):
-    ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou'})]
+    ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou', 'path': 'root'})]
+    ou_choices = [('', 'Select an Organisational Unit')] + ou_choices
     username = request.matchdict['username']
     schema = AdminUserOUManage().bind(ou_choices=ou_choices)
     form = AdminUserOUManageForm(schema=schema,
@@ -52,9 +53,27 @@ def admins_ou_manage(context, request):
     instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
         data = request.POST.items()
+        ous_variables = {}
         try:
-            variables = form.validate(data)
-            form.save(variables)
+            for field_name in ['ou_managed', 'ou_availables']:
+                ous_variables[field_name] = []
+                field_name_count = '%s_count' % (field_name)
+                for i in range(int(request.POST.get(field_name_count))):
+                    if i != 0:
+                        field_name_iter = '%s-%s' % (field_name, i)
+                    else:
+                        field_name_iter = field_name
+                    ous = request.POST.getall(field_name_iter)
+                    if len(ous) == 0:
+                        last_ou = ''
+                    else:
+                        if len(ous) > 1 and ous[-1] == '':
+                            last_ou = ous[-2]
+                        else:
+                            last_ou = ous[-1]
+                    if last_ou:
+                        ous_variables[field_name].append(last_ou)
+            form.save(ous_variables)
             return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure, e:
             form = e
