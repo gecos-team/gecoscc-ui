@@ -51,7 +51,8 @@ var App;
         events: {
             "click #maximize": "maximize",
             "click #minimize": "minimize",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click ul.pagination a": "goToPage"
         },
 
         refresh: function () {
@@ -78,10 +79,49 @@ var App;
             events.removeClass("maximize");
         },
         serializeData: function(){
+            var paginator = [],
+                inRange = this.collection.pagesInRange,
+                pages = inRange * 2 + 1,
+                current = this.collection.currentPage,
+                total = this.collection.totalPages,
+                i = 0,
+                page;
+
+            for (i; i < pages; i += 1) {
+                page = current - inRange + i;
+                if (page > 0 && page <= total) {
+                    paginator.push([page, page === current]);
+                }
+            }
             return {
                 "iconClasses": App.Tree.Views.iconClasses,
-                "items": this.collection.toJSON()
+                "items": this.collection.toJSON(),
+                "totalPages": this.collection.totalPages,
+                "prev": current !== 1,
+                "next": current !== total,
+                "pages": paginator,
+                "showPaginator": paginator.length > 0
             }
+        },
+        goToPage: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                that = this,
+                page;
+
+            if ($el.parent().is(".disabled")) { return; }
+            if ($el.is(".previous")) {
+                page = this.collection.currentPage - 1;
+            } else if ($el.is(".next")) {
+                page = this.collection.currentPage + 1;
+            } else {
+                page = parseInt($el.text(), 10);
+            }
+            this.collection.goTo(page, {
+                success: function () {
+                    that.render();
+                }
+            });
         },
         initialize: function(options) {
             this.collection.on('sync', function() {

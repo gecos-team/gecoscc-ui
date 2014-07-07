@@ -41,12 +41,32 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
         }
     });
 
-    Models.JobCollection = Backbone.Collection.extend({
+    Models.JobCollection = Backbone.Paginator.requestPager.extend({
         model: Models.JobModel,
-        url: function () {
-            return "/api/jobs/";
+        paginator_core: {
+            type: "GET",
+            dataType: "json",
+            url: function () {
+                // maxdepth must be zero for pagination to work because in the
+                // answer from the server there is no information about the
+                // number of children in a container (OU)
+                return "/api/jobs/";
+            }
+        },
+        paginator_ui: {
+            firstPage: 1,
+            currentPage: 1,
+            perPage: 30,
+            pagesInRange: 1,
+            // 10 as a default in case your service doesn't return the total
+            totalPages: 10
+        },
+        server_api: {
+            page: function () { return this.currentPage; },
+            pagesize: function () { return this.perPage; }
         },
         parse: function (response) {
+            this.totalPages = response.pages;
             return response.jobs;
         }
     });

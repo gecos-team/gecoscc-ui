@@ -13,4 +13,19 @@
 </li>
     <% }); %>
                 </ul>
+            <% if (showPaginator) { %>
+                <ul class="pagination pull-right">
+                    <li <% if (!prev) { print('class="disabled"'); } %>>
+                        <a class="previous" href="#">&laquo;</a>
+                    </li>
+                    <% _.each(pages, function (p) { %>
+                        <li <% if (p[1]) { print('class="active"'); } %>>
+                            <a href="#"><%= p[0] %></a>
+                        </li>
+                    <% }); %>
+                    <li <% if (!next) { print('class="disabled"'); } %>>
+                        <a class="next" href="#">&raquo;</a>
+                    </li>
+                </ul>
+            <% } %>
             </div>
