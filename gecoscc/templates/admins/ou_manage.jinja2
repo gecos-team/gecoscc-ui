@@ -25,10 +25,25 @@
     <script type="text/javascript">
         (function($){
             $(document).ready(function () {
+                $(".add-another").click(function () {
+                    var selectToInsert = $(this).parents("div.form-group").find("select:first").clone();
+                    selectToInsert.find("option:selected").removeAttr("selected");
+                    var col = $(this).parents("div.form-group").find(".col-sm-9");
+                    var selectName = selectToInsert.attr("name");
+                    var selectId = selectToInsert.attr("id");
+                    var ou_count = $("[name=" + selectName + "_count]")
+                    selectToInsert.attr("name", selectName + "-" + ou_count.val());
+                    selectToInsert.attr("id", selectId + "-" + ou_count.val());
+                    ou_count.val(parseInt(ou_count.val()) + 1);
+                    $("<p></p>").appendTo(col);
+                    selectToInsert.appendTo(col);
+                    return false;
+                });
+
                 $(document).on("change", "#deform select", function(){
                     var that = $(this);
-                    var ajax_url = "/ou/list/?ou_id=" +  that.val();
-                    $.ajax({"url": ajax_url,
+                    var ajaxURL = "/ou/list/?ou_id=" +  that.val();
+                    $.ajax({"url": ajaxURL,
                             "success": function (response) {
                                 that.nextAll("select").remove();
                                 if (response.length > 0) {

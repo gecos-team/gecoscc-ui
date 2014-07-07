@@ -131,8 +131,8 @@ class AdminUserOUManageForm(GecosTwoColumnsForm):
                                               default=1)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
-        schema.get('ou_managed').title += '<p><a href ="#ou-managed">Add another</a></p>'
-        schema.get('ou_availables').title += '<p><a href ="#ou-availables">Add another</a></p>'
+        schema.get('ou_managed').title += '<p><a href="#ou-managed" class="add-another">Add another</a></p>'
+        schema.get('ou_availables').title += '<p><a href="#ou-availables" class="add-another">Add another</a></p>'
         schema.children.append(self.ou_managed_count)
         schema.children.append(self.ou_availables_count)
         super(AdminUserOUManageForm, self).__init__(schema, collection=collection,

@@ -6,6 +6,7 @@ import pyramid
 from bson import ObjectId
 from bson.objectid import InvalidId
 from colander import null
+from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 
@@ -181,8 +182,11 @@ class ChainedSelectWidget(SelectWidget):
         request = pyramid.threadlocal.get_current_request()
         from gecoscc.db import get_db
         mongodb = get_db(request)
+        for i, cstruct_item in enumerate(cstruct):
+            field_iter = copy(field)
+            if i > 0:
+                field_iter.name = "%s-%s" % (field.name, i)
 
-        for cstruct_item in cstruct:
             if cstruct_item:
                 ou = mongodb.nodes.find_one({'_id': ObjectId(cstruct_item)})
                 if not ou:
@@ -191,22 +195,26 @@ class ChainedSelectWidget(SelectWidget):
                 path.append(cstruct_item)
             else:
                 path = [cstruct_item]
-            for i, item_path in enumerate(path):
+            for j, item_path in enumerate(path):
                 readonly = kw.get('readonly', self.readonly)
                 if item_path:
                     values = get_items_ou_children(item_path, mongodb.nodes, 'ou')
-                    values = [('', 'Select an Organisational Unit')] + [(item['_id'], item['name']) for item in values]
-                    if i == len(path) - 1:
+                    values = [(item['_id'], item['name']) for item in values]
+                    if not values:
+                        continue
+                    values = [('', 'Select an Organisational Unit')] + values
+                    if j == len(path) - 1:
                         select_value = ''
                     else:
-                        select_value = path[i + 1]
+                        select_value = path[j + 1]
                 else:
                     values = kw.get('values', self.values)
                     select_value = item_path
                 template = readonly and self.readonly_template or self.template
                 kw['values'] = _normalize_choices(values)
-                tmpl_values = self.get_template_values(field, select_value, kw)
-                html += field.renderer(template, **tmpl_values)
+                tmpl_values = self.get_template_values(field_iter, select_value, kw)
+                html += field_iter.renderer(template, **tmpl_values)
+            html += "<p></p>"
         return html
 
 
