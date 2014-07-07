@@ -45,7 +45,7 @@
                     var ajaxURL = "/ou/list/?ou_id=" +  that.val();
                     $.ajax({"url": ajaxURL,
                             "success": function (response) {
-                                that.nextAll("select").remove();
+                                that.nextUntil("p").remove();
                                 if (response.length > 0) {
                                     var html = "<select class='form-control' name=" + that.attr("name") +">";
                                     var i;
