@@ -32,6 +32,19 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.JobModel = Backbone.Model.extend({
+        parseDate: function (date) {
+            try {
+                date = new Date(date);
+                return date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            } catch (err) {
+                return date;
+            }
+        },
+        parse: function (obj) {
+            obj.created = this.parseDate(obj.created);
+            obj.last_update = this.parseDate(obj.last_update);
+            return obj;
+        },
         url: function () {
             var url = "/api/jobs/";
             if (this.has("id")) {
@@ -63,7 +76,10 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
         server_api: {
             page: function () { return this.currentPage; },
-            pagesize: function () { return this.perPage; }
+            pagesize: function () { return this.perPage; },
+            status:  function () {
+                return this.status;
+            }
         },
         parse: function (response) {
             this.totalPages = response.pages;

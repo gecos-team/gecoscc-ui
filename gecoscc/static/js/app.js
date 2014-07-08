@@ -1,5 +1,5 @@
 /*jslint browser: true, vars: false, nomen: true */
-/*global App: true, Backbone, jQuery, _, gettext */
+/*global App: true, Backbone, jQuery, _, gettext, MessageManager */
 
 // Copyright 2013 Junta de Andalucia
 //
@@ -52,33 +52,66 @@ var App;
             "click #maximize": "maximize",
             "click #minimize": "minimize",
             "click button.refresh": "refresh",
-            "click ul.pagination a": "goToPage"
+            "click ul.pagination a": "goToPage",
+            "click span.filters #tasksAll": "tasksAll",
+            "click span.filters #tasksProcessing": "tasksProcessing",
+            "click span.filters #tasksFinished": "tasksFinished",
+            "click span.filters #tasksErrors": "tasksErrors"
         },
 
         refresh: function () {
             App.instances.job_collection.fetch();
+        },
+        tasksFilter: function () {
+            this.refresh();
+        },
+        tasksAll: function (evt) {
+            evt.preventDefault();
+            this.collection.status = '';
+            this.tasksFilter();
+        },
+        tasksProcessing: function (evt) {
+            evt.preventDefault();
+            this.collection.status = 'processing';
+            this.tasksFilter();
+        },
+        tasksFinished: function (evt) {
+            evt.preventDefault();
+            this.collection.status = 'finished';
+            this.tasksFilter();
+        },
+        tasksErrors: function (evt) {
+            evt.preventDefault();
+            this.collection.status = 'errors';
+            this.tasksFilter();
         },
         maximize: function (evt) {
             var events = this.$el;
             evt.preventDefault();
             events.find("#maximize").addClass("hide");
             events.find("#minimize").removeClass("hide");
+            events.find(".pagination").removeClass("hide");
+            events.find(".filters").removeClass("hide");
             $(document.body).append(events);
             events.find(".short").addClass("hide");
             events.find(".long").removeClass("hide");
             events.addClass("maximize");
+            this.isMaximized = true;
         },
-        minimize: function(evt) {
+        minimize: function (evt) {
             var events = this.$el;
             evt.preventDefault();
             events.find("#maximize").removeClass("hide");
             events.find("#minimize").addClass("hide");
+            events.find(".pagination").addClass("hide");
+            events.find(".filters").addClass("hide");
             $("#sidebar").append(events);
             events.find(".short").removeClass("hide");
             events.find(".long").addClass("hide");
             events.removeClass("maximize");
+            this.isMaximized = false;
         },
-        serializeData: function(){
+        serializeData: function () {
             var paginator = [],
                 inRange = this.collection.pagesInRange,
                 pages = inRange * 2 + 1,
@@ -100,8 +133,10 @@ var App;
                 "prev": current !== 1,
                 "next": current !== total,
                 "pages": paginator,
-                "showPaginator": paginator.length > 0
-            }
+                "showPaginator": paginator.length > 1,
+                "isMaximized": this.isMaximized,
+                "status": this.collection.status
+            };
         },
         goToPage: function (evt) {
             evt.preventDefault();
@@ -122,10 +157,13 @@ var App;
                     that.render();
                 }
             });
+            return false;
         },
-        initialize: function(options) {
-            this.collection.on('sync', function() {
-             this.render();
+        initialize: function () {
+            this.isMaximized = false;
+            this.collection.status = '';
+            this.collection.on('sync', function () {
+                this.render();
             }, this);
         }
     });
@@ -133,18 +171,18 @@ var App;
     HomeView = Backbone.Marionette.ItemView.extend({
         template: "#home-template",
 
-        initialize: function(options) {
-            this.collection.on('sync', function() {
-             this.render();
+        initialize: function () {
+            this.collection.on('sync', function () {
+                this.render();
             }, this);
         },
-        serializeData: function(){
+        serializeData: function () {
             return {
                 "success": this.collection.where({status: 'finished'}).length,
                 "error": this.collection.where({status: 'errors'}).length,
                 "processing": this.collection.where({status: 'processing'}).length,
                 "total": this.collection.length
-            }
+            };
         },
         onRender: function () {
             this.$el.find('.easyPieChart').easyPieChart({
@@ -469,16 +507,16 @@ var App;
         App.events.show(new JobsView({collection: App.instances.job_collection}));
     });
 
-    App.instances.message_manager = MessageManager();
-    App.instances.message_manager.bind('change', function(obj) {
+    App.instances.message_manager = new MessageManager();
+    App.instances.message_manager.bind('change', function (obj) {
         App.instances.cache.drop(obj._id);
         App.trigger('action_change', obj);
     });
-    App.instances.message_manager.bind('delete', function(obj) {
+    App.instances.message_manager.bind('delete', function (obj) {
         App.instances.cache.drop(obj._id);
         App.trigger('action_delete', obj);
     });
-    App.instances.message_manager.bind('jobs', function(obj) {
+    App.instances.message_manager.bind('jobs', function () {
         App.instances.job_collection.fetch();
     });
 }(Backbone, jQuery, _, gettext, MessageManager));

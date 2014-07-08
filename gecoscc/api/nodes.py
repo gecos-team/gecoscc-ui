@@ -1,3 +1,5 @@
+import pymongo
+
 from bson import ObjectId
 
 from gecoscc.permissions import api_login_required
@@ -92,6 +94,8 @@ class NodesResource(ResourcePaginatedReadOnly):
     }
     collection_name = 'nodes'
     objtype = 'nodes'
+    order_field = [('node_order', pymongo.ASCENDING),
+                   ('_id', pymongo.ASCENDING)]
 
     def get_objects_filter(self):
         # TODO

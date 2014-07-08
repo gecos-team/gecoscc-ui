@@ -194,6 +194,15 @@ footer {
     top: 3px;
 }
 
+#events .filters {
+    font-size: 12px;
+    margin-left: 20px;
+}
+
+#events .filters .active {
+    font-weight: bold;
+}
+
 /* MAIN AREA */
 
 #viewport-main {

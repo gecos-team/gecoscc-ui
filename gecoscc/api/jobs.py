@@ -1,3 +1,5 @@
+import pymongo
+
 from bson import ObjectId
 from cornice.resource import resource
 
@@ -15,6 +17,7 @@ class JobResource(ResourcePaginatedReadOnly):
     schema_collection = Jobs
     schema_detail = Job
     objtype = 'jobs'
+    order_field = [('_id', pymongo.DESCENDING)]
 
     mongo_filter = {}
 
@@ -23,10 +26,16 @@ class JobResource(ResourcePaginatedReadOnly):
     def get_oid_filter(self, oid):
         return {self.key: oid}
 
+    def get_objects_filter(self):
+        filters = super(JobResource, self).get_objects_filter()
+        status = self.request.GET.get('status', '')
+        if status:
+            filters.append({'status': status})
+        return filters
+
     def collection_get(self):
         result = super(JobResource, self).collection_get()
         jobs = result.get('jobs', [])
-        jobs.sort(lambda x,y: cmp(x.get('last_update'), y.get('last_update')))
         index = 0
         for job in jobs:
             index += 1

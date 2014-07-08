@@ -57,7 +57,6 @@ class ResourcePaginatedReadOnly(BaseAPI):
     collection_name = 'nodes'
     objtype = None
     key = '_id'
-    order_field = 'node_order'
 
     def __init__(self, request):
         super(ResourcePaginatedReadOnly, self).__init__(request)
