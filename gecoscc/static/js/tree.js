@@ -498,12 +498,12 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 node = tree.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
                 });
-                if (node.model.id != id && _.has(node.model, "paginatedChildren")) {
-                    node = node.model.paginatedChildren.get(id);
-                }
                 if (_.isUndefined(node)) {
                     // Maybe the node is not in the loaded page
                     return;
+                }
+                if (node.model.id != id && _.has(node.model, "paginatedChildren")) {
+                    node = node.model.paginatedChildren.get(id);
                 }
                 if (_.has(node, "set")) {
                     node.set("name", data.name);
