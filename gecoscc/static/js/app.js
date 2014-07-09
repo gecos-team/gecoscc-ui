@@ -63,6 +63,7 @@ var App;
             App.instances.job_collection.fetch();
         },
         tasksFilter: function () {
+            this.collection.currentPage = 1;
             this.refresh();
         },
         tasksAll: function (evt) {
