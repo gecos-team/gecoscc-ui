@@ -7,17 +7,17 @@
         <div class="bootstrap-admin-panel-content" id="home-view">
             <div class="row">
                 <div class="col-xs-6 col-sm-6 col-md-4">
-                    <div class="easyPieChart" data-percent="<%= Math.round(processing / total * 100) %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= Math.round(processing / total * 100) %><% } %>%<canvas width="110" height="110"></canvas></div>
+                    <div class="easyPieChart" data-percent="<%= processing / total * 100 %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= (processing / total * 100).toFixed(2) %><% } %>%<canvas width="110" height="110"></canvas></div>
                     <div class="chart-bottom-heading">{{ gettext('Processing tasks') }} (<%= processing %> {{ gettext('out of') }} <%= total %>)</div>
                 </div>
 
                 <div class="col-xs-6 col-sm-6 col-md-4">
-                    <div class="easyPieChart" data-percent="<%= Math.round(error / total * 100) %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= Math.round(error / total * 100) %><% } %>%<canvas width="110" height="110"></canvas></div>
-                    <div class="chart-bottom-heading">{{ gettext('Failed tasks') }} (<%= error %> {{ gettext('out of') }} <%= total %>)</div>
+                    <div class="easyPieChart" data-percent="<%= errors / total * 100 %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= (errors / total * 100).toFixed(2) %><% } %>%<canvas width="110" height="110"></canvas></div>
+                    <div class="chart-bottom-heading">{{ gettext('Failed tasks') }} (<%= errors %> {{ gettext('out of') }} <%= total %>)</div>
                 </div>
                 <div class="col-xs-6 col-sm-6 col-md-4">
-                    <div class="easyPieChart" data-percent="<%= Math.round(success / total * 100) %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= Math.round(success / total * 100) %><% } %>%<canvas width="110" height="110"></canvas></div>
-                    <div class="chart-bottom-heading">{{ gettext('Completed tasks') }} (<%= success %> {{ gettext('out of') }} <%= total %>)</div>
+                    <div class="easyPieChart" data-percent="<%= finished / total * 100 %>" style="width: 110px; height: 110px; line-height: 110px;"><% if (!total) { %>0<% } else { %><%= (finished / total * 100).toFixed(2) %><% } %>%<canvas width="110" height="110"></canvas></div>
+                    <div class="chart-bottom-heading">{{ gettext('Completed tasks') }} (<%= finished %> {{ gettext('out of') }} <%= total %>)</div>
                 </div>
             </div>
         </div>

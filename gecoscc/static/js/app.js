@@ -173,16 +173,16 @@ var App;
         template: "#home-template",
 
         initialize: function () {
-            this.collection.on('sync', function () {
+            this.model.on('sync', function () {
                 this.render();
             }, this);
         },
         serializeData: function () {
             return {
-                "success": this.collection.where({status: 'finished'}).length,
-                "error": this.collection.where({status: 'errors'}).length,
-                "processing": this.collection.where({status: 'processing'}).length,
-                "total": this.collection.length
+                "finished": this.model.attributes.finished,
+                "errors": this.model.attributes.errors,
+                "processing": this.model.attributes.processing,
+                "total": this.model.attributes.total
             };
         },
         onRender: function () {
@@ -239,7 +239,11 @@ var App;
                     App.instances.job_collection = new App.Job.Models.JobCollection();
                     App.instances.job_collection.fetch();
                 }
-                App.main.show(new HomeView({collection: App.instances.job_collection}));
+                if (_.isUndefined(App.instances.job_statistics)) {
+                    App.instances.job_statistics = new App.Job.Models.JobStatistics();
+                    App.instances.job_statistics.fetch();
+                }
+                App.main.show(new HomeView({model: App.instances.job_statistics}));
             },
 
             newRoot: function () {
@@ -504,6 +508,10 @@ var App;
         if (_.isUndefined(App.instances.job_collection)) {
             App.instances.job_collection = new App.Job.Models.JobCollection();
             App.instances.job_collection.fetch();
+        }
+        if (_.isUndefined(App.instances.job_statistics)) {
+            App.instances.job_statistics = new App.Job.Models.JobStatistics();
+            App.instances.job_statistics.fetch();
         }
         App.events.show(new JobsView({collection: App.instances.job_collection}));
     });
