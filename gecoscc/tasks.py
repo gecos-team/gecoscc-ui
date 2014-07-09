@@ -216,7 +216,7 @@ class ChefTask(Task):
                     updated = True
             if job_attr not in attributes_jobs_updated:
                 if updated:
-                    self.update_node_job_id(user, obj, action, node, job_attr, attributes_jobs_updated)
+                    self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated)
         return (node, (updated or updated_updated_by))
 
     def get_first_exists_node(self, ids, obj, action):
@@ -315,14 +315,21 @@ class ChefTask(Task):
         ous.sort(key=lambda x: x['path'].count(','), reverse=True)
         return [unicode(ou['_id']) for ou in ous]
 
-    def update_node_job_id(self, user, obj, action, node, attr, attributes_updated):
+    def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated):
         if node.attributes.has_dotted(attr):
             job_ids = node.attributes.get_dotted(attr)
         else:
             job_ids = []
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'processing'
-        job_id = job_storage.create(objid=obj['_id'], type=obj['type'], op=action, status=job_status)
+        job_id = job_storage.create(objid=obj['_id'],
+                                    objname=obj['name'],
+                                    type=obj['type'],
+                                    op=action,
+                                    status=job_status,
+                                    computerid=computer['_id'],
+                                    computername=computer['name'],
+                                    policyname=policy['name'])
         job_ids.append(unicode(job_id))
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)

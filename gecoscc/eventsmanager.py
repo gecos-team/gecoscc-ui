@@ -44,7 +44,7 @@ class JobStorage(object):
         if not self.check_permissions():
             raise self.JobOperationForbidden()
 
-    def create(self, objid=None, type=None, op=None, status=None):
+    def create(self, objid=None, objname=None, type=None, op=None, status=None, computerid=None, computername=None, policyname=None):
 
         self.assert_permissions()
         userid = self.user['_id']
@@ -56,9 +56,13 @@ class JobStorage(object):
         job = {
             'userid': userid,
             'objid': objid,
+            'objname': objname,
             'type': type,
             'op': op,
             'status': status,
+            'computerid': computerid,
+            'computername': computername,
+            'policyname': policyname,
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
         }

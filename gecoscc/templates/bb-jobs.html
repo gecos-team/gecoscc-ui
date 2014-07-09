@@ -18,17 +18,45 @@
         <span class="fa fa-repeat"></span>
     </button>
 </div>
-<div class="bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in">
-    <ul class="list-unstyled">
+<div class="bootstrap-admin-panel-content table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead class="long <% if (!isMaximized) { print('hide'); } %>">
+            <tr>
+                <th>
+                    {{ gettext("Emiter node") }}
+                </th>
+                <th>
+                    {{ gettext("Computer") }}
+                </th>
+                <th>
+                    {{ gettext("Policy") }}
+                </th>
+                <th>
+                    {{ gettext("Trace") }}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
         <% _.each(items, function (item) { %>
-            <li class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> error <% } %>">
-                <span class="fa fa-<%= iconClasses[item.type] %> type-icon"></span>
-                <span class="short <% if (isMaximized) { print('hide'); } %>"><%= item.node_name %></span>
-                <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.node_name %> (<%= item.created %>)<% if (item.message) { print(": ");print(item.message); } %></span>
-                <span class="pull-right fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
-            </li>
+            <tr class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> danger <% } %>">
+                <td>
+                    <span class="fa fa-<%= iconClasses[item.type] %>"></span>
+                    <%= item.objname %>
+                </td>
+                <td>
+                    <%= item.computername %>
+                </td>
+                <td class="long <% if (!isMaximized) { print('hide'); } %>">
+                    <%= item.policyname %>
+                </td>
+                <td>
+                    <span class="fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
+                    <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
+                </td>
+            </tr>
         <% }); %>
-    </ul>
+        </tbody>
+    </table>
     <% if (showPaginator) { %>
         <ul class="pagination pull-right <% if (!isMaximized) { print('hide'); } %>">
             <li <% if (!prev) { print('class="disabled"'); } %>>
