@@ -186,8 +186,6 @@ class ChefTask(Task):
         for field_chef, field_ui in rules.items():
             if is_user_policy(field_chef) and 'user' not in computer:
                 continue
-            elif not is_user_policy(field_chef) and 'user' in computer:
-                continue
             job_attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             updated_by_attr = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
             priority_obj_ui = obj_ui
@@ -197,7 +195,7 @@ class ChefTask(Task):
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-            if priority_obj == obj or action == DELETED_POLICY_ACTION:
+            if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
@@ -300,6 +298,13 @@ class ChefTask(Task):
             elif obj_type in updated_by:
                 del updated_by[obj_type]
         if updated:
+            if is_user_policy(attr):
+                users_dict_path = '.'.join(attr.split('.')[:-2])
+                try:
+                    if not node.attributes.get_dotted(users_dict_path):
+                        node.attributes.set_dotted(users_dict_path, {})
+                except KeyError:
+                    node.attributes.set_dotted(users_dict_path, {})
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
         return updated
