@@ -61,6 +61,7 @@ var App;
 
         refresh: function () {
             App.instances.job_collection.fetch();
+            App.instances.job_statistics.fetch();
         },
         tasksFilter: function () {
             this.collection.currentPage = 1;
