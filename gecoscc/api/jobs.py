@@ -36,13 +36,10 @@ class JobResource(ResourcePaginatedReadOnly):
     def collection_get(self):
         result = super(JobResource, self).collection_get()
         jobs = result.get('jobs', [])
-        index = 0
         for job in jobs:
-            index += 1
             node = self.request.db.nodes.find_one(ObjectId(job['objid']))
             if node:
                 job.update({
                     'node_name': node.get('name', ''),
-                    'index': index
                 })
         return result
