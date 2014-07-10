@@ -141,8 +141,8 @@
             if (!_.isUndefined(evt)) {
                 evt.preventDefault();
             }
+            this.groupsWidget = undefined;
             var that = this;
-
             this.model.fetch().done(function () {
                 that.render();
             });
