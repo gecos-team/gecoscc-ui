@@ -28,12 +28,18 @@
 <% } else { %>
     <div class="alert alert-info alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no policies assigned to this resource yet.') }}
+        <% if (typeof resource.id !== 'undefined') { %>
+            <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no policies assigned to this resource yet.') }}
+        <%} else { %>
+            {{ gettext('If you want to add any policy, please execute the changes') }}
+        <% } %>
     </div>
 <% } %>
 </div></div>
+<% if (typeof resource.id !== 'undefined') { %>
 <div class="row"><div class="col-xs-12">
-    <button class="btn btn-primary" id="add-policy">
-        <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}
-    </button>
+        <button class="btn btn-primary" id="add-policy">
+            <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}
+        </button>
 </div></div>
+<% } %>

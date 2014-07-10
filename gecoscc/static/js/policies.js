@@ -235,6 +235,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         add: function (evt) {
             App.instances.router.navigate(this.getPolicyUrl(), { trigger: true });
+        },
+        serializeData: function () {
+            return {items: this.collection.toJSON(),
+                    resource: this.resource};
         }
     });
 
