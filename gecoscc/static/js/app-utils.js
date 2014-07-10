@@ -99,18 +99,18 @@
         //
         // resourceType: "user",
 
-        initialize: function(options) {
+        initialize: function () {
             this.listenTo(App, 'action_change', this.onActionChange);
             this.listenTo(App, 'action_delete', this.onActionDelete);
         },
 
-        onRender: function() {
+        onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
         },
 
-        onActionChange: function(obj) {
+        onActionChange: function (obj) {
             if (this.model.id === obj._id) {
                 App.showAlert(
                     "error",
@@ -121,7 +121,7 @@
             }
         },
 
-        onActionDelete: function(obj) {
+        onActionDelete: function (obj) {
             if (this.model.id === obj._id) {
                 App.showAlert(
                     "error",
@@ -132,7 +132,7 @@
             }
         },
 
-        disableSave: function() {
+        disableSave: function () {
             var $save = this.$el.find("#submit");
             $save.attr('disabled', 'disabled');
         },

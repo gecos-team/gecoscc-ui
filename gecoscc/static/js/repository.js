@@ -73,7 +73,7 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
                 return that.$el.find("#deb_src").is(":checked");
             };
 
-            getComponents = function() {
+            getComponents = function () {
                 return that.$el.find("#components").val().split(/ *, */);
             };
 

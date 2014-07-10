@@ -57,7 +57,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
-            "click button.refresh": "refresh",
+            "click button.refresh": "refresh"
         },
 
         saveForm: function (evt) {

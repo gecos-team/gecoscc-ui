@@ -1,4 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true, vars: false */
+/*global SockJS, jQuery */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -19,14 +20,15 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-var MessageManager = function() {
-    var Sock = new SockJS('/sockjs');
-    var manager_handlers = {};
+var MessageManager = function () {
+    "use strict";
+    var Sock = new SockJS('/sockjs'),
+        manager_handlers = {};
 
-    Sock.onopen = function() {
+    Sock.onopen = function () {
     };
 
-    Sock.onmessage = function(e) {
+    Sock.onmessage = function (e) {
         var result = jQuery.parseJSON(e.data);
         if (result.hasOwnProperty('action')) {
             var handlers = manager_handlers[result.action] || [];

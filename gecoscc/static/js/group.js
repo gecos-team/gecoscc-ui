@@ -75,8 +75,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
         paginator_core: {
             type: "GET",
             dataType: "json",
-            url: function() {
-                if (this.item_id && this.ou_id ) {
+            url: function () {
+                if (this.item_id && this.ou_id) {
                     return "/api/groups/?item_id=" + this.item_id + "&ou_id=" + this.ou_id;
                 }
                 return "/api/groups/";

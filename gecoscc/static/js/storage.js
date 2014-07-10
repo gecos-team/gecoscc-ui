@@ -31,7 +31,7 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             lock: false,
             source: "gecos",
             name: "",
-            uri: "",
+            uri: ""
         },
 
         parse: function (response) {

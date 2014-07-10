@@ -125,12 +125,12 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             tree: null
         },
 
-        initialize: function(options) {
+        initialize: function (options) {
             var that = this;
-            this.listenTo(App, 'action_change', function(obj) {
+            this.listenTo(App, 'action_change', function (obj) {
                 that.updateNodeById(obj._id);
             });
-            this.listenTo(App, 'action_delete', function(obj) {
+            this.listenTo(App, 'action_delete', function (obj) {
                 that.reloadTree();
             });
         },
