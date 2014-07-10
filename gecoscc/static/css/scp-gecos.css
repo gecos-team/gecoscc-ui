@@ -48,6 +48,7 @@ footer {
     padding-right: 30px;
     border-top: 1px solid #DDD;
     background-color: #F5F5F5;
+    z-index: 3;
 }
 
 @media (min-width: 768px) {
