@@ -44,7 +44,9 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
 
         resolvePoliciesNames: function (collection, path) {
             var that = this,
-                oids;
+                oids,
+                url,
+                ou_id;
 
             if (_.isUndefined(collection)) {
                 collection = this.get("policyCollection");
@@ -52,8 +54,8 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             if (!collection.hasUnknownPolicies()) { return; }
 
             oids = collection.getOids().join(',');
-            var url = "/api/policies/?oids=" + oids;
-            var ou_id = _.last(path.split(','));
+            url = "/api/policies/?oids=" + oids;
+            ou_id = _.last(path.split(','));
             if (ou_id) {
                 url += "&ou_id=" + ou_id;
             }
@@ -151,7 +153,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
 
         server_api: {
             target: function () { return this.resource.resourceType; },
-            ou_id: function () { return _.last(this.resource.get("path").split(',')) },
+            ou_id: function () { return _.last(this.resource.get("path").split(',')); },
             item_id: function () { return this.resource.id; },
             page: function () { return this.currentPage; },
             pagesize: function () { return this.perPage; }
