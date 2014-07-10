@@ -436,8 +436,6 @@ var App;
                     return;
                 }
 
-                App.instances.breadcrumb.addStep(url + '/policy/',
-                                                 gettext('Add policy'));
                 App.main.show(App.instances.loaderView);
 
                 view = new App.Policies.Views.AllPoliciesWidget({
