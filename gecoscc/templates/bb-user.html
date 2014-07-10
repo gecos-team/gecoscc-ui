@@ -45,11 +45,20 @@
                             </div>
                         </div>
                     </div>
+                    <% if (typeof id !== 'undefined') { %>
                     <div id="groups-widget">
                         <p style="font-size: 1.5em;">
                             <span class="fa fa-spin fa-spinner"></span> {{ gettext('Loading') }}...
                         </p>
                     </div>
+                    <%} else { %>
+                    <div id="no-groups">
+                        <label>{{ gettext('Groups') }}</label>
+                        <p>
+                            {{ gettext('If you want to add any group, please execute the changes') }}
+                         </p>
+                    </div>
+                    <% } %>
                     <div class="row"><div class="col-sm-12">
                         <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
                         <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
