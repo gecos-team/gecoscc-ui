@@ -340,9 +340,12 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         filter: function (evt) {
             evt.preventDefault();
-            this.collection.keyword = $(evt.target).parents(".input-group").find("input").val().trim();
+            var that = this,
+                keyword = $(evt.target).parents(".input-group").find("input").val().trim();
+            this.collection = new App.Policies.Models.SearchPolicyCollection({resource: this.resource,
+                                                                              keyword: keyword});
             this.collection.goTo(1, {
-                success: _.bind(this.render, this)
+                success: function () { that.render(); }
             });
         }
     });
