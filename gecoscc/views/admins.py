@@ -78,8 +78,8 @@ def admins_ou_manage(context, request):
         except ValidationFailure, e:
             form = e
     if instance and not data:
-        instance['ou_managed_count'] = len(instance['ou_managed']) or 1
-        instance['ou_availables_count'] = len(instance['ou_availables']) or 1
+        instance['ou_managed_count'] = len(instance.get('ou_managed', [])) or 1
+        instance['ou_availables_count'] = len(instance.get('ou_availables', [])) or 1
         form_render = form.render(instance)
     else:
         form_render = form.render()
