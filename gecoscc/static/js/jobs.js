@@ -32,10 +32,19 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Models.JobModel = Backbone.Model.extend({
+        intTwoDigit: function (int) {
+            var num = String(int);
+            if (num.length === 1) {
+                num = "0" + num;
+            }
+            return num;
+        },
         parseDate: function (date) {
             try {
                 date = new Date(date);
-                return date.getFullYear() + "/" + (date.getMonth() + 1) + "/" + date.getDate() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+                var dateFormat = date.getFullYear() + "/" + this.intTwoDigit((date.getMonth() + 1)) + "/" + this.intTwoDigit(date.getDate());
+                dateFormat += " " + this.intTwoDigit(date.getHours()) + ":" + this.intTwoDigit(date.getMinutes()) + ":" + this.intTwoDigit(date.getSeconds());
+                return dateFormat;
             } catch (err) {
                 return date;
             }
