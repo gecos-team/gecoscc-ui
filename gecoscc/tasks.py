@@ -322,13 +322,16 @@ class ChefTask(Task):
             job_ids = []
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'processing'
+        computer_name = computer['name']
+        if is_user_policy(policy.get('path', '')) and 'user' in computer:
+            computer_name = '%s / %s' % (computer_name, computer['user']['name'])
         job_id = job_storage.create(objid=obj['_id'],
                                     objname=obj['name'],
                                     type=obj['type'],
                                     op=action,
                                     status=job_status,
                                     computerid=computer['_id'],
-                                    computername=computer['name'],
+                                    computername=computer_name,
                                     policyname=policy['name'])
         job_ids.append(unicode(job_id))
         attributes_updated.append(attr)
