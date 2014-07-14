@@ -43,10 +43,10 @@
                     <span class="fa fa-<%= iconClasses[item.type] %>"></span>
                     <%= item.objname %>
                 </td>
-                <td>
+                <td class="long <% if (!isMaximized) { print('hide'); } %>">
                     <%= item.computername %>
                 </td>
-                <td class="long <% if (!isMaximized) { print('hide'); } %>">
+                <td>
                     <%= item.policyname %>
                 </td>
                 <td>
