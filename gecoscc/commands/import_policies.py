@@ -142,10 +142,8 @@ class Command(BaseCommand):
                 targets = ['ou', 'user', 'group']
                 title = value['title']
                 value = {'properties': value['properties']['users']['patternProperties']['.*']['properties']}
-                if 'required' in value and 'username' in value['required']:
-                    value['required'].pop(value['required'].index('username'))
-                if 'username' in value.get('properties', []):
-                    value['properties'].pop('username')
+                if 'updated_by' in value.get('properties', {}):
+                    del value['properties']['updated_by']
                 value['title'] = title
             elif 'network_mgmt' in path:
                 targets = ['computer']
