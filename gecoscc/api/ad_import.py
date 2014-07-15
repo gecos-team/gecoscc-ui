@@ -15,7 +15,6 @@ from bson import ObjectId
 from chef import Node
 from chef import Client
 from cornice.resource import resource
-from pyramid.httpexceptions import HTTPInternalServerError
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
@@ -109,7 +108,11 @@ class ADImport(BaseAPI):
                     'mongo': 'phone'
                 }
             ],
-            'staticAttributes': []
+            'staticAttributes': [
+                {
+                    'key': 'computers',
+                    'value': []
+                }]
         },
         {
             'adName': 'Group',
@@ -136,7 +139,12 @@ class ADImport(BaseAPI):
                     'mongo': 'adMemberOf'
                 }
             ],
-            'staticAttributes': []
+            'staticAttributes': [
+                {
+                    'key': 'members',
+                    'value': []
+                },
+            ]
         },
         {
             'adName': 'Computer',
@@ -250,7 +258,7 @@ class ADImport(BaseAPI):
         """
         Fix duplicate name append an _counter to the name
         """
-        contador = 0;
+        contador = 0
         m = re.match(ur'^(.+)(_\d+)$', newObj['name'])
         if m:
             nombreBase = m.group(1)
@@ -297,7 +305,7 @@ class ADImport(BaseAPI):
 
             # Update MONGODB object with ACTIVE DIRECTORY attributes
             for attrib in objSchema['attributes']:
-                if attrib['mongo'] != 'name': #TODO: Proper update the object name
+                if attrib['mongo'] != 'name':  # TODO: Proper update the object name
                     if adObj.hasAttribute(attrib['ad']):
                         mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
                     else:
@@ -387,8 +395,8 @@ class ADImport(BaseAPI):
             self.request.db[self.mongoCollectionName].insert(newRootOU)
             return newRootOU
         else:
-            for key,value in newRootOU.items():
-                if key not in ['name', 'path']: #TODO: Proper update the object name
+            for key, value in newRootOU.items():
+                if key not in ['name', 'path']:  # TODO: Proper update the object name
                     rootOU[key] = value
             self.request.db[self.mongoCollectionName].update(filterRootOU, rootOU)
             return rootOU
@@ -407,7 +415,7 @@ class ADImport(BaseAPI):
         orderedBySize = {}
         er = re.compile(r'([^, ]+=(?:(?:\\,)|[^,])+)')
         for index, mongoObject in mongoObjects.items():
-            if mongoObject['adDistinguishedName'] == rootOU['adDistinguishedName']: # Jump root OU
+            if mongoObject['adDistinguishedName'] == rootOU['adDistinguishedName']:  # Jump root OU
                 mongoObjectRoot = mongoObject
                 continue
             subADDN = er.findall(mongoObject['adDistinguishedName'])
@@ -452,7 +460,7 @@ class ADImport(BaseAPI):
             mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
 
             # Save each MongoDB objects
-            successCounter = 1 # root OU already saved
+            successCounter = 1  # root OU already saved
             properRootOUADDN = rootOU['adDistinguishedName']
             for index, mongoObject in mongoObjects.items():
                 if index == properRootOUADDN:
@@ -486,16 +494,24 @@ class ADImport(BaseAPI):
                     updateMongoObject = True
 
                 # MemberOf
-                if mongoObject['type'] in ['user', 'group', 'computer']:
+                if mongoObject['type'] in ['user', 'computer']:
                     if 'memberof' not in mongoObject.keys():
                         mongoObject['memberof'] = []
                     if 'adPrimaryGroup' in mongoObject.keys() and mongoObject['adPrimaryGroup']:
+                        group = mongoObjects[mongoObject['adPrimaryGroup']]
+                        if not mongoObject['_id'] in group['members']:
+                            group['members'].append(mongoObject['_id'])
+                            self._saveMongoObject(group)
                         mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
                         del mongoObject['adPrimaryGroup']
                         updateMongoObject = True
                     if 'adMemberOf' in mongoObject.keys() and mongoObject['adMemberOf']:
-                        for group in mongoObject['adMemberOf']:
-                            mongoObject['memberof'].append(mongoObjects[group]['_id'])
+                        for group_id in mongoObject['adMemberOf']:
+                            group = mongoObjects[group_id]
+                            mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
+                            if not mongoObject['_id'] in group['members']:
+                                group['members'].append(mongoObject['_id'])
+                                self._saveMongoObject(group)
                         del mongoObject['adMemberOf']
                         updateMongoObject = True
 
