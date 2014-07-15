@@ -16,9 +16,9 @@ POLICY_EMITTER_TARGETS = {
 }
 
 POLICY_EMITTER_NAMES = {
-    'printer_can_view': 'Printer can view policy',
-    'repository_can_view': 'Repository can view policy',
-    'storage_can_view': 'Storage can view policy',
+    'printer_can_view': 'Available printers',
+    'repository_can_view': 'Available repositories',
+    'storage_can_view': 'Available storages',
 }
 
 POLICY_EMITTER_PATH = {
