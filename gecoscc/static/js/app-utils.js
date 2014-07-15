@@ -142,6 +142,7 @@
                 evt.preventDefault();
             }
             this.groupsWidget = undefined;
+            this.policiesList = undefined;
             var that = this;
             this.model.fetch().done(function () {
                 that.render();
