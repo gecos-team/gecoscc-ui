@@ -23,6 +23,9 @@ class RegisterComputerResource(BaseAPI):
         ous = self.collection.find(get_filter_ous_from_path(computer['path']))
         for ou in ous:
             object_changed.delay(self.request.user, 'ou', ou, {}, computers=[computer])
+        groups = self.collection.find({'_id': {'$in': computer.get('memberof', [])}})
+        for group in groups:
+            object_changed.delay(self.request.user, 'group', group, {}, computers=[computer])
         object_created.delay(self.request.user, 'computer', computer, computers=[computer])
 
     def post(self):
