@@ -55,6 +55,15 @@ class RegisterComputerResource(BaseAPI):
         self.apply_policies_to_computer(computer)
         return {'ok': True}
 
+    def put(self):
+        node_id = self.request.POST.get('node_id')
+        computer = self.collection.find_one({'node_chef_id': node_id})
+        if not computer:
+            return {'ok': False,
+                    'error': 'Computer does not exists'}
+        self.apply_policies_to_computer(computer)
+        return {'ok': True}
+
     def delete(self):
         node_id = self.request.GET.get('node_id')
         node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
