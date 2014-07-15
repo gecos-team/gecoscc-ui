@@ -332,7 +332,8 @@ class ChefTask(Task):
                                     status=job_status,
                                     computerid=computer['_id'],
                                     computername=computer_name,
-                                    policyname=policy['name'])
+                                    policyname=policy['name'],
+                                    administrator_username=user['username'])
         job_ids.append(unicode(job_id))
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)

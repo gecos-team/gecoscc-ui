@@ -483,6 +483,7 @@ class Job(colander.MappingSchema):
     computerid = colander.SchemaNode(ObjectIdField(), missing=colander._drop())
     computername = colander.SchemaNode(colander.String(), default='no-provided')
     policyname = colander.SchemaNode(colander.String(), default='no-provided')
+    administrator_username = colander.SchemaNode(colander.String(), default='no-provided')
 
     # Verify that the status selected already exists
     status = colander.SchemaNode(colander.String(),

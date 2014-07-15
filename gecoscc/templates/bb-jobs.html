@@ -26,6 +26,9 @@
                     {{ gettext("Emiter node") }}
                 </th>
                 <th>
+                    {{ gettext("Administrator") }}
+                </th>
+                <th>
                     {{ gettext("Computer") }} / {{ gettext("User") }}
                 </th>
                 <th>
@@ -42,6 +45,9 @@
                 <td>
                     <span class="fa fa-<%= iconClasses[item.type] %>"></span>
                     <%= item.objname %>
+                </td>
+                <td class="long <% if (!isMaximized) { print('hide'); } %>">
+                    <%= item.administrator_username %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">
                     <%= item.computername %>
