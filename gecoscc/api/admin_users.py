@@ -8,7 +8,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.api import BaseAPI
 from gecoscc.models import AdminUserVariables
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import get_pem_for_username
+from gecoscc.utils import get_items_ou_children, get_pem_for_username
 
 
 @resource(path='/auth/config/',
@@ -38,6 +38,11 @@ class AdminUserResource(BaseAPI):
         if ou_ids_availables:
             ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
             ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou', '_id': {'$in': ou_ids_availables}})]
+            for ou_ids_available in ou_ids_availables:
+                ou_availables_children = get_items_ou_children(ou_ids_available, self.request.db.nodes, 'ou')
+                if ou_availables_children:
+                    ous += [(ou_children['_id'], ou_children['name']) for ou_children in ou_availables_children]
+            ous = list(set(ous))
         elif user.get('is_superuser'):
             ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou'})]
         gcc['ou_username'] = ous
