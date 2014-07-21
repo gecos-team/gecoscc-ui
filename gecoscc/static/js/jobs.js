@@ -79,7 +79,7 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
             firstPage: 1,
             currentPage: 1,
             perPage: 30,
-            pagesInRange: 1,
+            pagesInRange: 3,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
         },

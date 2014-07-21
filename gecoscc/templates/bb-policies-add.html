@@ -36,11 +36,19 @@
                     <li <% if (!prev) { print('class="disabled"'); } %>>
                         <a class="previous" href="#">&laquo;</a>
                     </li>
+                    <% if (initial) { %>
+                        <li><a href="#" class="extreme-right">1</a></li>
+                        <li><span class="triple-dot">&hellip;</span></li>
+                    <% } %>
                     <% _.each(pages, function (p) { %>
                         <li <% if (p[1]) { print('class="active"'); } %>>
                             <a href="#"><%= p[0] %></a>
                         </li>
                     <% }); %>
+                    <% if (final) { %>
+                        <li><span class="triple-dot">&hellip;</span></li>
+                        <li><a href="#" class="extreme-right"><%= totalPages %></a></li>
+                    <% } %>
                     <li <% if (!next) { print('class="disabled"'); } %>>
                         <a class="next" href="#">&raquo;</a>
                     </li>

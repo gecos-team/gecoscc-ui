@@ -131,7 +131,9 @@ var App;
             return {
                 "iconClasses": App.Tree.Views.iconClasses,
                 "items": this.collection.toJSON(),
-                "totalPages": this.collection.totalPages,
+                "totalPages": total,
+                "initial": current > inRange + 1,
+                "final": current < total - inRange,
                 "prev": current !== 1,
                 "next": current !== total,
                 "pages": paginator,

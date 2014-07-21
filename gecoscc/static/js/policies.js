@@ -146,7 +146,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             firstPage: 1,
             currentPage: 1,
             perPage: 8,
-            pagesInRange: 2,
+            pagesInRange: 3,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
         },
@@ -292,7 +292,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             return {
                 items: this.collection.toJSON(),
+                totalPages: total,
                 resource: this.resource.toJSON(),
+                initial: current > inRange + 1,
+                final: current < total - inRange,
                 prev: current !== 1,
                 next: current !== total,
                 pages: paginator,
