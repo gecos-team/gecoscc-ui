@@ -50,6 +50,7 @@ class PoliciesResource(ResourcePaginatedReadOnly):
     mongo_filter = {}
     objtype = 'policy'
     collection_name = 'policies'
+    order_field = 'name'
 
     def parse_collection(self, objects):
         for obj in objects:
