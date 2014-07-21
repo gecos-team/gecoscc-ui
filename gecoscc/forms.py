@@ -5,10 +5,15 @@ import deform
 
 from pkg_resources import resource_filename
 
+from pyramid.threadlocal import get_current_registry
+
+from chef.exceptions import ChefServerError
 from deform.template import ZPTRendererFactory
 
-from gecoscc.i18n import TranslationString as _
 from gecoscc import messages
+from gecoscc.i18n import TranslationString as _
+from gecoscc.utils import get_chef_api, create_chef_admin_user
+
 
 default_dir = resource_filename('deform', 'templates/')
 gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
@@ -51,8 +56,8 @@ class GecosForm(deform.Form):
         self.widget.item_template = self.item_template
         self.widget.css_class = self.css_class
 
-    def created_msg(self, msg):
-        messages.created_msg(self.request, msg, 'success')
+    def created_msg(self, msg, msg_type='success'):
+        messages.created_msg(self.request, msg, msg_type)
 
 
 class GecosTwoColumnsForm(GecosForm):
@@ -83,10 +88,18 @@ class AdminUserAddForm(BaseAdminUserForm):
 
     def save(self, admin_user):
         self.collection.insert(admin_user)
-        from gecoscc.tasks import object_created
         admin_user['plain_password'] = self.cstruct['password']
-        object_created.delay(self.request.user, 'adminuser', admin_user)
-        self.created_msg(_('User created successfully'))
+        settings = get_current_registry().settings
+        user = self.request.user
+        api = get_chef_api(settings, user)
+        try:
+            create_chef_admin_user(api, settings, admin_user['username'], admin_user['plain_password'])
+            self.created_msg(_('User created successfully'))
+            return True
+        except ChefServerError as e:
+            self.created_msg(e.message, 'danger')
+            self.collection.remove({'username': admin_user['username']})
+            raise e
 
 
 class AdminUserEditForm(BaseAdminUserForm):

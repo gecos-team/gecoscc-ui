@@ -518,11 +518,6 @@ class ChefTask(Task):
         self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
 
-    def adminuser_created(self, user, objnew, computers=None):
-        api = get_chef_api(self.app.conf, user)
-        create_chef_admin_user(api, self.app.conf, objnew['username'], objnew['plain_password'])
-        self.log_action('created', 'AdminUser', objnew)
-
 
 @task_prerun.connect
 def init_jobid(sender, **kargs):

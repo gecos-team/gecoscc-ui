@@ -1,3 +1,5 @@
+import re
+
 import colander
 import deform
 import os
@@ -83,6 +85,15 @@ class Unique(object):
         if mongodb.adminusers.find({node.name: value}).count() > 0:
             err_msg = _(self.err_msg, mapping={'val': value})
             node.raise_invalid(err_msg)
+
+
+class LowerAlphaNumeric(object):
+    err_msg = _('Only lowercase letters or numbers')
+    regex = re.compile(r'^([a-z]|[0-9])*$')
+
+    def __call__(self, node, value):
+        if not self.regex.match(value):
+            node.raise_invalid(self.err_msg)
 
 
 class AdminUserValidator(object):
@@ -228,15 +239,19 @@ class AdminUser(BaseUser):
     validator = AdminUserValidator()
     username = colander.SchemaNode(colander.String(),
                                    title=_('Username'),
-                                   validator=Unique('adminusers',
-                                                    _('There is a user with this username: ${val}')))
+                                   validator=colander.All(
+                                       Unique('adminusers',
+                                              _('There is a user with this username: ${val}')),
+                                       LowerAlphaNumeric()))
     password = colander.SchemaNode(colander.String(),
                                    title=_('Password'),
-                                   widget=deform.widget.PasswordWidget())
+                                   widget=deform.widget.PasswordWidget(),
+                                   validator=colander.Length(min=6))
     repeat_password = colander.SchemaNode(colander.String(),
                                           default='',
                                           title=_('Repeat the password'),
-                                          widget=deform.widget.PasswordWidget())
+                                          widget=deform.widget.PasswordWidget(),
+                                          validator=colander.Length(min=6))
     email = colander.SchemaNode(colander.String(),
                                 title=_('Email'),
                                 validator=colander.All(

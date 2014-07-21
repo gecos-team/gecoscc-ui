@@ -152,8 +152,9 @@ def _admin_edit(request, form_class, username=None):
         data = request.POST.items()
         try:
             admin_user = admin_user_form.validate(data)
-            admin_user_form.save(admin_user)
-            return HTTPFound(location=get_url_redirect(request))
+            success = admin_user_form.save(admin_user)
+            if success:
+                return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure, e:
             admin_user_form = e
     if instance and not data:
