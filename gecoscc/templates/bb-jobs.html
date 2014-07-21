@@ -73,9 +73,15 @@
                 <li><span class="triple-dot">&hellip;</span></li>
             <% } %>
             <% _.each(pages, function (p) { %>
-                <li <% if (p[1]) { print('class="active"'); } %>>
-                    <a href="#"><%= p[0] %></a>
-                </li>
+                <% if (p[1]) { %>
+                    <li class="active">
+                        <span><%= p[0] %></a>
+                    </li>
+                <% } else { %>
+                    <li>
+                        <a href="#"><%= p[0] %></a>
+                    </li>
+                <% } %>
             <% }); %>
             <% if (final) { %>
                 <li><span class="triple-dot">&hellip;</span></li>
