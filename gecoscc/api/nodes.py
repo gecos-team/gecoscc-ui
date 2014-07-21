@@ -94,8 +94,8 @@ class NodesResource(ResourcePaginatedReadOnly):
     }
     collection_name = 'nodes'
     objtype = 'nodes'
-    order_field = [('node_order', pymongo.ASCENDING),
-                   ('_id', pymongo.ASCENDING)]
+    order_field = [('node_order', pymongo.DESCENDING),
+                   ('name', pymongo.ASCENDING)]
 
     def get_objects_filter(self):
         # TODO
