@@ -93,7 +93,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     resource: this.model
                 });
             }
-            this.policiesList.render();
 
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");

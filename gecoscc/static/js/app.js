@@ -404,7 +404,7 @@ var App;
                     });
                 model
                     .off("policiesloaded")
-                    .once("policiesloaded", function () {
+                    .on("policiesloaded", function () {
                         if (_.has(view, "policiesList")) {
                             view.policiesList.render();
                         }

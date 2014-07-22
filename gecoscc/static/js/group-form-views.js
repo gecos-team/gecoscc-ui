@@ -102,7 +102,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     resource: this.model
                 });
             }
-            this.policiesList.render();
         },
 
         onRender: function () {
