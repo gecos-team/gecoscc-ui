@@ -138,12 +138,18 @@
         },
 
         refresh: function (evt) {
+            var that = this;
             if (!_.isUndefined(evt)) {
                 evt.preventDefault();
             }
+            $(this.el).fadeOut();
+            $(this.el).fadeIn(function () {
+                $(this).parent().parent().fadeIn(function () {
+                    $(this).find("button.close").click();
+                });
+            });
             this.groupsWidget = undefined;
             this.policiesList = undefined;
-            var that = this;
             this.model.fetch().done(function () {
                 that.render();
             });
