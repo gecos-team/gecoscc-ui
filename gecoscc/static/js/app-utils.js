@@ -149,7 +149,7 @@
                     that.render();
                 }).done(function () {
                     $(that.el).fadeIn(function () {
-                        $("#alerts-area").slideUp(function () {
+                        $("#alerts-area .alert").slideUp(function () {
                             $(this).find("button.close").click();
                         });
                     });
