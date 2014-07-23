@@ -3,10 +3,10 @@
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
 
-import collections
 import logging
 import re
 
+from ordereddict import OrderedDict
 from gzip import GzipFile
 from xml.dom import minidom
 from StringIO import StringIO
@@ -425,7 +425,7 @@ class ADImport(BaseAPI):
             orderedBySize[size].append(mongoObject)
 
         # Merge results in one dimensional dict
-        mongoObjects = collections.OrderedDict()
+        mongoObjects = OrderedDict()
         mongoObjects[mongoObjectRoot['adDistinguishedName']] = mongoObjectRoot
         for size, listMongoObjects in orderedBySize.items():
             for mongoObject in listMongoObjects:
