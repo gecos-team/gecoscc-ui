@@ -30,7 +30,8 @@ requires = [
     'WebHelpers==1.3',
     'Paste==1.7.5.1',
     'PyChef==0.2.3',
-    'jsonschema==2.3.0'
+    'jsonschema==2.3.0',
+    'ordereddict==1.1',
 ]
 
 setup(name='gecoscc',
