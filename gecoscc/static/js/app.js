@@ -425,16 +425,16 @@ var App;
 
             newPolicy: function (containerid, type, itemid) {
                 var resource = App.instances.cache.get(itemid),
-                    url = "ou" + containerid + '/' + type + '/' + itemid,
+                    url = "ou/" + containerid + '/' + type + '/' + itemid,
                     view;
 
                 if (_.isUndefined(resource)) {
+                    App.instances.router.navigate(url, { trigger: true });
                     App.showAlert(
                         "error",
                         gettext("Policies can't be directly accessed."),
                         gettext("You need to load the node that has the policy assigned first. Try again now.")
                     );
-                    App.instances.router.navigate(url, { trigger: true });
                     return;
                 }
 
@@ -450,15 +450,15 @@ var App;
                 var resource = App.instances.cache.get(itemid),
                     policy = App.instances.cache.get(policyid),
                     promise = $.Deferred(),
-                    url = "ou" + containerid + '/' + type + '/' + itemid;
+                    url = "ou/" + containerid + '/' + type + '/' + itemid;
 
                 if (_.isUndefined(resource)) {
+                    App.instances.router.navigate(url, { trigger: true });
                     App.showAlert(
                         "error",
                         gettext("Policies can't be directly accessed."),
                         gettext("You need to load the node that has the policy assigned first. Try again now.")
                     );
-                    App.instances.router.navigate(url, { trigger: true });
                     return;
                 }
 
