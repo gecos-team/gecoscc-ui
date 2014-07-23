@@ -69,6 +69,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                     resource: this.model
                 });
             }
+            this.policiesList.render();
         },
 
         saveForm: function (evt) {
