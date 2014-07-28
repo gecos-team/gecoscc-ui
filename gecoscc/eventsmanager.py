@@ -129,15 +129,3 @@ def get_jobstorage(request):
     else:
         user = None
     return JobStorage(request.db.jobs, user)
-
-
-class EventsManager(Session):
-
-    def on_open(self):
-        pass
-
-    def on_message(self, message):
-        pass
-
-    def on_close(self):
-        pass
