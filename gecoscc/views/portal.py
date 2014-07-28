@@ -28,12 +28,6 @@ def reports(context, request):
     return {}
 
 
-@view_config(route_name='sockjs_home', renderer='templates/sockjs/home.jinja2',
-             permission='edit')
-def sockjs_home(context, request):
-    return {}
-
-
 class LoginViews(BaseView):
 
     @view_config(route_name='login', renderer='templates/login.jinja2')
