@@ -490,7 +490,7 @@ class ADImport(BaseAPI):
                     del mongoObject['adEmailAddress']
                     # Check that email are unique and not empty
                     if mongoObject['email'] == '':
-                        mongoObject['email'] = '{0}@example.com'.format(mongoObject['name'])
+                        mongoObject['email'] = u'{0}@example.com'.format(mongoObject['name'])
                     updateMongoObject = True
 
                 # MemberOf
