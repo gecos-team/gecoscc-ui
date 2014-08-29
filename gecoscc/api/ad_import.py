@@ -544,6 +544,7 @@ class ADImport(BaseAPI):
                 'ok': True if successCounter == totalCounter else False
             }
         except Exception as e:
+            logging.exception(e)
             return {
                 'status': u'{0}'.format(e),
                 'ok': False
