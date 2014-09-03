@@ -32,6 +32,7 @@ requires = [
     'PyChef==0.2.3',
     'jsonschema==2.3.0',
     'ordereddict==1.1',
+    'xmltodict==0.9.0',
 ]
 
 setup(name='gecoscc',
