@@ -80,8 +80,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
         if 'iname' in self.request.GET:
             query.append({
                 'name': {
-                    '$regex': '.*{0}.*'.format(self.request.GET.get('iname'))
-                },
+                    '$regex': '.*{0}.*'.format(self.request.GET.get('iname')),
+                    '$options': '-i'
+                }
             })
 
         return query
