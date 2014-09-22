@@ -25,12 +25,22 @@
 
 App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
+    
+    Views.iconClasses = {
+        ou: "folder",
+        user: "user",
+        computer: "desktop",
+        printer: "print",
+        group: "group",
+        storage: "hdd-o",
+        repository: "archive"
+    };
 
     var treeContainerPre =
             '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
-            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-group"></span>\n' +
+            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-' + Views.iconClasses['ou'] + '"></span>\n' +
             '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '            <input type="checkbox" class="tree-selection">\n' +
             '        </div>\n' +
@@ -69,16 +79,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        </a></li>\n' +
             '    </ul>\n' +
             '</div>\n';
-
-    Views.iconClasses = {
-        ou: "group",
-        user: "user",
-        computer: "desktop",
-        printer: "print",
-        group: "link",
-        storage: "hdd-o",
-        repository: "archive"
-    };
 
     Views.Renderer = function (options) {
         this.$el = options.$el;
