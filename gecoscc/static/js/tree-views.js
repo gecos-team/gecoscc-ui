@@ -59,6 +59,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     App.instances.router.navigate("search/" + keyword,
                                                   { trigger: true });
                 });
+            //click button when enter key is pressed
+            $("#tree-search").keyup(function(evt){
+                if(evt.which === 13){
+                    $("#tree-search-btn").click();
+                }
+            });
         },
 
         render: function () {
