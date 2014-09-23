@@ -46,8 +46,6 @@ SCHEMA_EMITTER = {
 
 EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders_res')
 
-NO_OS_SUPPORTED = 'No OS supported'
-
 
 class Command(BaseCommand):
     description = """
@@ -141,10 +139,8 @@ class Command(BaseCommand):
                     del(value['properties'][ex_attr])
             path = value.pop('path')
 
-            try:
-                support_os = value['properties']['support_os']['default']
-            except KeyError:
-                support_os = NO_OS_SUPPORTED
+            support_os = value['properties']['support_os']['default']
+
             del value['properties']['support_os']
 
             if is_user_policy(path):
