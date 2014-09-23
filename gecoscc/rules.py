@@ -35,9 +35,13 @@ def get_object_related(obj_related, attrs=None):
     obj = {}
     if isinstance(attrs, tuple):
         for attr in attrs:
+            if obj_related[attr] is '':
+                continue
             obj[attr] = obj_related[attr]
     elif isinstance(attrs, dict):
         for obj_attr, obj_ui_attr in attrs.items():
+            if obj_related[obj_ui_attr] is '':
+                continue
             obj[obj_attr] = obj_related[obj_ui_attr]
     return obj
 
