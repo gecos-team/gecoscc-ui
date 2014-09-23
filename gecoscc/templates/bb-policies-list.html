@@ -4,6 +4,7 @@
         <thead>
             <tr>
                 <th>{{ gettext('Name') }}</th>
+                <th>{{ gettext('Support OS') }}</th>
                 <th>{{ gettext('Actions') }}</th>
             </tr>
         </thead>
@@ -13,6 +14,11 @@
                 <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
             ">
                 <td><%= policy.name %></td>
+                <td>
+                    <% _.each(policy.support_os, function (os) { %>
+                        <span class="label label-success"><%= os %></span>
+                    <% }); %>
+                </td>
                 <td>
                     <button class="btn btn-danger btn-xs">
                         <span class="fa fa-times"></span> {{ gettext('Remove') }}

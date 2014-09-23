@@ -68,6 +68,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
 
                     if (_.isUndefined(model)) { return; }
                     model.set("name", p.name);
+                    model.set("support_os", p.support_os);
                     model.set("schema", p.schema);
                 });
                 that.trigger("policiesloaded");

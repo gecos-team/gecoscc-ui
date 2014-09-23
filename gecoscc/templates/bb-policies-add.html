@@ -24,6 +24,10 @@
                         <span class="fa fa-plus"></span> {{ gettext('Add') }}
                     </button>
                     <% } %>
+                    <% _.each(policy.support_os, function (os) { %>
+                        <span class="label label-success"><%= os %></span>
+                    <% }); %>
+
                 </li>
             <% }); %>
         </ul>

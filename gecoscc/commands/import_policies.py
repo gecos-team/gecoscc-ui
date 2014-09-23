@@ -46,6 +46,8 @@ SCHEMA_EMITTER = {
 
 EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders_res')
 
+NO_OS_SUPPORTED = 'No OS supported'
+
 
 class Command(BaseCommand):
     description = """
@@ -138,6 +140,13 @@ class Command(BaseCommand):
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
             path = value.pop('path')
+
+            try:
+                support_os = value['properties']['support_os']['default']
+            except KeyError:
+                support_os = NO_OS_SUPPORTED
+            del value['properties']['support_os']
+
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
                 title = value['title']
@@ -149,14 +158,17 @@ class Command(BaseCommand):
                 targets = ['computer']
             else:
                 targets = DEFAULT_TARGETS
+
             policy = {
                 'name': value['title'],
                 'slug': key,
                 'path': path,
                 'schema': value,
                 'targets': targets,
-                'is_emitter_policy': False
+                'is_emitter_policy': False,
+                'support_os': support_os,
             }
+
             self.treatment_policy(policy)
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
@@ -170,5 +182,6 @@ class Command(BaseCommand):
                     'targets': POLICY_EMITTER_TARGETS[slug],
                     'is_emitter_policy': True,
                     'schema': schema,
+                    'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default']
                 }
                 self.treatment_policy(policy)

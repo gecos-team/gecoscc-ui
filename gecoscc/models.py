@@ -532,6 +532,7 @@ class Policy(colander.MappingSchema):
                                missing='')
     is_emitter_policy = colander.SchemaNode(colander.Boolean(),
                                             default=False)
+    support_os = StringList(missing=[], default=[])
 
 
 class Policies(colander.SequenceSchema):
