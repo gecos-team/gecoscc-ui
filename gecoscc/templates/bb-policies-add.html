@@ -27,10 +27,13 @@
                         <span class="fa fa-plus"></span> {{ gettext('Add') }}
                     </button>
                     <% } %>
-                    <% _.each(policy.support_os, function (os) { %>
-                        <span class="label label-success"><%= os %></span>
-                    <% }); %>
-
+                    <% if (policy.support_os && policy.support_os.length > 0) { %>
+                        <% _.each(policy.support_os, function (os) { %>
+                            <span class="label label-success"><%= os %></span>
+                        <% }); %>
+                     <% } else { %>
+                        <span class="label label-danger">{{ gettext('No supported OS') }}</span>
+                    <% } %>
                 </li>
             <% }); %>
         </ul>
