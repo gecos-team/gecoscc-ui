@@ -209,6 +209,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var id = $(evt.target).parents(".tree-node").first().attr("id");
 
             $("#tree-search").val("");
+            $("#tree-close-search-btn").hide()
             App.tree.show(this.treeView);
             App.instances.router.navigate("byid/" + id, { trigger: true });
         },

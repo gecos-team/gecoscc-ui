@@ -63,6 +63,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     else{
                         App.instances.router.navigate("search/" + keyword,
                                                   { trigger: true });
+                        $("#tree-close-search-btn").show()
                     }
                 });
             //click button when enter key is pressed
@@ -70,6 +71,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 if(evt.which === 13){
                     $("#tree-search-btn").click();
                 }
+            });
+            
+            $("#tree-close-search-btn")
+                .hide()
+                .click(function(evt){
+                    evt.preventDefault();
+                    App.instances.tree.loadFromPath("root");
+                    $(this).hide();
+                    $("#tree-search").val("");
+                    App.instances.router.navigate("/", { trigger: false });
             });
         },
 
