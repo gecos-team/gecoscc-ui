@@ -96,6 +96,15 @@ class LowerAlphaNumeric(object):
             node.raise_invalid(self.err_msg)
 
 
+class URLExtend(object):
+    err_msg = _('Invalid URL')
+    regex = re.compile(r'^(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$')
+
+    def __call__(self, node, value):
+        if not self.regex.match(value):
+            node.raise_invalid(self.err_msg)
+
+
 class AdminUserValidator(object):
 
     def __call__(self, node, value):
@@ -426,10 +435,11 @@ class Printer(Node):
                                      default='network',
                                      validator=colander.OneOf(
                                          PRINTER_CONN_TYPE.keys()))
-    uri = colander.SchemaNode(colander.String(),
-                              default='',
-                              missing='')
-    ppd_uri = colander.SchemaNode(colander.String())
+    uri = colander.SchemaNode(colander.String())
+    ppd_uri = colander.SchemaNode(colander.String(),
+                                  default='',
+                                  missing='',
+                                  validator=URLExtend())
 
 
 class Printers(colander.SequenceSchema):

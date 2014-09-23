@@ -23,7 +23,7 @@
 (function (App, Backbone, $, _) {
     "use strict";
 
-    var AlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex;
+    var AlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex, urlExtendRegex;
 
     /*
     * Regular expressions taken from:
@@ -48,6 +48,7 @@
 //         base64Regex = /[^a-zA-Z0-9\/\+=]/i,
 //         numericDashRegex = /^[\d\-\s]+$/,
     urlRegex = /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
+    urlExtendRegex = /^(https?|ftp|file):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[\-A-Za-z0-9+&@#\/%=~_|]$/;
 
     /*
     * End - validate.js
@@ -192,6 +193,8 @@
                     valid = valid && applyRegex(numericRegex, $el);
                 } else if ($el.is(".ip")) {
                     valid = valid && applyRegex(ipRegex, $el);
+                } else if ($el.is(".urlExtend")) {
+                    valid = valid && applyRegex(urlExtendRegex, $el);
                 }
             });
 
