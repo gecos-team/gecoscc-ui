@@ -25,7 +25,7 @@
 
 App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
-    
+
     Views.iconClasses = {
         ou: "folder",
         user: "user",
@@ -40,7 +40,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
-            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-' + Views.iconClasses['ou'] + '"></span>\n' +
+            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-' + Views.iconClasses.ou + '"></span>\n' +
             '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '            <input type="checkbox" class="tree-selection">\n' +
             '        </div>\n' +

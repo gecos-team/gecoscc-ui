@@ -57,31 +57,30 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     evt.preventDefault();
                     var keyword = $search.val().trim();
                     //empty search reload tree
-                    if(!keyword){
+                    if (!keyword) {
                         App.instances.tree.loadFromPath("root");
-                    }
-                    else{
+                    } else {
                         App.instances.router.navigate("search/" + keyword,
                                                   { trigger: true });
-                        $("#tree-close-search-btn").show()
+                        $("#tree-close-search-btn").show();
                     }
                 });
             //click button when enter key is pressed
-            $("#tree-search").keyup(function(evt){
-                if(evt.which === 13){
+            $("#tree-search").keyup(function (evt) {
+                if (evt.which === 13) {
                     $("#tree-search-btn").click();
                 }
             });
-            
+
             $("#tree-close-search-btn")
                 .hide()
-                .click(function(evt){
+                .click(function (evt) {
                     evt.preventDefault();
                     App.instances.tree.loadFromPath("root");
                     $(this).hide();
                     $("#tree-search").val("");
                     App.instances.router.navigate("/", { trigger: false });
-            });
+                });
         },
 
         render: function () {
