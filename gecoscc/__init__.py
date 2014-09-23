@@ -1,10 +1,11 @@
 import os
 import pymongo
 
-from pyramid.config import Configurator
-from pyramid.exceptions import ConfigurationError
 from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
+from pyramid.config import Configurator
+from pyramid.exceptions import ConfigurationError
+from pyramid.threadlocal import get_current_registry
 
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
@@ -154,6 +155,12 @@ def main(global_config, **settings):
     config.include('pyramid_sockjs')
     config.include('pyramid_celery')
     config.include('cornice')
+
+    def add_renderer_globals(event):
+        current_settings = get_current_registry().settings
+        event['help_manual_url'] = current_settings['help_manual_url']
+
+    config.add_subscriber(add_renderer_globals, 'pyramid.events.BeforeRender')
 
     config.add_subscriber('gecoscc.i18n.setAcceptedLanguagesLocale',
                           'pyramid.events.NewRequest')
