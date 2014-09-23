@@ -56,8 +56,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .on("click", function (evt) {
                     evt.preventDefault();
                     var keyword = $search.val().trim();
-                    App.instances.router.navigate("search/" + keyword,
+                    //empty search reload tree
+                    if(!keyword){
+                        App.instances.tree.loadFromPath("root");
+                    }
+                    else{
+                        App.instances.router.navigate("search/" + keyword,
                                                   { trigger: true });
+                    }
                 });
             //click button when enter key is pressed
             $("#tree-search").keyup(function(evt){
