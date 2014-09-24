@@ -158,6 +158,8 @@ def _admin_edit(request, form_class, username=None):
         instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
         data = request.POST.items()
+        if username:
+            data.append(('username', username))
         try:
             admin_user = admin_user_form.validate(data)
             success = admin_user_form.save(admin_user)

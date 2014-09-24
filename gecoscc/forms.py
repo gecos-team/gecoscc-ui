@@ -119,6 +119,7 @@ class AdminUserEditForm(BaseAdminUserForm):
         schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
+        self.children[self.sorted_fields.index('username')].widget.readonly = True
 
     def save(self, admin_user):
         if admin_user['password'] == '':
