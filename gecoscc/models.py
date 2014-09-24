@@ -388,6 +388,9 @@ class Computer(Node):
     registry = colander.SchemaNode(colander.String(),
                                    default='',
                                    missing='')
+    serial = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})

@@ -40,13 +40,13 @@
                             </div>
                         </div></div>
                         <div class="row">
-                            <div class="col-md-4 col-xs-12">
+                            <div class="col-md-6 col-xs-12">
                                 <div class="form-group">
                                     <label for="name">{{ gettext('Name') }}</label>
                                     <input id="name" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('John\'s laptop') }}" required value="<%= name %>">
                                 </div>
                             </div>
-                            <div class="col-md-4 col-xs-12">
+                            <div class="col-md-6 col-xs-12">
                                 <div class="form-group">
                                     <label for="family">{{ gettext('Type') }}</label>
                                     <select id="family" class="form-control">
@@ -57,10 +57,18 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-4 col-xs-12">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 col-xs-12">
                                 <div class="form-group">
                                     <label for="registry">{{ gettext('Registry number') }}</label>
                                     <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA123DEP03" value="<%= registry %>">
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-xs-12">
+                                <div class="form-group">
+                                    <label for="serial">{{ gettext('Serial number') }}</label>
+                                    <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456" value="<%= serial %>">
                                 </div>
                             </div>
                         </div>
