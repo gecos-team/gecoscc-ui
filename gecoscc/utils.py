@@ -143,6 +143,15 @@ def create_chef_admin_user(api, settings, username, password):
         save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
 
+def delete_chef_admin_user(api, settings, username):
+    try:
+        api.api_request('DELETE', '/users/%s/' % username)
+        api.api_request('DELETE', '/clients/%s/' % username)
+        return True
+    except:
+        return False
+
+
 def get_pem_for_username(settings, username, pem_name):
     return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
 
