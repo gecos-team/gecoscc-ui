@@ -346,6 +346,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         cancel: function (evt) {
             evt.preventDefault();
             App.instances.router.navigate(this.getUrl(), { trigger: true });
+            $("#policy-tab a").tab("show");
         },
 
         filter: function (evt) {

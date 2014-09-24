@@ -104,6 +104,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         processForm: function (values) {
             var url = this.getResourceUrl();
+            console.log(this.getResourceUrl());
 
             this.resource.addPolicy(this.model, values);
             App.showAlert(
@@ -115,6 +116,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.instances.router.navigate(url, {
                     trigger: true
                 });
+                $("#policy-tab a").tab("show");
             }, 2000);
         },
 
@@ -123,6 +125,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             App.instances.router.navigate(this.getResourceUrl(), {
                 trigger: true
             });
+            $("#policy-tab a").tab("show");
         },
 
         onDelete: function (evt) {
@@ -139,6 +142,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.instances.router.navigate(url, {
                     trigger: true
                 });
+                $("#policy-tab a").tab("show");
             }, 2000);
         }
     });
