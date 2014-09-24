@@ -425,22 +425,29 @@ var App;
 
             newPolicy: function (containerid, type, itemid) {
                 var resource = App.instances.cache.get(itemid),
-                    url = "ou/" + containerid + '/' + type + '/' + itemid,
-                    view;
+                    that,
+                    Model;
 
                 if (_.isUndefined(resource)) {
-                    App.instances.router.navigate(url, { trigger: true });
-                    App.showAlert(
-                        "error",
-                        gettext("Policies can't be directly accessed."),
-                        gettext("You need to load the node that has the policy assigned first. Try again now.")
-                    );
+                    Model = this._typeClasses(type)[0];
+                    resource = new Model({ id: itemid });
+                    App.instances.cache.set(itemid, resource);
+
+                    that = this;
+
+                    resource.fetch().done(function () {
+                        that.showPoliciesView(resource);
+                    });
                     return;
                 }
 
+                this.showPoliciesView(resource);
+            },
+
+            showPoliciesView: function (resource) {
                 App.main.show(App.instances.loaderView);
 
-                view = new App.Policies.Views.AllPoliciesWidget({
+                var view = new App.Policies.Views.AllPoliciesWidget({
                     resource: resource
                 });
                 App.main.show(view);

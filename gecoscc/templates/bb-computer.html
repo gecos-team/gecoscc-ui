@@ -1,8 +1,8 @@
 <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>">
     <ul class="nav nav-tabs">
-        <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
+        <li class="active" id="info-tab"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
         <li><a href="#ohai" data-toggle="tab">{{ gettext('Computer specifications') }}</a></li>
-        <li><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
+        <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
     </ul>
 
     <div class="tab-content" id="computers">
