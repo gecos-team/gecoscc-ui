@@ -2,6 +2,8 @@ import urllib2
 
 from cornice.resource import resource
 from chef import Node as ChefNode
+from chef import ChefError
+from chef.exceptions import ChefServerError
 from gecoscc.utils import get_chef_api
 
 
@@ -27,8 +29,8 @@ class ComputerResource(TreeLeafResourcePaginated):
 
     def get(self):
         result = super(ComputerResource, self).get()
-        api = get_chef_api(self.request.registry.settings, self.request.user)
         try:
+            api = get_chef_api(self.request.registry.settings, self.request.user)
             computer_node = ChefNode(result['node_chef_id'], api)
             ohai = computer_node.attributes.to_dict()
             cpu = ohai.get('cpu', {}).get('0', {})
@@ -44,6 +46,6 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'kernel': ohai.get('kernel', {}),
                            'filesystem': ohai.get('filesystem', {}),
                            })
-        except urllib2.URLError:
+        except (urllib2.URLError, ChefError, ChefServerError):
             pass
         return result
