@@ -29,6 +29,8 @@ class ComputerResource(TreeLeafResourcePaginated):
 
     def get(self):
         result = super(ComputerResource, self).get()
+        if not result.get('node_chef_id', None):
+            return result
         try:
             api = get_chef_api(self.request.registry.settings, self.request.user)
             computer_node = ChefNode(result['node_chef_id'], api)
