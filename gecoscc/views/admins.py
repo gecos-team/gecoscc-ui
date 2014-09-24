@@ -17,7 +17,8 @@ def admins(context, request):
     filters = None
     q = request.GET.get('q', None)
     if q:
-        filters = {'username': {'$regex': '.*%s.*' % q}}
+        filters = {'username': {'$regex': '.*%s.*' % q,
+                                '$options': '-i'}}
     admin_users = request.userdb.list_users(filters).sort('username')
     page = create_pagination_mongo_collection(request, admin_users)
     return {'admin_users': admin_users,
