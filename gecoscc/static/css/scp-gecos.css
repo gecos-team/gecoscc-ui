@@ -18,14 +18,12 @@
     margin-top: 20px !important;
 }
 
-.navbar-header {
-    float: left;
-    padding: 4px 0 4px 15%;
+#navbar-header {
     background-color: #2aabb0;
 }
 
 .navbar-logo img{
-    padding-right: 5px;
+    padding: 4px 0px;
 }
 
 .navbar-brand {
