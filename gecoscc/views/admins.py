@@ -1,6 +1,7 @@
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.security import forget
+from pyramid.threadlocal import get_current_registry
 
 from deform import ValidationFailure
 
@@ -9,6 +10,7 @@ from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariable
 from gecoscc.i18n import TranslationString as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage
 from gecoscc.pagination import create_pagination_mongo_collection
+from gecoscc.utils import delete_chef_admin_user, get_chef_api
 
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
@@ -135,6 +137,11 @@ def admin_delete(context, request):
     username = request.GET.get('username')
     if request.session['auth.userid'] == username:
         forget(request)
+    settings = get_current_registry().settings
+    api = get_chef_api(settings, request.user)
+    success_remove_chef = delete_chef_admin_user(api, settings, username)
+    if not success_remove_chef:
+        messages.created_msg(request, _('User deleted unsuccessfully from chef'), 'danger')
     request.userdb.delete_users({'username': username})
     messages.created_msg(request, _('User deleted successfully'), 'success')
     return {'ok': 'ok'}
