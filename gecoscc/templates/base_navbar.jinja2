@@ -10,9 +10,10 @@
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="row">
             <div class="navbar-header">
-                <span class="navbar-brand">{{ gettext('Control Center') }}</span>
+                <span class="navbar-logo pull-left"><img src="{{ request.application_url }}/static/images/gecos-logo-header.png"></span>
             </div>
             <div class="collapse navbar-collapse main-navbar-collapse">
+                <span class="navbar-brand pull-left">{{ gettext('Control Center') }}</span>
                 <ul class="nav navbar-nav pull-right">
                     <li class="{% block nav_bar_home %}active{% endblock %}">
                         <a href="{{ request.route_url('home') }}">{{ gettext('Home') }}</a>
