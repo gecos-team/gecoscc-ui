@@ -252,7 +252,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click ul.pagination a": "goToPage",
             "click button.add-policy-btn": "add",
             "click button#cancel": "cancel",
-            "click button#newpolicy-filter-btn": "filter"
+            "click button#newpolicy-filter-btn": "filter",
+            "click button#policy-close-search-btn": "clearSearch",
+            "keyup #newpolicy-filter": "checkEnterKey"
         },
 
         resource: undefined,
@@ -353,8 +355,26 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.collection = new App.Policies.Models.SearchPolicyCollection({resource: this.resource,
                                                                               keyword: keyword});
             this.collection.goTo(1, {
-                success: function () { that.render(); }
+                success: function () {
+                    that.render();
+                    if (keyword) {
+                        $("#policy-close-search-btn").show();
+                    }
+                }
             });
+        },
+
+        checkEnterKey: function (evt) {
+            evt.preventDefault();
+            if (evt.which === 13) {
+                this.filter(evt);
+            }
+        },
+
+        clearSearch: function (evt) {
+            evt.preventDefault();
+            $(evt.target).parents(".input-group").find("input").val("");
+            this.filter(evt);
         }
     });
 });

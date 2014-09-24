@@ -227,6 +227,12 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             App.instances.staging.on("change", function () {
                 that.render();
             });
+
+            window.onbeforeunload = function () {
+                if (App.instances.staging.length > 0) {
+                    return 'You have made some changes which you might want to save.';
+                }
+            };
         },
 
         showReport: function (evt) {
