@@ -195,6 +195,28 @@ class ChainedSelectWidget(SelectWidget):
 
     null_value = ['']
 
+    def get_select(self, mongodb, path, field_iter, html, **kw):
+        for j, item_path in enumerate(path):
+            readonly = kw.get('readonly', self.readonly)
+            if item_path:
+                values = get_items_ou_children(item_path, mongodb.nodes, 'ou')
+                values = [(item['_id'], item['name']) for item in values]
+                if not values:
+                    continue
+                values = [('', 'Select an Organisational Unit')] + values
+                if j == len(path) - 1:
+                    select_value = ''
+                else:
+                    select_value = path[j + 1]
+            else:
+                values = kw.get('values', self.values)
+                select_value = item_path
+            template = readonly and self.readonly_template or self.template
+            kw['values'] = _normalize_choices(values)
+            tmpl_values = self.get_template_values(field_iter, select_value, kw)
+            html += field_iter.renderer(template, **tmpl_values)
+        return html
+
     def serialize(self, field, cstruct, **kw):
         html = ""
         if cstruct in (null, None, []):
@@ -215,26 +237,12 @@ class ChainedSelectWidget(SelectWidget):
                 path.append(cstruct_item)
             else:
                 path = [cstruct_item]
-            for j, item_path in enumerate(path):
-                readonly = kw.get('readonly', self.readonly)
-                if item_path:
-                    values = get_items_ou_children(item_path, mongodb.nodes, 'ou')
-                    values = [(item['_id'], item['name']) for item in values]
-                    if not values:
-                        continue
-                    values = [('', 'Select an Organisational Unit')] + values
-                    if j == len(path) - 1:
-                        select_value = ''
-                    else:
-                        select_value = path[j + 1]
-                else:
-                    values = kw.get('values', self.values)
-                    select_value = item_path
-                template = readonly and self.readonly_template or self.template
-                kw['values'] = _normalize_choices(values)
-                tmpl_values = self.get_template_values(field_iter, select_value, kw)
-                html += field_iter.renderer(template, **tmpl_values)
+            html += self.get_select(mongodb, path, field_iter, html, **kw)
             html += "<p></p>"
+        if not html:
+            ou = mongodb.nodes.find_one({'path': 'root'})
+            path = ou['path'].split(',')
+            html += self.get_select(mongodb, path, field_iter, html, **kw)
         return html
 
 
