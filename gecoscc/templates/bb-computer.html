@@ -28,12 +28,16 @@
                                             <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd> 
                                             <dt>{{ gettext('Uptime') }}</dt>
                                             <dd><%= uptime %></dd>
+                                            <dt>{{ gettext('Manufacturer and model') }}</dt>
+                                            <dd><%= manufacturer %> <%= product_name %></dd>
                                         </dl>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
-                                            <dt>{{ gettext('Manufacturer and model') }}</dt>
-                                            <dd><%= manufacturer %> <%= product_name %></dd>
+                                            <dt>{{ gettext('Gecos cc id') }}</dt>
+                                            <dd><%= _id %></dd>
+                                            <dt>{{ gettext('Node chef id') }}</dt>
+                                            <dd><% if (typeof(node_chef_id) !== "undefined") { %> <%= node_chef_id %> <%}%></dd>
                                         </dl>
                                     </div>
                                 </div>
