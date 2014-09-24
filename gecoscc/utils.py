@@ -100,7 +100,7 @@ def get_items_ou_children(ou_id, collection_nodes, objtype=None):
         filters['path'] = get_filter_children_ou(ou_id)
     else:
         filters['path'] = 'no-root'
-    ous = collection_nodes.find(filters)
+    ous = collection_nodes.find(filters).sort('name')
     return [{'_id': unicode(ou['_id']),
              'name': ou['name']} for ou in ous]
 
