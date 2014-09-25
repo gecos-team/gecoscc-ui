@@ -52,8 +52,8 @@ class GPOConversor(object):
             if not isinstance(node, list):
                 node = [node]
             result = []
-            for node in node:
-                result += self.getNodesFromPath(node, subPath)
+            for subNode in node:
+                result += self.getNodesFromPath(subNode, subPath)
             return result
 
     def apply(self, xmlgpo):
