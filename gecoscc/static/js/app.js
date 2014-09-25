@@ -536,4 +536,5 @@ var App;
     App.instances.message_manager.bind('jobs', function () {
         App.instances.job_collection.fetch();
     });
+    App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));

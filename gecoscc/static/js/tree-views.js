@@ -263,14 +263,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
             });
 
+            if (App.instances.cut === undefined) {
+                $html.find("a.text-warning").parent("li").remove();
+            }
+
             $html.find("a.text-warning").click(function (evt) {
                 evt.preventDefault();
-                /*GecosUtils.askConfirmation({
-                    callback: _.bind(that._pasteOU, ouId),
-                    message: gettext("Moving an OU is a permanent action. " +
-                                     "It will also move all its children.")
-                });*/
-                console.log("paste");
                 _.bind(that._pasteOU, ouId)();
             });
         },
