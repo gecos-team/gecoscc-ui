@@ -335,6 +335,18 @@
                     );
                 }
             });
+        },
+
+        cutModel: function (evt) {
+            evt.preventDefault();
+            var that = this,
+                $button = $(evt.target);
+
+            this._showSavingProcess($button, "progress");
+            App.instances.cut = this.model;
+            setTimeout(function () {
+                that._showSavingProcess($button, "success");
+            }, 1000);
         }
     });
 

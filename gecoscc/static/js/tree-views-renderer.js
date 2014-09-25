@@ -77,6 +77,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '        <li><a href="#" class="text-danger">\n' +
             '            <span class="fa fa-times"></span> ' + gettext('Delete') + '\n' +
             '        </a></li>\n' +
+            '        <li><a href="#" class="text-warning">\n' +
+            '            <span class="fa fa-paste"></span> ' + gettext('Paste') + '\n' +
+            '        </a></li>\n' +
             '    </ul>\n' +
             '</div>\n';
 
