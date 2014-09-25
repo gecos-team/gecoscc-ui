@@ -10,7 +10,7 @@ from webob.multidict import MultiDict
 
 from gecoscc.tasks import object_created, object_changed, object_deleted
 from gecoscc.socks import invalidate_change, invalidate_delete
-from gecoscc.utils import get_computer_of_user
+from gecoscc.utils import get_computer_of_user, get_filter_in_domain
 
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
@@ -286,12 +286,11 @@ class TreeResourcePaginated(ResourcePaginated):
 
     def check_unique_node_name_by_type_at_domain(self, obj):
         filters = {}
-        path = obj['path'].split(',')
-        if len(path) >= 3:
-            path_domain = path[:3]
-            filters['path'] = {'$regex': '^%s' % ','.join(path_domain)}
+        levels = obj['path'].count(',')
+        if levels >= 2:
+            filters['path'] = get_filter_in_domain(obj)
         else:
-            current_path = path[:2]
+            current_path = obj['path']
             filters['path'] = ','.join(current_path)
 
         filters['name'] = obj['name']

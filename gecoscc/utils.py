@@ -222,3 +222,12 @@ def register_or_updated_node(api, node_id, ou, collection_nodes):
     if mongo_node:
         return update_node(api, node_id, ou, collection_nodes)
     return register_node(api, node_id, ou, collection_nodes)
+
+
+def get_domain_path(node):
+    return node['path'].split(',')[:3]
+
+
+def get_filter_in_domain(node):
+    path_domain = get_domain_path(node)
+    return {'$regex': '^%s' % ','.join(path_domain)}
