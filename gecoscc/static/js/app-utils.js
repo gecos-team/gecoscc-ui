@@ -284,6 +284,8 @@
             promise = this.model.save();
             setTimeout(function () {
                 that._showSavingProcess($button, "saved");
+                App.instances.staging.toModify.push(that.model.get("id"));
+                App.instances.tree.trigger("change");
             }, 1000);
 
             promise.done(function () {

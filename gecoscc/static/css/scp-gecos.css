@@ -156,6 +156,11 @@ footer {
     border-radius: 6px;
 }
 
+.modified {
+    color: #428bca !important;
+    border-radius: 6px;
+}
+
 .cut {
     color: #CCC !important;
     border-radius: 6px;

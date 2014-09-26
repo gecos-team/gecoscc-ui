@@ -43,6 +43,10 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
                 $("#" + id).addClass("deleted");
                 $("#" + id).removeClass("tree-selected");
             });
+            _.each(App.instances.staging.toModify, function (id) {
+                $("#" + id).addClass("modified");
+                $("#" + id).removeClass("tree-selected");
+            });
             _.each(App.instances.staging.toMove, function (ids) {
                 modelCut = $("#" + ids[0]);
                 modelCut.addClass("pasted");

@@ -29,6 +29,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.argumentsIndex = {};
             this.toDelete = [];
             this.toMove = [];
+            this.toModify = [];
             this.listenTo(App, 'action_change', this.onAction);
             this.listenTo(App, 'action_delete', this.onAction);
         },
@@ -103,6 +104,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 });
                 that.toMove = _.reject(that.toMove, function (objId) {
                     return objId[0] === id;
+                });
+                that.toModify = _.reject(that.toModify, function (objId) {
+                    return objId === id;
                 });
                 that.remove(model, options); // Actually remove it from the collection
 
@@ -179,7 +183,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
         serializeData: function () {
             return {
                 items: this.collection.toJSON(),
-                deletions: this.collection.toDelete
+                deletions: this.collection.toDelete,
+                moves: this.collection.toMove
             };
         },
 
@@ -257,6 +262,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             $.when.apply($, promises)
                 .done(function () {
                     App.tree.currentView.activeNode = null;
+                    App.instances.tree.trigger("change");
                     App.instances.router.navigate("", { trigger: true });
                 }).always(function () {
                     that.inProgress = false;
