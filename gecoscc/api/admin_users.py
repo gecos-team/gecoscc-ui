@@ -1,6 +1,5 @@
 import os
 
-from bson import ObjectId
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
@@ -33,19 +32,6 @@ class AdminUserResource(BaseAPI):
         gcc['gcc_link'] = True
         gcc['uri_gcc'] = self.request.host_url
         gcc['gcc_username'] = self.request.user['username']
-        ou_ids_availables = self.request.user.get('ou_availables', []) or []
-        ous = []
-        if ou_ids_availables:
-            ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
-            ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou', '_id': {'$in': ou_ids_availables}})]
-            for ou_ids_available in ou_ids_availables:
-                ou_availables_children = get_items_ou_children(ou_ids_available, self.request.db.nodes, 'ou')
-                if ou_availables_children:
-                    ous += [(ou_children['_id'], ou_children['name']) for ou_children in ou_availables_children]
-            ous = list(set(ous))
-        elif user.get('is_superuser'):
-            ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find({'type': 'ou'})]
-        gcc['ou_username'] = ous
 
         auth_type = variables.get('auth_type', 'LDAP')
         if auth_type == 'LDAP':

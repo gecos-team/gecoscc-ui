@@ -5,12 +5,12 @@ from bson import ObjectId
 from chef import Node
 from cornice.resource import resource
 
+from pyramid.threadlocal import get_current_registry
+
 from gecoscc.api import BaseAPI
 from gecoscc.models import Job
 from gecoscc.utils import get_chef_api
 from gecoscc.socks import invalidate_jobs
-
-from pyramid.threadlocal import get_current_registry
 
 
 @resource(path='/chef/status/',

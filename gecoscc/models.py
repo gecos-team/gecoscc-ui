@@ -240,9 +240,7 @@ class ChainedSelectWidget(SelectWidget):
             html += self.get_select(mongodb, path, field_iter, html, **kw)
             html += "<p></p>"
         if not html:
-            ou = mongodb.nodes.find_one({'path': 'root'})
-            path = ou['path'].split(',')
-            html += self.get_select(mongodb, path, field_iter, html, **kw)
+            html += self.get_select(mongodb, ['root'], field_iter, html, **kw)
         return html
 
 

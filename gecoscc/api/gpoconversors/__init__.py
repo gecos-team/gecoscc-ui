@@ -31,18 +31,29 @@ class GPOConversor(object):
             return self.db[self.mongoCollectionName].update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
 
     def getNodesFromPath(self, lst, path):
+
         subPath = list(path)
         nodename = subPath.pop(0)
-        if nodename not in lst:
+
+        # Clean namespaces prefix inside first level of nodes from lst
+        for old_key in lst.keys():
+            old_key_splitted = old_key.split(':') # namespace prefix separator
+            new_key = old_key_splitted[1] if len(old_key_splitted) > 1 else old_key
+            lst[new_key] = lst.pop(old_key)
+
+        # Get node from lst by nodename
+        node = lst[nodename] if nodename in lst else None
+        if node is None:
             return []
+
         if len(subPath) == 0:
-            return lst[nodename] if isinstance(lst[nodename], list) else [lst[nodename]]
+            return node if isinstance(node, list) else [node]
         else:
-            if not isinstance(lst[nodename], list):
-                lst[nodename] = [lst[nodename]]
+            if not isinstance(node, list):
+                node = [node]
             result = []
-            for node in lst[nodename]:
-                result += self.getNodesFromPath(node, subPath)
+            for subNode in node:
+                result += self.getNodesFromPath(subNode, subPath)
             return result
 
     def apply(self, xmlgpo):

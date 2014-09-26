@@ -25,7 +25,7 @@ class DesktopBackground(GPOConversor):
 
         # Find into XmlGPO the wallpaper policy
         wallpaper_url = None
-        nodes = self.getNodesFromPath(xmlgpo, ['Computer', 'ExtensionData', 'Extension', 'q3:RegistrySettings', 'q3:Registry', 'q3:Properties'])
+        nodes = self.getNodesFromPath(xmlgpo, ['Computer', 'ExtensionData', 'Extension', 'RegistrySettings', 'Registry', 'Properties'])
         for node in nodes:
             if '@name' in node and node['@name'] == 'Wallpaper' and node['@value'] is not None:
                 wallpaper_url = node['@value']
