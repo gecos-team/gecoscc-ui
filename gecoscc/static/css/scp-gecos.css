@@ -143,12 +143,17 @@ footer {
 }
 
 .deleted {
-    background-color: red !important;
+    color: #d9534f !important;
     border-radius: 6px;
 }
 
-.warning {
-    background-color: orange !important;
+.cut {
+    color: rgb(255, 230, 195) !important;
+    border-radius: 6px;
+}
+
+.pasted {
+    color: rgb(240, 173, 78) !important;
     border-radius: 6px;
 }
 
@@ -335,6 +340,10 @@ div.groups-widget .chzn-container {
 
 #computers .info-icon {
     margin-top: 25px;
+}
+
+#cut {
+    margin-right: 5px;
 }
 
 /* Pagination */

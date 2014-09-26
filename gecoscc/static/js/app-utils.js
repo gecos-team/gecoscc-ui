@@ -340,14 +340,15 @@
 
         cutModel: function (evt) {
             evt.preventDefault();
-            var that = this,
-                $button = $(evt.target);
-
-            this._showSavingProcess($button, "progress");
+            var $button = $(evt.target);
+            $button.attr("disabled", "disabled");
             App.instances.cut = this.model;
+            App.instances.tree.trigger("change");
+
             setTimeout(function () {
-                that._showSavingProcess($button, "success");
-            }, 1000);
+                $button.attr("disabled", false);
+            }, 2000);
+
         }
     });
 

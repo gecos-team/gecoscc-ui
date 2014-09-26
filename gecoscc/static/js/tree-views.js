@@ -206,7 +206,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
-        _pasteOU: function () {
+        _pasteOU: function (evt) {
             var modelCut = App.instances.cut,
                 modelParent = new App.OU.Models.OUModel({ id: this });
 
@@ -237,7 +237,9 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                         );
                     }
                 );
+                App.instances.staging.toMove.push([modelCut.get("id"), modelParent.get("id")]);
                 App.instances.cut = undefined;
+                App.instances.tree.trigger("change");
             }});
         },
 

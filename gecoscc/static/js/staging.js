@@ -28,6 +28,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.promiseIndex = {};
             this.argumentsIndex = {};
             this.toDelete = [];
+            this.toMove = [];
             this.listenTo(App, 'action_change', this.onAction);
             this.listenTo(App, 'action_delete', this.onAction);
         },
@@ -99,6 +100,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 delete that.argumentsIndex[id];
                 that.toDelete = _.reject(that.toDelete, function (objId) {
                     return objId === id;
+                });
+                that.toMove = _.reject(that.toMove, function (objId) {
+                    return objId[0] === id;
                 });
                 that.remove(model, options); // Actually remove it from the collection
 
@@ -200,7 +204,6 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         updateTree: function () {
-            console.log("change");
             App.instances.tree.trigger("change");
         }
     });

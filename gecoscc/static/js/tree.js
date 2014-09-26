@@ -24,7 +24,8 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
     "use strict";
 
     App.addInitializer(function () {
-        var treeView;
+        var treeView,
+            modelCut;
 
         App.instances.tree = new Tree.Models.TreeModel();
         App.instances.tree.reloadTree(function () {
@@ -42,6 +43,16 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
                 $("#" + id).addClass("deleted");
                 $("#" + id).removeClass("tree-selected");
             });
+            _.each(App.instances.staging.toMove, function (ids) {
+                modelCut = $("#" + ids[0]);
+                modelCut.addClass("pasted");
+                modelCut.removeClass("tree-selected");
+                $("#" + ids[1]).find(".tree-container-content").first().prepend(modelCut);
+            });
+            if (App.instances.cut) {
+                $("#" + App.instances.cut.get("id")).addClass("cut");
+                $("#" + App.instances.cut.get("id")).removeClass("tree-selected");
+            }
         });
     });
 });
