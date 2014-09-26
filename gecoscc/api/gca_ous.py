@@ -9,7 +9,7 @@ from gecoscc.utils import get_items_ou_children
 
 
 @resource(path='/ou/gca/',
-          description='Ous public API',
+          description='Ous gca API',
           validators=(http_basic_login_required,))
 class GCAOuResource(BaseAPI):
 
