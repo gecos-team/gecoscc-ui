@@ -42,14 +42,14 @@ class RegisterComputerResource(BaseAPI):
                                                'path': {'$ne': 'root'}})
         if not ou:
             return {'ok': False,
-                    'error': 'Ou does not exists'}
+                    'message': 'Ou does not exists'}
 
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
         computer_id = register_node(api, node_id, ou, self.collection)
         if not computer_id:
             return {'ok': False,
-                    'error': 'Node does not exist (in chef)'}
+                    'message': 'Node does not exist (in chef)'}
         computer = self.collection.find_one({'_id': computer_id})
         self.apply_policies_to_computer(computer)
         return {'ok': True}
@@ -59,7 +59,7 @@ class RegisterComputerResource(BaseAPI):
         computer = self.collection.find_one({'node_chef_id': node_id})
         if not computer:
             return {'ok': False,
-                    'error': 'Computer does not exists'}
+                    'message': 'Computer does not exists'}
         self.apply_policies_to_computer(computer)
         return {'ok': True}
 
@@ -71,7 +71,7 @@ class RegisterComputerResource(BaseAPI):
             return {'ok': True}
         elif num_node_deleted < 1:
             return {'ok': False,
-                    'error': 'This node does not exist (mongodb)'}
+                    'message': 'This node does not exist (mongodb)'}
         elif num_node_deleted > 1:
             return {'ok': False,
-                    'error': 'Deleted %s computers' % num_node_deleted}
+                    'message': 'Deleted %s computers' % num_node_deleted}
