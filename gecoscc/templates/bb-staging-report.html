@@ -13,8 +13,10 @@
                                 <span class="label label-danger">{{ gettext('Deleted') }}</span>
                             <% } else if (_.some(moves, function (o) { return o[0] === model.id; })) { %>
                                 <span class="label label-warning">{{ gettext('Moved') }}</span>
-                            <% } else { %>
+                            <% } else if (_.contains(modified, model.id)) { %>
                                 <span class="label label-primary">{{ gettext('Modified') }}</span>
+                            <% } else { %>
+                                <span class="label label-info">{{ gettext('Added') }}</span>
                             <% } %>
                             <%= model.name %>
                             <button class="discard btn btn-info btn-xs pull-right" title="{{ gettext('Discard changes') }}">

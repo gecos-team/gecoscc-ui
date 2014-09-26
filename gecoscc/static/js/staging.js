@@ -184,7 +184,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             return {
                 items: this.collection.toJSON(),
                 deletions: this.collection.toDelete,
-                moves: this.collection.toMove
+                moves: this.collection.toMove,
+                modified: this.collection.toModify
             };
         },
 

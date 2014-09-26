@@ -284,7 +284,11 @@
             promise = this.model.save();
             setTimeout(function () {
                 that._showSavingProcess($button, "saved");
-                App.instances.staging.toModify.push(that.model.get("id"));
+                if (!isNew) {
+                    App.instances.staging.toModify.push(that.model.get("id"));
+                } else {
+                
+                }
                 App.instances.tree.trigger("change");
             }, 1000);
 
