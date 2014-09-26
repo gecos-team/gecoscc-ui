@@ -35,13 +35,16 @@ class RegisterUserResource(BaseAPI):
         node = self.collection.find_one({'node_chef_id': node_id, 'type': 'computer'})
         if not node:
             return {'ok': False,
-                    'error': 'This node does not exist (mongodb)'}
+                    'message': 'This node does not exist (mongodb)'}
         if not gcc_username:
             return {'ok': False,
                     'message': 'Please set a admin username (gcc_username)'}
 
         settings = get_current_registry().settings
         self.request.user = self.request.db.adminusers.find_one({'username': gcc_username})
+        if not self.request.user:
+            return {'ok': False,
+                    'message': 'The admin user %s does not exists' % gcc_username}
         api = get_chef_api(settings, self.request.user)
         chef_node = ChefNode(node_id, api)
         try:
@@ -72,5 +75,5 @@ class RegisterUserResource(BaseAPI):
 
         if users_does_not_find:
             return {'ok': False,
-                    'error': 'These users does not exists: %s' % ','.join(users_does_not_find)}
+                    'message': 'These users does not exists: %s' % ','.join(users_does_not_find)}
         return {'ok': True}
