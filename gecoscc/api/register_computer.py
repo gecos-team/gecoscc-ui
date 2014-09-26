@@ -37,10 +37,9 @@ class RegisterComputerResource(BaseAPI):
         else:
             ou_availables = self.request.user.get('ou_availables')
             if isinstance(ou_availables, list) and len(ou_availables) > 0:
-                ou = self.collection.find_one({'_id': ObjectId(ou_availables[0]), 'type': 'ou'})
-            else:
-                if self.request.user.get('is_superuser'):
-                    ou = self.collection.find_one({'path': 'root', 'type': 'ou'})
+                ou = self.collection.find_one({'_id': {'$in': [ObjectId(ou_ava_id) for ou_ava_id in ou_availables]},
+                                               'type': 'ou',
+                                               'path': {'$ne': 'root'}})
         if not ou:
             return {'ok': False,
                     'error': 'Ou does not exists'}
