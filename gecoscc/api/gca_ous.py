@@ -31,7 +31,7 @@ class GCAOuResource(BaseAPI):
                    }
         q = self.request.GET.get('q', None)
         if q:
-            filters['name'] = {'$regex': '^%s.*' % q,
+            filters['name'] = {'$regex': '%s.*' % q,
                                '$options': '-i'}
         if ou_ids_availables:
             ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
