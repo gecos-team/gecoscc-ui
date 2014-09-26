@@ -6,6 +6,13 @@
     margin-top: 0;
 }
 
+#admin-container form#deform a,
+#admin-container form#deform button,
+#admin-edit-actions a,
+#admin-edit-actions button {
+    margin: 0 2px;
+}
+
 .mb10 {
     margin-bottom: 10px !important;
 }

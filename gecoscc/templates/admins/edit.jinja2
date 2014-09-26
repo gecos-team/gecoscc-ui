@@ -21,7 +21,7 @@
 
 {% block inner_content %}
     {{ super() }}
-    <div class="container">
+    <div id="admin-edit-actions" class="container">
         <div class="row">
             <div class="col-sm-12">
                 <a href="{{ request.route_url('admins_set_variables', username=username) }}" class="btn btn-primary pull-right"><span class="fa"></span> {{ gettext('Set variables') }}</a>
