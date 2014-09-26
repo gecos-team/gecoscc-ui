@@ -319,6 +319,7 @@
             promise = this.model.destroy();
             setTimeout(function () {
                 that._showSavingProcess($button, "success");
+                App.instances.tree.trigger("change");
             }, 1000);
 
             promise.done(function () {

@@ -164,7 +164,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button.btn-primary": "commitChanges",
-            "click button.discard": "removeModel"
+            "click button.discard": "removeModel",
+            "click button.btn-default": "updateTree"
         },
 
         initialize: function (options) {
@@ -193,8 +194,14 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             $el.hide();
             this.collection.dropModel(model);
             if (this.collection.length === 0) {
+                App.instances.tree.trigger("change");
                 this.$el.find("#staging-modal").modal("hide");
             }
+        },
+
+        updateTree: function () {
+            console.log("change");
+            App.instances.tree.trigger("change");
         }
     });
 

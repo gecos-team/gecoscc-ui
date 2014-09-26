@@ -142,6 +142,16 @@ footer {
     display: none !important;
 }
 
+.deleted {
+    background-color: red !important;
+    border-radius: 6px;
+}
+
+.warning {
+    background-color: orange !important;
+    border-radius: 6px;
+}
+
 /* EVENTS */
 
 #events-container { display: inline; }

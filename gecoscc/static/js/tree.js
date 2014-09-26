@@ -38,6 +38,10 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
 
         App.instances.tree.on("change", function () {
             App.tree.show(treeView);
+            _.each(App.instances.staging.toDelete, function (id) {
+                $("#" + id).addClass("deleted");
+                $("#" + id).removeClass("tree-selected");
+            });
         });
     });
 });
@@ -492,8 +496,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             // Load the node new information
             $.ajax(this.getUrl({ oids: id })).done(function (response) {
-                var data = response.nodes[0],
-                    parent = _.last(data.path.split(','));
+                var data = response.nodes[0];
 
                 node = tree.first({ strategy: 'breadth' }, function (n) {
                     return n.model.id === id;
@@ -502,7 +505,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     // Maybe the node is not in the loaded page
                     return;
                 }
-                if (node.model.id != id && _.has(node.model, "paginatedChildren")) {
+                if (node.model.id !== id && _.has(node.model, "paginatedChildren")) {
                     node = node.model.paginatedChildren.get(id);
                 }
                 if (_.has(node, "set")) {
@@ -539,7 +542,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     node = n.model.paginatedChildren.get(id);
                 }
                 if (node) {
-                    node = node.toJSON();
                     return false;
                 }
             });
