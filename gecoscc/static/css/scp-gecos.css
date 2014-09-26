@@ -78,6 +78,15 @@ footer {
     text-align: right;
 }
 
+#commit-changes .btn-warning{
+    background-color: #2aabb0;
+    border-color: #2aabb0;
+}
+
+#commit-changes .btn-warning:hover{
+    background-color: #178E92;
+}
+
 #staging-modal li.model {
     border-bottom: 1px solid #DDD;
     line-height: 1.2em;
@@ -148,7 +157,7 @@ footer {
 }
 
 .cut {
-    color: rgb(255, 230, 195) !important;
+    color: #CCC !important;
     border-radius: 6px;
 }
 
