@@ -33,14 +33,15 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         printer: "print",
         group: "group",
         storage: "hdd-o",
-        repository: "archive"
+        repository: "archive",
+        domain: "globe"
     };
 
     var treeContainerPre =
             '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
-            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-' + Views.iconClasses.ou + '"></span>\n' +
+            '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-<%= icon %>"></span>\n' +
             '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '            <input type="checkbox" class="tree-selection">\n' +
             '        </div>\n' +
@@ -194,9 +195,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         };
 
         this.renderOU = function (json, data, treeNode) {
-            var html = this._templates.containerPre(json),
+            var html,
                 that = this;
 
+            json.icon = json.path.split(",").length === 2 ? Views.iconClasses.domain : Views.iconClasses.ou;
+
+            html = this._templates.containerPre(json);
             if (data.children.length > 0) {
                 if (data.showPrev) {
                     html += this._templates.pagItem({ type: "up" });
