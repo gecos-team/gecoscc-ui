@@ -25,13 +25,17 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.OUModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "ou",
-
         defaults: {
             type: "ou",
             source: "gecos",
             lock: false,
             extra: "",
-            policyCollection: new App.Policies.Models.PolicyCollection()
+            policyCollection: new App.Policies.Models.PolicyCollection(),
+            master: "gecos",
+            master_policies: {},
+            isDomain: function () {
+                return this.path.split(',').length === 2;
+            }
         }
     });
 });
@@ -47,7 +51,6 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         ui: {
             policies: "div#policies div.bootstrap-admin-panel-content"
         },
-
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",

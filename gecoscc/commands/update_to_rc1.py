@@ -1,4 +1,5 @@
 from gecoscc.management import BaseCommand
+from gecoscc.utils import is_domain
 
 
 class Command(BaseCommand):
@@ -8,4 +9,9 @@ class Command(BaseCommand):
 
     def command(self):
         db = self.pyramid.db
-        db.nodes.drop_index('name_-1_type_-1')
+        ous = db.nodes.find({'type': 'ou'})
+        for ou in ous:
+            if is_domain(ou):
+                db.nodes.update({'_id': ou['_id']},
+                                {'$set': {'master': ou['source'],
+                                          'master_policies': {}}})
