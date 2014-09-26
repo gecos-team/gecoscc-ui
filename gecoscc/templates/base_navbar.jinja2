@@ -10,10 +10,10 @@
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
         <div class="row">
             <div id="navbar-header" class="col-sm-3">
-                <span class="navbar-logo pull-right"><img src="{{ request.application_url }}/static/images/gecos-logo-header.png"></span>
+                <a href="{{ request.route_url('home') }}"><span class="navbar-logo pull-right"><img src="{{ request.application_url }}/static/images/gecos-logo-header.png"></span></a>
             </div>
             <div class="collapse navbar-collapse main-navbar-collapse">
-                <span class="navbar-brand pull-left">{{ gettext('Control Center') }}</span>
+                <a href="{{ request.route_url('home') }}"><span class="navbar-brand pull-left">{{ gettext('Control Center') }}</span></a>
                 <ul class="nav navbar-nav pull-right">
                     <li class="{% block nav_bar_home %}active{% endblock %}">
                         <a href="{{ request.route_url('home') }}">{{ gettext('Home') }}</a>
