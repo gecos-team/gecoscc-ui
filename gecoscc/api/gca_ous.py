@@ -38,8 +38,13 @@ class GCAOuResource(BaseAPI):
             filters['_id'] = {'$in': ou_ids_availables}
             ous_query = self.request.db.nodes.find(filters)
             ous = [(unicode(ou['_id']), ou['name']) for ou in ous_query]
+            del filters['_id']
             for ou_ids_available in ou_ids_availables:
-                ou_availables_children = get_items_ou_children(ou_ids_available, self.request.db.nodes, 'ou')
+                ou_availables_children = get_items_ou_children(ou_ids_available,
+                                                               self.request.db.nodes,
+                                                               'ou',
+                                                               filters=filters,
+                                                               next_level=False)
                 if ou_availables_children:
                     ous += [(ou_children['_id'], ou_children['name']) for ou_children in ou_availables_children]
             ous = list(set(ous))

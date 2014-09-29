@@ -86,18 +86,21 @@ def get_filter_nodes_belonging_ou(ou_id):
     return {'$regex': '.*,%s.*' % ou_id}
 
 
-def get_filter_children_ou(ou_id):
+def get_filter_children_ou(ou_id, next_level=True):
     if ou_id == 'root':
         return ou_id
-    return {'$regex': '.*,%s$' % ou_id}
+    regex = '.*,%s' % ou_id
+    if next_level:
+        regex = '%s$' % regex
+    return {'$regex': regex}
 
 
-def get_items_ou_children(ou_id, collection_nodes, objtype=None):
-    filters = {}
+def get_items_ou_children(ou_id, collection_nodes, objtype=None, filters=None, next_level=True):
+    filters = filters or {}
     if objtype:
         filters['type'] = objtype
     if ou_id:
-        filters['path'] = get_filter_children_ou(ou_id)
+        filters['path'] = get_filter_children_ou(ou_id, next_level=next_level)
     else:
         filters['path'] = 'no-root'
     ous = collection_nodes.find(filters).sort('name')
