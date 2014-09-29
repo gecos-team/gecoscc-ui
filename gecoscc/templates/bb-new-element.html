@@ -5,18 +5,21 @@
         </div>
         <div class="bootstrap-admin-panel-content" id="new-element-view">
             <div class="row bootstrap-admin-light-padding-bottom">
+            <% if (!isFirstLevel) { %>
                 <div class="col-xs-12 col-sm-4">
                     <a id="new-user" href="#ou/<%= ouID %>/user" class="thumbnail">
                         <span class="fa fa-user"></span>
                         <p>{{ gettext('User') }}</p>
                     </a>
                 </div>
+            <% } %>
                 <div class="col-xs-12 col-sm-4">
                     <a id="new-ou" href="#ou/<%= ouID %>/ou" class="thumbnail">
                         <span class="fa fa-group"></span>
                         <p>{{ gettext('Organisational Unit') }}</p>
                     </a>
                 </div>
+            <% if (!isFirstLevel) { %>
                 <div class="col-xs-12 col-sm-4">
                     <a id="new-group" href="#ou/<%= ouID %>/group" class="thumbnail">
                         <span class="fa fa-link"></span>
@@ -43,6 +46,7 @@
                         <p>{{ gettext('Software repository') }}</p>
                     </a>
                 </div>
+            <% } %>
             </div>
         </div>
     </div>

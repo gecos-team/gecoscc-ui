@@ -199,9 +199,14 @@ var App;
         template: "#new-element-template",
 
         serializeData: function () {
-            // This view needs no model
+            var model = App.instances.tree.findNodeById(this.containerId),
+                isFirstLevel = false;
+            if (model && model.path === "root") {
+                isFirstLevel = true;
+            }
             return {
-                ouID: this.containerId
+                ouID: this.containerId,
+                isFirstLevel: isFirstLevel
             };
         }
     });
