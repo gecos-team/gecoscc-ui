@@ -348,7 +348,7 @@ class ADImport(BaseAPI):
             newObj['source'] = rootOU['source']
             newObj['type'] = objSchema['mongoType']
             newObj['lock'] = 'false'
-            newObj['policies'] = {}  # TODO: Get the proper policies
+            newObj['policies'] = {}
 
             self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj)
 
@@ -386,7 +386,7 @@ class ADImport(BaseAPI):
             'source': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value),
             'type': ouSchema['mongoType'],
             'lock': 'false',
-            'policies': {},  # TODO: Get the proper policies
+            'policies': {},
             'path': 'root',
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
@@ -397,7 +397,7 @@ class ADImport(BaseAPI):
             return newRootOU
         else:
             for key, value in newRootOU.items():
-                if key not in ['name', 'path']:  # TODO: Proper update the object name
+                if key not in ['name', 'path', 'policies']:  # TODO: Proper update the object name
                     rootOU[key] = value
             self.request.db[self.mongoCollectionName].update(filterRootOU, rootOU)
             return rootOU

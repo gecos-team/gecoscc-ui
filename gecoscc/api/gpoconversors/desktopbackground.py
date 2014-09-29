@@ -13,7 +13,7 @@ class DesktopBackground(GPOConversor):
 
     def __init__(self, db):
         super(DesktopBackground, self).__init__(db)
-        self.policy = self.db.policies.find_one({'name':'Desktop Background'});
+        self.policy = self.db.policies.find_one({'slug':'desktop_background_res'});
 
     def convert(self, xmlgpo):
         if self.policy is None: return None

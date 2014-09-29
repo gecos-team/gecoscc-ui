@@ -11,7 +11,7 @@ class SharingPermissions(GPOConversor):
 
     def __init__(self, db):
         super(SharingPermissions, self).__init__(db)
-        self.policy = self.db.policies.find_one({'name':'Sharing permissions'});
+        self.policy = self.db.policies.find_one({'slug':'folder_sharing_res'});
 
     def convert(self, xmlgpo):
         if self.policy is None: return None
