@@ -336,6 +336,17 @@ var App;
             newItem: function (containerid, type) {
                 var Model, model, View, view, parent, path;
 
+                //First Level Ous can create onlly OUs
+                model = App.instances.tree.findNodeById(containerid);
+                if (model && model.path === "root" && type !== "ou") {
+                    App.instances.router.navigate("ou/" + containerid + "/new", { trigger: true });
+                    App.showAlert(
+                        "error",
+                        gettext("First level OUs can only add new OUs.")
+                    );
+                    return;
+                }
+
                 this._prepare(containerid, type);
                 Model = this._typeClasses(type)[0];
                 model = new Model();
