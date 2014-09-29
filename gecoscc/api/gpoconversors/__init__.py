@@ -3,7 +3,7 @@
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
 
-__all__ = ['desktopbackground']
+__all__ = ['desktopbackground', 'sharing_permissions']
 
 
 class GPOConversor(object):
@@ -34,12 +34,6 @@ class GPOConversor(object):
 
         subPath = list(path)
         nodename = subPath.pop(0)
-
-        # Clean namespaces prefix inside first level of nodes from lst
-        for old_key in lst.keys():
-            old_key_splitted = old_key.split(':') # namespace prefix separator
-            new_key = old_key_splitted[1] if len(old_key_splitted) > 1 else old_key
-            lst[new_key] = lst.pop(old_key)
 
         # Get node from lst by nodename
         node = lst[nodename] if nodename in lst else None
