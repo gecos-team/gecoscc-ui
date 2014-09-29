@@ -14,9 +14,10 @@ from jsonschema import validate
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy
-from gecoscc.utils import (get_chef_api, create_chef_admin_user,
+from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
+                           apply_policies_to_computer,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -432,6 +433,10 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Group', objnew)
 
+    def group_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'Storage', objnew)
+        raise NotImplementedError
+
     def group_deleted(self, user, obj):
         self.object_deleted(user, obj)
         self.log_action('deleted', 'Group', obj)
@@ -444,6 +449,10 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'User', objnew)
 
+    def user_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'User', objnew)
+        raise NotImplementedError
+
     def user_deleted(self, user, obj):
         self.object_deleted(user, obj)
         self.log_action('deleted', 'User', obj)
@@ -455,6 +464,17 @@ class ChefTask(Task):
     def computer_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Computer', objnew)
+
+    def computer_moved(self, user, objnew, objold, computers=None):
+        api = get_chef_api(self.app.conf, user)
+        node_chef_id = objnew.get('node_chef_id', None)
+        if node_chef_id:
+            node = Node(node_chef_id, api)
+            if node:
+                node.normal.clear()
+                node.save()
+                apply_policies_to_computer(self.db.nodes, objnew, user)
+        self.log_action('moved', 'Computer', objnew)
 
     def computer_deleted(self, user, obj):
         node_chef_id = obj.get('node_chef_id', None)
@@ -471,6 +491,10 @@ class ChefTask(Task):
     def ou_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'OU', objnew)
+
+    def ou_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'OU', objnew)
+        raise NotImplementedError
 
     def ou_deleted(self, user, obj):
         self.object_deleted(user, obj)
@@ -490,6 +514,10 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Printer', objnew)
 
+    def printer_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'Printer', objnew)
+        raise NotImplementedError
+
     def printer_deleted(self, user, obj):
         self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Printer', obj)
@@ -502,6 +530,10 @@ class ChefTask(Task):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
+    def storage_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'Storage', objnew)
+        raise NotImplementedError
+
     def storage_deleted(self, user, obj):
         self.object_emiter_deleted(user, obj)
         self.log_action('deleted', 'Storage', obj)
@@ -513,6 +545,10 @@ class ChefTask(Task):
     def repository_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
         self.log_action('changed', 'Storage', objnew)
+
+    def repository_moved(self, user, objnew, objold, computers=None):
+        self.log_action('moved', 'Repository', objnew)
+        raise NotImplementedError
 
     def repository_deleted(self, user, obj):
         self.object_emiter_deleted(user, obj)
@@ -549,6 +585,18 @@ def object_created(user, objtype, obj, computers=None):
 def object_changed(user, objtype, objnew, objold, computers=None):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
+    if func is not None:
+        return func(user, objnew, objold, computers=computers)
+
+    else:
+        self.log('error', 'The method {0}_changed does not exist'.format(
+            objtype))
+
+
+@task(base=ChefTask)
+def object_moved(user, objtype, objnew, objold, computers=None):
+    self = object_moved
+    func = getattr(self, '{0}_moved'.format(objtype), None)
     if func is not None:
         return func(user, objnew, objold, computers=computers)
 

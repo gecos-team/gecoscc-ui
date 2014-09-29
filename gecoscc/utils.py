@@ -155,6 +155,17 @@ def delete_chef_admin_user(api, settings, username):
         return False
 
 
+def apply_policies_to_computer(nodes_collection, computer, user):
+    from gecoscc.tasks import object_changed, object_created
+    ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
+    for ou in ous:
+        object_changed.delay(user, 'ou', ou, {}, computers=[computer])
+    groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
+    for group in groups:
+        object_changed.delay(user, 'group', group, {}, computers=[computer])
+    object_created.delay(user, 'computer', computer, computers=[computer])
+
+
 def get_pem_for_username(settings, username, pem_name):
     return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
 
