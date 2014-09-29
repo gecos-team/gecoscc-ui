@@ -204,7 +204,6 @@ var App;
             if (model && model.path === "root") {
                 isFirstLevel = true;
             }
-            console.log(this.isGecosMaster);
             return {
                 ouID: this.containerId,
                 isGecosMaster: this.isGecosMaster,
@@ -282,11 +281,7 @@ var App;
             },
 
             newItemDashboard: function (containerid) {
-                var model, path, domain;
-                model = App.instances.tree.findNodeById(containerid);
-                path = model.path || model.get("path");
-                domain = path.split(',').length === 2 ? containerid : path.split(',')[2];
-                domain = new App.OU.Models.OUModel({ id: domain });
+                var domain = App.getDomainModel(containerid);
                 domain.fetch().done(function () {
                     App.instances.newElementView.containerId = containerid;
                     App.instances.newElementView.isGecosMaster = domain.get("master") === "gecos";
@@ -358,9 +353,7 @@ var App;
                 }
 
                 //check if master is gecoss
-                path = model.path || model.get("path");
-                domain = path.split(',').length === 2 ? containerid : path.split(',')[2];
-                domain = new App.OU.Models.OUModel({ id: domain });
+                domain =  App.getDomainModel(containerid);
                 domain.fetch().done(function () {
 
                     //if not gecos only users can be added
