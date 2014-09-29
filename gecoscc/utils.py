@@ -86,18 +86,21 @@ def get_filter_nodes_belonging_ou(ou_id):
     return {'$regex': '.*,%s.*' % ou_id}
 
 
-def get_filter_children_ou(ou_id):
+def get_filter_children_ou(ou_id, next_level=True):
     if ou_id == 'root':
         return ou_id
-    return {'$regex': '.*,%s$' % ou_id}
+    regex = '.*,%s' % ou_id
+    if next_level:
+        regex = '%s$' % regex
+    return {'$regex': regex}
 
 
-def get_items_ou_children(ou_id, collection_nodes, objtype=None):
-    filters = {}
+def get_items_ou_children(ou_id, collection_nodes, objtype=None, filters=None, next_level=True):
+    filters = filters or {}
     if objtype:
         filters['type'] = objtype
     if ou_id:
-        filters['path'] = get_filter_children_ou(ou_id)
+        filters['path'] = get_filter_children_ou(ou_id, next_level=next_level)
     else:
         filters['path'] = 'no-root'
     ous = collection_nodes.find(filters).sort('name')
@@ -150,6 +153,17 @@ def delete_chef_admin_user(api, settings, username):
         return True
     except:
         return False
+
+
+def apply_policies_to_computer(nodes_collection, computer, user):
+    from gecoscc.tasks import object_changed, object_created
+    ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
+    for ou in ous:
+        object_changed.delay(user, 'ou', ou, {}, computers=[computer])
+    groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
+    for group in groups:
+        object_changed.delay(user, 'group', group, {}, computers=[computer])
+    object_created.delay(user, 'computer', computer, computers=[computer])
 
 
 def get_pem_for_username(settings, username, pem_name):

@@ -9,6 +9,7 @@ import types
 import xmltodict
 
 from gzip import GzipFile
+from bson import ObjectId
 from StringIO import StringIO
 
 from cornice.resource import resource
@@ -23,6 +24,9 @@ logger = logging.getLogger(__name__)
           description='GroupPolicy import',
           validators=http_basic_login_required)
 class GPOImport(BaseAPI):
+
+    mongoCollectionNodesName = 'nodes'
+    mongoCollectionPoliciesName = 'policies'
 
     def _cleanPrefixNamespaces(self, xml):
         if isinstance(xml, dict):
@@ -39,7 +43,6 @@ class GPOImport(BaseAPI):
         """
         Imports and converts XML GPOs into GECOSCC from self.request
         """
-        #import pudb; pudb.set_trace() # FIXME DELETE DEBUG
 
         try:
             counter = 0
@@ -51,6 +54,22 @@ class GPOImport(BaseAPI):
             xmldata = GzipFile('', 'r', 9, StringIO(postedfile.read())).read()
             xmlsid_guid = xmltodict.parse(xmldata)
             GPOConversor.xml_sid_guid = xmlsid_guid
+
+            # Update rootOU with master_policies
+            rootOUID = self.request.POST['rootOU']
+            rootOU = None
+            if rootOUID not in [None, '', 'root']:
+                filterRootOU = {
+                    '_id': ObjectId(rootOUID),
+                    'type': 'ou'
+                }
+                rootOU = self.request.db[self.mongoCollectionNodesName].find_one(filterRootOU)
+                policies_slugs = self.request.POST.getall('masterPolicy[]')
+                for policy_slug in policies_slugs:
+                    policy = self.request.db[self.mongoCollectionPoliciesName].find_one({'slug':policy_slug})
+                    if policy is not None and policy['_id'] not in rootOU['master_policies']:
+                        rootOU['master_policies'].append(policy['_id'])
+                self.request.db[self.mongoCollectionNodesName].update(filterRootOU, rootOU)
 
             # Read GPOs data
             postedfile = self.request.POST['media1'].file

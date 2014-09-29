@@ -8,7 +8,7 @@ from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from webob.multidict import MultiDict
 
-from gecoscc.tasks import object_created, object_changed, object_deleted
+from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.utils import get_computer_of_user, get_filter_in_domain
 
@@ -203,8 +203,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         object_created.delay(self.request.user, self.objtype, obj)
 
     def notify_changed(self, obj, old_obj):
-        object_changed.delay(self.request.user, self.objtype, obj, old_obj)
-        invalidate_change(self.request, self.schema_detail, self.objtype, obj, old_obj)
+        if obj['path'] != old_obj['path']:
+            object_moved.delay(self.request.user, self.objtype, obj, old_obj)
+        else:
+            object_changed.delay(self.request.user, self.objtype, obj, old_obj)
+            invalidate_change(self.request, self.schema_detail, self.objtype, obj, old_obj)
 
     def notify_deleted(self, obj):
         object_deleted.delay(self.request.user, self.objtype, obj)

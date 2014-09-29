@@ -7,8 +7,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.tasks import object_changed, object_created
-from gecoscc.utils import get_chef_api, register_node, get_filter_ous_from_path
+from gecoscc.utils import get_chef_api, register_node, apply_policies_to_computer
 
 
 @resource(path='/register/computer/',
@@ -18,15 +17,6 @@ class RegisterComputerResource(BaseAPI):
 
     schema_detail = MongoNode
     collection_name = 'nodes'
-
-    def apply_policies_to_computer(self, computer):
-        ous = self.collection.find(get_filter_ous_from_path(computer['path']))
-        for ou in ous:
-            object_changed.delay(self.request.user, 'ou', ou, {}, computers=[computer])
-        groups = self.collection.find({'_id': {'$in': computer.get('memberof', [])}})
-        for group in groups:
-            object_changed.delay(self.request.user, 'group', group, {}, computers=[computer])
-        object_created.delay(self.request.user, 'computer', computer, computers=[computer])
 
     def post(self):
         ou_id = self.request.POST.get('ou_id')
@@ -51,7 +41,7 @@ class RegisterComputerResource(BaseAPI):
             return {'ok': False,
                     'message': 'Node does not exist (in chef)'}
         computer = self.collection.find_one({'_id': computer_id})
-        self.apply_policies_to_computer(computer)
+        apply_policies_to_computer(self.collection, computer, self.request.user)
         return {'ok': True}
 
     def put(self):
@@ -60,7 +50,7 @@ class RegisterComputerResource(BaseAPI):
         if not computer:
             return {'ok': False,
                     'message': 'Computer does not exists'}
-        self.apply_policies_to_computer(computer)
+        apply_policies_to_computer(self.collection, computer, self.request.user)
         return {'ok': True}
 
     def delete(self):

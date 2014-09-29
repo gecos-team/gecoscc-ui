@@ -7,7 +7,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.api import BaseAPI
 from gecoscc.models import AdminUserVariables
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import get_items_ou_children, get_pem_for_username
+from gecoscc.utils import get_pem_for_username
 
 
 @resource(path='/auth/config/',
@@ -53,6 +53,7 @@ class AdminUserResource(BaseAPI):
                 'auth_type': auth_type}
         return {'version': settings.get('firstboot_api.version'),
                 'organization': settings.get('firstboot_api.organization_name'),
+                'gem_repo': settings.get('firstboot_api.gem_repo'),
                 'uri_ntp': variables.get('uri_ntp', ''),
                 'auth': auth,
                 'chef': chef,
