@@ -59,6 +59,7 @@
                          </p>
                     </div>
                     <% } %>
+                    <% if (isEditable) { %>
                     <div class="row"><div class="col-sm-12">
                         <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
                         <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
@@ -67,6 +68,7 @@
                             <button id="cut" class="pull-right btn btn-warning">{{ gettext('Cut') }}</button>
                         <% } %>
                     </div></div>
+                    <% } %>
                 </form>
             </div>
         </div>

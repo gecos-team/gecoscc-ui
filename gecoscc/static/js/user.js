@@ -36,7 +36,8 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
             address: "",
             phone: "",
             email: "",
-            policyCollection: new App.Policies.Models.PolicyCollection()
+            policyCollection: new App.Policies.Models.PolicyCollection(),
+            isEditable: undefined
         }
     });
 });
@@ -65,28 +66,47 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         policiesList: undefined,
 
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that,
+                isEditable;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    isEditable = domain.get("master") === "gecos";
+                    isEditable = !isEditable && that.model.get("source") === "gecos";
+                    that.model.set("isEditable", isEditable);
+                    that.render();
+                });
+            }
+        },
+
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#username").attr('disabled', 'disabled');
             }
 
-            if (_.isUndefined(this.groupsWidget)) {
-                this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                    el: this.$el.find("div#groups-widget")[0],
-                    item_id: this.model.get("id"),
-                    ou_id: _.last(this.model.get("path").split(',')),
-                    checked: this.model.get("memberof")
-                });
-            }
+            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
+                el: this.$el.find("div#groups-widget")[0],
+                item_id: this.model.get("id"),
+                ou_id: _.last(this.model.get("path").split(',')),
+                checked: this.model.get("memberof")
+            });
             this.groupsWidget.render();
 
-            if (_.isUndefined(this.policiesList)) {
-                this.policiesList = new App.Policies.Views.PoliciesList({
-                    el: this.ui.policies[0],
-                    collection: this.model.get("policyCollection"),
-                    resource: this.model
-                });
-            }
+            this.policiesList = new App.Policies.Views.PoliciesList({
+                el: this.ui.policies[0],
+                collection: this.model.get("policyCollection"),
+                resource: this.model
+            });
             this.policiesList.render();
         },
 
