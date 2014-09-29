@@ -67,8 +67,10 @@ class GPOImport(BaseAPI):
                 policies_slugs = self.request.POST.getall('masterPolicy[]')
                 for policy_slug in policies_slugs:
                     policy = self.request.db[self.mongoCollectionPoliciesName].find_one({'slug':policy_slug})
-                    if policy is not None and policy['_id'] not in rootOU['master_policies']:
-                        rootOU['master_policies'].append(policy['_id'])
+                    if 'master_policies' not in rootOU:
+                        rootOU['master_policies'] = {}
+                    if policy is not None and policy['_id'] not in rootOU['master_policies'].keys():
+                        rootOU['master_policies'][str(policy['_id'])] = True
                 self.request.db[self.mongoCollectionNodesName].update(filterRootOU, rootOU)
 
             # Read GPOs data

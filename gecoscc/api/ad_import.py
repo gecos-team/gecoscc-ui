@@ -61,7 +61,15 @@ class ADImport(BaseAPI):
                     'mongo': 'extra'
                 }
             ],
-            'staticAttributes': []
+            'staticAttributes': [
+                {
+                    'key': 'master',
+                    'value': ''
+                },
+                {
+                    'key': 'master_policies',
+                    'value': {}
+                }]
         },
         {
             'adName': 'User',
@@ -390,7 +398,8 @@ class ADImport(BaseAPI):
             'path': 'root',
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
-            'master': self.request.POST['master']
+            'master': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value) if self.request.POST['master'] == 'True' else 'gecos',
+            'master_policies': {}
         }
         if rootOU is None:
             self.request.db[self.mongoCollectionName].insert(newRootOU)
