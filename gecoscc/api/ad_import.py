@@ -389,7 +389,8 @@ class ADImport(BaseAPI):
             'policies': {},  # TODO: Get the proper policies
             'path': 'root',
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
-            'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value
+            'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
+            'master': self.request.POST['master']
         }
         if rootOU is None:
             self.request.db[self.mongoCollectionName].insert(newRootOU)
