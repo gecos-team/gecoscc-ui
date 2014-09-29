@@ -3,6 +3,7 @@ from cornice.resource import resource
 from gecoscc.api import TreeResourcePaginated
 from gecoscc.models import OrganisationalUnit, OrganisationalUnits
 from gecoscc.permissions import api_login_required
+from gecoscc.utils import is_domain
 
 
 @resource(collection_path='/api/ous/',
@@ -23,9 +24,6 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     def integrity_validation(self, obj, real_obj=None):
         status = super(OrganisationalUnitResource,
                        self).integrity_validation(obj, real_obj)
-        if status:
-            return status
-
         if (real_obj is not None and obj['path'] != real_obj['path']):
             # Check if the ou is moving to self depth, that is not correct.
             if obj['path'] in real_obj['path']:
@@ -34,13 +32,14 @@ class OrganisationalUnitResource(TreeResourcePaginated):
                     "the ou is moving to self depth position, "
                     "that is not allowed")
             return False
-        return True
+        status = status and self.check_unique_node_name_by_type_at_domain(obj)
+        return status
 
     def post_save(self, obj, old_obj=None):
         """ Check if path has changed to refresh children nodes """
         if (self.request.method == 'PUT' and old_obj and
                 obj.get('path') != old_obj.get('path')):
-            #The ou path has changed
+            # The ou path has changed
             new_path = ','.join([obj.get('path'), str(old_obj[self.key])])
             old_path = ','.join([old_obj.get('path'), str(old_obj[self.key])])
 
@@ -60,4 +59,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
                         'path': new_child_path
                     }
                 })
+        elif self.request.method == 'POST' and is_domain(obj):
+            obj['master'] = 'gecos'
+            obj['master_policies'] = {}
         return obj

@@ -22,4 +22,4 @@ class ComputerPublicResource(BaseAPI):
     def get(self):
         computers = [{'node_chef_id': comp['node_chef_id'],
                       'name': comp['name']} for comp in self.collection.find({'type': self.objtype})]
-        return computers
+        return {'computers': computers}

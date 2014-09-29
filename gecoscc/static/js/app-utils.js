@@ -284,6 +284,12 @@
             promise = this.model.save();
             setTimeout(function () {
                 that._showSavingProcess($button, "saved");
+                if (!isNew) {
+                    App.instances.staging.toModify.push(that.model.get("id"));
+                } else {
+                
+                }
+                App.instances.tree.trigger("change");
             }, 1000);
 
             promise.done(function () {
@@ -319,6 +325,7 @@
             promise = this.model.destroy();
             setTimeout(function () {
                 that._showSavingProcess($button, "success");
+                App.instances.tree.trigger("change");
             }, 1000);
 
             promise.done(function () {
@@ -335,6 +342,19 @@
                     );
                 }
             });
+        },
+
+        cutModel: function (evt) {
+            evt.preventDefault();
+            var $button = $(evt.target);
+            $button.attr("disabled", "disabled");
+            App.instances.cut = this.model;
+            App.instances.tree.trigger("change");
+
+            setTimeout(function () {
+                $button.attr("disabled", false);
+            }, 2000);
+
         }
     });
 

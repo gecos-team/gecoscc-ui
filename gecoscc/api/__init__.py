@@ -10,7 +10,7 @@ from webob.multidict import MultiDict
 
 from gecoscc.tasks import object_created, object_changed, object_deleted
 from gecoscc.socks import invalidate_change, invalidate_delete
-from gecoscc.utils import get_computer_of_user
+from gecoscc.utils import get_computer_of_user, get_filter_in_domain
 
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
@@ -284,6 +284,22 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
 class TreeResourcePaginated(ResourcePaginated):
 
+    def check_unique_node_name_by_type_at_domain(self, obj):
+        filters = {}
+        levels = obj['path'].count(',')
+        if levels >= 2:
+            filters['path'] = get_filter_in_domain(obj)
+        else:
+            current_path = obj['path']
+            filters['path'] = ','.join(current_path)
+
+        filters['name'] = obj['name']
+        filters['type'] = obj['type']
+
+        if '_id' in obj:
+            filters['_id'] = {'$ne': obj['_id']}
+        return self.request.db.nodes.find(filters).count() == 0
+
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
 
@@ -340,6 +356,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         result = super(TreeLeafResourcePaginated, self).integrity_validation(
             obj, real_obj)
         result = result and self.check_memberof_integrity(obj)
+        result = result and self.check_unique_node_name_by_type_at_domain(obj)
         return result
 
     def computers_to_group(self, obj):

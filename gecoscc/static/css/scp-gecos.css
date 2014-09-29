@@ -6,6 +6,13 @@
     margin-top: 0;
 }
 
+#admin-container form#deform a,
+#admin-container form#deform button,
+#admin-edit-actions a,
+#admin-edit-actions button {
+    margin: 0 2px;
+}
+
 .mb10 {
     margin-bottom: 10px !important;
 }
@@ -78,6 +85,15 @@ footer {
     text-align: right;
 }
 
+#commit-changes .btn-warning{
+    background-color: #2aabb0;
+    border-color: #2aabb0;
+}
+
+#commit-changes .btn-warning:hover{
+    background-color: #178E92;
+}
+
 #staging-modal li.model {
     border-bottom: 1px solid #DDD;
     line-height: 1.2em;
@@ -140,6 +156,26 @@ footer {
 
 .tree-selection {
     display: none !important;
+}
+
+.deleted {
+    color: #d9534f !important;
+    border-radius: 6px;
+}
+
+.modified {
+    color: #428bca !important;
+    border-radius: 6px;
+}
+
+.cut {
+    color: #CCC !important;
+    border-radius: 6px;
+}
+
+.pasted {
+    color: rgb(240, 173, 78) !important;
+    border-radius: 6px;
 }
 
 /* EVENTS */
@@ -325,6 +361,10 @@ div.groups-widget .chzn-container {
 
 #computers .info-icon {
     margin-top: 25px;
+}
+
+#cut {
+    margin-right: 5px;
 }
 
 /* Pagination */

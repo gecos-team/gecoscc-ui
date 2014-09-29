@@ -206,6 +206,43 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
+        _pasteOU: function (evt) {
+            var modelCut = App.instances.cut,
+                modelParent = new App.OU.Models.OUModel({ id: this });
+
+            modelParent.fetch({success: function () {
+
+                modelCut.set("path", modelParent.get("path") + "," + modelParent.get("id"));
+
+                modelCut.save().done(
+                    function () {
+                        $("#" + modelCut.get("id")).remove();
+                        App.instances.tree.updateNodeById(modelParent.get("id"));
+                        App.instances.tree.reloadTree(
+                            function () {
+                                var promise = App.instances.tree.loadFromPath(
+                                    modelCut.get("path"),
+                                    modelCut.get("id"),
+                                    true
+                                );
+
+                                $.when.apply($, promise).done(function () {
+                                    App.instances.tree.openAllContainersFrom(
+                                        _.last(modelCut.get("path").split(',')),
+                                        true
+                                    );
+                                    App.instances.tree.trigger("change");
+                                });
+                            }
+                        );
+                    }
+                );
+                App.instances.staging.toMove.push([modelCut.get("id"), modelParent.get("id")]);
+                App.instances.cut = undefined;
+                App.instances.tree.trigger("change");
+            }});
+        },
+
         showContainerMenu: function (evt) {
             evt.stopPropagation();
             var $el = $(evt.target),
@@ -226,6 +263,15 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     message: gettext("Deleting an OU is a permanent action. " +
                                      "It will also delete all its children.")
                 });
+            });
+
+            if (App.instances.cut === undefined) {
+                $html.find("a.text-warning").parent("li").remove();
+            }
+
+            $html.find("a.text-warning").click(function (evt) {
+                evt.preventDefault();
+                _.bind(that._pasteOU, ouId)();
             });
         },
 

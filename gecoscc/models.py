@@ -371,6 +371,12 @@ class OrganisationalUnit(Node):
     node_order = colander.SchemaNode(colander.Integer(),
                                      default=OU_ORDER,
                                      missing=OU_ORDER)
+    master = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    master_policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                          default={},
+                                          missing={})
 
 
 class OrganisationalUnits(colander.SequenceSchema):

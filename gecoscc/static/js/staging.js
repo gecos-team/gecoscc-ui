@@ -28,6 +28,8 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.promiseIndex = {};
             this.argumentsIndex = {};
             this.toDelete = [];
+            this.toMove = [];
+            this.toModify = [];
             this.listenTo(App, 'action_change', this.onAction);
             this.listenTo(App, 'action_delete', this.onAction);
         },
@@ -100,6 +102,12 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 that.toDelete = _.reject(that.toDelete, function (objId) {
                     return objId === id;
                 });
+                that.toMove = _.reject(that.toMove, function (objId) {
+                    return objId[0] === id;
+                });
+                that.toModify = _.reject(that.toModify, function (objId) {
+                    return objId === id;
+                });
                 that.remove(model, options); // Actually remove it from the collection
 
                 if (!options.avoidRestore) {
@@ -164,7 +172,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         events: {
             "click button.btn-primary": "commitChanges",
-            "click button.discard": "removeModel"
+            "click button.discard": "removeModel",
+            "click button.btn-default": "updateTree"
         },
 
         initialize: function (options) {
@@ -174,7 +183,9 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
         serializeData: function () {
             return {
                 items: this.collection.toJSON(),
-                deletions: this.collection.toDelete
+                deletions: this.collection.toDelete,
+                moves: this.collection.toMove,
+                modified: this.collection.toModify
             };
         },
 
@@ -193,8 +204,13 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             $el.hide();
             this.collection.dropModel(model);
             if (this.collection.length === 0) {
+                App.instances.tree.trigger("change");
                 this.$el.find("#staging-modal").modal("hide");
             }
+        },
+
+        updateTree: function () {
+            App.instances.tree.trigger("change");
         }
     });
 
@@ -247,6 +263,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             $.when.apply($, promises)
                 .done(function () {
                     App.tree.currentView.activeNode = null;
+                    App.instances.tree.trigger("change");
                     App.instances.router.navigate("", { trigger: true });
                 }).always(function () {
                     that.inProgress = false;

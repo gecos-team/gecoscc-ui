@@ -54,11 +54,18 @@ class MongoDB(object):
             ('path', pymongo.DESCENDING),
             ('type', pymongo.DESCENDING),
         ])
-
-        db.nodes.ensure_index([
-            ('name', pymongo.DESCENDING),
-            ('type', pymongo.DESCENDING),
-        ], unique=True)
+        #TODO: this try/except will be removed in review release
+        try: 
+            db.nodes.ensure_index([
+                ('name', pymongo.DESCENDING),
+                ('type', pymongo.DESCENDING),
+            ])
+        except pymongo.errors.OperationFailure:
+            db.nodes.drop_index('name_-1_type_-1')
+            db.nodes.ensure_index([
+                ('name', pymongo.DESCENDING),
+                ('type', pymongo.DESCENDING),
+            ])
 
         db.jobs.ensure_index([
             ('userid', pymongo.DESCENDING),

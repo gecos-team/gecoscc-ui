@@ -67,6 +67,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
+            "click #cut": "cutModel",
             "change input": "validate",
             "click button.refresh": "refresh"
         },
