@@ -12,7 +12,6 @@ class GPOConversor(object):
 
     xml_sid_guid = None
 
-
     def __init__(self, db):
         self.db = db
 
@@ -57,10 +56,10 @@ class GPOConversor(object):
             # TODO: Inform about the problem
             return False
         for entry in converted:
-            if result == False:
+            if result is False:
                 break
             for guid in entry['guids']:
-                if result == False:
+                if result is False:
                     break
                 node = self.db[self.mongoCollectionName].find_one({'adObjectGUID': guid})
                 if node is None:

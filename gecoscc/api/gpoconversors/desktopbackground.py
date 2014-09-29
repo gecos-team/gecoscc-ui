@@ -7,16 +7,18 @@ import re
 
 from gecoscc.api.gpoconversors import GPOConversor
 
+
 class DesktopBackground(GPOConversor):
 
-    policy = None;
+    policy = None
 
     def __init__(self, db):
         super(DesktopBackground, self).__init__(db)
-        self.policy = self.db.policies.find_one({'slug':'desktop_background_res'});
+        self.policy = self.db.policies.find_one({'slug': 'desktop_background_res'})
 
     def convert(self, xmlgpo):
-        if self.policy is None: return None
+        if self.policy is None:
+            return None
 
         result = [{
             'policies': [],
