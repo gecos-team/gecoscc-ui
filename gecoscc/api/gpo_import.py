@@ -24,6 +24,17 @@ logger = logging.getLogger(__name__)
           validators=http_basic_login_required)
 class GPOImport(BaseAPI):
 
+    def _cleanPrefixNamespaces(self, xml):
+        if isinstance(xml, dict):
+            for old_key in xml.keys():
+                old_key_splitted = old_key.split(':') # namespace prefix separator
+                new_key = ':'.join(old_key_splitted[1:]) if len(old_key_splitted) > 1 else old_key
+                xml[new_key] = self._cleanPrefixNamespaces(xml.pop(old_key))
+        if isinstance(xml, list):
+            for index, subxml in enumerate(xml):
+                xml[index] = self._cleanPrefixNamespaces(subxml)
+        return xml
+
     def post(self):
         """
         Imports and converts XML GPOs into GECOSCC from self.request
@@ -49,7 +60,7 @@ class GPOImport(BaseAPI):
             # Apply each xmlgpo
             for xmlgpo in xmlgpos['report']['GPO']:
                 for gpoconversorclass in GPOConversor.__subclasses__():
-                    if gpoconversorclass(self.request.db).apply(xmlgpo) == False:
+                    if gpoconversorclass(self.request.db).apply(self._cleanPrefixNamespaces(xmlgpo)) == False:
                         # TODO Report error to somewhere
                         ok = False
                     else:
