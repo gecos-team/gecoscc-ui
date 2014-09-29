@@ -53,6 +53,7 @@ class AdminUserResource(BaseAPI):
                 'auth_type': auth_type}
         return {'version': settings.get('firstboot_api.version'),
                 'organization': settings.get('firstboot_api.organization_name'),
+                'gem_repo': settings.get('firstboot_api.gem_repo'),
                 'uri_ntp': variables.get('uri_ntp', ''),
                 'auth': auth,
                 'chef': chef,
