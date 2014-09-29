@@ -204,8 +204,10 @@ var App;
             if (model && model.path === "root") {
                 isFirstLevel = true;
             }
+            console.log(this.isGecosMaster);
             return {
                 ouID: this.containerId,
+                isGecosMaster: this.isGecosMaster,
                 isFirstLevel: isFirstLevel
             };
         }
@@ -280,14 +282,21 @@ var App;
             },
 
             newItemDashboard: function (containerid) {
+                var model, path, domain;
+                model = App.instances.tree.findNodeById(containerid);
+                path = model.path || model.get("path");
+                domain = path.split(',').length === 2 ? containerid : path.split(',')[2];
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    App.instances.newElementView.containerId = containerid;
+                    App.instances.newElementView.isGecosMaster = domain.get("master") === "gecos";
+                    App.main.show(App.instances.newElementView);
+                });
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([{
                     url: "ou/" + containerid + "/new",
                     text: gettext("New element")
                 }]);
-
-                App.instances.newElementView.containerId = containerid;
-                App.main.show(App.instances.newElementView);
             },
 
             _supportedTypes: {
@@ -334,7 +343,8 @@ var App;
             },
 
             newItem: function (containerid, type) {
-                var Model, model, View, view, parent, path;
+                var Model, model, View, view, parent, path, domain,
+                    that = this;
 
                 //First Level Ous can create onlly OUs
                 model = App.instances.tree.findNodeById(containerid);
@@ -347,23 +357,41 @@ var App;
                     return;
                 }
 
-                this._prepare(containerid, type);
-                Model = this._typeClasses(type)[0];
-                model = new Model();
-                View = this._typeClasses(type)[1];
-                view = new View({ model: model });
+                //check if master is gecoss
+                path = model.path || model.get("path");
+                domain = path.split(',').length === 2 ? containerid : path.split(',')[2];
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
 
-                // Render the loader indicator
-                App.main.show(App.instances.loaderView);
-                if (!(App.instances.tree.has("tree"))) {
-                    App.instances.router.navigate("", { trigger: true });
-                    return;
-                }
-                parent = App.instances.tree.findNodeById(containerid);
-                path = parent.path + ',' + parent.id;
-                model.set("path", path);
+                    //if not gecos only users can be added
+                    if (domain.get("master") !== "gecos" && type !== "user") {
+                        App.instances.router.navigate("ou/" + containerid + "/new", { trigger: true });
+                        App.showAlert(
+                            "error",
+                            gettext("Domain is not Gecos."),
+                            gettext("Only local users can be added.")
+                        );
+                        return;
+                    }
 
-                App.main.show(view);
+                    that._prepare(containerid, type);
+                    Model = that._typeClasses(type)[0];
+                    model = new Model();
+                    View = that._typeClasses(type)[1];
+                    view = new View({ model: model });
+
+                    // Render the loader indicator
+                    App.main.show(App.instances.loaderView);
+                    if (!(App.instances.tree.has("tree"))) {
+                        App.instances.router.navigate("", { trigger: true });
+                        return;
+                    }
+                    parent = App.instances.tree.findNodeById(containerid);
+                    path = parent.path + ',' + parent.id;
+                    model.set("path", path);
+
+                    App.main.show(view);
+                });
             },
 
             _fetchModel: function (model) {

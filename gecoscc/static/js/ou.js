@@ -72,14 +72,12 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.model.set("isEditable", true);
             } else if (path.split(',').length === 2) {
                 this.model.set("isEditable", this.model.get("master") === "gecos");
-                console.log(this.model.get("isEditable"));
             } else {
                 that = this;
                 domain = new App.OU.Models.OUModel({ id: domain });
                 domain.fetch().done(function () {
                     that.model.set("isEditable", domain.get("master") === "gecos");
                     that.render();
-                    console.log(that.model.get("isEditable"));
                 });
             }
         },
