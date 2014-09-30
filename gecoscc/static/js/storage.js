@@ -75,12 +75,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (path.split(',')[0] === "undefined") {
                 this.model.set("isEditable", true);
             } else {
-                that = this;
-                domain = new App.OU.Models.OUModel({ id: domain });
-                domain.fetch().done(function () {
-                    that.model.set("isEditable", domain.get("master") === "gecos");
-                    that.render();
-                });
+                this.getDomainAttrs();
             }
         },
 

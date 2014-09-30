@@ -356,6 +356,18 @@
                 $button.attr("disabled", false);
             }, 2000);
 
+        },
+
+        getDomainAttrs: function () {
+            var that = this,
+                domain = this.model.get("path").split(',')[2];
+
+            domain = new App.OU.Models.OUModel({ id: domain });
+            domain.fetch().done(function () {
+                that.model.set("isEditable", domain.get("master") === "gecos");
+                that.model.set("master_policies", domain.get("master_policies"));
+                that.render();
+            });
         }
     });
 
