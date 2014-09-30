@@ -65,22 +65,14 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onBeforeRender: function () {
-            var path = this.model.get("path"),
-                domain,
-                that;
+            var path = this.model.get("path");
 
             if (this.model.get("isEditable") !== undefined) { return; }
-            domain = path.split(',')[2];
 
             if (path.split(',')[0] === "undefined") {
                 this.model.set("isEditable", true);
             } else {
-                that = this;
-                domain = new App.OU.Models.OUModel({ id: domain });
-                domain.fetch().done(function () {
-                    that.model.set("isEditable", domain.get("master") === "gecos");
-                    that.render();
-                });
+                this.getDomainAttrs();
             }
         },
 

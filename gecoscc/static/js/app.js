@@ -455,18 +455,24 @@ var App;
             newPolicy: function (containerid, type, itemid) {
                 var resource = App.instances.cache.get(itemid),
                     that,
+                    domain,
                     Model;
 
                 if (_.isUndefined(resource)) {
                     Model = this._typeClasses(type)[0];
                     resource = new Model({ id: itemid });
-                    App.instances.cache.set(itemid, resource);
 
                     that = this;
-
                     resource.fetch().done(function () {
-                        that.showPoliciesView(resource);
+                        domain = resource.get("path").split(',')[2];
+                        domain = new App.OU.Models.OUModel({ id: domain });
+                        domain.fetch().done(function () {
+                            resource.set("isEditable", domain.get("master") === "gecos");
+                            resource.set("master_policies", domain.get("master_policies"));
+                            that.showPoliciesView(resource);
+                        });
                     });
+                    App.instances.cache.set(itemid, resource);
                     return;
                 }
 

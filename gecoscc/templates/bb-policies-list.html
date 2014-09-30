@@ -24,12 +24,18 @@
                     <% } %>
                 </td>
                 <td>
+                <% if (!_.some(resource.get("master_policies"), function (a, k) { return k === policy.id;} )) { %>
                     <button class="btn btn-danger btn-xs">
                         <span class="fa fa-times"></span> {{ gettext('Remove') }}
                     </button>
                     <button class="btn btn-default btn-xs">
                         <span class="fa fa-edit"></span> {{ gettext('Edit') }}
                     </button>
+                <% } else {     %>
+                    <button class="btn btn-info btn-xs">
+                        <span class="fa fa-edit"></span> {{ gettext('View') }}
+                    </button>
+                <% } %>
                 </td>
             </tr>
         <% }); %>
@@ -46,7 +52,7 @@
     </div>
 <% } %>
 </div></div>
-<% if (typeof resource.id !== 'undefined' && resource.get("isEditable")) { %>
+<% if (typeof resource.id !== 'undefined') { %>
 <div class="row"><div class="col-xs-12">
         <button class="btn btn-primary" id="add-policy">
             <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}

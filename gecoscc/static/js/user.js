@@ -81,8 +81,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 domain = new App.OU.Models.OUModel({ id: domain });
                 domain.fetch().done(function () {
                     isEditable = domain.get("master") === "gecos";
-                    if ( !isEditable ) { isEditable = that.model.get("source") === "gecos"; }
+                    if (!isEditable) { isEditable = that.model.get("source") === "gecos"; }
                     that.model.set("isEditable", isEditable);
+                    that.model.set("master_policies", domain.get("master_policies"));
                     that.render();
                 });
             }
