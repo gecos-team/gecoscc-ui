@@ -6,6 +6,7 @@ from chef import ChefAPI, Client
 from chef import Node as ChefNode
 from chef.exceptions import ChefError
 
+from pyramid.threadlocal import get_current_registry
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
@@ -155,15 +156,73 @@ def delete_chef_admin_user(api, settings, username):
         return False
 
 
-def apply_policies_to_computer(nodes_collection, computer, user):
+def remove_chef_computer_data(computer, api):
+    node_chef_id = computer.get('node_chef_id', None)
+    if node_chef_id:
+        node = ChefNode(node_chef_id, api)
+        if node:
+            settings = get_current_registry().settings
+            cookbook_name = settings.get('chef.cookbook_name')
+            node.normal.get(cookbook_name).clear()
+            node.save()
+
+
+def remove_chef_user_data(user, computers, api):
+    settings = get_current_registry().settings
+    cookbook_name = settings.get('chef.cookbook_name')
+    for computer in computers:
+        node_chef_id = computer.get('node_chef_id', None)
+        if node_chef_id:
+            node = ChefNode(node_chef_id, api)
+        if node:
+            try:
+                user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, 'users_mgmt'))
+                for policy in user_mgmt:
+                    try:
+                        user_mgmt.get(policy).get('users').pop(user['name'])
+                    except (KeyError, AttributeError):
+                        continue
+                node.save()
+            except KeyError:
+                pass
+
+
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False):
     from gecoscc.tasks import object_changed, object_created
+
+    if api and initialize:
+        remove_chef_computer_data(computer, api)
+
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
-        object_changed.delay(user, 'ou', ou, {}, computers=[computer])
+        object_changed.delay(auth_user, 'ou', ou, {}, computers=[computer])
+
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
-        object_changed.delay(user, 'group', group, {}, computers=[computer])
-    object_created.delay(user, 'computer', computer, computers=[computer])
+        object_changed.delay(auth_user, 'group', group, {}, computers=[computer])
+
+    object_created.delay(auth_user, 'computer', computer, computers=[computer])
+
+
+def apply_policies_to_user(nodes_collection, user, auth_user, api, initialize=False):
+    from gecoscc.tasks import object_changed, object_created
+
+    computers = get_computer_of_user(nodes_collection, user)
+    if not computers:
+        return
+
+    if api and initialize:
+        remove_chef_user_data(user, computers, api)
+
+    ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
+    for ou in ous:
+        object_changed.delay(auth_user, 'ou', ou, {}, computers=computers)
+
+    groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
+    for group in groups:
+        object_changed.delay(auth_user, 'group', group, {}, computers=computers)
+
+    object_created.delay(auth_user, 'user', user, computers=computers)
 
 
 def get_pem_for_username(settings, username, pem_name):

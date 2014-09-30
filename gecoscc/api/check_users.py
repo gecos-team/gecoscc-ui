@@ -5,9 +5,8 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
-from gecoscc.tasks import object_changed
-from gecoscc.utils import (get_filter_ous_from_path, get_computer_of_user,
-                           get_chef_api, get_filter_in_domain)
+from gecoscc.utils import (get_chef_api, get_filter_in_domain,
+                           apply_policies_to_user)
 
 
 @resource(path='/check/user/',
@@ -16,18 +15,6 @@ class RegisterUserResource(BaseAPI):
 
     schema_detail = MongoNode
     collection_name = 'nodes'
-
-    def apply_policies_to_user(self, user):
-        computers = get_computer_of_user(self.collection, user)
-        if not computers:
-            return
-        ous = self.collection.find(get_filter_ous_from_path(user['path']))
-        for ou in ous:
-            object_changed.delay(self.request.user, 'ou', ou, {}, computers=computers)
-        groups = self.collection.find({'_id': {'$in': user.get('memberof', [])}})
-        for group in groups:
-            object_changed.delay(self.request.user, 'group', group, {}, computers=computers)
-        object_changed.delay(self.request.user, 'user', user, {}, computers=computers)
 
     def put(self):
         node_id = self.request.POST.get('node_id')
@@ -71,7 +58,7 @@ class RegisterUserResource(BaseAPI):
                 users_recalculate_policies.append(user)
 
         for user in users_recalculate_policies:
-            self.apply_policies_to_user(user)
+            apply_policies_to_user(self.collection, user, self.request.user)
 
         if users_does_not_find:
             return {'ok': False,
