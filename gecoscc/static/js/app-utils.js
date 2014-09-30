@@ -275,6 +275,9 @@
                 promise.reject();
                 return promise;
             }
+            if (App.alerts) {
+                App.alerts.close();
+            }
 
             this._showSavingProcess($button, "progress");
             _.each(_.pairs(mapping), function (relation) {
