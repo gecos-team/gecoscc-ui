@@ -4,15 +4,17 @@
     </div>
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form" class="form-horizontal">
-            <% if (!_.some(resource.get("master_policies"), function (a, k) { return k === id;} )) { %>
             <div class="row"><div class="col-sm-12">
+            <% if (!_.some(resource.get("master_policies"), function (a, k) { return k === id;} )) { %>
                 <button id="cancel" class="btn btn-default">{{ gettext('Cancel') }}</button>
                 <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                 <% if (typeof id !== "undefined") { %>
                     <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                 <% } %>
+            <% } else { %>
+                <button id="cancel" class="btn btn-default">{{ gettext('Back') }}</button>
+            <% } %>
             </div></div>
-        <% } %>
         </form>
     </div>
 </div>

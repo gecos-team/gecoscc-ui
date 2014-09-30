@@ -461,10 +461,8 @@ var App;
                 if (_.isUndefined(resource)) {
                     Model = this._typeClasses(type)[0];
                     resource = new Model({ id: itemid });
-                    App.instances.cache.set(itemid, resource);
 
                     that = this;
-
                     resource.fetch().done(function () {
                         domain = resource.get("path").split(',')[2];
                         domain = new App.OU.Models.OUModel({ id: domain });
@@ -474,6 +472,7 @@ var App;
                             that.showPoliciesView(resource);
                         });
                     });
+                    App.instances.cache.set(itemid, resource);
                     return;
                 }
 
