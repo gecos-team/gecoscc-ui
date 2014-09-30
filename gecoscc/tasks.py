@@ -476,7 +476,7 @@ class ChefTask(Task):
         self.log_action('changed', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
-        self.object_moved(user, objnew, objold, initialize=True)
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Computer', objnew)
 
     def computer_deleted(self, user, obj):
