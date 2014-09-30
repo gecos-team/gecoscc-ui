@@ -275,6 +275,9 @@
                 promise.reject();
                 return promise;
             }
+            if (App.alerts) {
+                App.alerts.close();
+            }
 
             this._showSavingProcess($button, "progress");
             _.each(_.pairs(mapping), function (relation) {
@@ -286,8 +289,6 @@
                 that._showSavingProcess($button, "saved");
                 if (!isNew) {
                     App.instances.staging.toModify.push(that.model.get("id"));
-                } else {
-                
                 }
                 App.instances.tree.trigger("change");
             }, 1000);
@@ -403,5 +404,14 @@
             text: text
         });
         App.alerts.show(view);
+    };
+
+    App.getDomainModel = function (id) {
+        var model, path, domain;
+        model = App.instances.tree.findNodeById(id);
+        path = model.path || model.get("path");
+        domain = path.split(',').length === 2 ? id : path.split(',')[2];
+        domain = new App.OU.Models.OUModel({ id: domain });
+        return domain;
     };
 }(App, Backbone, jQuery, _));

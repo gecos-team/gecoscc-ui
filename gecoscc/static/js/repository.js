@@ -36,7 +36,8 @@ App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, 
             components: [],
             deb_src: "",
             repo_key: "",
-            key_server: ""
+            key_server: "",
+            isEditable: undefined
         },
 
         url: function () {
@@ -62,6 +63,26 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh"
+        },
+
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    that.model.set("isEditable", domain.get("master") === "gecos");
+                    that.render();
+                });
+            }
         },
 
         saveForm: function (evt) {

@@ -43,7 +43,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             lsb: {},
             kernel: {},
             filesystem: {},
-            policyCollection: new App.Policies.Models.PolicyCollection()
+            policyCollection: new App.Policies.Models.PolicyCollection(),
+            isEditable: undefined
         }
     });
 });
@@ -72,28 +73,46 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.refresh": "refresh"
         },
 
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    that.model.set("isEditable", domain.get("master") === "gecos");
+                    that.render();
+                });
+            }
+        },
+
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
 
-            if (_.isUndefined(this.groupsWidget)) {
-                this.groupsWidget = new App.Group.Views.MultiGroupWidget({
-                    el: this.ui.groups[0],
-                    item_id: this.model.get("id"),
-                    ou_id: _.last(this.model.get("path").split(',')),
-                    checked: this.model.get("memberof")
-                });
-            }
+
+            this.groupsWidget = new App.Group.Views.MultiGroupWidget({
+                el: this.ui.groups[0],
+                item_id: this.model.get("id"),
+                ou_id: _.last(this.model.get("path").split(',')),
+                checked: this.model.get("memberof")
+            });
             this.groupsWidget.render();
 
-            if (_.isUndefined(this.policiesList)) {
-                this.policiesList = new App.Policies.Views.PoliciesList({
-                    el: this.ui.policies[0],
-                    collection: this.model.get("policyCollection"),
-                    resource: this.model
-                });
-            }
+            this.policiesList = new App.Policies.Views.PoliciesList({
+                el: this.ui.policies[0],
+                collection: this.model.get("policyCollection"),
+                resource: this.model
+            });
+
             this.policiesList.render();
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");

@@ -40,7 +40,8 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             location: "",
             connection: "network",
             uri: "",
-            ppd_uri: ""
+            ppd_uri: "",
+            isEditable: undefined
         }
     });
 });
@@ -58,6 +59,26 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "change input": "validate",
             "click button.refresh": "refresh"
+        },
+
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    that.model.set("isEditable", domain.get("master") === "gecos");
+                    that.render();
+                });
+            }
         },
 
         saveForm: function (evt) {

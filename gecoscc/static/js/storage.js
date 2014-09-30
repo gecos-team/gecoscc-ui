@@ -31,7 +31,8 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             lock: false,
             source: "gecos",
             name: "",
-            uri: ""
+            uri: "",
+            isEditable: undefined
         },
 
         parse: function (response) {
@@ -63,9 +64,28 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button.refresh": "refresh"
         },
 
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    that.model.set("isEditable", domain.get("master") === "gecos");
+                    that.render();
+                });
+            }
+        },
+
         saveForm: function (evt) {
             evt.preventDefault();
-            var that = this;
 
             this.saveModel($(evt.target), {
                 name: "#name",

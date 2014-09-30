@@ -16,27 +16,25 @@
             <div class="bootstrap-admin-panel-content dashboard">
                 <form role="form">
                     <% if (isDomain()) { %>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <div class="well well-sm">
-                                    <div class="row">
-                                        <div class="col-sm-2">
-                                            <span class="fa fa-info-circle fa-5x info-icon"></span>
-                                        </div>
-                                        <div class="col-sm-5">
-                                            <dl>
-                                                <dt>{{ gettext('Master') }}</dt>
-                                                <dd><%= master %></dd> 
-                                            </dl>
-                                        </div>
-                                        <div class="col-sm-5">
-                                            <dl>
-                                                <dt>{{ gettext('Policies') }}</dt>
-                                                <dd><%= master_policies %></dd>
-                                            </dl>
-                                        </div>
-                                    </div>
+                        <div class="well well-sm">
+                            <div class="row">
+                                <div class="col-sm-2">
+                                    <span class="fa fa-info-circle fa-5x info-icon"></span>
                                 </div>
+                                <div class="col-sm-5">
+                                    <dl>
+                                        <dt>{{ gettext('Master') }}</dt>
+                                        <dd><%= master %></dd> 
+                                    </dl>
+                                </div>
+                                <% if (!_.isEmpty(master_policies)) { %>
+                                <div class="col-sm-5">
+                                    <dl>
+                                        <dt>{{ gettext('Read-only Policies') }}</dt>
+                                        <dd><%= master_policies %></dd>
+                                    </dl>
+                                </div>
+                                <% } %>
                             </div>
                         </div>
                     <% } %>
@@ -56,6 +54,7 @@
                             </div>
                         </div>
                     </div>
+                    <% if (isEditable) { %>
                     <div class="row"><div class="col-sm-12">
                         <a href="#" class="btn btn-default">{{ gettext ('Cancel') }}</a>
                         <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
@@ -63,6 +62,7 @@
                             <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                         <% } %>
                     </div></div>
+                    <% } %>
                 </form>
             </div>
         </div>

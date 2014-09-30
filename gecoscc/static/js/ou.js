@@ -35,7 +35,8 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             master_policies: {},
             isDomain: function () {
                 return this.path.split(',').length === 2;
-            }
+            },
+            isEditable: undefined
         }
     });
 });
@@ -60,18 +61,36 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         policiesList: undefined,
 
+        onBeforeRender: function () {
+            var path = this.model.get("path"),
+                domain,
+                that;
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+            domain = path.split(',')[2];
+            if (path === "root") {
+                this.model.set("isEditable", true);
+            } else if (path.split(',').length === 2) {
+                this.model.set("isEditable", this.model.get("master") === "gecos");
+            } else {
+                that = this;
+                domain = new App.OU.Models.OUModel({ id: domain });
+                domain.fetch().done(function () {
+                    that.model.set("isEditable", domain.get("master") === "gecos");
+                    that.render();
+                });
+            }
+        },
+
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
-
-            if (_.isUndefined(this.policiesList)) {
-                this.policiesList = new App.Policies.Views.PoliciesList({
-                    el: this.ui.policies[0],
-                    collection: this.model.get("policyCollection"),
-                    resource: this.model
-                });
-            }
+            this.policiesList = new App.Policies.Views.PoliciesList({
+                el: this.ui.policies[0],
+                collection: this.model.get("policyCollection"),
+                resource: this.model
+            });
             this.policiesList.render();
         },
 
