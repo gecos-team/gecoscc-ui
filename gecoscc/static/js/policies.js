@@ -207,6 +207,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click table#policies-table button.btn-danger": "remove",
             "click table#policies-table button.btn-default": "edit",
+            "click table#policies-table button.btn-default": "edit",
             "click button#add-policy": "add"
         },
 
