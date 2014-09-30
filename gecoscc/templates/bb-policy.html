@@ -4,6 +4,7 @@
     </div>
     <div class="bootstrap-admin-panel-content dashboard">
         <form role="form" class="form-horizontal">
+            <% if (!_.some(resource.get("master_policies"), function (a, k) { return k === id;} )) { %>
             <div class="row"><div class="col-sm-12">
                 <button id="cancel" class="btn btn-default">{{ gettext('Cancel') }}</button>
                 <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
@@ -11,6 +12,7 @@
                     <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
                 <% } %>
             </div></div>
+        <% } %>
         </form>
     </div>
 </div>

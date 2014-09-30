@@ -65,6 +65,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:before:render", this);
 
             policyData = this.mixinTemplateHelpers(this.model.toJSON());
+            policyData.resource = this.resource;
             template = this.getTemplate();
             $html = $(Marionette.Renderer.render(template, policyData));
 
