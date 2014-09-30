@@ -69,7 +69,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         onBeforeRender: function () {
             var path = this.model.get("path"),
                 domain,
-                that,
+                that = this,
                 isEditable;
 
             if (this.model.get("isEditable") !== undefined) { return; }
@@ -78,11 +78,10 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (path.split(',')[0] === "undefined") {
                 this.model.set("isEditable", true);
             } else {
-                that = this;
                 domain = new App.OU.Models.OUModel({ id: domain });
                 domain.fetch().done(function () {
                     isEditable = domain.get("master") === "gecos";
-                    isEditable = !isEditable && that.model.get("source") === "gecos";
+                    if ( !isEditable ) { isEditable = that.model.get("source") === "gecos"; }
                     that.model.set("isEditable", isEditable);
                     that.render();
                 });
