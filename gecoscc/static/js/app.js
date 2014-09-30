@@ -455,6 +455,7 @@ var App;
             newPolicy: function (containerid, type, itemid) {
                 var resource = App.instances.cache.get(itemid),
                     that,
+                    domain,
                     Model;
 
                 if (_.isUndefined(resource)) {
@@ -465,7 +466,13 @@ var App;
                     that = this;
 
                     resource.fetch().done(function () {
-                        that.showPoliciesView(resource);
+                        domain = resource.get("path").split(',')[2];
+                        domain = new App.OU.Models.OUModel({ id: domain });
+                        domain.fetch().done(function () {
+                            resource.set("isEditable", domain.get("master") === "gecos");
+                            resource.set("master_policies", domain.get("master_policies"));
+                            that.showPoliciesView(resource);
+                        });
                     });
                     return;
                 }

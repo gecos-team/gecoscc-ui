@@ -268,7 +268,6 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 throw "A reference to the resource is required";
             }
-
             this.collection = new App.Policies.Models.SearchPolicyCollection({
                 resource: this.resource,
                 keyword: ""

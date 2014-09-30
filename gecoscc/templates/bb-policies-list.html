@@ -52,7 +52,7 @@
     </div>
 <% } %>
 </div></div>
-<% if (typeof resource.id !== 'undefined' && resource.get("isEditable")) { %>
+<% if (typeof resource.id !== 'undefined') { %>
 <div class="row"><div class="col-xs-12">
         <button class="btn btn-primary" id="add-policy">
             <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}

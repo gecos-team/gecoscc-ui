@@ -22,9 +22,14 @@
             <% _.each(items, function (policy) { %>
                 <li id="<%= policy.id %>">
                     <span class="fa fa-cogs"></span> <%= policy.name %>
-                    <% if (!resource.policyCollection.get(policy.id)) {  %>
+                    <% if (!resource.policyCollection.get(policy.id) && !_.some(resource.master_policies, function (a, k) { return k === policy.id;})) {  %>
                     <button class="btn btn-primary btn-xs pull-right add-policy-btn">
                         <span class="fa fa-plus"></span> {{ gettext('Add') }}
+                    </button>
+                    <% } %>
+                    <% if (_.some(resource.master_policies, function (a, k) { return k === policy.id;})) {  %>
+                    <button class="btn btn-info btn-xs pull-right">
+                        <span class="fa fa-globe"></span> {{ gettext('External') }}
                     </button>
                     <% } %>
                     <% if (policy.support_os && policy.support_os.length > 0) { %>
