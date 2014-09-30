@@ -81,7 +81,6 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
                 domain.fetch().done(function () {
                     that.model.set("isEditable", domain.get("master") === "gecos");
                     that.render();
-                    console.log(that.model.get("isEditable"));
                 });
             }
         },

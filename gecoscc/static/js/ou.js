@@ -86,7 +86,6 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
-
             this.policiesList = new App.Policies.Views.PoliciesList({
                 el: this.ui.policies[0],
                 collection: this.model.get("policyCollection"),
