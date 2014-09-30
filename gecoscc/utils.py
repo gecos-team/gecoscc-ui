@@ -204,7 +204,7 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     object_created.delay(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api, initialize=False):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False):
     from gecoscc.tasks import object_changed, object_created
 
     computers = get_computer_of_user(nodes_collection, user)
