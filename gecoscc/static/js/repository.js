@@ -66,12 +66,9 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
         },
 
         onBeforeRender: function () {
-            var path = this.model.get("path"),
-                domain,
-                that;
+            var path = this.model.get("path");
 
             if (this.model.get("isEditable") !== undefined) { return; }
-            domain = path.split(',')[2];
 
             if (path.split(',')[0] === "undefined") {
                 this.model.set("isEditable", true);

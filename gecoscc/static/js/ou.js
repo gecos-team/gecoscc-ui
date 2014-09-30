@@ -62,12 +62,10 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         policiesList: undefined,
 
         onBeforeRender: function () {
-            var path = this.model.get("path"),
-                domain,
-                that;
+            var path = this.model.get("path");
 
             if (this.model.get("isEditable") !== undefined) { return; }
-            domain = path.split(',')[2];
+
             if (path === "root") {
                 this.model.set("isEditable", true);
             } else if (path.split(',').length === 2) {

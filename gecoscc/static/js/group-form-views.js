@@ -95,14 +95,38 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         renderPolicies: function () {
-            if (_.isUndefined(this.policiesList)) {
-                this.policiesList = new App.Policies.Views.PoliciesList({
-                    el: this.ui.policies[0],
-                    collection: this.model.get("policyCollection"),
-                    resource: this.model
-                });
-            }
+            this.policiesList = new App.Policies.Views.PoliciesList({
+                el: this.ui.policies[0],
+                collection: this.model.get("policyCollection"),
+                resource: this.model
+            });
+
             this.policiesList.render();
+        },
+
+        onBeforeRender: function () {
+            //Set domain dependent atributes
+            var path = this.model.get("path");
+
+            if (this.model.get("isEditable") !== undefined) { return; }
+
+            if (path.split(',')[0] === "undefined") {
+                this.model.set("isEditable", true);
+            } else {
+                this.getDomainAttrs();
+            }
+        },
+
+        getDomainAttrs: function () {
+            var that = this,
+                domain = this.model.get("path").split(',')[2];
+
+            domain = new App.OU.Models.OUModel({ id: domain });
+            domain.fetch().done(function () {
+                that.model.set("isEditable", domain.get("master") === "gecos");
+                that.model.set("master_policies", domain.get("master_policies"));
+                that.render();
+            });
         },
 
         onRender: function () {

@@ -33,7 +33,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             name: "",
             members: [],
             memberof: [],
-            policyCollection: new App.Policies.Models.PolicyCollection()
+            policyCollection: new App.Policies.Models.PolicyCollection(),
+            isEditable: undefined
         }
     });
 
@@ -46,7 +47,8 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             source: "gecos",
             name: "",
             members: [],
-            memberof: []
+            memberof: [],
+            isEditable: undefined
         }
     });
 
