@@ -56,7 +56,6 @@ class ChefStatusResource(BaseAPI):
             node.attributes.set_dotted('job_status', {})
             node.save()
 
-        import ipdb; ipdb.set_trace()
         try:
             users_old = node.attributes.get_dotted('ohai_gecos.users_old')
         except KeyError:
