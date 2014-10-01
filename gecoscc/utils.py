@@ -195,10 +195,41 @@ def remove_chef_user_data(user, computers, api):
                 pass
 
 
+def visibility_group(db, obj):
+    groups = obj['memberof']
+    visible_groups = []
+    hide_groups = []
+    for group_id in groups:
+        ou_id = obj['path'].split(',')[-1]
+        is_visible_group = db.nodes.find_one(
+            {'_id': group_id,
+             'path': get_filter_nodes_parents_ou(db,
+                                                 ou_id,
+                                                 obj['_id'])})
+        if is_visible_group:
+            visible_groups.append(group_id)
+        else:
+            hide_groups.append(group_id)
+    if visible_groups != groups:
+        db.nodes.update({'_id': obj['_id']},
+                        {'$set': {'memberof': visible_groups}})
+        for hide_group_id in hide_groups:
+            group = db.nodes.find_one({'_id': hide_group_id})
+            members = list(set(group['members']))
+            try:
+                del members[members.index(obj['_id'])]
+            except ValueError:
+                pass
+            db.nodes.update({'_id': hide_group_id},
+                            {'$set': {'members': members}})
+        return db.nodes.find_one({'_id': obj['_id']})
+    return obj
+
+
 def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False):
     from gecoscc.tasks import object_changed, object_created
-
     if api and initialize:
+        computer = visibility_group(nodes_collection.database, computer)
         remove_chef_computer_data(computer, api)
 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
@@ -220,6 +251,7 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
         return
 
     if api and initialize:
+        user = visibility_group(nodes_collection.database, user)
         remove_chef_user_data(user, computers, api)
 
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
