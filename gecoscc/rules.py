@@ -2,18 +2,6 @@ from copy import deepcopy
 
 EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by']
 
-# Network rules
-
-rules_network_res_path = 'gecos_ws_mgmt.network_mgmt.network_res'
-rules_network_res_attrs = ('use_dhcp', 'netmask', 'ip_address', 'gateway', 'network_type', 'dns_servers_array')
-
-RULES_NETWORK_RES = {}
-
-for attr in rules_network_res_attrs:
-    RULES_NETWORK_RES['%s.%s' % (rules_network_res_path, attr)] = attr
-
-# end network rules
-
 # Emitter policies
 
 EMITTER_OBJECT_RULES = {
@@ -145,7 +133,6 @@ RULES_NODE = {
     'computer': {
         'save': {},
         'policies': {
-            'network_res': RULES_NETWORK_RES,
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
