@@ -215,7 +215,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 if (modelCut.getDomainId() !== modelParent.getDomainId()) {
                     App.showAlert(
                         "error",
-                        gettext("You can not move nodes between domains.")
+                        gettext("Nodes can not be moved between domains.")
                     );
                     return;
                 }

@@ -108,17 +108,16 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             console.log(this.getResourceUrl());
 
             this.resource.addPolicy(this.model, values);
+
+            App.instances.router.navigate(url, {
+                trigger: true
+            });
+            $("#policy-tab a").tab("show");
+
             App.showAlert(
                 "success",
-                gettext("Policy successfully saved."),
-                gettext("Your changes are pending queuing in the staging area. In a few moments you'll be redirected to the resource.")
+                gettext("Policy successfully saved.")
             );
-            setTimeout(function () {
-                App.instances.router.navigate(url, {
-                    trigger: true
-                });
-                $("#policy-tab a").tab("show");
-            }, 2000);
         },
 
         onCancel: function (evt) {
@@ -134,17 +133,16 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             var url = this.getResourceUrl();
 
             this.resource.removePolicy(this.model.get("id"));
+
+            App.instances.router.navigate(url, {
+                trigger: true
+            });
+            $("#policy-tab a").tab("show");
+
             App.showAlert(
                 "success",
-                gettext("Policy successfully deleted."),
-                gettext("Your changes are pending queuing in the staging area. In a few moments you'll be redirected to the resource.")
+                gettext("Policy successfully deleted.")
             );
-            setTimeout(function () {
-                App.instances.router.navigate(url, {
-                    trigger: true
-                });
-                $("#policy-tab a").tab("show");
-            }, 2000);
         }
     });
 });
