@@ -11,6 +11,7 @@ from pyramid.threadlocal import get_current_registry
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
+USER_MGMT = 'users_mgmt'
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -163,7 +164,11 @@ def remove_chef_computer_data(computer, api):
         if node:
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
-            node.normal.get(cookbook_name).clear()
+            cookbook = node.normal.get(cookbook_name)
+            for mgmt in cookbook:
+                if mgmt == USER_MGMT:
+                    continue
+                cookbook.pop(mgmt)
             node.save()
 
 
@@ -176,11 +181,14 @@ def remove_chef_user_data(user, computers, api):
             node = ChefNode(node_chef_id, api)
         if node:
             try:
-                user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, 'users_mgmt'))
+                user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
                 for policy in user_mgmt:
                     try:
-                        user_mgmt.get(policy).get('users').pop(user['name'])
-                    except (KeyError, AttributeError):
+                        users = user_mgmt.get(policy).get('users')
+                        if not users:
+                            continue
+                        users.pop(user['name'])
+                    except KeyError:
                         continue
                 node.save()
             except KeyError:

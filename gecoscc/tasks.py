@@ -408,7 +408,6 @@ class ChefTask(Task):
 
     def object_moved(self, user, objnew, objold):
         api = get_chef_api(self.app.conf, user)
-        import ipdb; ipdb.set_trace()
         try:
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
@@ -476,7 +475,7 @@ class ChefTask(Task):
         self.log_action('changed', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
-        self.object_moved(user, objnew, objold, initialize=True)
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Computer', objnew)
 
     def computer_deleted(self, user, obj):

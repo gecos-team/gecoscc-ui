@@ -219,4 +219,5 @@ def get_rules(obj_type, rule_type, node, policy):
 
 
 def is_user_policy(policy_path):
-    return 'users_mgmt' in policy_path
+    from gecoscc.utils import USER_MGMT
+    return USER_MGMT in policy_path
