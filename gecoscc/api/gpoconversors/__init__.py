@@ -3,7 +3,7 @@
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
 
-__all__ = ['desktop_background', 'sharing_permissions', 'automatic_updates', 'file_browser', 'user_mount']
+__all__ = ['desktop_background', 'sharing_permissions', 'automatic_updates', 'file_browser', 'user_mount', 'shutdown_options']
 
 
 class GPOConversor(object):
