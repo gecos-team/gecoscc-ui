@@ -85,6 +85,10 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
             this.save();
+        },
+
+        getDomainId: function () {
+            return this.get("path").split(",")[2] || this.get("id");
         }
     });
 
