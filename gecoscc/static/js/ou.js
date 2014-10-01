@@ -76,6 +76,9 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            var oids = "",
+                url;
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
@@ -85,6 +88,23 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+
+            if (!_.isEmpty(this.model.get("master_policies")) && this.model.get("path").split(',').length === 2) {
+                _.each(this.model.get("master_policies"), function (o, k) {
+                    oids += k + ",";
+                });
+                oids = oids.slice(0, -1);
+                url = "/api/policies/?oids=" + oids;
+                $.ajax(url).done(function (response) {
+                    var $masterPolicies = $("#master-policies dl"),
+                        list = "";
+                    _.each(response.policies, function (p) {
+                        list += p.name + ", ";
+                    });
+                    list = list.slice(0, -2);
+                    $masterPolicies.append("<dd>" + list + "</dd>");
+                });
+            }
         },
 
         saveForm: function (evt) {

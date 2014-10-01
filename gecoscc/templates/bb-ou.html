@@ -24,14 +24,13 @@
                                 <div class="col-sm-5">
                                     <dl>
                                         <dt>{{ gettext('Master') }}</dt>
-                                        <dd><%= master %></dd> 
+                                        <dd><%= master %></dd>
                                     </dl>
                                 </div>
                                 <% if (!_.isEmpty(master_policies)) { %>
-                                <div class="col-sm-5">
+                                <div class="col-sm-5" id="master-policies">
                                     <dl>
                                         <dt>{{ gettext('Read-only Policies') }}</dt>
-                                        <dd><%= master_policies %></dd>
                                     </dl>
                                 </div>
                                 <% } %>
