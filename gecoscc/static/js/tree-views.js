@@ -211,30 +211,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 modelParent = new App.OU.Models.OUModel({ id: this });
 
             modelParent.fetch({success: function () {
-
+                //Cant move nodes between domains
+                if (modelCut.getDomainId() !== modelParent.getDomainId()) {
+                    App.showAlert(
+                        "error",
+                        gettext("Nodes can not be moved between domains.")
+                    );
+                    return;
+                }
                 modelCut.set("path", modelParent.get("path") + "," + modelParent.get("id"));
 
                 modelCut.save().done(
                     function () {
                         $("#" + modelCut.get("id")).remove();
                         App.instances.tree.updateNodeById(modelParent.get("id"));
-                        App.instances.tree.reloadTree(
-                            function () {
-                                var promise = App.instances.tree.loadFromPath(
-                                    modelCut.get("path"),
-                                    modelCut.get("id"),
-                                    true
-                                );
-
-                                $.when.apply($, promise).done(function () {
-                                    App.instances.tree.openAllContainersFrom(
-                                        _.last(modelCut.get("path").split(',')),
-                                        true
-                                    );
-                                    App.instances.tree.trigger("change");
-                                });
-                            }
-                        );
+                        App.instances.tree.reloadTree();
                     }
                 );
                 App.instances.staging.toMove.push([modelCut.get("id"), modelParent.get("id")]);

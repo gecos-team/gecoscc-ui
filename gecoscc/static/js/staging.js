@@ -123,7 +123,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             var that = this,
                 promises = [];
 
-            this.each(function (model) {
+            _.chain(this.models).clone().each(function (model) {
                 var id = model.get("id"),
                     action = Backbone.Model.prototype.save,
                     args = [],

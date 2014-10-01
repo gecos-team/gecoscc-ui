@@ -79,12 +79,18 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             this.get("policyCollection").remove(id);
             delete this.get("policies")[id];
             this.save();
+            App.instances.staging.toModify.push(this.get("id"));
         },
 
         addPolicy: function (policyModel, values) {
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
             this.save();
+            App.instances.staging.toModify.push(this.get("id"));
+        },
+
+        getDomainId: function () {
+            return this.get("path").split(",")[2] || this.get("id");
         }
     });
 
@@ -227,6 +233,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             var id = $(evt.target).parents("tr").first().attr("id");
             this.resource.removePolicy(id);
             this.render();
+            App.instances.tree.trigger("change");
         },
 
         edit: function (evt) {
