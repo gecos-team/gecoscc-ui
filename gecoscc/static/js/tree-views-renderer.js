@@ -200,7 +200,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 level = json.path.split(",").length - 1;
 
-            json.icon = [Views.iconClasses.first, Views.iconClasses.domain, Views.iconClasses.ou][level];
+            json.icon = [Views.iconClasses.first, Views.iconClasses.domain][level] ||  Views.iconClasses.ou;
 
             html = this._templates.containerPre(json);
             if (data.children.length > 0) {
