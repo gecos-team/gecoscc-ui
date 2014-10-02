@@ -95,9 +95,11 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
                 oids = oids.join(",");
                 url = "/api/policies/?oids=" + oids;
+
                 $.ajax(url).done(function (response) {
                     var $masterPolicies = $("#master-policies dl"),
                         list;
+
                     list = response.policies.map(function (p) {
                        return p.name;
                     });
@@ -105,6 +107,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $masterPolicies.append("<dd>" + list + "</dd>");
                 });
             }
+
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea, input").prop( "disabled", true );
             }
