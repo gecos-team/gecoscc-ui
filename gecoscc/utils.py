@@ -199,8 +199,8 @@ def visibility_group(db, obj):
     groups = obj['memberof']
     visible_groups = []
     hide_groups = []
+    ou_id = obj['path'].split(',')[-1]
     for group_id in groups:
-        ou_id = obj['path'].split(',')[-1]
         is_visible_group = db.nodes.find_one(
             {'_id': group_id,
              'path': get_filter_nodes_parents_ou(db,
@@ -226,10 +226,44 @@ def visibility_group(db, obj):
     return obj
 
 
+def visibility_object_related(db, obj):
+    policies = obj.get('policies', None)
+    if not policies:
+        return obj
+    emitter_policies = db.policies.find({'is_emitter_policy': True})
+    obj_id = obj['_id']
+    ou_id = obj['path'].split(',')[-1]
+    have_updated = False
+    for emitter_policy in emitter_policies:
+        emitter_policy_id = emitter_policy['_id']
+        if unicode(emitter_policy_id) in obj['policies']:
+            object_related_list = obj['policies'][unicode(emitter_policy_id)].get('object_related_list', [])
+            object_related_visible = []
+            for object_related_id in object_related_list:
+                is_visible = db.nodes.find_one(
+                    {'_id': ObjectId(object_related_id),
+                     'path': get_filter_nodes_parents_ou(db,
+                                                         ou_id,
+                                                         obj_id)})
+                if is_visible:
+                    object_related_visible.append(object_related_id)
+            if object_related_list != object_related_visible:
+                if object_related_visible:
+                    policies[unicode(emitter_policy_id)]['object_related_list'] = object_related_visible
+                else:
+                    del policies[unicode(emitter_policy_id)]
+                have_updated = True
+    if have_updated:
+        db.nodes.update({'_id': obj_id}, {'$set': {'policies': policies}})
+        obj = db.nodes.find_one({'_id': obj_id})
+    return obj
+
+
 def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False):
     from gecoscc.tasks import object_changed, object_created
     if api and initialize:
         computer = visibility_group(nodes_collection.database, computer)
+        computer = visibility_object_related(nodes_collection.database, computer)
         remove_chef_computer_data(computer, api)
 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
@@ -247,12 +281,14 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     from gecoscc.tasks import object_changed, object_created
 
     computers = get_computer_of_user(nodes_collection, user)
-    if not computers:
-        return
 
     if api and initialize:
         user = visibility_group(nodes_collection.database, user)
+        user = visibility_object_related(nodes_collection.database, user)
         remove_chef_user_data(user, computers, api)
+
+    if not computers:
+        return
 
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
