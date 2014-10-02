@@ -82,7 +82,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     var items = response.nodes,
                         members = {},
                         view;
-                    console.log(response);
                     _.each(items, function (el) {
                         members[el._id] = el.name;
                     });
@@ -157,8 +156,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             promise.done(function () {
                 that.memberof.show(widget);
             });
-
-            this.renderMembers("members", Views.Members);
+            this.model.fetch().done(function () {
+                console.log(that.model.get("members"));
+                that.renderMembers("members", Views.Members);
+             });
             this.renderPolicies();
         },
 
