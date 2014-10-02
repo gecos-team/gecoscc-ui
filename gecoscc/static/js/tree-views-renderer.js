@@ -27,6 +27,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
     Views.iconClasses = {
+        first: "flag",
         ou: "folder",
         user: "user",
         computer: "desktop",
@@ -196,9 +197,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         this.renderOU = function (json, data, treeNode) {
             var html,
-                that = this;
+                that = this,
+                level = json.path.split(",").length - 1;
 
-            json.icon = json.path.split(",").length === 2 ? Views.iconClasses.domain : Views.iconClasses.ou;
+            json.icon = [Views.iconClasses.first, Views.iconClasses.domain, Views.iconClasses.ou][level];
 
             html = this._templates.containerPre(json);
             if (data.children.length > 0) {

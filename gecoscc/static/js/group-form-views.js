@@ -157,9 +157,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.memberof.show(widget);
             });
             this.model.fetch().done(function () {
-                console.log(that.model.get("members"));
                 that.renderMembers("members", Views.Members);
-             });
+             });             
             this.renderPolicies();
         },
 
