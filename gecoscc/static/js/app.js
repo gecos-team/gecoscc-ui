@@ -389,22 +389,11 @@ var App;
 
             _fetchModel: function (model) {
                 model.fetch().done(function () {
-                    // Item loaded, now we need to update the tree
-                    var promises = [$.Deferred()];
-
-                    promises = App.instances.tree.loadFromPath(
+                    App.instances.tree.loadFromPath(
                         model.get("path"),
                         model.get("id"),
-                        true
+                        false
                     );
-
-                    $.when.apply($, promises).done(function () {
-                        App.instances.tree.openAllContainersFrom(
-                            _.last(model.get("path").split(',')),
-                            true
-                        );
-                        App.instances.tree.trigger("change");
-                    });
                 });
             },
 

@@ -36,10 +36,12 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         initialize: function (options) {
+            var that = this;
             if (!_.has(options, "resource")) {
                 throw "This view requires a resource to be specified";
             }
             this.resource = options.resource;
+            this.disabled = _.some(this.resource.get("master_policies"), function (a, k) { return k === that.model.get("id"); });
         },
 
         serializeData: function () {
@@ -53,6 +55,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!_.isUndefined(values)) {
                 data.values = values;
             }
+            data.disabled = this.disabled;
             return data;
         },
 
@@ -89,6 +92,13 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:rendered", this);
 
             return this;
+        },
+
+        onRender: function () {
+            if (this.disabled) {
+                this.$el.find("textarea,input,select").prop("disabled", true);
+                this.$el.find(".btn-xs").addClass("disabled");
+            }
         },
 
         events: {

@@ -98,7 +98,8 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 el: this.$el.find("div#groups-widget")[0],
                 item_id: this.model.get("id"),
                 ou_id: _.last(this.model.get("path").split(',')),
-                checked: this.model.get("memberof")
+                checked: this.model.get("memberof"),
+                disabled: !this.model.get("isEditable")
             });
             this.groupsWidget.render();
 
@@ -108,6 +109,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+            if (!this.model.get("isEditable")) {
+                this.$el.find("textarea,input,select").prop("disabled", true);
+            }
         },
 
         saveForm: function (evt) {

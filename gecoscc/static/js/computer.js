@@ -96,7 +96,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 el: this.ui.groups[0],
                 item_id: this.model.get("id"),
                 ou_id: _.last(this.model.get("path").split(',')),
-                checked: this.model.get("memberof")
+                checked: this.model.get("memberof"),
+                disabled: !this.model.get("isEditable")
             });
             this.groupsWidget.render();
 
@@ -111,6 +112,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 var $el = $(evt.target).find("span.fa");
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
             });
+            if (!this.model.get("isEditable")) {
+                this.$el.find("textarea,input,select").prop("disabled", true);
+            }
         },
 
         saveForm: function (evt) {
