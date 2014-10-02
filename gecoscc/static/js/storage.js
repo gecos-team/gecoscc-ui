@@ -78,9 +78,9 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onRender: function () {
             if (!this.model.get("isEditable")) {
-                this.$el.find("textarea,input,select").prop( "disabled", true );
+                this.$el.find("textarea,input,select").prop("disabled", true);
             }
-        },  
+        },
 
         saveForm: function (evt) {
             evt.preventDefault();

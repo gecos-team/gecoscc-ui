@@ -41,7 +41,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 throw "This view requires a resource to be specified";
             }
             this.resource = options.resource;
-            this.disabled = _.some(this.resource.get("master_policies"), function (a, k) { return k === that.model.get("id");} )
+            this.disabled = _.some(this.resource.get("master_policies"), function (a, k) { return k === that.model.get("id"); });
         },
 
         serializeData: function () {
@@ -93,10 +93,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             return this;
         },
-        
+
         onRender: function () {
             if (this.disabled) {
-                this.$el.find("textarea,input,select").prop( "disabled", true );
+                this.$el.find("textarea,input,select").prop("disabled", true);
                 this.$el.find(".btn-xs").addClass("disabled");
             }
         },

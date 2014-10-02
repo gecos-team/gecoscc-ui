@@ -104,7 +104,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.collection.goTo(1, {
                 success: function () { that.render(); }
             });
-            
+
             this.disabled = options.disabled;
         },
 
@@ -168,9 +168,9 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.checked.trigger("change");
-            
+
             if (this.disabled) {
-                this.$el.find("input").prop( "disabled", true );
+                this.$el.find("input").prop("disabled", true);
             }
         },
 

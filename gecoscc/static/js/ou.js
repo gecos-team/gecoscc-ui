@@ -101,7 +101,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                         list;
 
                     list = response.policies.map(function (p) {
-                       return p.name;
+                        return p.name;
                     });
                     list = list.join(", ");
                     $masterPolicies.append("<dd>" + list + "</dd>");
@@ -109,7 +109,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             if (!this.model.get("isEditable")) {
-                this.$el.find("textarea, input").prop( "disabled", true );
+                this.$el.find("textarea, input").prop("disabled", true);
             }
         },
 
