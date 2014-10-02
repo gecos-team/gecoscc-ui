@@ -111,6 +111,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 var $el = $(evt.target).find("span.fa");
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
             });
+            if (!this.model.get("isEditable")) {
+                this.$el.find("textarea,input,select").prop( "disabled", true );
+            }
         },
 
         saveForm: function (evt) {

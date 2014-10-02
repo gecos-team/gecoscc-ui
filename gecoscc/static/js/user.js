@@ -108,6 +108,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+            if (!this.model.get("isEditable")) {
+                this.$el.find("textarea,input,select").prop( "disabled", true );
+            }
         },
 
         saveForm: function (evt) {
