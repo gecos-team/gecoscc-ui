@@ -73,19 +73,25 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 aux = {},
                 that = this;
 
-            $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
-                var items = response.nodes,
-                    members = {},
-                    view;
+            if (oids.length === 0) {
+                aux[propName] = {};
+                aux = new View(aux);
+                this[propName].show(aux);
+            } else {
+                $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+                    var items = response.nodes,
+                        members = {},
+                        view;
+                    console.log(response);
+                    _.each(items, function (el) {
+                        members[el._id] = el.name;
+                    });
 
-                _.each(items, function (el) {
-                    members[el._id] = el.name;
+                    aux[propName] = members;
+                    view = new View(aux);
+                    that[propName].show(view);
                 });
-
-                aux[propName] = members;
-                view = new View(aux);
-                that[propName].show(view);
-            });
+            }
         },
 
         renderPolicies: function () {
