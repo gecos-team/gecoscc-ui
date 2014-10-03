@@ -335,10 +335,20 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             if (!_.isUndefined(childToShow)) {
                 promises[0].done(function () {
+                    var domainPath = nodes.newNode.model.path.split(","),
+                        rootPath = domainPath[1];
+
                     that.searchPageForNode(
                         nodes.newNode.model.paginatedChildren,
                         childToShow
                     );
+                    if (domainPath.length > 2) {
+                        domainPath = domainPath[2];
+                        that.searchPageForNode(
+                            that.findNodeById(rootPath).paginatedChildren,
+                            domainPath
+                        );
+                    }
                 });
             }
 
@@ -424,7 +434,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 var node = paginatedCollection.get(nodeId),
                     page = paginatedCollection.currentPage + 1;
 
-                if (_.isUndefined(node) && page < paginatedCollection.totalPages) {
+                if (_.isUndefined(node) && page <= paginatedCollection.totalPages) {
                     paginatedCollection.goTo(page, {
                         success: function () { search(); }
                     });
