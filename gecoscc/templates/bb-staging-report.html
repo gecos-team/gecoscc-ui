@@ -8,7 +8,7 @@
             <div class="modal-body">
                 <ul class="list-unstyled">
                     <% _.each(items, function (model) { %>
-                        <li id="<%= model.id %>" title="ID: <%= model.id %>" class="model">
+                        <li id="<%= model.id %>" title="ID: <%= model.id %>" name="<%= model.name %>" class="model">
                             <% if (_.contains(deletions, model.id)) { %>
                                 <span class="label label-danger">{{ gettext('Deleted') }}</span>
                             <% } else if (_.some(moves, function (o) { return o[0] === model.id; })) { %>
