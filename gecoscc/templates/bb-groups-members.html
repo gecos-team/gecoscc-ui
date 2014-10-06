@@ -5,6 +5,23 @@
         <li><a href="/#byid/<%= m[0] %>"><%= m[1] %></a></li>
     <% }); %>
     </ul>
+    <div class="row">
+        <div class="col-sm-12">
+            <ul class="pagination pull-right">
+                <li <% if (page === 0) { print('class="disabled"'); } %>>
+                    <a class="previous" href="#">&laquo;</a>
+                </li>
+                <% for(var p = 0; p < totalPages; p++) { %>
+                    <li <% if (p === page) { print('class="active"'); } %>>
+                        <a href="#"><%= p + 1 %></a>
+                    </li>
+                <% }; %>
+                <li <% if (page === totalPages - 1) { print('class="disabled"'); } %>>
+                    <a class="next" href="#">&raquo;</a>
+                </li>
+            </ul>
+        </div>
+    </div>
 <% } else { %>
     <p class="text-muted">{{ gettext('None') }}</p>
 <% }%>
