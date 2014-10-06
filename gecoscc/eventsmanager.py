@@ -46,7 +46,8 @@ class JobStorage(object):
 
     def create(self, objid=None, objname=None, type=None, op=None, status=None,
                computerid=None, computername=None, policyname=None,
-               administrator_username=None):
+               administrator_username=None,
+               message=None):
 
         self.assert_permissions()
         userid = self.user['_id']
@@ -69,7 +70,8 @@ class JobStorage(object):
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
         }
-
+        if message:
+            job['message'] = message
         return self.collection.insert(job)
 
     def update_status(self, jobid, status):

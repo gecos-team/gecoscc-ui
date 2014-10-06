@@ -409,6 +409,9 @@ class Computer(Node):
     node_chef_id = colander.SchemaNode(colander.String(),
                                        default='',
                                        missing='')
+    error_last_saved = colander.SchemaNode(colander.Boolean(),
+                                           default=False,
+                                           mission=False)
 
 
 class Computers(colander.SequenceSchema):
