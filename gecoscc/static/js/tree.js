@@ -44,7 +44,9 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
                 $("#" + id).removeClass("tree-selected");
             });
             _.each(App.instances.staging.toModify, function (id) {
-                $("#" + id).addClass("modified");
+                modelCut = $("#" + id).find(".tree-container-header").first();
+                if (modelCut.length === 0) { modelCut = $("#" + id); }
+                modelCut.addClass("modified");
                 $("#" + id).removeClass("tree-selected");
             });
             _.each(App.instances.staging.toMove, function (ids) {
@@ -427,8 +429,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         searchPageForNode: function (paginatedCollection, nodeId, silent) {
-            var originalPage = paginatedCollection.currentPage,
-                that = this,
+            var that = this,
                 search;
 
             search = function () {
