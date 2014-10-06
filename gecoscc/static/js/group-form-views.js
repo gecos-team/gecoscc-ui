@@ -28,11 +28,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         initialize: function (options) {
             this.members = options.members;
+            this.page = options.page;
+            this.totalPages = options.totalPages;
         },
 
         serializeData: function () {
             return {
-                members: _.pairs(this.members)
+                members: _.pairs(this.members),
+                page: this.page,
+                totalPages: this.totalPages
             };
         }
     });
@@ -41,6 +45,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#groups-form-template",
         tagName: "div",
         className: "col-sm-12",
+        page: 0,
+        perPage: 10,
 
         regions: {
             memberof: "#memberof",
@@ -54,7 +60,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click button#delete": "deleteModel",
             "click button#save": "save",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click ul.pagination a": "goToPage"
         },
 
         helperView: undefined,
@@ -68,8 +75,29 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.helperView.resourceType = "group";
         },
 
+        goToPage: function (evt) {
+            evt.preventDefault();
+            var $el = $(evt.target),
+                list = $("#members").find("ul").first(),
+                that = this;
+
+            if ($el.parent().is(".disabled")) { return; }
+            if ($el.is(".previous")) {
+                this.page--;
+            } else if ($el.is(".next")) {
+                this.page++;
+            } else {
+                this.page = parseInt($el.text(), 10) - 1;
+            }
+            list.fadeOut("fast", function () {
+                that.renderMembers("members", Views.Members);
+            });
+        },
+
         renderMembers: function (propName, View) {
-            var oids = this.model.get(propName).join(','),
+
+            var startOid = this.perPage * this.page,
+                oids = this.model.get(propName).slice(startOid, startOid + this.perPage).join(','),
                 aux = {},
                 that = this;
 
@@ -87,8 +115,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     });
 
                     aux[propName] = members;
+                    aux.page = that.page;
+                    aux.totalPages = that.totalPages;
                     view = new View(aux);
                     that[propName].show(view);
+                    $("#members").find("ul").first().hide().fadeIn("fast");
                 });
             }
         },
@@ -157,6 +188,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.memberof.show(widget);
             });
             this.model.fetch().done(function () {
+                that.totalPages = that.model.get("members").length / that.perPage;
+                that.totalPages = Math.floor(that.totalPages) + 1;
                 that.renderMembers("members", Views.Members);
             });
             this.renderPolicies();

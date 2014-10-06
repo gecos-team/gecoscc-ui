@@ -67,7 +67,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                              "<input type='checkbox'" +
                              "       id='<%= id %>'" +
                              "       <%= checked %>>" +
-                             "<%= name %></label></li>"),
+                             "</label><span class='group-list-item'>" +
+                             "<a href='#byid/<%= id %>'><%= name %></a></span></li>"),
 
         checked: undefined,
         filteredGroups: null,
