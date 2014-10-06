@@ -396,17 +396,21 @@ class ChefTask(Task):
             self.db.nodes.update({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
-    def report_unknown_error(self, exception, user, obj, action):
+    def report_unknown_error(self, exception, user, obj, action, computer=None):
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'errors'
         message = 'No save in chef server. %s' % unicode(exception)
-        job_storage.create(objid=obj['_id'],
-                           objname=obj['name'],
-                           type=obj['type'],
-                           op=action,
-                           status=job_status,
-                           message=message,
-                           administrator_username=user['username'])
+        job = dict(objid=obj['_id'],
+                   objname=obj['name'],
+                   type=obj['type'],
+                   op=action,
+                   status=job_status,
+                   message=message,
+                   administrator_username=user['username'])
+        if computer:
+            job['computerid'] = computer['_id']
+            job['computername'] = computer['name']
+        job_storage.create(**job)
 
     def object_action(self, user, obj, objold=None, action=None, computers=None):
         api = get_chef_api(self.app.conf, user)
@@ -414,20 +418,28 @@ class ChefTask(Task):
         computers = computers or self.get_related_computers(obj)
         for computer in computers:
             try:
-                node_chef_id = computer.get('node_chef_id', None)
                 job_ids_by_computer = []
+                node_chef_id = computer.get('node_chef_id', None)
                 node = Node(node_chef_id, api)
-                node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
-                if not updated and not computer.get('error_last_saved', False):
+                error_last_saved = computer.get('error_last_saved', False)
+                if error_last_saved:
+                    node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
+                else:
+                    node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
+                if not updated:
                     continue
                 self.validate_data(node, cookbook, api)
                 node.save()
-                if computer.get('error_last_saved', False):
+                if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
             except ValidationError as e:
+                if not job_ids_by_computer:
+                    self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
             except Exception as e:
+                if not job_ids_by_computer:
+                    self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer)
 
     def object_created(self, user, objnew, computers=None):

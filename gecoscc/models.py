@@ -67,6 +67,16 @@ class ObjectIdField(object):
         return []
 
 
+class RealBoolean(colander.Boolean):
+
+    def __init__(self, false_choices=('false', '0'), true_choices=(),
+                 false_val=False, true_val=True):
+        super(RealBoolean, self).__init__(false_choices=false_choices,
+                                          true_choices=true_choices,
+                                          false_val=false_val,
+                                          true_val=true_val)
+
+
 class Unique(object):
     err_msg = _('There is some object with this value: ${val}')
 
@@ -120,7 +130,7 @@ class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     path = colander.SchemaNode(colander.String())
     type = colander.SchemaNode(colander.String())
-    lock = colander.SchemaNode(colander.Boolean(),
+    lock = colander.SchemaNode(RealBoolean(),
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
@@ -409,9 +419,8 @@ class Computer(Node):
     node_chef_id = colander.SchemaNode(colander.String(),
                                        default='',
                                        missing='')
-    error_last_saved = colander.SchemaNode(colander.Boolean(),
-                                           default=False,
-                                           mission=False)
+    error_last_saved = colander.SchemaNode(RealBoolean(),
+                                           default=False)
 
 
 class Computers(colander.SequenceSchema):
@@ -491,7 +500,7 @@ class Repository(Node):
     uri = colander.SchemaNode(colander.String())
     components = StringList(missing=[], default=[])
     distribution = colander.SchemaNode(colander.String())
-    deb_src = colander.SchemaNode(colander.Boolean(),
+    deb_src = colander.SchemaNode(RealBoolean(),
                                   default=False)
     repo_key = colander.SchemaNode(colander.String())
     key_server = colander.SchemaNode(colander.String())
@@ -558,7 +567,7 @@ class Policy(colander.MappingSchema):
     path = colander.SchemaNode(colander.String(),
                                default='',
                                missing='')
-    is_emitter_policy = colander.SchemaNode(colander.Boolean(),
+    is_emitter_policy = colander.SchemaNode(RealBoolean(),
                                             default=False)
     support_os = StringList(missing=[], default=[])
 
