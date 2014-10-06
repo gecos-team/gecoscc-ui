@@ -51,11 +51,14 @@ class MongoDB(object):
 
     def indexes(self, db):
         db.nodes.ensure_index([
+            ('node_chef_id', pymongo.DESCENDING),
+        ])
+        db.nodes.ensure_index([
             ('path', pymongo.DESCENDING),
             ('type', pymongo.DESCENDING),
         ])
-        #TODO: this try/except will be removed in review release
-        try: 
+        # TODO: this try/except will be removed in review release
+        try:
             db.nodes.ensure_index([
                 ('name', pymongo.DESCENDING),
                 ('type', pymongo.DESCENDING),

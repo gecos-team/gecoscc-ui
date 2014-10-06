@@ -1,3 +1,5 @@
+import datetime
+
 from copy import deepcopy
 
 from bson import ObjectId
@@ -10,6 +12,7 @@ from celery.task import Task, task
 from celery.signals import task_prerun
 from celery.exceptions import Ignore
 from jsonschema import validate
+from jsonschema.exceptions import ValidationError
 
 
 from gecoscc.eventsmanager import JobStorage
@@ -181,7 +184,7 @@ class ChefTask(Task):
                     self.get_object_ui(rule_type, obj, node, policy))
         return ValueError("The rule type should be save or policy")
 
-    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type):
+    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
         updated = updated_updated_by = False
         attributes_jobs_updated = []
         attributes_updated_by_updated = []
@@ -218,7 +221,7 @@ class ChefTask(Task):
                     updated = True
             if job_attr not in attributes_jobs_updated:
                 if updated:
-                    self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated)
+                    self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
         return (node, (updated or updated_updated_by))
 
     def get_first_exists_node(self, ids, obj, action):
@@ -317,7 +320,7 @@ class ChefTask(Task):
         ous.sort(key=lambda x: x['path'].count(','), reverse=True)
         return [unicode(ou['_id']) for ou in ous]
 
-    def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated):
+    def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, job_ids_by_computer):
         if node.attributes.has_dotted(attr):
             job_ids = node.attributes.get_dotted(attr)
         else:
@@ -337,6 +340,7 @@ class ChefTask(Task):
                                     policyname=policy['name'],
                                     administrator_username=user['username'])
         job_ids.append(unicode(job_id))
+        job_ids_by_computer.append(job_id)
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
 
@@ -348,7 +352,7 @@ class ChefTask(Task):
         policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
 
-    def update_node(self, user, computer, obj, objold, node, action):
+    def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer):
         updated = False
         if action not in ['changed', 'created']:
             raise ValueError('The action should be changed or created')
@@ -361,7 +365,7 @@ class ChefTask(Task):
                         rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
                     else:
                         rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type)
+                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
             return (node, updated)
@@ -370,12 +374,43 @@ class ChefTask(Task):
             if self.is_updated_node(obj, objold):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
-                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type)
+                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
+
+    def report_error(self, exception, job_ids, computer, prefix=None):
+        message = 'No save in chef server.'
+        if prefix:
+            message = "%s %s" % (message, prefix)
+        message = "%s %s" % (message, unicode(exception))
+        for job_id in job_ids:
+            self.db.jobs.update(
+                {'_id': job_id},
+                {'$set': {'status': 'errors',
+                          'message': message,
+                          'last_update': datetime.datetime.utcnow()}})
+        if not computer.get('error_last_saved', False):
+            self.db.nodes.update({'_id': computer['_id']},
+                                 {'$set': {'error_last_saved': True}})
+
+    def report_unknown_error(self, exception, user, obj, action, computer=None):
+        job_storage = JobStorage(self.db.jobs, user)
+        job_status = 'errors'
+        message = 'No save in chef server. %s' % unicode(exception)
+        job = dict(objid=obj['_id'],
+                   objname=obj['name'],
+                   type=obj['type'],
+                   op=action,
+                   status=job_status,
+                   message=message,
+                   administrator_username=user['username'])
+        if computer:
+            job['computerid'] = computer['_id']
+            job['computername'] = computer['name']
+        job_storage.create(**job)
 
     def object_action(self, user, obj, objold=None, action=None, computers=None):
         api = get_chef_api(self.app.conf, user)
@@ -383,16 +418,29 @@ class ChefTask(Task):
         computers = computers or self.get_related_computers(obj)
         for computer in computers:
             try:
+                job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = Node(node_chef_id, api)
-                node, updated = self.update_node(user, computer, obj, objold, node, action)
+                error_last_saved = computer.get('error_last_saved', False)
+                if error_last_saved:
+                    node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
+                else:
+                    node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
                 if not updated:
                     continue
                 self.validate_data(node, cookbook, api)
                 node.save()
+                if error_last_saved:
+                    self.db.nodes.update({'_id': computer['_id']},
+                                         {'$set': {'error_last_saved': False}})
+            except ValidationError as e:
+                if not job_ids_by_computer:
+                    self.report_unknown_error(e, user, obj, action, computer)
+                self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
             except Exception as e:
-                # TODO Report this error
-                print e
+                if not job_ids_by_computer:
+                    self.report_unknown_error(e, user, obj, action, computer)
+                self.report_error(e, job_ids_by_computer, computer)
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)
@@ -576,8 +624,10 @@ def object_created(user, objtype, obj, computers=None):
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
-        return func(user, obj, computers=computers)
-
+        try:
+            return func(user, obj, computers=computers)
+        except Exception as e:
+            self.report_unknown_error(e, user, obj, 'created')
     else:
         self.log('error', 'The method {0}_created does not exist'.format(
             objtype))
@@ -588,8 +638,10 @@ def object_changed(user, objtype, objnew, objold, computers=None):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
-        return func(user, objnew, objold, computers=computers)
-
+        try:
+            return func(user, objnew, objold, computers=computers)
+        except Exception as e:
+            self.report_unknown_error(e, user, objnew, 'changed')
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
             objtype))
@@ -600,8 +652,10 @@ def object_moved(user, objtype, objnew, objold):
     self = object_moved
     func = getattr(self, '{0}_moved'.format(objtype), None)
     if func is not None:
-        return func(user, objnew, objold)
-
+        try:
+            return func(user, objnew, objold)
+        except Exception as e:
+            self.report_unknown_error(e, user, objnew, 'moved')
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
             objtype))
@@ -613,8 +667,10 @@ def object_deleted(user, objtype, obj):
 
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
-        return func(user, obj)
-
+        try:
+            return func(user, obj)
+        except Exception as e:
+            self.report_unknown_error(e, user, obj, 'deleted')
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
