@@ -188,8 +188,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     return child.model;
                 });
                 data.showNext = true;
-            } else {
-                throw "The node has the invalid status: " + treeNode.model.status;
             }
 
             return data;
