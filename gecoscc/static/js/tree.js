@@ -335,10 +335,21 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             if (!_.isUndefined(childToShow)) {
                 promises[0].done(function () {
+                    var domainPath = nodes.newNode.model.path.split(","),
+                        rootPath = domainPath[1];
                     that.searchPageForNode(
                         nodes.newNode.model.paginatedChildren,
-                        childToShow
+                        childToShow,
+                        false
                     );
+                    if (domainPath.length > 1) {
+                        domainPath = domainPath[2] || nodes.newNode.model.id;
+                        that.searchPageForNode(
+                            that.findNodeById(rootPath).paginatedChildren,
+                            domainPath,
+                            false
+                        );
+                    }
                 });
             }
 
@@ -423,16 +434,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             search = function () {
                 var node = paginatedCollection.get(nodeId),
                     page = paginatedCollection.currentPage + 1;
-
-                if (_.isUndefined(node) && page < paginatedCollection.totalPages) {
+                if (_.isUndefined(node) && page <= paginatedCollection.totalPages) {
                     paginatedCollection.goTo(page, {
                         success: function () { search(); }
                     });
-                } else if (!silent && !_.isUndefined(node) &&
-                        originalPage !== paginatedCollection.currentPage
-                        ) {
+                } else if (!silent && !_.isUndefined(node)) {
                     that.trigger("change");
                 }
+
             };
 
             search();

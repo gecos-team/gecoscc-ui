@@ -199,8 +199,7 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
         removeModel: function (evt) {
             evt.preventDefault();
             var $el = $(evt.target).parents("li").first(),
-                model = this.collection.get($el.attr("id"));
-
+                model = this.collection.get($el.attr("id")) || this.collection.where({name: $el.attr("name")});
             $el.hide();
             this.collection.dropModel(model);
             if (this.collection.length === 0) {
