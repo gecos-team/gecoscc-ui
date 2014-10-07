@@ -11,7 +11,7 @@
                 {% if request.user.get('is_superuser') %}
                     <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
                 {% endif %}
-                <li><a href="{{ request.route_url('admins_edit', username=username) }}">{{ gettext('Edit %s'  % username) }}</a></li>
+                <li><a href="{{ request.route_url('admins_edit', username=username) }}">{{ gettext('Edit %(username)s', username=username) }}</a></li>
                 <li class="active">{{ gettext('Set variables') }}</li>
             </ol>
         {% endblock %}
