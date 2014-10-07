@@ -212,12 +212,11 @@ jsonform.fieldTemplate = function(inner) {
             '<% if (node.append) { %>' +
                 '<span class="input-group-addon"><%= node.append %></span>' +
             '<% } %>' +
-        '</div>' +
-
-        '<% if (node.description) { %>' +
-            '<span class="help-block"><%= node.description %></span>' +
-        '<% } %>' +
-        '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
+            '<% if (node.description) { %>' +
+                '<span class="help-block"><%= node.description %></span>' +
+            '<% } %>' +
+          '</div>' +
+          '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
     '</div>';
 };
 
