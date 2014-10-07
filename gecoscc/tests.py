@@ -1,15 +1,13 @@
 import unittest
-from pyramid import testing
-from pyramid.i18n import TranslationStringFactory
 
-_ = TranslationStringFactory('gecoscc')
+from pyramid import testing
 
 
 class ViewTests(unittest.TestCase):
 
     def setUp(self):
         testing.setUp()
-        
+
     def tearDown(self):
         testing.tearDown()
 
@@ -18,4 +16,3 @@ class ViewTests(unittest.TestCase):
         request = testing.DummyRequest()
         response = my_view(request)
         self.assertEqual(response['project'], 'gecoscc')
-
