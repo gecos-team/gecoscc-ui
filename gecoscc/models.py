@@ -11,9 +11,11 @@ from colander import null
 from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
-from gecoscc.i18n import TranslationString as _
+from gecoscc.i18n import gettext_lazy as _
 from gecoscc.utils import get_items_ou_children
 from pyramid.threadlocal import get_current_registry
+
+gettext_noting = lambda x: x
 
 OU_ORDER = 1
 
@@ -77,7 +79,9 @@ class RealBoolean(colander.Boolean):
 
 
 class Unique(object):
-    err_msg = _('There is some object with this value: ${val}')
+    err_msg = 'There is some object with this value: ${val}'
+    # Only to makemessages
+    _err_msg = _('There is some object with this value: ${val}')
 
     def __init__(self, collection, err_msg=None):
         self.collection = collection
@@ -265,7 +269,7 @@ class AdminUser(BaseUser):
                                    title=_('Username'),
                                    validator=colander.All(
                                        Unique('adminusers',
-                                              _('There is a user with this username: ${val}')),
+                                              'There is a user with this username: ${val}'),
                                        LowerAlphaNumeric()))
     password = colander.SchemaNode(colander.String(),
                                    title=_('Password'),
@@ -281,7 +285,11 @@ class AdminUser(BaseUser):
                                 validator=colander.All(
                                     colander.Email(),
                                     Unique('adminusers',
-                                           _('There is a user with this email: ${val}'))))
+                                           'There is a user with this email: ${val}')))
+
+# Only to makemessages
+_('There is a user with this email: ${val}')
+_('There is a user with this username: ${val}')
 
 
 class AdminUserOUManage(colander.MappingSchema):
