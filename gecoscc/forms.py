@@ -11,7 +11,7 @@ from chef.exceptions import ChefServerError
 from deform.template import ZPTRendererFactory
 
 from gecoscc import messages
-from gecoscc.i18n import TranslationString as _
+from gecoscc.i18n import gettext as _
 from gecoscc.utils import get_chef_api, create_chef_admin_user
 
 

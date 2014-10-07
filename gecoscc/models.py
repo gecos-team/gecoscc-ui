@@ -11,7 +11,6 @@ from colander import null
 from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
-
 from gecoscc.i18n import TranslationString as _
 from gecoscc.utils import get_items_ou_children
 from pyramid.threadlocal import get_current_registry

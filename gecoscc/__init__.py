@@ -165,6 +165,9 @@ def main(global_config, **settings):
     config.add_subscriber('gecoscc.i18n.setAcceptedLanguagesLocale',
                           'pyramid.events.NewRequest')
 
+    config.add_subscriber('gecoscc.i18n.add_localizer',
+                          'pyramid.events.NewRequest')
+
     route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')
 

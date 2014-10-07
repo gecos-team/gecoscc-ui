@@ -7,7 +7,7 @@ from deform import ValidationFailure
 
 from gecoscc import messages
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm
-from gecoscc.i18n import TranslationString as _
+from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api
@@ -36,6 +36,7 @@ def admins_superuser(context, request):
     elif '_no_superuser' in request.POST:
         is_superuser = False
         message = _('Now the user is not a super user')
+        message.translate('es')
     request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
     messages.created_msg(request, message, 'success')
     return HTTPFound(location=request.route_url('admins'))

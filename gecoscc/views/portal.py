@@ -8,7 +8,7 @@ from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
 
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.i18n import TranslationString as _
+from gecoscc.i18n import gettext as _
 from gecoscc.views import BaseView
 
 
