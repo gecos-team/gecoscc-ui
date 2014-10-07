@@ -64,7 +64,7 @@ class LoginViews(BaseView):
 
             headers = remember(self.request, username)
             created_msg(self.request, self.translate(
-                _('welcome ${username}',
+                _('Welcome ${username}',
                   mapping={'username': user['username']})
             ), 'info')
             return HTTPFound(location=self.request.route_path('home'),

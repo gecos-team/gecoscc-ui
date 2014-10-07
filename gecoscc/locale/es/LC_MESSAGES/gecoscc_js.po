@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-10-06 17:11+0200\n"
+"POT-Creation-Date: 2014-10-07 16:37+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgid ""
 "Someone has changed this object while you were working on it, please "
 "reload before applying any changes."
 msgstr ""
-"Alguien ha cambiado este objeto mientras estabas trabajando en él, por favor "
-"refresca antes de encolar los cambios."
+"Alguien ha cambiado este objeto mientras estabas trabajando en él, por "
+"favor refresca antes de encolar los cambios."
 
 #: gecoscc/static/js/app-utils.js:129
 msgid "Object deleted."
@@ -118,7 +118,9 @@ msgstr "Repositorio de Software"
 
 #: gecoscc/static/js/app.js:350
 msgid "First level OUs can only add new OUs."
-msgstr "En el primer nivel de unidades organizativas solo pueden ser añadidas nuevas unidades organizativas"
+msgstr ""
+"En el primer nivel de unidades organizativas solo pueden ser añadidas "
+"nuevas unidades organizativas"
 
 #: gecoscc/static/js/app.js:364
 msgid "Domain is not Gecos."
@@ -183,7 +185,7 @@ msgstr "Más"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:517
+#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:518
 msgid "Loading"
 msgstr "Cargando"
 
