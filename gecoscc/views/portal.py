@@ -7,8 +7,9 @@ from pyramid.response import Response
 
 from pyramid.view import view_config, forbidden_view_config
 
-from gecoscc.userdb import UserDoesNotExist
 from gecoscc.i18n import gettext as _
+from gecoscc.messages import created_msg
+from gecoscc.userdb import UserDoesNotExist
 from gecoscc.views import BaseView
 
 
@@ -62,10 +63,10 @@ class LoginViews(BaseView):
                 }
 
             headers = remember(self.request, username)
-            self.request.session.flash(self.translate(
+            created_msg(self.request, self.translate(
                 _('welcome ${username}',
                   mapping={'username': user['username']})
-            ))
+            ), 'info')
             return HTTPFound(location=self.request.route_path('home'),
                              headers=headers)
         else:
