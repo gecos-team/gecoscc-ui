@@ -21,13 +21,13 @@ def add_localizer(event):
     request = event.request
     localizer = get_localizer(request)
 
-    def auto_translate(string):
-        return localizer.translate(TranslationString(string))
+    def auto_translate(string, *args, **kwargs):
+        return localizer.translate(TranslationString(string, *args, **kwargs))
 
     request.localizer = localizer
     request.translate = auto_translate
     request._ = auto_translate
 
 
-def gettext(string):
-    return get_current_request().translate(string)
+def gettext(string, *args, **kwargs):
+    return get_current_request().translate(string, *args, **kwargs)
