@@ -2858,6 +2858,7 @@ formNode.prototype.deleteArrayItem = function (idx) {
 
   // Remove the last array item from the DOM tree and from the form tree
   this.removeChild();
+  this.resetDeleteEvents();
 };
 
 /**
