@@ -201,8 +201,8 @@ jsonform.fieldTemplate = function(inner) {
         '<label class="col-sm-2 control-label" for="<%= node.id %>"><%= node.title %></label>' +
     '<% } %>' +
 
-        '<div class="col-sm-10 '+
-            '<% if (!(node.title && !elt.notitle)) { print("col-sm-offset-2 "); } %>' +
+        '<div class="'+
+            '<% if (!(node.title && !elt.notitle)) { print("col-sm-12 "); } else { print("col-sm-10 "); }%>' +
             '<% if (node.prepend || node.append) { print("input-group"); } %>' +
         '">' +
             '<% if (node.prepend) { %>' +
@@ -798,6 +798,7 @@ jsonform.elementTypes = {
       }
       else {
         return '<li data-idx="<%= node.childPos %>">' +
+          '<a href="#" class="btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-close" title="Delete item"></span></a>' +
           inner +
           '</li>';
       }
@@ -805,6 +806,7 @@ jsonform.elementTypes = {
     'onInsert': function (evt, node) {
       var $nodeid = $(node.el).find('#' + escapeSelector(node.id));
       var boundaries = node.getArrayBoundaries();
+      node.resetDeleteEvents();
 
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
@@ -2758,7 +2760,35 @@ formNode.prototype.enhance = function () {
   });
 };
 
-
+formNode.prototype.resetDeleteEvents = function () {
+  var that = this;
+  $(this.el).find('a._jsonform-array-deleteidx').off().click(function (evt) {
+    var idx = $(evt.target).parent().attr('data-idx')
+            || $(evt.target).parent().parent().attr('data-idx'),
+        boundaries = that.getArrayBoundaries();
+    idx = Number.parseInt(idx);
+    evt.preventDefault();
+    evt.stopPropagation();
+    if (boundaries.minItems > 0) {
+      if (that.children.length < boundaries.minItems + 2) {
+        $(that.el).find('> span > a._jsonform-array-deletelast')
+          .addClass('disabled');
+      }
+      if (that.children.length <= boundaries.minItems) {
+        return false;
+      }
+    }
+    else if (that.children.length === 1) {
+      $(that.el).find('> span > a._jsonform-array-deletelast')
+        .addClass('disabled');
+    }
+    that.deleteArrayItem(idx);
+    if ((boundaries.maxItems >= 0) && (idx <= boundaries.maxItems - 1)) {
+      $(that.el).find('> span > a._jsonform-array-addmore')
+        .removeClass('disabled');
+    }
+  });
+};
 
 /**
  * Inserts an item in the array at the requested position and renders the item.
@@ -2796,6 +2826,9 @@ formNode.prototype.insertArrayItem = function (idx, domElement) {
   for (i = idx; i < this.children.length; i++) {
     this.children[i].render(domElement);
   }
+
+  // Resets all children delete events
+  this.resetDeleteEvents();
 };
 
 
