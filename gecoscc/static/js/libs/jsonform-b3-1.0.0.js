@@ -3226,6 +3226,7 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     // input field per child property of the object in the JSON schema
     if (schemaElement.type === 'object') {
       _.each(schemaElement.properties, function (prop, propName) {
+        console.log(propName);
         node.appendChild(this.buildFromLayout({
           key: formElement.key + '.' + propName
         }));
