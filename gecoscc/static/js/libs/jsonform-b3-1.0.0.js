@@ -629,7 +629,10 @@ jsonform.elementTypes = {
       '<% }}}); %> ' +
       '</select>',
     'fieldtemplate': true,
-    'inputfield': true
+    'inputfield': true,
+    'onInsert': function (evt, node) {
+        $(node.el).find("select").select2();
+    }
   },
   'imageselect': {
     'template': '<div>' +
