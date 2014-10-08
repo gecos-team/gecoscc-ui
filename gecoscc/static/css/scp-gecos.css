@@ -388,3 +388,16 @@ div.groups-widget .chzn-container {
 .group.checkbox-inline input{
     margin-bottom: 5px;
 }
+
+/* JSON Forms */
+._jsonform-array-ul{
+    padding-left: 0;
+}
+
+._jsonform-array-ul li{
+    margin-bottom: 20px;
+}
+
+._jsonform-array-deleteidx{
+
+}
