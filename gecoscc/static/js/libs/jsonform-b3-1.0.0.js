@@ -921,7 +921,7 @@ jsonform.elementTypes = {
       }
 
       _.each($(node.el).find("li"), function (l) {
-        $(l).find(".collapse").first().removeClass();
+        $(l).find(".collapse").first().removeClass("collapse");
       });
     }
   },
@@ -2866,7 +2866,7 @@ formNode.prototype.insertArrayItem = function (idx, domElement) {
 
   // Resets all children delete events
   this.resetDeleteEvents();
-  $(child.el).find(".collapse").first().removeClass();
+  $(child.el).find(".collapse").first().removeClass("collapse");
 };
 
 
@@ -2889,6 +2889,7 @@ formNode.prototype.deleteArrayItem = function (idx) {
   for (i = idx; i < this.children.length-1; i++) {
     this.children[i+1].moveValuesTo(this.children[i]);
     this.children[i].render();
+    $(this.children[i].el).find(".collapse").first().removeClass("collapse");
   }
 
   // Remove the last array item from the DOM tree and from the form tree
