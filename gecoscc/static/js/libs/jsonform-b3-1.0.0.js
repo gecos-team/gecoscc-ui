@@ -920,7 +920,9 @@ jsonform.elementTypes = {
         });
       }
 
-      $(node.el).find(".collapse").first().removeClass();
+      _.each($(node.el).find("li"), function (l) {
+        $(l).find(".collapse").first().removeClass();
+      });
     }
   },
   'tabarray': {
