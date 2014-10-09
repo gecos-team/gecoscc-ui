@@ -426,4 +426,7 @@
         domain = new App.OU.Models.OUModel({ id: domain });
         return domain;
     };
+
+    App.browserLanguage = (window.navigator.language||navigator.browserLanguage).slice(0,2);
+
 }(App, Backbone, jQuery, _));

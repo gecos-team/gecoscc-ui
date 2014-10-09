@@ -198,7 +198,7 @@ jsonform.fieldTemplate = function(inner) {
     '">' +
 
     '<% if (node.title && !elt.notitle) { %>' +
-        '<label class="col-sm-2 control-label" for="<%= node.id %>"><%= node.title %></label>' +
+        '<label class="col-sm-2 control-label" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label>' +
     '<% } %>' +
 
         '<div class="'+
@@ -213,7 +213,7 @@ jsonform.fieldTemplate = function(inner) {
                 '<span class="input-group-addon"><%= node.append %></span>' +
             '<% } %>' +
             '<% if (node.description) { %>' +
-                '<span class="help-block"><%= node.description %></span>' +
+                '<span class="help-block"><%= node.getLocalizedAttr("description") %></span>' +
             '<% } %>' +
           '</div>' +
           '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
@@ -1835,6 +1835,11 @@ var formNode = function () {
    * Position of the node in the list of children of its parents
    */
   this.childPos = 0;
+
+  /**
+   * Browser language
+   */
+  this.lan = (window.navigator.language||navigator.browserLanguage).slice(0,2);
 };
 
 
@@ -2503,6 +2508,20 @@ formNode.prototype.render = function (el) {
   var html = this.generate();
   this.setContent(html, el);
   this.enhance();
+};
+
+/**
+ * Returns the localized attribute.
+ *
+ * Returns the original attribute if no translation is found.
+ *
+ * @function
+ * @param {string} attr The attribute to localize
+ * @param {string} lan The language code (en, es...)
+ */
+formNode.prototype.getLocalizedAttr = function (attr, lan) {
+  lan = lan || this.lan;
+  return this.schemaElement[attr + "_" + lan] || this[attr];
 };
 
 
@@ -3224,7 +3243,7 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     // If the form element targets an "object" in the JSON schema,
     // we need to recurse through the list of children to create an
     // input field per child property of the object in the JSON schema
-    // If there is an order defined, this childs go first
+    // If there is an order defined, these children go first
     if (schemaElement.type === 'object') {
       var propsClone = _.clone(schemaElement.properties);
       if (schemaElement.order) {
