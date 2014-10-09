@@ -3224,9 +3224,18 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     // If the form element targets an "object" in the JSON schema,
     // we need to recurse through the list of children to create an
     // input field per child property of the object in the JSON schema
+    // If there is an order defined, this childs go first
     if (schemaElement.type === 'object') {
-      _.each(schemaElement.properties, function (prop, propName) {
-        console.log(propName);
+      var propsClone = _.clone(schemaElement.properties);
+      if (schemaElement.order) {
+        _.each(schemaElement.order, function (prop) {
+          node.appendChild(this.buildFromLayout({
+            key: formElement.key + '.' + prop
+          }));
+          delete propsClone[prop];
+        }, this);
+      }
+      _.each(propsClone, function (prop, propName) {
         node.appendChild(this.buildFromLayout({
           key: formElement.key + '.' + propName
         }));
