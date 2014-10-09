@@ -919,6 +919,8 @@ jsonform.elementTypes = {
           moveNodeTo(idx, newIdx);
         });
       }
+
+      $(node.el).find(".collapse").first().removeClass();
     }
   },
   'tabarray': {
@@ -1104,10 +1106,10 @@ jsonform.elementTypes = {
         '<fieldset class="jsonform-error-<%= keydash %> <% if (elt.expandable) { %>expandable<% } %> <%= elt.htmlClass?elt.htmlClass:"" %>" ' +
             '<% if (id) { %> id="<%= id %>"<% } %>' +
         '>' +
-            '<% if (node.title || node.legend) { %><legend><%= node.title || node.legend %></legend><% } %>' +
-            '<% if (elt.expandable) { %><div><% } %>' +
+            '<% if (node.title || node.legend) { %><legend><span id="caret" class="fa fa-caret-right"></span> <%= node.getLocalizedAttr("title") || node.legend %></legend><% } %>' +
+            '<div class="collapse">' +
                 '<%= children %>' +
-            '<% if (elt.expandable) { %></div><% } %>' +
+            '</div>' +
         '</fieldset>'
   },
   'advancedfieldset': {
@@ -1138,7 +1140,7 @@ jsonform.elementTypes = {
     'template':'<input type="submit" <% if (id) { %> id="<%= id %>" <% } %> class="btn btn-primary <%= elt.htmlClass?elt.htmlClass:"" %>" value="<%= value || node.title %>"<%= (node.disabled? " disabled" : "")%>/>'
   },
   'button':{
-    'template':' <button <% if (id) { %> id="<%= id %>" <% } %> class="btn <%= elt.htmlClass?elt.htmlClass:"btn-default" %>"><%= node.title %></button> '
+    'template':' <button <% if (id) { %> id="<%= id %>" <% } %> class="btn <%= elt.htmlClass?elt.htmlClass:"btn-default" %>"><%= node.getLocalizedAttr("title") %></button> '
   },
   'actions':{
     'template':'<div class="<%= elt.htmlClass?elt.htmlClass:"" %>"><%= children %></div>'
@@ -1154,7 +1156,7 @@ jsonform.elementTypes = {
             '<% if (node.formElement.key) { %><input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" /><% } else { %><a id="<%= node.id %>"></a><% } %>' +
             '<div class="tabbable">' +
                 '<div class="control-group<%= node.formElement.hideMenu ? " hide" : "" %>">' +
-                    '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.title %></label><% } %>' +
+                    '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label><% } %>' +
                     '<div class="controls"><%= tabs %></div>' +
                 '</div>' +
                 '<div class="tab-content">' +
@@ -2776,6 +2778,17 @@ formNode.prototype.enhance = function () {
     }
   }
 
+  //set fieldsets expandables
+  $(this.el).find("legend").off().click(function (evt) {
+    var caret = $(evt.target).find("#caret"),
+        dir = caret.hasClass("fa-caret-down")? "fa-caret-right" : "fa-caret-down";
+    caret.removeClass().addClass("fa " + dir);
+    $(evt.target).parent().children('div').slideToggle();
+  });
+
+  //close fieldsets
+  $(this.el).children(".collapse").hide();
+
   // Recurse down the tree to enhance children
   _.each(this.children, function (child) {
     child.enhance();
@@ -2851,6 +2864,7 @@ formNode.prototype.insertArrayItem = function (idx, domElement) {
 
   // Resets all children delete events
   this.resetDeleteEvents();
+  $(child.el).find(".collapse").first().removeClass();
 };
 
 
