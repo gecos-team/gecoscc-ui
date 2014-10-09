@@ -401,3 +401,8 @@ div.groups-widget .chzn-container {
 ._jsonform-array-deleteidx{
 
 }
+
+legend {
+    cursor: pointer;
+    cursor: hand;
+}

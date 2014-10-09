@@ -2782,6 +2782,8 @@ formNode.prototype.enhance = function () {
 
   //set fieldsets expandables
   $(this.el).find("legend").off().click(function (evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
     var caret = $(evt.target).find("#caret"),
         dir = caret.hasClass("fa-caret-down")? "fa-caret-right" : "fa-caret-down";
     caret.removeClass().addClass("fa " + dir);
