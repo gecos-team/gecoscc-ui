@@ -1,6 +1,27 @@
+import crypt
+
 from copy import deepcopy
 
 EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by']
+
+
+# Local user rules
+
+def encrypt_password(objs_ui, obj, node, field_chef, **kwargs):
+    field_ui = field_chef.split('.')[-1]
+    sha_512_code = "$6$"
+    users = objs_ui.get(field_ui, [])
+    for user in users:
+        user['password'] = crypt.crypt(user['password'], sha_512_code)
+    return users
+
+
+rules_localusers_res_path = 'gecos_ws_mgmt.misc_mgmt.local_users_res'
+
+RULES_LOCAL_USERS_RES = {'gecos_ws_mgmt.misc_mgmt.local_users_res.users_list': encrypt_password}
+
+# end local user rules
+
 
 # Emitter policies
 
@@ -135,7 +156,7 @@ RULES_NODE = {
         'policies': {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
-            'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
+            'local_users_res': RULES_LOCAL_USERS_RES,
         },
     },
     'ou': {
@@ -144,6 +165,7 @@ RULES_NODE = {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
+            'local_users_res': RULES_LOCAL_USERS_RES,
         },
     },
     'group': {
@@ -152,6 +174,7 @@ RULES_NODE = {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
+            'local_users_res': RULES_LOCAL_USERS_RES,
         },
     },
     'user': {
