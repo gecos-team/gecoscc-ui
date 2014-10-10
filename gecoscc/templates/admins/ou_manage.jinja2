@@ -12,7 +12,7 @@
                     <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
                 {% endif %}
                 <li><a href="{{ request.route_url('admins_edit', username=username) }}">{{ gettext('Edit %(username)s', username=username) }}</a></li>
-                <li class="active">{{ gettext('Set OU managed by this user') }}</li>
+                <li class="active">{{ gettext('Set Organitation Unit managed by this user') }}</li>
             </ol>
         {% endblock %}
         {% block form_content %}

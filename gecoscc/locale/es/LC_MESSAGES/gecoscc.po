@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-10-10 10:47+0200\n"
+"POT-Creation-Date: 2014-10-10 10:57+0200\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -96,11 +96,12 @@ msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
 #: gecoscc/models.py:297
-msgid "OU managed by this user"
-msgstr "Unidades organizativas administradas por este usuario"
+msgid "This user can register workstation under these Organitation Units"
+msgstr ""
+"Este usuario puede registrar estaciones de trabajo bajo estas unidades organizativas"
 
 #: gecoscc/models.py:300
-msgid "OU availables to register workstations by this user"
+msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 "Unidades organizativas disponibles para que este usuario pueda registrar "
 "estaciones de trabajo"
@@ -844,8 +845,8 @@ msgstr "Editar %(username)s"
 
 #: gecoscc/templates/admins/edit.jinja2:29
 #: gecoscc/templates/admins/ou_manage.jinja2:15
-msgid "Set OU managed by this user"
-msgstr "Administración unidades organizativas"
+msgid "Set Organitation Unit managed by this user"
+msgstr "Establecer las unidades organizativas que puede administrar este usuario"
 
 #: gecoscc/templates/admins/edit.jinja2:33
 msgid "Set like superuser"
@@ -1035,4 +1036,7 @@ msgstr "Bienvenido ${username}"
 
 #~ msgid "Computer"
 #~ msgstr "Puesto de trabajo"
+
+#~ msgid "OU managed by this user"
+#~ msgstr "Unidades organizativas administradas por este usuario"
 

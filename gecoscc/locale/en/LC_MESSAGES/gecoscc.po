@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-10 10:47+0200\n"
+"POT-Creation-Date: 2014-10-10 10:57+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -97,11 +97,11 @@ msgid "There is a user with this username: ${val}"
 msgstr ""
 
 #: gecoscc/models.py:297
-msgid "OU managed by this user"
+msgid "This user can register workstation under these Organitation Units"
 msgstr ""
 
 #: gecoscc/models.py:300
-msgid "OU availables to register workstations by this user"
+msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 
 #: gecoscc/models.py:310
@@ -843,7 +843,7 @@ msgstr ""
 
 #: gecoscc/templates/admins/edit.jinja2:29
 #: gecoscc/templates/admins/ou_manage.jinja2:15
-msgid "Set OU managed by this user"
+msgid "Set Organitation Unit managed by this user"
 msgstr ""
 
 #: gecoscc/templates/admins/edit.jinja2:33
@@ -1069,5 +1069,17 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "http://computer_name:631/ipp/port1"
+#~ msgstr ""
+
+#~ msgid "OU managed by this user"
+#~ msgstr ""
+
+#~ msgid "OU availables to register workstations by this user"
+#~ msgstr ""
+
+#~ msgid "Set OU managed by this user"
+#~ msgstr ""
+
+#~ msgid "This user can register workstation under this Organitation Unit"
 #~ msgstr ""
 

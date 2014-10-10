@@ -294,10 +294,10 @@ _('There is a user with this username: ${val}')
 
 class AdminUserOUManage(colander.MappingSchema):
     ou_managed = colander.SchemaNode(colander.List(),
-                                     title=_('OU managed by this user'),
+                                     title=_('This user can register workstation under these Organitation Units'),
                                      widget=deferred_choices_widget)
     ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('OU availables to register workstations by this user'),
+                                        title=_('Organitation Unit availables to register workstations by this user'),
                                         widget=deferred_choices_widget)
 
 
