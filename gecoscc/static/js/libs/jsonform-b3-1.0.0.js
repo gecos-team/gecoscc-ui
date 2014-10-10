@@ -202,7 +202,7 @@ jsonform.fieldTemplate = function(inner) {
     '<% } %>' +
 
         '<div class="'+
-            '<% if (!(node.title && !elt.notitle)) { print("col-sm-11 "); } else { print("col-sm-10 "); }%>' +
+            '<% if (!(node.title && !elt.notitle)) { print("col-sm-11 "); } else { print("col-sm-9 "); }%>' +
             '<% if (node.prepend || node.append) { print("input-group"); } %>' +
         '">' +
             '<% if (node.prepend) { %>' +
@@ -216,7 +216,7 @@ jsonform.fieldTemplate = function(inner) {
                 '<span class="help-block"><%= node.getLocalizedAttr("description") %></span>' +
             '<% } %>' +
           '</div>' +
-          '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
+          '<span class="help-block jsonform-errortext text-danger col-sm-9 col-sm-offset-2" style="display:none;"></span>' +
     '</div>';
 };
 
