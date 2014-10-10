@@ -345,7 +345,6 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             var id = $(evt.target).parents("li").first().attr("id"),
                 url = this.getUrl();
 
-            this.resource.addPolicy(this.collection.get(id), {});
             url += "/policy/" + id;
             App.instances.router.navigate(url, { trigger: true });
         },
