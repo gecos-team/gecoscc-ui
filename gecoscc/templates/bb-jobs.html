@@ -26,9 +26,6 @@
                     {{ gettext("Emiter node") }}
                 </th>
                 <th>
-                    {{ gettext("Administrator") }}
-                </th>
-                <th>
                     {{ gettext("Workstation") }} / {{ gettext("User") }}
                 </th>
                 <th>
@@ -47,15 +44,12 @@
                     <%= item.objname %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">
-                    <%= item.administrator_username %>
-                </td>
-                <td class="long <% if (!isMaximized) { print('hide'); } %>">
                     <%= item.computername %>
                 </td>
                 <td>
                     <%= item.policyname %>
                 </td>
-                <td>
+                <td style="max-width: <%= screen.width / 2 %>px">
                     <span class="fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
                     <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
                 </td>

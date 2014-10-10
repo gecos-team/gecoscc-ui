@@ -1,6 +1,5 @@
 import pymongo
 
-from bson import ObjectId
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginatedReadOnly
@@ -28,18 +27,9 @@ class JobResource(ResourcePaginatedReadOnly):
 
     def get_objects_filter(self):
         filters = super(JobResource, self).get_objects_filter()
+        administrator_username = self.request.user['username']
+        filters.append({'administrator_username': administrator_username})
         status = self.request.GET.get('status', '')
         if status:
             filters.append({'status': status})
         return filters
-
-    def collection_get(self):
-        result = super(JobResource, self).collection_get()
-        jobs = result.get('jobs', [])
-        for job in jobs:
-            node = self.request.db.nodes.find_one(ObjectId(job['objid']))
-            if node:
-                job.update({
-                    'node_name': node.get('name', ''),
-                })
-        return result

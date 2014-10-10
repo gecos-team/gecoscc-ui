@@ -151,8 +151,8 @@ class ObjectIdList(colander.SequenceSchema):
 
 class StringList(colander.SequenceSchema):
     item = colander.SchemaNode(colander.String(),
-                               default=[],
-                               missing=[])
+                               default='',
+                               missing='')
 
 
 class Group(Node):
@@ -506,7 +506,9 @@ class Storages(colander.SequenceSchema):
 class Repository(Node):
     uri = colander.SchemaNode(colander.String())
     components = StringList(missing=[], default=[])
-    distribution = colander.SchemaNode(colander.String())
+    distribution = colander.SchemaNode(colander.String(),
+                                       default='',
+                                       missing='')
     deb_src = colander.SchemaNode(RealBoolean(),
                                   default=False)
     repo_key = colander.SchemaNode(colander.String())
