@@ -55,7 +55,7 @@
                 <td>
                     <%= item.policyname %>
                 </td>
-                <td>
+                <td style="max-width: <%= screen.width / 2 %>px">
                     <span class="fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
                     <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
                 </td>
