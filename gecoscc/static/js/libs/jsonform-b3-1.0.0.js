@@ -202,7 +202,7 @@ jsonform.fieldTemplate = function(inner) {
     '<% } %>' +
 
         '<div class="'+
-            '<% if (!(node.title && !elt.notitle)) { print("col-sm-12 "); } else { print("col-sm-10 "); }%>' +
+            '<% if (!(node.title && !elt.notitle)) { print("col-sm-11 "); } else { print("col-sm-10 "); }%>' +
             '<% if (node.prepend || node.append) { print("input-group"); } %>' +
         '">' +
             '<% if (node.prepend) { %>' +
@@ -785,7 +785,6 @@ jsonform.elementTypes = {
         '<div id="<%= id %>"><input type="hidden" name="<%= node.name %>" value="[]" /><ul class="_jsonform-array-ul" style="list-style-type:none;"><%= children %></ul>' +
             '<span class="_jsonform-array-buttons">' +
                 '<a href="#" class="btn btn-default btn-xs _jsonform-array-addmore"><span class="fa fa-plus" title="Add new"></span></a> ' +
-                '<a href="#" class="btn btn-default btn-xs _jsonform-array-deletelast"><span class="fa fa-minus" title="Delete last"></span></a>' +
             '</span>' +
         '</div>',
     'fieldtemplate': true,
@@ -800,8 +799,8 @@ jsonform.elementTypes = {
           '</li>';
       }
       else {
-        return '<li data-idx="<%= node.childPos %>">' +
-          '<a href="#" class="btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-close" title="Delete item"></span></a>' +
+        return '<li class="col-sm-offset-1 col-sm-11" data-idx="<%= node.childPos %>">' +
+          '<a href="#" class="pull-right btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-minus" title="Delete item"></span></a>' +
           inner +
           '</li>';
       }
