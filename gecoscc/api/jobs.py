@@ -27,6 +27,8 @@ class JobResource(ResourcePaginatedReadOnly):
 
     def get_objects_filter(self):
         filters = super(JobResource, self).get_objects_filter()
+        administrator_username = self.request.user['username']
+        filters.append({'administrator_username': administrator_username})
         status = self.request.GET.get('status', '')
         if status:
             filters.append({'status': status})
