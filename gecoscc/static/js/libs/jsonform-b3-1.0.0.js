@@ -3096,7 +3096,29 @@ formTree.prototype.buildTree = function () {
   // - a more complex object to generate specific form sections
   _.each(this.formDesc.form, function (formElement) {
     if (formElement === '*') {
-      _.each(this.formDesc.schema.properties, function (element, key) {
+      var propsClone = _.clone(this.formDesc.schema.properties),
+          objects = {};
+
+      if (this.formDesc.schema.order) {
+        _.each(this.formDesc.schema.order, function (prop) {
+          this.root.appendChild(this.buildFromLayout({
+            key: prop
+          }));
+          delete propsClone[prop];
+        }, this);
+      }
+
+      _.each(propsClone, function (element, key) {
+        if (!_.isUndefined(element.properties)) {
+          objects[key] = element;
+          return;
+        }
+        this.root.appendChild(this.buildFromLayout({
+          key: key
+        }));
+      }, this);
+
+      _.each(objects, function (element, key) {
         this.root.appendChild(this.buildFromLayout({
           key: key
         }));
@@ -3263,8 +3285,10 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
     // we need to recurse through the list of children to create an
     // input field per child property of the object in the JSON schema
     // If there is an order defined, these children go first
+
     if (schemaElement.type === 'object') {
-      var propsClone = _.clone(schemaElement.properties);
+      var propsClone = _.clone(schemaElement.properties),
+          objects = {};
       if (schemaElement.order) {
         _.each(schemaElement.order, function (prop) {
           node.appendChild(this.buildFromLayout({
@@ -3273,7 +3297,18 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
           delete propsClone[prop];
         }, this);
       }
+
       _.each(propsClone, function (prop, propName) {
+        if (prop.type === "object") {
+          objects[propName] = prop;
+          return;
+        }
+        node.appendChild(this.buildFromLayout({
+          key: formElement.key + '.' + propName
+        }));
+      }, this);
+
+      _.each(objects, function (prop, propName) {
         node.appendChild(this.buildFromLayout({
           key: formElement.key + '.' + propName
         }));
