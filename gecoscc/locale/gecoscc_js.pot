@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-07 16:37+0200\n"
+"POT-Creation-Date: 2014-10-10 10:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,7 +99,7 @@ msgid "Group"
 msgstr ""
 
 #: gecoscc/static/js/app.js:301
-msgid "Computer"
+msgid "Workstation"
 msgstr ""
 
 #: gecoscc/static/js/app.js:302

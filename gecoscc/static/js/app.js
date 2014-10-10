@@ -298,7 +298,7 @@ var App;
                 user: gettext("User"),
                 ou: gettext("Organisational Unit"),
                 group: gettext("Group"),
-                computer: gettext("Computer"),
+                computer: gettext("Workstation"),
                 printer: gettext("Printer"),
                 storage: gettext("Remote Storage"),
                 repository: gettext("Software Repository")

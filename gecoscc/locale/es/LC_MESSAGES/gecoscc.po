@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-10-07 16:37+0200\n"
+"POT-Creation-Date: 2014-10-10 10:47+0200\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -100,10 +100,10 @@ msgid "OU managed by this user"
 msgstr "Unidades organizativas administradas por este usuario"
 
 #: gecoscc/models.py:300
-msgid "OU availables to register computers by this user"
+msgid "OU availables to register workstations by this user"
 msgstr ""
 "Unidades organizativas disponibles para que este usuario pueda registrar "
-"ordenadores"
+"estaciones de trabajo"
 
 #: gecoscc/models.py:310
 msgid "uri"
@@ -308,12 +308,12 @@ msgstr "Establecer variables"
 msgid "Log out"
 msgstr "Salir"
 
-#: gecoscc/templates/base_tree.jinja2:21
+#: gecoscc/templates/base_tree.jinja2:23
 #: gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr "Buscar"
 
-#: gecoscc/templates/base_tree.jinja2:193 gecoscc/templates/bb-computer.html:83
+#: gecoscc/templates/base_tree.jinja2:196 gecoscc/templates/bb-computer.html:83
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:51
 msgid "Loading"
 msgstr "Cargando"
@@ -324,8 +324,8 @@ msgid "Information"
 msgstr "Información"
 
 #: gecoscc/templates/bb-computer.html:4
-msgid "Computer specifications"
-msgstr "Características del puesto"
+msgid "Workstation specifications"
+msgstr "Características de la estación de trabajo"
 
 #: gecoscc/templates/bb-computer.html:5 gecoscc/templates/bb-groups-form.html:4
 #: gecoscc/templates/bb-ou.html:4 gecoscc/templates/bb-user.html:4
@@ -333,8 +333,8 @@ msgid "Policies"
 msgstr "Políticas"
 
 #: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:32
-msgid "Computer"
-msgstr "Puesto de trabajo"
+msgid "Workstation"
+msgstr "Estación de trabajo"
 
 #: gecoscc/templates/bb-computer.html:13
 #: gecoscc/templates/bb-groups-form.html:12 gecoscc/templates/bb-jobs.html:17
@@ -441,8 +441,8 @@ msgid "Cut"
 msgstr "Cortar"
 
 #: gecoscc/templates/bb-computer.html:113
-msgid "Computer specifications (Ohai)"
-msgstr "Características del puesto (Ohai)"
+msgid "Workstation specifications (Ohai)"
+msgstr "Características de la estación de trabajo (Ohai)"
 
 #: gecoscc/templates/bb-computer.html:119
 msgid "CPU"
@@ -688,8 +688,8 @@ msgid "Printer path"
 msgstr "Ruta a la impresora"
 
 #: gecoscc/templates/bb-printer.html:43
-msgid "http://computer_name:631/ipp/port1"
-msgstr "http://nombre_ordenador:631/ipp/puerto1"
+msgid "http://workstation_name:631/ipp/port1"
+msgstr "http://nombre_estacion_de_trabajo:631/ipp/puerto1"
 
 #: gecoscc/templates/bb-printer.html:50
 msgid "PPD URI"
@@ -1032,4 +1032,7 @@ msgstr "Bienvenido ${username}"
 
 #~ msgid "You need to enter your credentials to access the requested resource."
 #~ msgstr ""
+
+#~ msgid "Computer"
+#~ msgstr "Puesto de trabajo"
 

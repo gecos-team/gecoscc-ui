@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.7.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-07 16:37+0200\n"
+"POT-Creation-Date: 2014-10-10 10:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -101,7 +101,7 @@ msgid "OU managed by this user"
 msgstr ""
 
 #: gecoscc/models.py:300
-msgid "OU availables to register computers by this user"
+msgid "OU availables to register workstations by this user"
 msgstr ""
 
 #: gecoscc/models.py:310
@@ -304,11 +304,11 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:21 gecoscc/templates/bb-policies-add.html:12
+#: gecoscc/templates/base_tree.jinja2:23 gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:193 gecoscc/templates/bb-computer.html:83
+#: gecoscc/templates/base_tree.jinja2:196 gecoscc/templates/bb-computer.html:83
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:51
 msgid "Loading"
 msgstr ""
@@ -319,7 +319,7 @@ msgid "Information"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:4
-msgid "Computer specifications"
+msgid "Workstation specifications"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:5 gecoscc/templates/bb-groups-form.html:4
@@ -328,7 +328,7 @@ msgid "Policies"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:32
-msgid "Computer"
+msgid "Workstation"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:13 gecoscc/templates/bb-groups-form.html:12
@@ -429,7 +429,7 @@ msgid "Cut"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:113
-msgid "Computer specifications (Ohai)"
+msgid "Workstation specifications (Ohai)"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:119
@@ -674,7 +674,7 @@ msgid "Printer path"
 msgstr ""
 
 #: gecoscc/templates/bb-printer.html:43
-msgid "http://computer_name:631/ipp/port1"
+msgid "http://workstation_name:631/ipp/port1"
 msgstr ""
 
 #: gecoscc/templates/bb-printer.html:50

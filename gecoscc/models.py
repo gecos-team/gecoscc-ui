@@ -297,7 +297,7 @@ class AdminUserOUManage(colander.MappingSchema):
                                      title=_('OU managed by this user'),
                                      widget=deferred_choices_widget)
     ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('OU availables to register computers by this user'),
+                                        title=_('OU availables to register workstations by this user'),
                                         widget=deferred_choices_widget)
 
 

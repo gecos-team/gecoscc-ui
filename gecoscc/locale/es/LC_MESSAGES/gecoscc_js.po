@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-10-07 16:37+0200\n"
+"POT-Creation-Date: 2014-10-10 10:47+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -101,8 +101,8 @@ msgid "Group"
 msgstr "Grupo"
 
 #: gecoscc/static/js/app.js:301
-msgid "Computer"
-msgstr "Puesto de trabajo"
+msgid "Workstation"
+msgstr "Estación de trabajo"
 
 #: gecoscc/static/js/app.js:302
 msgid "Printer"
@@ -201,4 +201,7 @@ msgstr "Borrar una UO es una acción permanente. También eliminará todos sus h
 
 #~ msgid "Add new root OU"
 #~ msgstr "Añadir nueva UO raíz"
+
+#~ msgid "Computer"
+#~ msgstr "Puesto de trabajo"
 
