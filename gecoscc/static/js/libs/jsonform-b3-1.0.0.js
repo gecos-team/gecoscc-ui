@@ -799,7 +799,8 @@ jsonform.elementTypes = {
           '</li>';
       }
       else {
-        return '<li class="col-sm-offset-1 col-sm-11" data-idx="<%= node.childPos %>">' +
+        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12" <% } else { %> "col-sm-offset-1 col-sm-11" <% } %>' +
+          'data-idx="<%= node.childPos %>">' +
           '<a href="#" class="pull-right btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-minus" title="Delete item"></span></a>' +
           inner +
           '</li>';
