@@ -2783,10 +2783,11 @@ formNode.prototype.enhance = function () {
   $(this.el).find("legend").off().click(function (evt) {
     evt.preventDefault();
     evt.stopPropagation();
-    var caret = $(evt.target).find("#caret"),
+    var target = $(evt.target).hasClass("fa")? $(evt.target).parent() : $(evt.target);
+        caret = target.find("#caret"),
         dir = caret.hasClass("fa-caret-down")? "fa-caret-right" : "fa-caret-down";
     caret.removeClass().addClass("fa " + dir);
-    $(evt.target).parent().children('div').slideToggle();
+    target.parent().children('div').slideToggle();
   });
 
   //close fieldsets
