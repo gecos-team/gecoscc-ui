@@ -202,7 +202,7 @@ jsonform.fieldTemplate = function(inner) {
     '<% } %>' +
 
         '<div class="'+
-            '<% if (!(node.title && !elt.notitle)) { print("col-sm-11 "); } else { print("col-sm-10 "); }%>' +
+            '<% if (!(node.title && !elt.notitle)) { print("col-sm-11 "); } else { print("col-sm-9 "); }%>' +
             '<% if (node.prepend || node.append) { print("input-group"); } %>' +
         '">' +
             '<% if (node.prepend) { %>' +
@@ -216,7 +216,7 @@ jsonform.fieldTemplate = function(inner) {
                 '<span class="help-block"><%= node.getLocalizedAttr("description") %></span>' +
             '<% } %>' +
           '</div>' +
-          '<span class="help-block jsonform-errortext text-danger col-sm-10 col-sm-offset-2" style="display:none;"></span>' +
+          '<span class="help-block jsonform-errortext text-danger col-sm-9 col-sm-offset-2" style="display:none;"></span>' +
     '</div>';
 };
 
@@ -799,7 +799,8 @@ jsonform.elementTypes = {
           '</li>';
       }
       else {
-        return '<li class="col-sm-offset-1 col-sm-11" data-idx="<%= node.childPos %>">' +
+        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12" <% } else { %> "col-sm-offset-1 col-sm-11" <% } %>' +
+          'data-idx="<%= node.childPos %>">' +
           '<a href="#" class="pull-right btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-minus" title="Delete item"></span></a>' +
           inner +
           '</li>';
@@ -2783,10 +2784,11 @@ formNode.prototype.enhance = function () {
   $(this.el).find("legend").off().click(function (evt) {
     evt.preventDefault();
     evt.stopPropagation();
-    var caret = $(evt.target).find("#caret"),
+    var target = $(evt.target).hasClass("fa")? $(evt.target).parent() : $(evt.target);
+        caret = target.find("#caret"),
         dir = caret.hasClass("fa-caret-down")? "fa-caret-right" : "fa-caret-down";
     caret.removeClass().addClass("fa " + dir);
-    $(evt.target).parent().children('div').slideToggle();
+    target.parent().children('div').slideToggle();
   });
 
   //close fieldsets
