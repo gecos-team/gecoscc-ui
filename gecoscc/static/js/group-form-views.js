@@ -168,6 +168,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 memberof = this.model.get("memberof"),
                 groups,
                 widget,
+                clone,
                 promise;
 
             if (App.instances.groups && App.instances.groups.length > 0) {
@@ -187,7 +188,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             promise.done(function () {
                 that.memberof.show(widget);
             });
-            this.model.fetch().done(function () {
+
+            clone = new App.Group.Models.GroupModel({
+                id: this.model.get("id")
+            });
+            clone.fetch().done(function () {
+                that.model.set("members", clone.get("members"));
                 that.totalPages = that.model.get("members").length / that.perPage;
                 that.totalPages = Math.floor(that.totalPages) + 1;
                 that.renderMembers("members", Views.Members);
