@@ -5,8 +5,6 @@ from copy import deepcopy
 from bson import ObjectId
 
 from chef import Node
-from chef.node import NodeAttributes
-from chef.exceptions import ChefError
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -21,6 +19,7 @@ from gecoscc.rules import get_rules, is_user_policy
 from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
+                           delete_dotted, to_deep_dict,
                            apply_policies_to_computer, apply_policies_to_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
@@ -674,46 +673,3 @@ def object_deleted(user, objtype, obj):
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
-
-# Utils to NodeAttributes chef class
-
-
-def to_deep_dict(node_attr):
-    merged = {}
-    for d in reversed(node_attr.search_path):
-        merged = dict_merge(merged, d)
-    return merged
-
-
-def dict_merge(a, b):
-    '''recursively merges dict's. not just simple a['key'] = b['key'], if
-    both a and bhave a key who's value is a dict then dict_merge is called
-    on both values and the result stored in the returned dictionary.'''
-    if not isinstance(b, dict):
-        return b
-    result = deepcopy(a)
-    for k, v in b.iteritems():
-        if k in result and isinstance(result[k], dict):
-                result[k] = dict_merge(result[k], v)
-        else:
-            result[k] = deepcopy(v)
-    return result
-
-
-def delete_dotted(dest, key):
-    """Set an attribute using a dotted key path. See :meth:`.get_dotted`
-    for more information on dotted paths.
-
-    Example::
-
-        node.attributes.set_dotted('apache.log_dir', '/srv/log')
-    """
-    keys = key.split('.')
-    last_key = keys.pop()
-    for k in keys:
-        if k not in dest:
-            dest[k] = {}
-        dest = dest[k]
-        if not isinstance(dest, NodeAttributes):
-            raise ChefError
-    del dest[last_key]
