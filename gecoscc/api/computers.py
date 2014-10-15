@@ -10,6 +10,7 @@ from gecoscc.utils import get_chef_api
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
+from gecoscc.utils import to_deep_dict
 
 
 @resource(collection_path='/api/computers/',
@@ -34,7 +35,7 @@ class ComputerResource(TreeLeafResourcePaginated):
         try:
             api = get_chef_api(self.request.registry.settings, self.request.user)
             computer_node = ChefNode(result['node_chef_id'], api)
-            ohai = computer_node.attributes.to_dict()
+            ohai = to_deep_dict(computer_node.attributes)
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
             result.update({'ohai': ohai,
