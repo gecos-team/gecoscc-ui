@@ -37,15 +37,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
-    Views.GroupForm = Marionette.Layout.extend({
+    Views.GroupForm = App.GecosFormItemView.extend({
         template: "#groups-form-template",
         tagName: "div",
         className: "col-sm-12",
-
-        regions: {
-            memberof: "#memberof",
-            members: "#members"
-        },
 
         ui: {
             policies: "div#policies div.bootstrap-admin-panel-content"
@@ -54,19 +49,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         events: {
             "click button#delete": "deleteModel",
             "click button#save": "save",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
         },
 
-        helperView: undefined,
         policiesList: undefined,
-
-        initialize: function (options) {
-            this.helperView = new App.GecosFormItemView({
-                model: options.model,
-                el: this.el
-            });
-            this.helperView.resourceType = "group";
-        },
 
         renderMembers: function (propName, View) {
             var oids = this.model.get(propName).join(','),
@@ -76,7 +62,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (oids.length === 0) {
                 aux[propName] = {};
                 aux = new View(aux);
-                this[propName].show(aux);
+                this.$el.find("#members").html(aux.render().el);
             } else {
                 $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
                     var items = response.nodes,
@@ -88,7 +74,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
                     aux[propName] = members;
                     view = new View(aux);
-                    that[propName].show(view);
+                    console.log(members);
+                    that.$el.find("#members").html(view.render().el);
                 });
             }
         },
@@ -149,14 +136,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 promise = groups.fetch();
             }
 
-            memberof = memberof.length > 0 ? memberof[0] : "";
-            widget = new Views.GroupWidget({
-                collection: groups,
-                checked: memberof
-            });
-            promise.done(function () {
-                that.memberof.show(widget);
-            });
             clone = new App.Group.Models.GroupModel({
                 id: this.model.get("id")
             });
@@ -164,26 +143,14 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.model.set("members", clone.get("members"));
                 that.renderMembers("members", Views.Members);
             });
-            this.renderPolicies();
-        },
 
-        deleteModel: function (evt) {
-            this.helperView.deleteModel(evt);
+            this.renderPolicies();
         },
 
         save: function (evt) {
             evt.preventDefault();
-            var that = this,
-                memberof;
 
-            memberof = function () {
-                var parent = that.memberof.currentView.getChecked();
-                parent = _.isNull(parent) ? [] : [parent];
-                return parent;
-            };
-
-            this.helperView.saveModel($(evt.target), {
-                memberof: memberof,
+            this.saveModel($(evt.target), {
                 name: "#name"
             });
         }
