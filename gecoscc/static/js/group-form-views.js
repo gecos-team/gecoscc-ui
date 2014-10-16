@@ -41,17 +41,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         }
     });
 
-    Views.GroupForm = Marionette.Layout.extend({
+    Views.GroupForm = App.GecosFormItemView.extend({
         template: "#groups-form-template",
         tagName: "div",
         className: "col-sm-12",
         page: 0,
         perPage: 10,
-
-        regions: {
-            memberof: "#memberof",
-            members: "#members"
-        },
 
         ui: {
             policies: "div#policies div.bootstrap-admin-panel-content"
@@ -64,16 +59,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click ul.pagination a": "goToPage"
         },
 
-        helperView: undefined,
         policiesList: undefined,
-
-        initialize: function (options) {
-            this.helperView = new App.GecosFormItemView({
-                model: options.model,
-                el: this.el
-            });
-            this.helperView.resourceType = "group";
-        },
 
         goToPage: function (evt) {
             evt.preventDefault();
@@ -104,7 +90,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (oids.length === 0) {
                 aux[propName] = {};
                 aux = new View(aux);
-                this[propName].show(aux);
+                this.$el.find("#members").html(aux.render().el);
             } else {
                 $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
                     var items = response.nodes,
@@ -118,7 +104,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     aux.page = that.page;
                     aux.totalPages = that.totalPages;
                     view = new View(aux);
-                    that[propName].show(view);
+
+                    that.$el.find("#members").html(view.render().el);
                     $("#members").find("ul").first().hide().fadeIn("fast");
                 });
             }
@@ -180,15 +167,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 promise = groups.fetch();
             }
 
-            memberof = memberof.length > 0 ? memberof[0] : "";
-            widget = new Views.GroupWidget({
-                collection: groups,
-                checked: memberof
-            });
-            promise.done(function () {
-                that.memberof.show(widget);
-            });
-
             clone = new App.Group.Models.GroupModel({
                 id: this.model.get("id")
             });
@@ -198,26 +176,14 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.totalPages = Math.floor(that.totalPages) + 1;
                 that.renderMembers("members", Views.Members);
             });
-            this.renderPolicies();
-        },
 
-        deleteModel: function (evt) {
-            this.helperView.deleteModel(evt);
+            this.renderPolicies();
         },
 
         save: function (evt) {
             evt.preventDefault();
-            var that = this,
-                memberof;
 
-            memberof = function () {
-                var parent = that.memberof.currentView.getChecked();
-                parent = _.isNull(parent) ? [] : [parent];
-                return parent;
-            };
-
-            this.helperView.saveModel($(evt.target), {
-                memberof: memberof,
+            this.saveModel($(evt.target), {
                 name: "#name"
             });
         }
