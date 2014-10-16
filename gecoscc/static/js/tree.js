@@ -337,17 +337,21 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             if (!_.isUndefined(childToShow)) {
                 promises[0].done(function () {
-                    var domainPath = nodes.newNode.model.path.split(","),
-                        rootPath = domainPath[1];
+                    var completePath = nodes.newNode.model.path.split(","),
+                        rootPath = completePath[1],
+                        domainPath,
+                        root;
                     that.searchPageForNode(
                         nodes.newNode.model.paginatedChildren,
                         childToShow,
                         false
                     );
-                    if (domainPath.length > 1) {
-                        domainPath = domainPath[2] || nodes.newNode.model.id;
+
+                    root = that.findNodeById(rootPath);
+                    if (completePath.length > 1 && !_.isUndefined(root)) {
+                        domainPath = completePath[2] || nodes.newNode.model.id;
                         that.searchPageForNode(
-                            that.findNodeById(rootPath).paginatedChildren,
+                            root.paginatedChildren,
                             domainPath,
                             false
                         );
@@ -371,7 +375,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 that = this;
 
             if (_.isString(path)) { pathAsArray = path.split(','); }
-
             path = "root";
             _.each(pathAsArray, function (step) {
                 if (step === "root") { return; }
@@ -381,7 +384,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     });
 
                 if (_.isUndefined(node)) {
-                    unknownIds.push(step);
+
                     node = {
                         id: step,
                         path: path,
@@ -392,7 +395,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         status: "unknown"
                     };
                     node = that.parser.parse(node);
-                    currentNode.addChild(node);
+
+                    if (_.some(path.split(","), function (s) {
+                            return s === that.get("tree").children[0].model.id;
+                        })) {
+                        unknownIds.push(step);
+                        currentNode.addChild(node);
+                    }
                 }
                 path += ',' + step;
                 currentNode = node;
@@ -429,7 +438,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         searchPageForNode: function (paginatedCollection, nodeId, silent) {
-            var that = this,
+            if (_.isUndefined(paginatedCollection)) { return; }
+            var originalPage = paginatedCollection.currentPage,
+                that = this,
                 search;
 
             search = function () {
@@ -547,7 +558,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var tree = this.get("tree");
             if (tree) {
                 // Everything must be contained in one OU
-                return _.clone(tree.model.children[0]);
+                return _.clone(_.last(tree.model.children));
             }
             return {};
         },

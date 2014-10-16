@@ -1,10 +1,12 @@
 import os
 
 from bson import ObjectId
+from copy import deepcopy
 
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
 from chef.exceptions import ChefError
+from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
@@ -193,6 +195,53 @@ def remove_chef_user_data(user, computers, api):
                 node.save()
             except KeyError:
                 pass
+
+
+# Utils to NodeAttributes chef class
+
+
+def to_deep_dict(node_attr):
+    merged = {}
+    for d in reversed(node_attr.search_path):
+        merged = dict_merge(merged, d)
+    return merged
+
+
+def dict_merge(a, b):
+    '''recursively merges dict's. not just simple a['key'] = b['key'], if
+    both a and bhave a key who's value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary.'''
+    if not isinstance(b, dict):
+        return b
+    result = deepcopy(a)
+    for k, v in b.iteritems():
+        if k in result and isinstance(result[k], dict):
+                result[k] = dict_merge(result[k], v)
+        else:
+            result[k] = deepcopy(v)
+    return result
+
+
+def delete_dotted(dest, key):
+    """Set an attribute using a dotted key path. See :meth:`.get_dotted`
+    for more information on dotted paths.
+
+    Example::
+
+        node.attributes.set_dotted('apache.log_dir', '/srv/log')
+    """
+    keys = key.split('.')
+    last_key = keys.pop()
+    for k in keys:
+        if k not in dest:
+            dest[k] = {}
+        dest = dest[k]
+        if not isinstance(dest, NodeAttributes):
+            raise ChefError
+    del dest[last_key]
+
+
+# Visibility utils
 
 
 def visibility_group(db, obj):

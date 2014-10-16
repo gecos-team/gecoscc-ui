@@ -189,7 +189,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
                 data.showNext = true;
             }
-
             return data;
         };
 
