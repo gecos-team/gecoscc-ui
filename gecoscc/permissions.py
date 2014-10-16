@@ -32,22 +32,13 @@ def http_basic_login_required(request):
         remember(request, username)
 
 
-def get_user_permissions(request):
-    return request.user.get('permissions', [])
-
-
-def get_permissions_filter(request):
-    permissions = get_user_permissions(request)
-    ou_filter = []
-    for ou_id in permissions:
-        ous = request.db.nodes.find({'_id': ou_id})
-        for ou in ous:
-            if ou not in ou_filter:
-                ou_filter.insert({
-                    '$regex': '^{0}'.format(ou['path'])
-                })
-
-    return ou_filter
+def is_path_right(request, path):
+    ou_managed_ids = request.user.get('ou_managed', [])
+    for ou_managed_id in ou_managed_ids:
+        if ou_managed_id in path:
+            return True
+            break
+    return False
 
 
 class RootFactory(object):
@@ -70,7 +61,7 @@ class LoggedFactory(object):
     def __init__(self, request):
         self.request = request
         try:
-            user = self.request.user
+            self.request.user
         except UserDoesNotExist:
             forget(request)
 

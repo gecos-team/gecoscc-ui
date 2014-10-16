@@ -78,9 +78,6 @@ class PoliciesResource(ResourcePaginatedReadOnly):
         return super(PoliciesResource, self).parse_item(obj)
 
     def get_objects_filter(self):
-        # TODO
-        # Implement permissions filter
-        # permissions_filters = get_user_permissions(self.request)
         filters = super(PoliciesResource, self).get_objects_filter()
 
         permissions_filters = []
@@ -93,9 +90,3 @@ class PoliciesResource(ResourcePaginatedReadOnly):
             filters += permissions_filters
 
         return filters
-
-    def get_object_filter(self):
-        # TODO
-        # Implement permissions filter
-        # permissions_filters = get_user_permissions(self.request)
-        return {}
