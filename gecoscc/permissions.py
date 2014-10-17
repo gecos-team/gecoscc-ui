@@ -1,9 +1,12 @@
+from bson import ObjectId
+
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
                               authenticated_userid, forget, remember)
 
 
 from gecoscc.userdb import UserDoesNotExist
+from gecoscc.utils import is_domain
 
 
 def is_logged(request):
@@ -33,12 +36,56 @@ def http_basic_login_required(request):
 
 
 def is_path_right(request, path):
+    if path is None:
+        path = ''
     ou_managed_ids = request.user.get('ou_managed', [])
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
             return True
             break
     return False
+
+
+def can_access_to_this_path(request, collection_nodes, oid_or_obj):
+    obj = None
+    request = request
+    ou_managed_ids = request.user.get('ou_managed', [])
+    if not request.user.get('is_superuser') or ou_managed_ids:
+        if isinstance(oid_or_obj, dict):
+            obj = oid_or_obj
+            path = obj['path']
+        else:
+            obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
+            path = '%s,%s' % (obj['path'], obj['_id'])
+        if not is_path_right(request, path):
+            if not is_domain(obj) or not request.method == 'GET':
+                raise HTTPForbidden()
+
+
+def nodes_path_filter(request):
+    params = request.GET
+    maxdepth = int(params.get('maxdepth', 0))
+    path = request.GET.get('path', None)
+    range_depth = '0,{0}'.format(maxdepth)
+    ou_managed_ids = request.user.get('ou_managed', [])
+    if not request.user.get('is_superuser') or ou_managed_ids:
+        if path == 'root':
+            return {
+                '_id': {'$in': [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]}
+            }
+        elif path is None and ou_managed_ids:
+            return {
+                'path': {
+                    '$regex': '.*(%s).*' % '|'.join(ou_managed_ids)
+                }
+            }
+        elif not is_path_right(request, path):
+            raise HTTPForbidden()
+    return {
+        'path': {
+            '$regex': r'^{0}(,[^,]*){{{1}}}$'.format(path, range_depth),
+        }
+    }
 
 
 class RootFactory(object):
