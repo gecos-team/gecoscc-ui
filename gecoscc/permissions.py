@@ -74,11 +74,16 @@ def nodes_path_filter(request):
                 '_id': {'$in': [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]}
             }
         elif path is None and ou_managed_ids:
-            return {
-                'path': {
-                    '$regex': '.*(%s).*' % '|'.join(ou_managed_ids)
+            filters = [
+                {
+                    'path': {
+                        '$regex': '.*%s.*' % '|'.join(ou_managed_ids)
+                    }
+                }, {
+                    '_id': {'$in': [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]}
                 }
-            }
+            ]
+            return {'$or': filters}
         elif not is_path_right(request, path):
             raise HTTPForbidden()
     elif request.user.get('is_superuser') and path is None:
