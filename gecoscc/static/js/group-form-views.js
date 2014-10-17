@@ -74,7 +74,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
                     aux[propName] = members;
                     view = new View(aux);
-                    console.log(members);
                     that.$el.find("#members").html(view.render().el);
                 });
             }
