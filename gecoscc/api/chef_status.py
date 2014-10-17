@@ -74,8 +74,6 @@ class ChefStatusResource(BaseAPI):
             users = chef_node.attributes.get_dotted('ohai_gecos.users')
         except KeyError:
             users = []
-        chef_node.normal.set_dotted('ohai_gecos.users_old', users)
-        chef_node.save()
 
         node_id = chef_node.name
         node = node_collection.find_one({'node_chef_id': node_id, 'type': 'computer'})
@@ -103,6 +101,9 @@ class ChefStatusResource(BaseAPI):
 
         for user in users_recalculate_policies:
             apply_policies_to_user(node_collection, user, self.request.user)
+
+        chef_node.normal.set_dotted('ohai_gecos.users_old', users)
+        chef_node.save()
 
         if users_does_not_find:
             return {'ok': False,
