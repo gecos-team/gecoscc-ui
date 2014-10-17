@@ -81,6 +81,8 @@ def nodes_path_filter(request):
             }
         elif not is_path_right(request, path):
             raise HTTPForbidden()
+    elif request.user.get('is_superuser') and path is None:
+        return {}
     return {
         'path': {
             '$regex': r'^{0}(,[^,]*){{{1}}}$'.format(path, range_depth),
