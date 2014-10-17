@@ -115,7 +115,6 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         processForm: function (values) {
             var url = this.getResourceUrl();
-            console.log(this.getResourceUrl());
 
             this.resource.addPolicy(this.model, values);
 
