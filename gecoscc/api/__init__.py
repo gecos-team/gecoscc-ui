@@ -8,8 +8,10 @@ from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from webob.multidict import MultiDict
 
-from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
+from gecoscc.models import Node
+from gecoscc.permissions import can_access_to_this_path, nodes_path_filter
 from gecoscc.socks import invalidate_change, invalidate_delete
+from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.utils import get_computer_of_user, get_filter_in_domain
 
 
@@ -46,8 +48,6 @@ class BaseAPI(object):
 
 
 class ResourcePaginatedReadOnly(BaseAPI):
-    # TODO
-    # Implement permissions filter
 
     schema_collection = None
     schema_detail = None
@@ -84,6 +84,8 @@ class ResourcePaginatedReadOnly(BaseAPI):
                     '$options': '-i'
                 }
             })
+        if issubclass(self.schema_detail, Node):
+            query.append(nodes_path_filter(self.request))
 
         return query
 
@@ -91,6 +93,8 @@ class ResourcePaginatedReadOnly(BaseAPI):
         return {}
 
     def get_oid_filter(self, oid):
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request, self.collection, oid)
         return {self.key: ObjectId(oid)}
 
     def collection_get(self):
@@ -176,6 +180,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
     def collection_post(self):
         obj = self.request.validated
 
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request,
+                                    self.collection,
+                                    obj)
+
         if not self.integrity_validation(obj):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
@@ -221,6 +230,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             raise HTTPBadRequest('The object id is not the same that the id in'
                                  ' the url')
 
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request, self.collection, oid)
+
         obj_filter = self.get_oid_filter(oid)
         obj_filter.update(self.mongo_filter)
 
@@ -251,6 +263,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
     def delete(self):
 
         obj_id = self.request.matchdict['oid']
+
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request, self.collection, obj_id)
 
         filter = self.get_oid_filter(obj_id)
         filter.update(self.mongo_filter)

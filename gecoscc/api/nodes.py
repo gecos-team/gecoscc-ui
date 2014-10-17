@@ -2,13 +2,11 @@ import pymongo
 
 from bson import ObjectId
 
-from pyramid.httpexceptions import HTTPNotFound
-
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Nodes, Node
-from gecoscc.permissions import api_login_required, is_path_right
+from gecoscc.permissions import api_login_required
 
 
 def nodes_type_filter(request):
@@ -20,26 +18,6 @@ def nodes_type_filter(request):
     return {}
 
 
-def nodes_path_filter(request):
-    params = request.GET
-    maxdepth = int(params.get('maxdepth', 0))
-    path = request.GET.get('path', 'root')
-    range_depth = '0,{0}'.format(maxdepth)
-    ou_managed_ids = request.user.get('ou_managed', [])
-    if not request.user.get('is_superuser') or ou_managed_ids:
-        if path == 'root':
-            return {
-                '_id': {'$in': [ObjectId(ou_managed_id) for ou_managed_id in ou_managed_ids]}
-            }
-        elif not is_path_right(request, path):
-            raise HTTPNotFound()
-    return {
-        'path': {
-            '$regex': r'^{0}(,[^,]*){{{1}}}$'.format(path, range_depth),
-        }
-    }
-
-
 def nodes_oids_filter(request):
     oids = request.GET.get('oids')
     return {
@@ -49,18 +27,15 @@ def nodes_oids_filter(request):
 
 node_filters = {
     'type': nodes_type_filter,
-    'path': nodes_path_filter,
     'oids': nodes_oids_filter,
 }
-
-mode_filters_always = ('path',)
 
 
 def get_filters(node_filters, request):
     filters = []
     params = request.GET
     for (filter_name, filter_func) in node_filters.iteritems():
-        if filter_name in params or filter_name in mode_filters_always:
+        if filter_name in params:
             filter_dict = filter_func(request)
             if filter_dict:
                 filters.append(filter_dict)
@@ -112,15 +87,4 @@ class NodesResource(ResourcePaginatedReadOnly):
             filters += local_filters
         if permissions_filters:
             filters += permissions_filters
-        return filters
-
-    def get_oid_filter(self, oid):
-        filters = super(NodesResource, self).get_oid_filter(oid)
-        request = self.request
-        ou_managed_ids = request.user.get('ou_managed', [])
-        if not self.request.user.get('is_superuser') or ou_managed_ids:
-            obj = self.collection.find_one({'_id': ObjectId(oid)})
-            path = '%s,%s' % (obj['path'], obj['_id'])
-            if not is_path_right(request, path):
-                raise HTTPNotFound()
         return filters
