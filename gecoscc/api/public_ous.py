@@ -1,3 +1,4 @@
+from pyramid.httpexceptions import HTTPForbidden
 
 from cornice.resource import resource
 
@@ -22,5 +23,7 @@ class OuPublicResource(BaseAPI):
     collection_name = 'nodes'
 
     def get(self):
+        if not self.request.user.get('is_superuser'):
+            raise HTTPForbidden()
         ou_id = self.request.GET.get('ou_id', None)
         return get_items_ou_children(ou_id, self.collection, self.objtype)

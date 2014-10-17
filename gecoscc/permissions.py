@@ -35,10 +35,10 @@ def http_basic_login_required(request):
         remember(request, username)
 
 
-def is_path_right(request, path):
+def is_path_right(request, path, ou_type='ou_managed'):
     if path is None:
         path = ''
-    ou_managed_ids = request.user.get('ou_managed', [])
+    ou_managed_ids = request.user.get(ou_type, [])
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
             return True
@@ -46,10 +46,10 @@ def is_path_right(request, path):
     return False
 
 
-def can_access_to_this_path(request, collection_nodes, oid_or_obj):
+def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_managed'):
     obj = None
     request = request
-    ou_managed_ids = request.user.get('ou_managed', [])
+    ou_managed_ids = request.user.get(ou_type, [])
     if not request.user.get('is_superuser') or ou_managed_ids:
         if isinstance(oid_or_obj, dict):
             obj = oid_or_obj
@@ -57,7 +57,7 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj):
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
             path = '%s,%s' % (obj['path'], obj['_id'])
-        if not is_path_right(request, path):
+        if not is_path_right(request, path, ou_type):
             if not is_domain(obj) or not request.method == 'GET':
                 raise HTTPForbidden()
 
