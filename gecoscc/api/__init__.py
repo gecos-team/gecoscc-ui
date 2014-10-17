@@ -85,7 +85,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
                 }
             })
         if issubclass(self.schema_detail, Node):
-            query.append(nodes_path_filter(self.request))
+            path_filter = nodes_path_filter(self.request)
+            if path_filter:
+                query.append(path_filter)
 
         return query
 
