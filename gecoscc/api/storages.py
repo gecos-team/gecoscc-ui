@@ -1,6 +1,6 @@
 from cornice.resource import resource
 
-from gecoscc.api import TreeLeafResourcePaginated
+from gecoscc.api import PassiveResourcePaginated
 from gecoscc.models import Storage, Storages
 from gecoscc.permissions import api_login_required
 
@@ -9,7 +9,7 @@ from gecoscc.permissions import api_login_required
           path='/api/storages/{oid}/',
           description='Storages resource',
           validators=(api_login_required,))
-class StorageResource(TreeLeafResourcePaginated):
+class StorageResource(PassiveResourcePaginated):
 
     schema_collection = Storages
     schema_detail = Storage

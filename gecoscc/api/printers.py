@@ -1,6 +1,6 @@
 from cornice.resource import resource
 
-from gecoscc.api import TreeLeafResourcePaginated
+from gecoscc.api import PassiveResourcePaginated
 from gecoscc.models import Printer, Printers
 from gecoscc.permissions import api_login_required
 
@@ -9,7 +9,7 @@ from gecoscc.permissions import api_login_required
           path='/api/printers/{oid}/',
           description='Printers resource',
           validators=(api_login_required,))
-class PrinterResource(TreeLeafResourcePaginated):
+class PrinterResource(PassiveResourcePaginated):
 
     schema_collection = Printers
     schema_detail = Printer

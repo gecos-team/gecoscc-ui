@@ -1,6 +1,6 @@
 from cornice.resource import resource
 
-from gecoscc.api import TreeLeafResourcePaginated
+from gecoscc.api import PassiveResourcePaginated
 from gecoscc.models import Repository, Repositories
 from gecoscc.permissions import api_login_required
 
@@ -9,7 +9,7 @@ from gecoscc.permissions import api_login_required
           path='/api/repositories/{oid}/',
           description='Repositories resource',
           validators=(api_login_required,))
-class RepositoryResource(TreeLeafResourcePaginated):
+class RepositoryResource(PassiveResourcePaginated):
 
     schema_collection = Repositories
     schema_detail = Repository

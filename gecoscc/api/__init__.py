@@ -12,8 +12,7 @@ from gecoscc.models import Node
 from gecoscc.permissions import can_access_to_this_path, nodes_path_filter
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
-from gecoscc.utils import get_computer_of_user, get_filter_in_domain
-
+from gecoscc.utils import get_computer_of_user, get_filter_in_domain, get_filter_nodes_parents_ou
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
@@ -428,3 +427,15 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             object_changed.delay(self.request.user, 'group', group, {}, computers)
 
         return super(TreeLeafResourcePaginated, self).post_save(obj, old_obj)
+
+
+class PassiveResourcePaginated(TreeLeafResourcePaginated):
+
+    def get_objects_filter(self):
+        filters = super(PassiveResourcePaginated, self).get_objects_filter()
+        ou_id = self.request.GET.get('ou_id', None)
+        item_id = self.request.GET.get('item_id', None)
+        if ou_id and item_id:
+            filters.append({'path': get_filter_nodes_parents_ou(self.request.db,
+                                                                ou_id, item_id)})
+        return filters
