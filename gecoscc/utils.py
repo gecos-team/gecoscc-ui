@@ -14,6 +14,7 @@ RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
+SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -391,7 +392,7 @@ def register_node(api, node_id, ou, collection_nodes):
                                        'name': computer_name,
                                        'type': 'computer',
                                        'lock': False,
-                                       'source': 'gecos',
+                                       'source': SOURCE_DEFAULT,
                                        'memberof': [],
                                        'policies': {},
                                        'registry': '',
@@ -413,7 +414,7 @@ def update_node(api, node_id, ou, collection_nodes):
                                        'name': computer_name,
                                        'type': 'computer',
                                        'lock': False,
-                                       'source': 'gecos',
+                                       'source': SOURCE_DEFAULT,
                                        'memberof': [],
                                        'policies': {},
                                        'registry': '',
@@ -435,6 +436,14 @@ def is_domain(node):
 
 def get_domain_path(node):
     return node['path'].split(',')[:3]
+
+
+def get_domain(node, collection_node):
+    try:
+        domain = collection_node.find_one({'_id': ObjectId(node['path'].split(',')[2])})
+    except IndexError:
+        return None
+    return domain
 
 
 def get_filter_in_domain(node):

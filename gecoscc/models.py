@@ -15,8 +15,6 @@ from gecoscc.i18n import gettext_lazy as _
 from gecoscc.utils import get_items_ou_children
 from pyramid.threadlocal import get_current_registry
 
-gettext_noting = lambda x: x
-
 OU_ORDER = 1
 
 

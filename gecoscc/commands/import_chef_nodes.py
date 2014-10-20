@@ -5,7 +5,7 @@ from chef import Node as ChefNode
 from pymongo.errors import DuplicateKeyError
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node
+from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node, SOURCE_DEFAULT
 
 
 class Command(BaseCommand):
@@ -47,7 +47,7 @@ class Command(BaseCommand):
                          'path': 'root',
                          'lock': False,
                          'policies': {},
-                         'source': 'gecos'})
+                         'source': SOURCE_DEFAULT})
             ou_id = self.db.nodes.insert(data)
             print "OU with name 'ou_0' created in mongo"
             ou = self.db.nodes.find_one({'_id': ou_id})

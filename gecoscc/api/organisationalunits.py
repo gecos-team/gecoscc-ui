@@ -3,7 +3,7 @@ from cornice.resource import resource
 from gecoscc.api import TreeResourcePaginated
 from gecoscc.models import OrganisationalUnit, OrganisationalUnits
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import is_domain
+from gecoscc.utils import is_domain, MASTER_DEFAULT
 
 
 @resource(collection_path='/api/ous/',
@@ -60,6 +60,6 @@ class OrganisationalUnitResource(TreeResourcePaginated):
                     }
                 })
         elif self.request.method == 'POST' and is_domain(obj):
-            obj['master'] = 'gecos'
+            obj['master'] = MASTER_DEFAULT
             obj['master_policies'] = {}
         return obj

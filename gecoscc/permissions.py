@@ -6,7 +6,7 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 
 
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.utils import is_domain
+from gecoscc.utils import is_domain, get_domain, MASTER_DEFAULT
 
 
 def is_logged(request):
@@ -60,6 +60,12 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
         if not is_path_right(request, path, ou_type):
             if not is_domain(obj) or not request.method == 'GET':
                 raise HTTPForbidden()
+
+
+def is_gecos_master_or_403(request, collection_nodes, obj):
+    domain = get_domain(obj, collection_nodes)
+    if domain['master'] != MASTER_DEFAULT:
+        raise HTTPForbidden()
 
 
 def nodes_path_filter(request):

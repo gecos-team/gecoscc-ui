@@ -19,7 +19,7 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import get_chef_api
+from gecoscc.utils import get_chef_api, MASTER_DEFAULT
 
 logger = logging.getLogger(__name__)
 
@@ -398,7 +398,7 @@ class ADImport(BaseAPI):
             'path': 'root',
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
-            'master': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value) if self.request.POST['master'] == 'True' else 'gecos',
+            'master': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value) if self.request.POST['master'] == 'True' else MASTER_DEFAULT,
             'master_policies': {}
         }
         if rootOU is None:
