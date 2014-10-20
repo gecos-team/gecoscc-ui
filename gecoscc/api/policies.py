@@ -1,17 +1,9 @@
-from bson import ObjectId
 
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Policy, Policies
 from gecoscc.permissions import api_login_required
-
-
-def policies_oids_filter(params):
-    oids = params.get('oids')
-    return {
-        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
-    }
 
 
 def policies_targets_filter(params):
@@ -22,7 +14,6 @@ def policies_targets_filter(params):
 
 
 policies_filters = {
-    'oids': policies_oids_filter,
     'target': policies_targets_filter,
 }
 

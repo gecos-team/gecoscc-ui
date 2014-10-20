@@ -12,7 +12,7 @@ from gecoscc.models import Node
 from gecoscc.permissions import can_access_to_this_path, nodes_path_filter
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
-from gecoscc.utils import get_computer_of_user, get_filter_in_domain, get_filter_nodes_parents_ou
+from gecoscc.utils import get_computer_of_user, get_filter_in_domain, get_filter_nodes_parents_ou, oids_filter
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
@@ -83,6 +83,12 @@ class ResourcePaginatedReadOnly(BaseAPI):
                     '$options': '-i'
                 }
             })
+
+        if 'oids' in self.request.GET:
+            oid_filters = oids_filter(self.request)
+            if oid_filters:
+                query.append(oid_filters)
+
         if issubclass(self.schema_detail, Node):
             path_filter = nodes_path_filter(self.request)
             if path_filter:

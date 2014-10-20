@@ -1,7 +1,5 @@
 import pymongo
 
-from bson import ObjectId
-
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginatedReadOnly
@@ -18,16 +16,8 @@ def nodes_type_filter(request):
     return {}
 
 
-def nodes_oids_filter(request):
-    oids = request.GET.get('oids')
-    return {
-        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
-    }
-
-
 node_filters = {
     'type': nodes_type_filter,
-    'oids': nodes_oids_filter,
 }
 
 

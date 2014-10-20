@@ -1,5 +1,3 @@
-from bson import ObjectId
-
 from pyramid.httpexceptions import HTTPBadRequest
 
 from cornice.resource import resource
@@ -8,21 +6,6 @@ from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Group, Groups
 from gecoscc.permissions import api_login_required
 from gecoscc.utils import get_filter_nodes_parents_ou, merge_lists
-
-
-def groups_oids_filter(params):
-    oids = params.get('oids')
-    return {
-        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
-    }
-
-
-def make_cycles(collection, group, old_group):
-    """ Detect if new_group make cycles before save
-         return True if make cycles and otherwise return False.
-    """
-    # TODO
-    return False
 
 
 @resource(collection_path='/api/groups/',
@@ -43,10 +26,6 @@ class GroupResource(TreeLeafResourcePaginated):
     def get_objects_filter(self):
         filters = super(GroupResource, self).get_objects_filter()
 
-        if 'oids' in self.request.GET:
-            oid_filters = groups_oids_filter(self.request.GET)
-            if oid_filters:
-                filters += (oid_filters)
         if 'ou_id' in self.request.GET and 'item_id' in self.request.GET:
             ou_id = self.request.GET['ou_id']
             item_id = self.request.GET['item_id']
@@ -93,12 +72,6 @@ class GroupResource(TreeLeafResourcePaginated):
         if old_obj is None:
             return
         merge_lists(self.collection, obj, old_obj, 'nodemembers', 'memberof')
-
-    def pre_save(self, obj, old_obj=None):
-        if make_cycles(self.collection, obj, old_obj):
-            raise HTTPBadRequest('This groups combination can create cycles')
-
-        return obj
 
     def post_save(self, obj, old_obj=None):
         if self.request.method == 'DELETE':

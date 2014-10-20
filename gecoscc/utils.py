@@ -115,6 +115,13 @@ def get_items_ou_children(ou_id, collection_nodes, objtype=None, filters=None, n
 def emiter_police_slug(emiter_type):
     return '%s%s' % (emiter_type, POLICY_EMITTER_SUBFIX)
 
+
+def oids_filter(request):
+    oids = request.GET.get('oids')
+    return {
+        '$or': [{'_id': ObjectId(oid)} for oid in oids.split(',')]
+    }
+
 # Chef utils
 
 
