@@ -6,7 +6,7 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 
 
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.utils import is_domain, get_domain, MASTER_DEFAULT
+from gecoscc.utils import is_domain, get_domain, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
 
 
 def is_logged(request):
@@ -53,10 +53,9 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
     if not request.user.get('is_superuser') or ou_managed_ids:
         if isinstance(oid_or_obj, dict):
             obj = oid_or_obj
-            path = obj['path']
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
-            path = '%s,%s' % (obj['path'], obj['_id'])
+        path = '%s,%s' % (obj['path'], obj['_id'])
         if not is_path_right(request, path, ou_type):
             if not is_domain(obj) or not request.method == 'GET':
                 raise HTTPForbidden()
@@ -66,6 +65,23 @@ def is_gecos_master_or_403(request, collection_nodes, obj):
     domain = get_domain(obj, collection_nodes)
     if domain['master'] != MASTER_DEFAULT:
         raise HTTPForbidden()
+
+
+def master_policy_no_updated_or_403(request, collection_nodes, obj):
+    if obj['type'] in RESOURCES_EMITTERS_TYPES:
+        return
+    domain = get_domain(obj, collection_nodes)
+    master_policies = domain.get('master_policies', {})
+    if master_policies:
+        if obj['_id']:
+            mongo_obj = collection_nodes.find_one({'_id': obj['_id']})
+        else:
+            mongo_obj = {}
+        mongo_policies = mongo_obj.get('policies', {})
+        policies = obj.get('policies', {})
+        for policy_id, value in master_policies.items():
+            if mongo_policies.get(policy_id, None) != policies.get(policy_id, None):
+                raise HTTPForbidden()
 
 
 def nodes_path_filter(request):

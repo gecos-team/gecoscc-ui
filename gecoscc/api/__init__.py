@@ -9,7 +9,9 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from webob.multidict import MultiDict
 
 from gecoscc.models import Node
-from gecoscc.permissions import can_access_to_this_path, nodes_path_filter, is_gecos_master_or_403
+from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
+                                 is_gecos_master_or_403,
+                                 master_policy_no_updated_or_403)
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.utils import get_computer_of_user, get_filter_in_domain, get_filter_nodes_parents_ou, oids_filter
@@ -190,6 +192,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if issubclass(self.schema_detail, Node):
             can_access_to_this_path(self.request, self.collection, obj)
             is_gecos_master_or_403(self.request, self.collection, obj)
+            master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         if not self.integrity_validation(obj):
             if len(self.request.errors) < 1:
@@ -237,9 +240,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                                  ' the url')
 
         if issubclass(self.schema_detail, Node):
-            obj = self.collection.find_one({'_id': ObjectId(oid)})
             can_access_to_this_path(self.request, self.collection, obj)
             is_gecos_master_or_403(self.request, self.collection, obj)
+            master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         obj_filter = self.get_oid_filter(oid)
         obj_filter.update(self.mongo_filter)
@@ -276,6 +279,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             obj = self.collection.find_one({'_id': ObjectId(oid)})
             can_access_to_this_path(self.request, self.collection, obj)
             is_gecos_master_or_403(self.request, self.collection, obj)
+            master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         filters = self.get_oid_filter(oid)
         filters.update(self.mongo_filter)
