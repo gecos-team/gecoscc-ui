@@ -22,6 +22,11 @@
   padding: 0;
 }
 
+.select2-container-multi {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
 /**
  * Adjust Select2 inputs to fit Bootstrap 3 default .form-control appearance.
  */
