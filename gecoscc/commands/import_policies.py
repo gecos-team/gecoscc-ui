@@ -43,7 +43,7 @@ SCHEMA_EMITTER = {
             "items": {
                 "type": "string",
             },
-            "type": "autocomplete",
+            "type": "array",
             "autocomplete_url": "",
             "title": "Object related"
         }
