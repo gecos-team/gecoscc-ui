@@ -41,6 +41,7 @@ SCHEMA_EMITTER = {
             "minItems": 1,
             "uniqueItems": True,
             "items": {
+                "enum": [],
                 "type": "string",
             },
             "type": "array",

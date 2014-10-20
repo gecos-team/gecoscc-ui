@@ -631,7 +631,20 @@ jsonform.elementTypes = {
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
-        $(node.el).find("select").select2();
+      var parent = node.parentNode.schemaElement;
+      if(parent && !_.isUndefined(parent.autocomplete_url)){
+        $.get(node.parentNode.schemaElement.autocomplete_url).done(function (response) {
+          var options = [];
+          _.each(response.nodes, function (o) {
+            selected = node.value === o._id? "selected" : "";
+            options.push('<option ' + selected + ' value="' + o._id + '">' + o.name + '</option>');
+            node.schemaElement.enum.push(o._id);
+          });
+          $(node.el).find("select").html(options.join("\n"));
+          $(node.el).find("select").select2();
+        });
+      }
+      $(node.el).find("select").select2();
     }
   },
   'imageselect': {
