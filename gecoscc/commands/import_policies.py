@@ -27,6 +27,12 @@ POLICY_EMITTER_PATH = {
     'storage_can_view': 'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users',
 }
 
+POLICY_EMITTER_URL = {
+    'printer_can_view': '/api/printers/',
+    'repository_can_view': '/api/repositories/',
+    'storage_can_view': '/api/storages/',
+}
+
 SCHEMA_EMITTER = {
     "required": ["object_related_list"],
     "type": "object",
@@ -35,10 +41,10 @@ SCHEMA_EMITTER = {
             "minItems": 1,
             "uniqueItems": True,
             "items": {
-                "enum": [],
                 "type": "string",
             },
-            "type": "array",
+            "type": "autocomplete",
+            "autocomplete_url": "",
             "title": "Object related"
         }
     }
@@ -168,9 +174,10 @@ class Command(BaseCommand):
             self.treatment_policy(policy)
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
+                slug = emiter_police_slug(emiter)
                 schema = deepcopy(SCHEMA_EMITTER)
                 schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
-                slug = emiter_police_slug(emiter)
+                schema['properties']['object_related_list']['autocomplete_url'] = POLICY_EMITTER_URL[slug]
                 policy = {
                     'name': POLICY_EMITTER_NAMES[slug],
                     'slug': slug,
