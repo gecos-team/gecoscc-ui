@@ -35,4 +35,13 @@
         </ul>
     </div>
 </div>
+<div class="row">
+    <div class="col-sm-12">
+    <select multiple id="groups">
+    <% _.each(groups, function (p) { %>
+        <option <% if (p.checked) { print('selected'); } %> value="<%= p.name %>"><%= p.name %></option>
+    <% }); %>
+    </select>
+    </div>
+</div>
 <% } %>

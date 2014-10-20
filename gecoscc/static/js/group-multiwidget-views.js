@@ -127,7 +127,9 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 current = this.collection.currentPage,
                 total = this.collection.totalPages,
                 i = 0,
-                page;
+                page,
+                checkedIds,
+                groups;
 
             for (i; i < pages; i += 1) {
                 page = current - inRange + i;
@@ -135,12 +137,23 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     paginator.push([page, page === current]);
                 }
             }
+
+            groups = this.getGroups().toJSON();
+            checkedIds = this.checked.map(function (g) {
+                return g.get("id");
+            });
+
+            _.each(groups, function (g) {
+                g.checked = _.contains(checkedIds, g.id);
+            });
+
             return {
                 prev: current !== 1,
                 next: current !== total,
                 pages: paginator,
                 showPaginator: _.isNull(this.filteredGroups),
-                currentFilter: this.currentFilter
+                currentFilter: this.currentFilter,
+                groups: groups
             };
         },
 
@@ -173,6 +186,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.disabled) {
                 this.$el.find("input").prop("disabled", true);
             }
+
+            $("#groups").select2({
+                placeholder: "Select a Group",
+            });
         },
 
         searchGroups: _.debounce(function (evt) {
