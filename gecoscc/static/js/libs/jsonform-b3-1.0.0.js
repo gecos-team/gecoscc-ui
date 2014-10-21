@@ -678,10 +678,10 @@ jsonform.elementTypes = {
           },
           initSelection : function (element, callback) {
             if(!_.isUndefined(res)){
+              $(node.el).find("input").last().attr('value', res._id);
               node.schemaElement.enum.push(res._id);
-              var data = {id: res._id, text: res.name, value: res._id};
+              var data = {id: res._id, text: res.name};
               callback(data);
-              $(node.el).find("input").val(res._id);
             }
           }
         });
