@@ -50,7 +50,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         removeFromSelection: function (evt) {
             evt.preventDefault();
-            var id = $(evt.target).attr("id"),
+            var id = $(evt.target).attr("id") || $(evt.target).parent().attr("id"),
                 group = this.widget.checked.get(id.substring(2));
             this.widget.checked.remove(group);
         }
@@ -138,22 +138,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
             }
 
-            groups = this.getGroups().toJSON();
-            checkedIds = this.checked.map(function (g) {
-                return g.get("id");
-            });
-
-            _.each(groups, function (g) {
-                g.checked = _.contains(checkedIds, g.id);
-            });
-
             return {
                 prev: current !== 1,
                 next: current !== total,
                 pages: paginator,
                 showPaginator: _.isNull(this.filteredGroups),
-                currentFilter: this.currentFilter,
-                groups: groups
+                currentFilter: this.currentFilter
             };
         },
 
@@ -186,20 +176,18 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.disabled) {
                 this.$el.find("input").prop("disabled", true);
             }
-
-            $("#groups").select2({
-                placeholder: "Select a Group",
-            });
         },
 
         searchGroups: _.debounce(function (evt) {
             evt.preventDefault();
             var keyword = this.ui.filter.val().trim(),
-                that = this;
+                that = this,
+                itemId = this.options.item_id,
+                ouId = this.options.ou_id;
 
             this.currentFilter = keyword;
             if (keyword.length > 0) {
-                $.ajax("/api/groups/?pagesize=99999&iname=" + keyword).done(function (response) {
+                $.ajax("/api/groups/?item_id=" + itemId + "&ou_id=" + ouId + "&pagesize=99999&iname=" + keyword).done(function (response) {
                     that.filteredGroups = new App.Group.Models.GroupCollection();
                     _.each(response.nodes, function (g) {
                         var group;

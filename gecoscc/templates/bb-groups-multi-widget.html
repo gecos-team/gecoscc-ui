@@ -2,7 +2,16 @@
     <div class="col-sm-6">
         <label>{{ gettext('Groups') }}</label>
     </div>
+    <div class="col-sm-6">
+        <div class="input-group">
+            <input type="text" class="form-control group-filter" placeholder="{{ gettext('Search') }}" value="<%= currentFilter %>">
+            <span class="input-group-btn">
+                <button class="btn btn-default group-filter-btn" type="button"><span class="fa fa-eraser"></span></button>
+            </span>
+        </div>
+    </div>
 </div>
+<div class="row"><div class="selected-groups col-sm-12"></div></div>
 <div class="row">
     <div class="col-sm-3">
         <ul class="list-unstyled group-column"></ul>
@@ -33,15 +42,6 @@
                 <a class="next" href="#">&raquo;</a>
             </li>
         </ul>
-    </div>
-</div>
-<div class="row">
-    <div class="col-sm-12">
-    <select multiple id="groups">
-    <% _.each(groups, function (p) { %>
-        <option <% if (p.checked) { print('selected'); } %> value="<%= p.name %>"><%= p.name %></option>
-    <% }); %>
-    </select>
     </div>
 </div>
 <% } %>
