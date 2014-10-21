@@ -55,7 +55,9 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
             obj = oid_or_obj
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
-        path = '%s,%s' % (obj['path'], obj['_id'])
+        path = obj['path']
+        if '_id' in obj:
+            path = '%s,%s' % (path, obj['_id'])
         if not is_path_right(request, path, ou_type):
             if not is_domain(obj) or not request.method == 'GET':
                 raise HTTPForbidden()
@@ -73,7 +75,7 @@ def master_policy_no_updated_or_403(request, collection_nodes, obj):
     domain = get_domain(obj, collection_nodes)
     master_policies = domain.get('master_policies', {})
     if master_policies:
-        if obj['_id']:
+        if '_id' in obj:
             mongo_obj = collection_nodes.find_one({'_id': obj['_id']})
         else:
             mongo_obj = {}
