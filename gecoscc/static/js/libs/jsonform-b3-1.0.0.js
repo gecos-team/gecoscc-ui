@@ -625,58 +625,67 @@ jsonform.elementTypes = {
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '> ' +
+      '> ' + '<% if (!(node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)) { %>' +
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
-      '<% }}}); %> ' +
+      '<% }}}); %> ' + '<% } %> ' +
       '</<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %>>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
-      var parent = node.parentNode.schemaElement;
+      var parent = node.parentNode.schemaElement,
+          promise;
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
-
       if (node.value) {
-        $.ajax({
+        promise = $.ajax({
           url: parent.autocomplete_url,
           dataType: 'json',
           data: {oids: node.value}
-        }).done(function (res) {
-          res = res.nodes[0];
-          $(node.el).find("input").select2({
-            ajax: {
-              url: parent.autocomplete_url,
-              dataType: 'json',
-              id : function(node) {
-                return node._id;
-              },
-              data: function (term, page) {
-                return {
-                  item_id: resourceId,
-                  ou_id: ouId,
-                  iname: term,
-                  page_limit: 10
-                };
-              },
-              results: function (data, page) {
-                var nodes = data.nodes.map(function (n) {
-                  node.schemaElement.enum.push(n._id);
-                  return {
-                    text: n.name,
-                    value: n._id,
-                    id: n._id
-                  };
-                });
-                return {results: nodes};
-              }
-            },
-            initSelection : function (element, callback) {
-              var data = {id: res._id, text: res.name};
-              callback(data);
-            }
-          });
         });
+      } else {
+        promise = $.Deferred();
+        promise.resolve();
       }
+      promise.done(function (res) {
+        if(!_.isUndefined(res)) { res = res.nodes[0]; }
+        $(node.el).find("input").html("");
+        $(node.el).find("input").select2({
+          ajax: {
+            url: parent.autocomplete_url,
+            dataType: 'json',
+            id : function(node) {
+              return node._id;
+            },
+            data: function (term, page) {
+              return {
+                item_id: resourceId,
+                ou_id: ouId,
+                iname: term,
+                page_limit: 10
+              };
+            },
+            results: function (data, page) {
+              var nodes = data.nodes.map(function (n) {
+                node.schemaElement.enum.push(n._id);
+                return {
+                  text: n.name,
+                  value: n._id,
+                  id: n._id
+                };
+              });
+              return {results: nodes};
+            }
+          },
+          initSelection : function (element, callback) {
+            if(!_.isUndefined(res)){
+              node.schemaElement.enum.push(res._id);
+              var data = {id: res._id, text: res.name, value: res._id};
+              callback(data);
+              $(node.el).find("input").val(res._id);
+            }
+          }
+        });
+      });
     }
   },
   'imageselect': {
