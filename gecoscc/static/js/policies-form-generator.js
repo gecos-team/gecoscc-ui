@@ -83,6 +83,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             };
             if (_.has(data, "values")) { options.value = data.values; }
             options.validate = jjv();
+            options.resourceId = this.resource.get("id");
+            options.ouId = _.last(this.resource.get("path").split(","));
             $html.find("form").jsonForm(options);
 
             this.$el.html($html);

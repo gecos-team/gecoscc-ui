@@ -62,6 +62,8 @@
    */
   var jsonform = {util:{}};
 
+  var resourceId;
+  var ouId;
 
   // From backbonejs
   var escapeHTML = function (string) {
@@ -619,32 +621,52 @@ jsonform.elementTypes = {
     }
   },
   'select':{
-    'template':'<select name="<%= node.name %>" id="<%= id %>"' +
+    'template':'<input name="<%= node.name %>" id="<%= id %>"' +
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '> ' +
+      '> ' + '<%= console.log(node) %>' +
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
       '<% }}}); %> ' +
-      '</select>',
+      '</input>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
       var parent = node.parentNode.schemaElement;
-      if(parent && !_.isUndefined(parent.autocomplete_url)){
-        $.get(node.parentNode.schemaElement.autocomplete_url).done(function (response) {
-          var options = [];
-          _.each(response.nodes, function (o) {
-            selected = node.value === o._id? "selected" : "";
-            options.push('<option ' + selected + ' value="' + o._id + '">' + o.name + '</option>');
-            node.schemaElement.enum.push(o._id);
-          });
-          $(node.el).find("select").html(options.join("\n"));
-          $(node.el).find("select").select2();
-        });
-      }
-      $(node.el).find("select").select2();
+      $(node.el).find("input").select2({
+        ajax: {
+          url: parent.autocomplete_url,
+          dataType: 'json',
+          id : function(node) {
+            return node._id;
+          },
+          data: function (term, page) {
+            console.log(resourceId);
+            console.log(ouId);
+            return {
+              item_id: resourceId,
+              ou_id: ouId,
+              iname: term,
+              page_limit: 10
+            };
+          },
+          results: function (data, page) {
+            var nodes = data.nodes.map(function (n) {
+              node.schemaElement.enum.push(n._id);
+              return {
+                text: n.name,
+                value: n._id,
+                id: n._id
+              };
+            });
+            return {results: nodes};
+          },
+          initSelection : function (element, callback) {
+            var data = [];
+          }
+        }
+      });
     }
   },
   'imageselect': {
@@ -3698,7 +3720,8 @@ $.fn.jsonFormErrors = function(errors, options) {
  */
 $.fn.jsonForm = function(options) {
   var formElt = this;
-
+  resourceId = options.resourceId;
+  ouId = options.ouId;
   options = _.defaults({}, options, {submitEvent: 'submit'});
 
   var form = new formTree();
