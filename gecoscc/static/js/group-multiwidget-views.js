@@ -176,6 +176,44 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.disabled) {
                 this.$el.find("input").prop("disabled", true);
             }
+
+            $(".add-groups").select2({
+                multiple: true,
+                initSelection: function (element, callback) {
+                    var data = [];
+                    _.each(that.checked.models, function (g) {
+                        data.push({id: g.id, text: g.get("name")});
+                    });
+                    callback(data);
+                },
+                ajax: {
+                    url: "/api/groups/",
+                    dataType: 'json',
+                    id : function(node) {
+                        return node._id;
+                    },
+                    data: function (term, page) {
+                        return {
+                            item_id: that.options.item_id,
+                            ou_id: that.options.ou_id,
+                            iname: term,
+                            page: page,
+                            pagesize: 5
+                        };
+                    },
+                    results: function (data, page) {
+                        var nodes = data.nodes.map(function (n) {
+                            return {
+                                text: n.name,
+                                value: n._id,
+                                id: n._id
+                            };
+                        });
+                        console.log(data);
+                        return {results: nodes, more: data.nodes.length !== 0};
+                    }
+                }
+            });
         },
 
         searchGroups: _.debounce(function (evt) {
@@ -247,7 +285,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         getChecked: function () {
-            return this.checked.map(function (g) { return g.get("id"); });
+            return _.rest($(".add-groups").select2('val'));
         }
     });
 });

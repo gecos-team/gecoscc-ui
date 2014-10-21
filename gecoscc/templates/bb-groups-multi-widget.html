@@ -2,46 +2,9 @@
     <div class="col-sm-6">
         <label>{{ gettext('Groups') }}</label>
     </div>
-    <div class="col-sm-6">
-        <div class="input-group">
-            <input type="text" class="form-control group-filter" placeholder="{{ gettext('Search') }}" value="<%= currentFilter %>">
-            <span class="input-group-btn">
-                <button class="btn btn-default group-filter-btn" type="button"><span class="fa fa-eraser"></span></button>
-            </span>
-        </div>
-    </div>
 </div>
-<div class="row"><div class="selected-groups col-sm-12"></div></div>
-<div class="row">
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-    <div class="col-sm-3">
-        <ul class="list-unstyled group-column"></ul>
-    </div>
-</div>
-<% if (showPaginator) { %>
 <div class="row">
     <div class="col-sm-12">
-        <ul class="pagination pull-right">
-            <li <% if (!prev) { print('class="disabled"'); } %>>
-                <a class="previous" href="#">&laquo;</a>
-            </li>
-            <% _.each(pages, function (p) { %>
-                <li <% if (p[1]) { print('class="active"'); } %>>
-                    <a href="#"><%= p[0] %></a>
-                </li>
-            <% }); %>
-            <li <% if (!next) { print('class="disabled"'); } %>>
-                <a class="next" href="#">&raquo;</a>
-            </li>
-        </ul>
+        <input class="add-groups form-control" value="val"></input>
     </div>
 </div>
-<% } %>
