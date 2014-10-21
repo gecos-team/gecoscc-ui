@@ -621,7 +621,7 @@ jsonform.elementTypes = {
     }
   },
   'select':{
-    'template':'<input name="<%= node.name %>" id="<%= id %>"' +
+    'template':'<<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
@@ -629,11 +629,12 @@ jsonform.elementTypes = {
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
       '<% }}}); %> ' +
-      '</input>',
+      '</<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %>>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
       var parent = node.parentNode.schemaElement;
+      if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
 
       if (node.value) {
         $.ajax({
@@ -670,7 +671,6 @@ jsonform.elementTypes = {
               }
             },
             initSelection : function (element, callback) {
-              console.log(element);
               var data = {id: res._id, text: res.name};
               callback(data);
             }
@@ -1154,7 +1154,7 @@ jsonform.elementTypes = {
             '<% if (id) { %> id="<%= id %>"<% } %>' +
         '>' +
             '<% if (node.title || node.legend) { %><legend><span id="caret" class="fa fa-caret-right"></span> <%= node.getLocalizedAttr("title") || node.legend %></legend><% } %>' +
-            '<div class="collapse">' +
+            '<div <% if (node.title || node.legend) { %> class="collapse" <% } %>>' +
                 '<%= children %>' +
             '</div>' +
         '</fieldset>'
@@ -2829,7 +2829,7 @@ formNode.prototype.enhance = function () {
   $(this.el).find("legend").off().click(function (evt) {
     evt.preventDefault();
     evt.stopPropagation();
-    var target = $(evt.target).hasClass("fa")? $(evt.target).parent() : $(evt.target);
+    var target = $(evt.target).hasClass("fa")? $(evt.target).parent() : $(evt.target),
         caret = target.find("#caret"),
         dir = caret.hasClass("fa-caret-down")? "fa-caret-right" : "fa-caret-down";
     caret.removeClass().addClass("fa " + dir);
