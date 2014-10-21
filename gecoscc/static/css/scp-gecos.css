@@ -371,6 +371,10 @@ div.groups-widget .chzn-container {
     margin-right: 5px;
 }
 
+.computer-info dd {
+    word-wrap: break-word;
+}
+
 /* Pagination */
 
 .pagination span.triple-dot {

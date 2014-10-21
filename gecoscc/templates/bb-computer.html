@@ -18,14 +18,14 @@
                     <form role="form">
                         <div class="row"><div class="col-sm-12">
                             <div class="well well-sm">
-                                <div class="row">
+                                <div class="row computer-info">
                                     <div class="col-sm-2">
                                         <span class="fa fa-info-circle fa-5x info-icon"></span>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
                                             <dt>{{ gettext('Users that have logged in') }}</dt>
-                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd> 
+                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd>
                                             <dt>{{ gettext('Uptime') }}</dt>
                                             <dd><%= uptime %></dd>
                                             <dt>{{ gettext('Manufacturer and model') }}</dt>
