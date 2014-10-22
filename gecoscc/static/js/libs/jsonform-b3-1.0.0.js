@@ -634,7 +634,12 @@ jsonform.elementTypes = {
     'inputfield': true,
     'onInsert': function (evt, node) {
       var parent = node.parentNode.schemaElement,
-          promise;
+          promise,
+          pagesize = 30,
+          more,
+          cachedData,
+          cachedRequests = {},
+          lastTerm = "";
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
       if (node.value) {
         promise = $.ajax({
@@ -649,8 +654,57 @@ jsonform.elementTypes = {
       promise.done(function (res) {
         if(!_.isUndefined(res)) { res = res.nodes[0]; }
         $(node.el).find("input").html("");
+
+
         $(node.el).find("input").select2({
-          ajax: {
+          query: function(query) {
+              if (lastTerm.length < query.term.length && !more) {
+                  cachedData = _.filter(cachedData, function (d) {
+                      var re = new RegExp(query.term + ".*");
+                      return re.test(d.text);
+                  });
+                  cachedRequests[query.term] = _.clone(cachedData);
+                  query.callback({results: cachedData});
+              } else if (cachedRequests[query.term]) {
+                  query.callback({results: cachedRequests[query.term]});
+              } else {
+                  $.ajax({
+                      url: parent.autocomplete_url,
+                      dataType: 'json',
+                      id : function (node) {
+                          return node._id;
+                      },
+                      data:  {
+                              item_id: resourceId,
+                              ou_id: ouId,
+                              iname: query.term,
+                              page: query.page,
+                              pagesize: pagesize
+
+                      },
+                      type: 'GET',
+                      success: function(data) {
+                          var nodes = data.nodes.map(function (n) {
+                              return {
+                                  text: n.name,
+                                  value: n._id,
+                                  id: n._id
+                              };
+                          });
+                          more = data.nodes.length >= pagesize;
+                          if(data.page === 1) {
+                              cachedData = nodes;
+                          } else  {
+                              cachedData = _.union(cachedData, nodes);
+                          }
+
+                          query.callback({results: nodes, more: more});
+                      }
+                  });
+              }
+              lastTerm = query.term;
+          },
+          /*ajax: {
             url: parent.autocomplete_url,
             dataType: 'json',
             id : function(node) {
@@ -675,7 +729,9 @@ jsonform.elementTypes = {
               });
               return {results: nodes};
             }
-          },
+          },*/
+
+
           initSelection : function (element, callback) {
             if(!_.isUndefined(res)){
               $(node.el).find("input").last().attr('value', res._id);
@@ -685,6 +741,8 @@ jsonform.elementTypes = {
             }
           }
         });
+
+
       });
     }
   },
