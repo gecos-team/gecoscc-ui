@@ -198,7 +198,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                             ou_id: that.options.ou_id,
                             iname: term,
                             page: page,
-                            pagesize: 5
+                            pagesize: 30
                         };
                     },
                     results: function (data, page) {
