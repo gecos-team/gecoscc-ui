@@ -53,11 +53,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
-            var that = this;
-
-            if (this.disabled) {
-                this.$el.find("input").prop("disabled", true);
-            }
+            var that = this,
+                pagesize = 30,
+                more,
+                cachedData,
+                cachedRequests = {},
+                lastTerm = "";
 
             this.$el.find(".add-groups").select2({
                 multiple: true,
@@ -68,33 +69,58 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     });
                     callback(data);
                 },
-                ajax: {
-                    url: "/api/groups/",
-                    dataType: 'json',
-                    id : function (node) {
-                        return node._id;
-                    },
-                    data: function (term, page) {
-                        return {
-                            item_id: that.options.item_id,
-                            ou_id: that.options.ou_id,
-                            iname: term,
-                            page: page,
-                            pagesize: 30
-                        };
-                    },
-                    results: function (data, page) {
-                        var nodes = data.nodes.map(function (n) {
-                            return {
-                                text: n.name,
-                                value: n._id,
-                                id: n._id
-                            };
+                query: function(query) {
+                    if (lastTerm.length < query.term.length && !more) {
+                        cachedData = _.filter(cachedData, function (d) {
+                            var re = new RegExp(query.term + ".*");
+                            return re.test(d.text);
                         });
-                        return {results: nodes, more: data.nodes.length !== 0};
+                        cachedRequests[query.term] = _.clone(cachedData);
+                        query.callback({results: cachedData});
+                    } else if (cachedRequests[query.term]) {
+                        query.callback({results: cachedRequests[query.term]});
+                    } else {
+                        $.ajax({
+                            url: "/api/groups/",
+                            dataType: 'json',
+                            id : function (node) {
+                                return node._id;
+                            },
+                            data:  {
+                                    item_id: that.options.item_id,
+                                    ou_id: that.options.ou_id,
+                                    iname: query.term,
+                                    page: query.page,
+                                    pagesize: pagesize
+
+                            },
+                            type: 'GET',
+                            success: function(data) {
+                                var nodes = data.nodes.map(function (n) {
+                                    return {
+                                        text: n.name,
+                                        value: n._id,
+                                        id: n._id
+                                    };
+                                });
+                                more = data.nodes.length >= pagesize;
+                                if(data.page === 1) {
+                                    cachedData = nodes;
+                                } else  {
+                                    cachedData = _.union(cachedData, nodes);
+                                }
+
+                                query.callback({results: nodes, more: more});
+                            }
+                        });
                     }
+                    lastTerm = query.term;
                 }
             });
+
+            if (this.disabled) {
+                this.$el.find("input").prop("disabled", true);
+            }
         },
 
         getChecked: function () {
