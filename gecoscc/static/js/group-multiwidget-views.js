@@ -72,7 +72,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 query: function (query) {
                     if (lastTerm.length < query.term.length && !more) {
                         cachedData = _.filter(cachedData, function (d) {
-                            var re = new RegExp(query.term + ".*");
+                            var re = new RegExp(query.term + ".*", "i");
                             return re.test(d.text);
                         });
                         cachedRequests[query.term] = _.clone(cachedData);

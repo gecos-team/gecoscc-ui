@@ -660,7 +660,7 @@ jsonform.elementTypes = {
           query: function(query) {
               if (lastTerm.length < query.term.length && !more) {
                   cachedData = _.filter(cachedData, function (d) {
-                      var re = new RegExp(query.term + ".*");
+                      var re = new RegExp(query.term + ".*", 'i');
                       return re.test(d.text);
                   });
                   cachedRequests[query.term] = _.clone(cachedData);
@@ -672,25 +672,27 @@ jsonform.elementTypes = {
                       url: parent.autocomplete_url,
                       dataType: 'json',
                       id : function (node) {
-                          return node._id;
+                        return node._id;
                       },
                       data:  {
-                              item_id: resourceId,
-                              ou_id: ouId,
-                              iname: query.term,
-                              page: query.page,
-                              pagesize: pagesize
+                        item_id: resourceId,
+                        ou_id: ouId,
+                        iname: query.term,
+                        page: query.page,
+                        pagesize: pagesize
 
                       },
                       type: 'GET',
                       success: function(data) {
                           var nodes = data.nodes.map(function (n) {
-                              return {
-                                  text: n.name,
-                                  value: n._id,
-                                  id: n._id
-                              };
+                            node.schemaElement.enum.push(n._id);
+                            return {
+                              text: n.name,
+                              value: n._id,
+                              id: n._id
+                            };
                           });
+
                           more = data.nodes.length >= pagesize;
                           if(data.page === 1) {
                               cachedData = nodes;
