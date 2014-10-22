@@ -83,17 +83,6 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         saveForm: function (evt) {
             evt.preventDefault();
-            var that = this,
-                getDriver,
-                isDuplex;
-
-            getDriver = function () {
-                return that.$el.find("#installation input:checked").val();
-            };
-
-            isDuplex = function () {
-                return that.$el.find("#duplex").is(":checked");
-            };
 
             this.saveModel($(evt.target), {
                 printtype: "#type option:selected",

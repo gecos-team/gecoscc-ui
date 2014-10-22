@@ -439,8 +439,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         searchPageForNode: function (paginatedCollection, nodeId, silent) {
             if (_.isUndefined(paginatedCollection)) { return; }
-            var originalPage = paginatedCollection.currentPage,
-                that = this,
+            var that = this,
                 search;
 
             search = function () {

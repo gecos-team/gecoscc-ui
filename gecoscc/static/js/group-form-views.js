@@ -152,9 +152,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             var that = this,
-                memberof = this.model.get("memberof"),
                 groups,
-                widget,
                 clone,
                 promise;
 

@@ -69,7 +69,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                     });
                     callback(data);
                 },
-                query: function(query) {
+                query: function (query) {
                     if (lastTerm.length < query.term.length && !more) {
                         cachedData = _.filter(cachedData, function (d) {
                             var re = new RegExp(query.term + ".*");
@@ -87,15 +87,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                                 return node._id;
                             },
                             data:  {
-                                    item_id: that.options.item_id,
-                                    ou_id: that.options.ou_id,
-                                    iname: query.term,
-                                    page: query.page,
-                                    pagesize: pagesize
+                                item_id: that.options.item_id,
+                                ou_id: that.options.ou_id,
+                                iname: query.term,
+                                page: query.page,
+                                pagesize: pagesize
 
                             },
                             type: 'GET',
-                            success: function(data) {
+                            success: function (data) {
                                 var nodes = data.nodes.map(function (n) {
                                     return {
                                         text: n.name,
@@ -104,9 +104,9 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                                     };
                                 });
                                 more = data.nodes.length >= pagesize;
-                                if(data.page === 1) {
+                                if (data.page === 1) {
                                     cachedData = nodes;
-                                } else  {
+                                } else {
                                     cachedData = _.union(cachedData, nodes);
                                 }
 
