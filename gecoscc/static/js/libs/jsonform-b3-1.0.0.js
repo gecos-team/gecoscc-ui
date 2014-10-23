@@ -640,8 +640,11 @@ jsonform.elementTypes = {
           cachedData,
           cachedRequests = {},
           lastTerm = "";
+
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
+
       if (node.value) {
+        $(node.el).addClass("hidden");
         promise = $.ajax({
           url: parent.autocomplete_url,
           dataType: 'json',
@@ -651,8 +654,18 @@ jsonform.elementTypes = {
         promise = $.Deferred();
         promise.resolve();
       }
+
       promise.done(function (res) {
-        if(!_.isUndefined(res)) { res = res.nodes[0]; }
+        if(!_.isUndefined(res)) {
+          if(res.nodes.length === 0) {
+            node.schemaElement.enum.push(node.value);
+            $(node.el).find("input").attr('value', node.value);
+            $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
+            return;
+          } else {
+            res = res.nodes[0];
+          }
+        }
         $(node.el).find("input").html("");
 
 
@@ -706,34 +719,6 @@ jsonform.elementTypes = {
               }
               lastTerm = query.term;
           },
-          /*ajax: {
-            url: parent.autocomplete_url,
-            dataType: 'json',
-            id : function(node) {
-              return node._id;
-            },
-            data: function (term, page) {
-              return {
-                item_id: resourceId,
-                ou_id: ouId,
-                iname: term,
-                page_limit: 10
-              };
-            },
-            results: function (data, page) {
-              var nodes = data.nodes.map(function (n) {
-                node.schemaElement.enum.push(n._id);
-                return {
-                  text: n.name,
-                  value: n._id,
-                  id: n._id
-                };
-              });
-              return {results: nodes};
-            }
-          },*/
-
-
           initSelection : function (element, callback) {
             if(!_.isUndefined(res)){
               $(node.el).find("input").last().attr('value', res._id);
@@ -743,8 +728,7 @@ jsonform.elementTypes = {
             }
           }
         });
-
-
+        $(node.el).removeClass("hidden");
       });
     }
   },
@@ -900,7 +884,12 @@ jsonform.elementTypes = {
             '<span class="_jsonform-array-buttons">' +
                 '<a href="#" class="btn btn-default btn-xs _jsonform-array-addmore"><span class="fa fa-plus" title="Add new"></span></a> ' +
             '</span>' +
-        '</div>',
+        '</div>' +
+       ' <div class="col-sm-12 array-warning-message hidden">'+
+           '<div class="alert alert-warning">' +
+              '<%= node.title + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.") %>' +
+           '</div>' +
+         '</div>',
     'fieldtemplate': true,
     'array': true,
     'childTemplate': function (inner) {

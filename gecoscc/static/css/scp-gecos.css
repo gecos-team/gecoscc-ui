@@ -361,7 +361,8 @@ div.groups-widget .chzn-container {
     margin-bottom: 30px;
 }
 
-.groups-warning-message {
+.groups-warning-message,
+.array-warning-message {
     margin-top: 10px;
 }
 
