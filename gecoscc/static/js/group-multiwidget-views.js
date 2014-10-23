@@ -27,6 +27,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#groups-multi-widget-template",
 
         checked: undefined,
+        notVisible: [],
 
         initialize: function (options) {
             var that = this,
@@ -40,7 +41,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             _.each(checked, function (id) {
                 var group = new App.Group.Models.GroupWithoutPoliciesModel({ id: id });
-                group.fetch();
+                group.fetch().error(function () {
+                    that.notVisible.push(id);
+                }).done(function () {
+                    that.onRender();
+                });
                 that.checked.add(group);
             });
 
@@ -50,6 +55,13 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.disabled = options.disabled;
+        },
+
+        onBeforeRender: function () {
+            var that = this;
+            _.each(this.notVisible, function (g) {
+                that.checked.remove(g);
+            });
         },
 
         onRender: function () {
@@ -124,7 +136,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         getChecked: function () {
-            return _.rest($(".add-groups").select2('val'));
+            return _.union(_.rest($(".add-groups").select2('val')), this.notVisible);
         }
     });
 });
