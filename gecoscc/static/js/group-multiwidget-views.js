@@ -43,7 +43,6 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             _.each(checked, function (id) {
                 var group = new App.Group.Models.GroupWithoutPoliciesModel({ id: id });
                 group.fetch().error(function () {
-                    console.log(that.notVisible);
                     that.notVisible.push(id);
                 }).done(function () {
                     that.onRender();
