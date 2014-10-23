@@ -130,9 +130,19 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
             });
 
+            if (this.notVisible.length > 0) {
+                that.$el.find(".groups-warning-message").removeClass("hidden");
+            }
+
             if (this.disabled) {
                 this.$el.find("input").prop("disabled", true);
             }
+        },
+
+        serializeData: function () {
+            return {
+                name: this.options.name + " "
+            };
         },
 
         getChecked: function () {

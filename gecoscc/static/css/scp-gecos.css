@@ -361,6 +361,10 @@ div.groups-widget .chzn-container {
     margin-bottom: 30px;
 }
 
+.groups-warning-message {
+    margin-top: 10px;
+}
+
 /* COMPUTERS VIEW */
 
 #computers .info-icon {
