@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true, vars: false */
-/*global App */
+/*global App, gettext */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -36,6 +36,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             users: "",
             uptime: "-",
             lastConnection: new Date(),
+            updateInterval: 30,
             product_name: "",
             manufacturer: "-",
             cpu: "",
@@ -57,6 +58,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#computer-template",
         tagName: "div",
         className: "col-sm-12",
+        labelClass: "success",
 
         groupsWidget: undefined,
         policiesList: undefined,
@@ -76,9 +78,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onBeforeRender: function () {
             //Set domain dependent atributes
-            var path = this.model.get("path"),
-                now = new Date(),
-                interval = 30;
+            var path = this.model.get("path");
 
             if (this.model.get("isEditable") !== undefined) { return; }
 
@@ -88,10 +88,36 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.getDomainAttrs();
             }
 
+            this.checkLastConnection();
+        },
+
+        checkLastConnection: function () {
+            var lastConnection = this.model.get("lastConnection"),
+                now = new Date(),
+                interval = this.model.get("updateInterval");
+
             now.setMinutes(now.getMinutes() - interval);
-            if (this.model.get("lastConnection") < now) {
+            if (lastConnection < now) {
                 this.model.set("uptime", "-");
+                this.labelClass = "danger";
             }
+
+            this.model.set("lastConnection", this.calculateTimeToNow(lastConnection));
+        },
+
+        calculateTimeToNow: function (time) {
+            var date_future = time,
+                date_now = new Date(),
+                seconds = Math.floor((date_now - date_future) / 1000),
+                minutes = Math.floor(seconds / 60),
+                hours = Math.floor(minutes / 60),
+                days = Math.floor(hours / 24);
+
+            hours = hours - (days * 24);
+            minutes = minutes - (days * 24 * 60) - (hours * 60);
+            seconds = seconds - (days * 24 * 60 * 60) - (hours * 60 * 60) - (minutes * 60);
+
+            return [days, gettext("Days"), hours, gettext("Hours"), minutes, gettext("Minutes")].join(" ");
         },
 
         onRender: function () {
@@ -124,6 +150,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true);
             }
+            this.$el.find(".connection-label").addClass("label-" + this.labelClass);
         },
 
         saveForm: function (evt) {
