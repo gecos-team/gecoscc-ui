@@ -34,9 +34,10 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             registry: "",
             family: "",
             users: "",
-            uptime: "",
+            uptime: "-",
+            lastConnection: new Date(),
             product_name: "",
-            manufacturer: "",
+            manufacturer: "-",
             cpu: "",
             ohai: "",
             ram: "",
@@ -75,7 +76,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         onBeforeRender: function () {
             //Set domain dependent atributes
-            var path = this.model.get("path");
+            var path = this.model.get("path"),
+                now = new Date(),
+                interval = 30;
 
             if (this.model.get("isEditable") !== undefined) { return; }
 
@@ -84,13 +87,17 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 this.getDomainAttrs();
             }
+
+            now.setMinutes(now.getMinutes() - interval);
+            if (this.model.get("lastConnection") < now) {
+                this.model.set("uptime", "-");
+            }
         },
 
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
-
 
             this.groupsWidget = new App.Group.Views.MultiGroupWidget({
                 el: this.ui.groups[0],
@@ -109,6 +116,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.policiesList.render();
+
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
