@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-10 10:57+0200\n"
+"POT-Creation-Date: 2014-10-24 10:45+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -151,11 +151,11 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/policies-form-generator.js:129
+#: gecoscc/static/js/policies-form-generator.js:130
 msgid "Policy successfully saved."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:154
+#: gecoscc/static/js/policies-form-generator.js:155
 msgid "Policy successfully deleted."
 msgstr ""
 
@@ -180,7 +180,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:518
+#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:528
 msgid "Loading"
 msgstr ""
 
