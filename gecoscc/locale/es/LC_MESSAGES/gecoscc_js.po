@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-10-24 11:48+0200\n"
+"POT-Creation-Date: 2014-10-24 14:56+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -150,6 +150,18 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
+#: gecoscc/static/js/computer.js:120
+msgid "Days"
+msgstr "Días"
+
+#: gecoscc/static/js/computer.js:120
+msgid "Hours"
+msgstr "Horas"
+
+#: gecoscc/static/js/computer.js:120
+msgid "Minutes"
+msgstr "Minutos"
+
 #: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 msgid "x04"
 msgid_plural "x04"
@@ -205,8 +217,8 @@ msgid ""
 "contains items that are outside your scope, please consult a global "
 "administrator if you need more information."
 msgstr ""
-"contiene elementos que usted no puede ver, consulte a un  "
-"administrador global si necesita más información."
+"contiene elementos que usted no puede ver, consulte a un  administrador "
+"global si necesita más información."
 
 #~ msgid "Add new root OU"
 #~ msgstr "Añadir nueva UO raíz"

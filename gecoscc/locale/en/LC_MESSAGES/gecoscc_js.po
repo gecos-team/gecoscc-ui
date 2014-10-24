@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-24 11:48+0200\n"
+"POT-Creation-Date: 2014-10-24 14:56+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -143,6 +143,18 @@ msgstr ""
 
 #: gecoscc/static/js/breadcrumb.js:30
 msgid "Home"
+msgstr ""
+
+#: gecoscc/static/js/computer.js:120
+msgid "Days"
+msgstr ""
+
+#: gecoscc/static/js/computer.js:120
+msgid "Hours"
+msgstr ""
+
+#: gecoscc/static/js/computer.js:120
+msgid "Minutes"
 msgstr ""
 
 #: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
