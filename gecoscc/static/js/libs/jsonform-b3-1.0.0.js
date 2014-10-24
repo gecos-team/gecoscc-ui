@@ -887,7 +887,6 @@ jsonform.elementTypes = {
         '</div>' +
        ' <div class="col-sm-12 array-warning-message hidden">'+
            '<div class="alert alert-warning">' +
-              '<%= node.title + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.") %>' +
            '</div>' +
          '</div>',
     'fieldtemplate': true,
@@ -914,6 +913,8 @@ jsonform.elementTypes = {
       var boundaries = node.getArrayBoundaries();
       node.resetDeleteEvents();
 
+      var warning = node.title + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      $(node.el).find(".alert-warning").html(warning);
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
         // Note "switchValuesWith" extracts values from the DOM since field
