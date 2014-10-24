@@ -44,8 +44,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 var group = new App.Group.Models.GroupWithoutPoliciesModel({ id: id });
                 group.fetch().error(function () {
                     that.notVisible.push(id);
-                }).done(function () {
-                    that.onRender();
+                }).always(function () {
+                    that.render();
                 });
                 that.checked.add(group);
             });
