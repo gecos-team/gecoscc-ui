@@ -173,7 +173,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 success: function (response) {
                     var aux = that.parseNodesJSON(response.nodes),
                         root = aux[0];
-                    if (root.children.length > 0) {
+                    if (root.children.length === 1) {
                         root.children[0].model.closed = false;
                     }
                     $.when.apply(that, aux[1]).done(function () {
@@ -556,8 +556,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         toJSON: function () {
             var tree = this.get("tree");
             if (tree) {
-                // Everything must be contained in one OU
-                return _.clone(_.last(tree.model.children));
+                return _.clone(tree.model.children);
             }
             return {};
         },

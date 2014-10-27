@@ -108,15 +108,20 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         this.render = function (view) {
             var tree = this.model.toJSON(),
-                html;
+                html = "",
+                that = this;
 
             if (_.isUndefined(tree)) {
                 // Empty tree
                 html = this._templates.emptyTree({});
-            } else if (_.keys(tree).length > 0) {
-                html = this.recursiveRender(tree);
             } else {
-                html = this._loader(2.5);
+                _.each(tree, function (child) {
+                    if (_.keys(child).length > 0) {
+                        html += that.recursiveRender(child);
+                    } else {
+                        html += that._loader(2.5);
+                    }
+                });
             }
             this.$el.html(html);
             this.renderSelection(view);
