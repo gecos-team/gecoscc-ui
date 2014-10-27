@@ -94,14 +94,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 lastConnection,
                 interval;
 
-            if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").last_connection)) {
+            if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
                 this.model.set("uptime", "-");
                 this.model.set("last_connection", "Error");
                 this.labelClass = "default";
                 return;
             }
 
-            lastConnection = new Date(this.model.get("ohai").last_connection);
+            lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
             interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
             if (lastConnection < now) {
