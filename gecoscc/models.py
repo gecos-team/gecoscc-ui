@@ -205,7 +205,8 @@ class ChainedSelectWidget(SelectWidget):
 
     null_value = ['']
 
-    def get_select(self, mongodb, path, field_iter, html, **kw):
+    def get_select(self, mongodb, path, field_iter, **kw):
+        html = ""
         for j, item_path in enumerate(path):
             readonly = kw.get('readonly', self.readonly)
             if item_path:
@@ -247,10 +248,10 @@ class ChainedSelectWidget(SelectWidget):
                 path.append(cstruct_item)
             else:
                 path = [cstruct_item]
-            html += self.get_select(mongodb, path, field_iter, html, **kw)
+            html += self.get_select(mongodb, path, field_iter, **kw)
             html += "<p></p>"
         if not html:
-            html += self.get_select(mongodb, ['root'], field_iter, html, **kw)
+            html += self.get_select(mongodb, ['root'], field_iter, **kw)
         return html
 
 
