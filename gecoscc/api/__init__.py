@@ -191,7 +191,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         if issubclass(self.schema_detail, Node):
             can_access_to_this_path(self.request, self.collection, obj)
-            is_gecos_master_or_403(self.request, self.collection, obj)
+            is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         if not self.integrity_validation(obj):
@@ -241,7 +241,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         if issubclass(self.schema_detail, Node):
             can_access_to_this_path(self.request, self.collection, obj)
-            is_gecos_master_or_403(self.request, self.collection, obj)
+            is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         obj_filter = self.get_oid_filter(oid)
@@ -278,7 +278,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if issubclass(self.schema_detail, Node):
             obj = self.collection.find_one({'_id': ObjectId(oid)})
             can_access_to_this_path(self.request, self.collection, obj)
-            is_gecos_master_or_403(self.request, self.collection, obj)
+            is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 
         filters = self.get_oid_filter(oid)

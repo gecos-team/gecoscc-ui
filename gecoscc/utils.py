@@ -454,3 +454,17 @@ def get_domain(node, collection_node):
 def get_filter_in_domain(node):
     path_domain = get_domain_path(node)
     return {'$regex': '^%s' % ','.join(path_domain)}
+
+
+def _is_local_user(user):
+    return user and user['type'] == 'user' and user['source'] == SOURCE_DEFAULT
+
+
+def is_local_user(user, collection_nodes):
+    is_local = _is_local_user(user)
+
+    if is_local and '_id' in user:
+        mongo_user = collection_nodes.find_one({'_id': user['_id']})
+        is_local = _is_local_user(mongo_user)
+
+    return is_local

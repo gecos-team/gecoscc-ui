@@ -6,7 +6,7 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 
 
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.utils import is_domain, get_domain, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
+from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
 
 
 def is_logged(request):
@@ -63,14 +63,23 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
                 raise HTTPForbidden()
 
 
-def is_gecos_master_or_403(request, collection_nodes, obj):
+def is_gecos_master_or_403(request, collection_nodes, obj, schema_detail):
     domain = get_domain(obj, collection_nodes)
-    if domain and domain['master'] != MASTER_DEFAULT:
-        raise HTTPForbidden()
+    if domain and domain['master'] != MASTER_DEFAULT and not is_local_user(obj, collection_nodes):
+        if '_id' not in obj:
+            raise HTTPForbidden()
+        else:
+            mongo_obj = collection_nodes.find_one({'_id': ObjectId(obj['_id'])})
+            mongo_obj = schema_detail().serialize(mongo_obj)
+            obj = schema_detail().serialize(obj)
+            del obj['policies']
+            del mongo_obj['policies']
+            if obj != mongo_obj:
+                raise HTTPForbidden()
 
 
 def master_policy_no_updated_or_403(request, collection_nodes, obj):
-    if obj['type'] in RESOURCES_EMITTERS_TYPES:
+    if obj['type'] in RESOURCES_EMITTERS_TYPES or is_local_user(obj, collection_nodes):
         return
     domain = get_domain(obj, collection_nodes) or {}
     master_policies = domain.get('master_policies', {})
