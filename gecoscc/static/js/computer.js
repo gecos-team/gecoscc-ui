@@ -35,7 +35,6 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             family: "",
             users: "",
             uptime: "-",
-            last_connection: new Date(),
             product_name: "",
             manufacturer: "-",
             cpu: "",
@@ -91,18 +90,19 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         checkLastConnection: function () {
-            var lastConnection = this.model.get("last_connection"),
-                now = new Date(),
+            var now = new Date(),
+                lastConnection,
                 interval;
 
-            if(this.model.get("ohai") === "") {
+            if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").last_connection)) {
                 this.model.set("uptime", "-");
                 this.model.set("last_connection", "Error");
                 this.labelClass = "default";
                 return;
             }
 
-            interval = this.model.get("ohai").chef_client.interval;
+            lastConnection = new Date(this.model.get("ohai").last_connection);
+            interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
