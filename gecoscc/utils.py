@@ -439,10 +439,15 @@ def get_domain_path(node):
 
 
 def get_domain(node, collection_node):
+    domain = None
     try:
-        domain = collection_node.find_one({'_id': ObjectId(node['path'].split(',')[2])})
+        path_split = node['path'].split(',')
+        if len(path_split) >= 3:
+            domain = collection_node.find_one({'_id': ObjectId(path_split[2])})
+        elif len(path_split) == 2:
+            domain = node
     except IndexError:
-        return None
+        pass
     return domain
 
 

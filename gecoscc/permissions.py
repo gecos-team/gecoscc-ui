@@ -65,14 +65,14 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
 
 def is_gecos_master_or_403(request, collection_nodes, obj):
     domain = get_domain(obj, collection_nodes)
-    if domain['master'] != MASTER_DEFAULT:
+    if domain and domain['master'] != MASTER_DEFAULT:
         raise HTTPForbidden()
 
 
 def master_policy_no_updated_or_403(request, collection_nodes, obj):
     if obj['type'] in RESOURCES_EMITTERS_TYPES:
         return
-    domain = get_domain(obj, collection_nodes)
+    domain = get_domain(obj, collection_nodes) or {}
     master_policies = domain.get('master_policies', {})
     if master_policies:
         if '_id' in obj:
