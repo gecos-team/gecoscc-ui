@@ -309,7 +309,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             nodes.parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
                 return n.model.id === path.parentId;
-            });
+            }) || this.get("tree");
             nodes.oldNode = _.find(nodes.parentNode.children, function (n) {
                 return n.model.id === path.last;
             });
@@ -367,7 +367,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     }
                 });
             }
-
+            this.openPath(path.array);
             if (!silent) {
                 $.when.apply($, promises).done(function () {
                     that.trigger("change");
@@ -375,6 +375,19 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             }
 
             return promises;
+        },
+
+        openPath: function (path) {
+            var that = this;
+            if (typeof path === "string") {
+                path = path.split(",");
+            }
+            _.each(path, function (node) {
+                node = that.findNodeById(node);
+                if (!_.isUndefined(node)) {
+                    that.openAllContainersFrom(node.id);
+                }
+            });
         },
 
         makePath: function (path) {
