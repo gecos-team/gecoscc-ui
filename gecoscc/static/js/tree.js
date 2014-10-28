@@ -142,6 +142,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.TreeModel = Backbone.Model.extend({
         parser: new TreeModel(),
 
+        forestAuxiliary: "ForestAux",
+
         defaults: {
             tree: null
         },
@@ -187,11 +189,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         _addPaginatedChildrenToModel: function (node) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
+
             node.paginatedChildren = new Models.Container({ path: path });
-            node.paginatedChildren.goTo(1, {
-                success: function () { promise.resolve(); },
-                error: function () { promise.reject(); }
-            });
+
+            if (node.name === this.forestAuxiliary) {
+                promise.reject();
+            } else {
+                node.paginatedChildren.goTo(1, {
+                    success: function () { promise.resolve(); },
+                    error: function () { promise.reject(); }
+                });
+            }
             return promise;
         },
 
@@ -294,7 +302,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 newNode = {
                     id: id,
                     type: "ou",
-                    name: "AUXILIARY4",
+                    name: this.forestAuxiliary,
                     children: [],
                     closed: false,
                     status: "unknown"

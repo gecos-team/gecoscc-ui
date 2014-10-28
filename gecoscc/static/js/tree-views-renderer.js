@@ -202,7 +202,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 level = json.path.split(",").length - 1;
 
-            if (json.name === "AUXILIARY4") { return ""; }
+            if (json.name === this.model.forestAuxiliary) { return ""; }
 
             json.icon = [Views.iconClasses.first, Views.iconClasses.domain][level] ||  Views.iconClasses.ou;
 
