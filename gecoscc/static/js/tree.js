@@ -196,10 +196,19 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         parseNodesJSON: function (data) {
-            var nodes, rootId, rootPath, tree, promises, that;
+            var dataFiltered, nodes, rootId, rootPath, tree, promises, that;
+
+            // Filter child nodes with parents already in the tree
+            dataFiltered = _.filter(data, function (child) {
+                return !_.some(child.path.split(","), function (parentId) {
+                    return _.some(data, function (child2) {
+                        return child2._id === parentId;
+                    });
+                });
+            });
 
             // Prepare the nodes to be part of the tree
-            nodes = _.map(data, function (n) {
+            nodes = _.map(dataFiltered, function (n) {
                 return {
                     id: n._id,
                     path: n.path.split(','),
