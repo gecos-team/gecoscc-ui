@@ -69,7 +69,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.Node = Backbone.Model.extend({
         defaults: {
             id: -1,
-            name: "AUXILIARY",
+            name: "AUXILIARY1",
             status: "unknown"
         },
 
@@ -232,8 +232,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             tree = this.parser.parse({
                 id: rootId,
                 path: rootPath,
-                type: "AUXILIARY",
-                name: "AUXILIARY",
+                type: "AUXILIARY2",
+                name: "AUXILIARY3",
                 children: [],
                 closed: false,
                 status: "unknown"
@@ -294,7 +294,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 newNode = {
                     id: id,
                     type: "ou",
-                    name: "AUXILIARY",
+                    name: "AUXILIARY4",
                     children: [],
                     closed: false,
                     status: "unknown"
@@ -411,7 +411,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         id: step,
                         path: path,
                         type: "ou",
-                        name: "AUXILIARY",
+                        name: "AUXILIARY5",
                         children: [],
                         closed: false,
                         status: "unknown"
