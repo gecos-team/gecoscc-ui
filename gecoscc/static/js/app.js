@@ -388,12 +388,19 @@ var App;
             },
 
             _fetchModel: function (model) {
+
                 model.fetch().done(function () {
-                    App.instances.tree.loadFromPath(
-                        model.get("path"),
-                        model.get("id"),
-                        false
-                    );
+                    var children = App.instances.tree.get("tree").children,
+                        isRoot = _.some(children, function (child) {
+                            return child.model.id === model.id;
+                        });
+                    if (!isRoot) {
+                        App.instances.tree.loadFromPath(
+                            model.get("path"),
+                            model.get("id"),
+                            false
+                        );
+                    }
                 });
             },
 

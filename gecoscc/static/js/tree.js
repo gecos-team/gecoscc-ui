@@ -191,15 +191,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 path = node.path + ',' + node.id;
 
             node.paginatedChildren = new Models.Container({ path: path });
-
-            if (node.name === this.forestAuxiliary) {
-                promise.reject();
-            } else {
-                node.paginatedChildren.goTo(1, {
-                    success: function () { promise.resolve(); },
-                    error: function () { promise.reject(); }
-                });
-            }
+            node.paginatedChildren.goTo(1, {
+                success: function () { promise.resolve(); },
+                error: function () { promise.reject(); }
+            });
             return promise;
         },
 
