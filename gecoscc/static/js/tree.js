@@ -220,9 +220,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     children: []
                 };
             });
-            nodes = _.sortBy(nodes, function (n) {
-                return n.path.length;
-            });
 
             // Create the tree, with only an auxiliary root node
             try {
@@ -579,9 +576,20 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         toJSON: function () {
-            var tree = this.get("tree");
+            var tree = this.get("tree"),
+                children;
+
             if (tree) {
-                return _.clone(tree.model.children);
+                children = _.clone(tree.model.children);
+
+                children = _.sortBy(children, function (child) {
+                    return child.name;
+                });
+                children = _.sortBy(children, function (child) {
+                    return child.path.length;
+                });
+
+                return children;
             }
             return {};
         },
