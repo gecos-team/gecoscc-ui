@@ -44,23 +44,34 @@ class JobStorage(object):
         if not self.check_permissions():
             raise self.JobOperationForbidden()
 
-    def create(self, objid=None, objname=None, type=None, op=None, status=None,
-               computerid=None, computername=None, policyname=None,
+    def create(self, obj=None, op=None, status=None,
+               computer=None, policyname=None,
                administrator_username=None,
                message=None):
-
-        self.assert_permissions()
-        userid = self.user['_id']
-
-        if objid is None or type is None or op is None or status is None:
+        if obj is None or op is None or status is None:
             raise ValueError('objid, type and op are required')
         elif status not in JOB_STATUS:
             raise self.StatusInvalidException()
+        self.assert_permissions()
+
+        objid = obj['_id']
+        objname = obj['name']
+        objpath = obj['path']
+        objtype = obj['type']
+
+        computer = computer or {}
+
+        computerid = computer['_id']
+        computername = computer['name']
+
+        userid = self.user['_id']
+
         job = {
             'userid': userid,
             'objid': objid,
             'objname': objname,
-            'type': type,
+            'objpath': objpath,
+            'type': objtype,
             'op': op,
             'status': status,
             'computerid': computerid,

@@ -1,6 +1,6 @@
 <div class="panel-heading">
     <div class="text-muted bootstrap-admin-box-title">
-        {{ gettext('Events and queue') }}
+        {{ gettext('My tasks') }}
         <span class="filters <% if (!isMaximized) { print('hide'); } %>">
             <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Tasks') }}</a> |
             <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Tasks') }}</a> |
@@ -41,6 +41,7 @@
             <tr class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> danger <% } %>">
                 <td>
                     <span class="fa fa-<%= iconClasses[item.type] %>"></span>
+                    Path: <%= item.objpath %>
                     <%= item.objname %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">

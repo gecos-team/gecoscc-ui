@@ -540,6 +540,7 @@ class Job(colander.MappingSchema):
     userid = colander.SchemaNode(ObjectIdField())
     objid = colander.SchemaNode(ObjectIdField())
     objname = colander.SchemaNode(colander.String(), default='no-provided')
+    objpath = colander.SchemaNode(colander.String(), default='no-provided')
     computerid = colander.SchemaNode(ObjectIdField(), missing=colander._drop())
     computername = colander.SchemaNode(colander.String(), default='no-provided')
     policyname = colander.SchemaNode(colander.String(), default='no-provided')

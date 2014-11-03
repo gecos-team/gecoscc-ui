@@ -329,13 +329,10 @@ class ChefTask(Task):
         computer_name = computer['name']
         if is_user_policy(policy.get('path', '')) and 'user' in computer:
             computer_name = '%s / %s' % (computer_name, computer['user']['name'])
-        job_id = job_storage.create(objid=obj['_id'],
-                                    objname=obj['name'],
-                                    type=obj['type'],
+        job_id = job_storage.create(obj=obj,
                                     op=action,
                                     status=job_status,
-                                    computerid=computer['_id'],
-                                    computername=computer_name,
+                                    computer=computer,
                                     policyname=policy['name'],
                                     administrator_username=user['username'])
         job_ids.append(unicode(job_id))
@@ -399,9 +396,7 @@ class ChefTask(Task):
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'errors'
         message = 'No save in chef server. %s' % unicode(exception)
-        job = dict(objid=obj['_id'],
-                   objname=obj['name'],
-                   type=obj['type'],
+        job = dict(obj=obj,
                    op=action,
                    status=job_status,
                    message=message,
