@@ -44,7 +44,10 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             kernel: {},
             filesystem: {},
             policyCollection: new App.Policies.Models.PolicyCollection(),
-            isEditable: undefined
+            isEditable: undefined,
+            icon: "desktop",
+            iconClass: "info-icon-success",
+            error_last_saved: false
         }
     });
 });
@@ -92,21 +95,45 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         checkLastConnection: function () {
             var now = new Date(),
                 lastConnection,
-                interval;
+                interval,
+                errors = [];
 
+            //No data received
             if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
                 this.model.set("uptime", "-");
                 this.model.set("last_connection", "Error");
-                this.labelClass = "default";
+                this.model.set("iconClass", "info-icon-danger");
+                this.labelClass = "danger";
+                App.showAlert(
+                    "error",
+                    gettext("No data has been received from this workstation."),
+                    gettext("Check connection with Chef server.")
+                );
                 return;
             }
 
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
             interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
+
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
+                this.model.set("iconClass", "info-icon-danger");
                 this.labelClass = "danger";
+                errors.push("<br/> - " + gettext("Chef client is not being executed on time."));
+            }
+
+            if (this.model.get("error_last_saved")) {
+                this.model.set("iconClass", "info-icon-danger");
+                errors.push("<br/> - " + gettext("Last chef client had problems during its execution."));
+            }
+
+            if (!_.isEmpty(errors)) {
+                App.showAlert(
+                    "error",
+                    gettext("This workstation is not working properly:"),
+                    errors
+                );
             }
 
             this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
