@@ -328,7 +328,7 @@ class ChefTask(Task):
         job_status = 'processing'
         computer_name = computer['name']
         if is_user_policy(policy.get('path', '')) and 'user' in computer:
-            computer_name = '%s / %s' % (computer_name, computer['user']['name'])
+            computer['user_and_name'] = '%s / %s' % (computer_name, computer['user']['name'])
         job_id = job_storage.create(obj=obj,
                                     op=action,
                                     status=job_status,
@@ -402,8 +402,7 @@ class ChefTask(Task):
                    message=message,
                    administrator_username=user['username'])
         if computer:
-            job['computerid'] = computer['_id']
-            job['computername'] = computer['name']
+            job['computer'] = computer
         job_storage.create(**job)
 
     def object_action(self, user, obj, objold=None, action=None, computers=None):

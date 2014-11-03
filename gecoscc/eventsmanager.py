@@ -61,8 +61,10 @@ class JobStorage(object):
 
         computer = computer or {}
 
-        computerid = computer['_id']
-        computername = computer['name']
+        computerid = computer.get('_id', None)
+        computername = computer.get('user_and_name', None)
+        if not computername:
+            computername = computer.get('name', None)
 
         userid = self.user['_id']
 
