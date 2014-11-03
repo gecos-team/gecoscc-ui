@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-10-24 14:56+0200\n"
+"POT-Creation-Date: 2014-11-03 12:31+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -130,11 +130,11 @@ msgstr "El dominio no es Gecos."
 msgid "Only local users can be added."
 msgstr "Solo los usuarios locales pueden ser añadidos."
 
-#: gecoscc/static/js/app.js:490
+#: gecoscc/static/js/app.js:503
 msgid "Policies can't be directly accessed."
 msgstr "No se puede acceder a las políticas directamente."
 
-#: gecoscc/static/js/app.js:491
+#: gecoscc/static/js/app.js:504
 msgid ""
 "You need to load the node that has the policy assigned first. Try again "
 "now."
@@ -142,7 +142,7 @@ msgstr ""
 "Es necesario cargar primero el nodo que tiene la política asignada. "
 "Pruebe ahora de nuevo."
 
-#: gecoscc/static/js/app.js:497
+#: gecoscc/static/js/app.js:510
 msgid "Policy"
 msgstr "Política"
 
@@ -150,15 +150,35 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:120
+#: gecoscc/static/js/computer.js:109
+msgid "No data has been received from this workstation."
+msgstr "No se han recibido datos de esta estación de trabajo."
+
+#: gecoscc/static/js/computer.js:110
+msgid "Check connection with Chef server."
+msgstr "Comprueba la conexión con el servidor Chef."
+
+#: gecoscc/static/js/computer.js:123
+msgid "Chef client is not being executed on time."
+msgstr "Chef client no se está ejecutando en el intervalo de tiempo definido."
+
+#: gecoscc/static/js/computer.js:128
+msgid "Last chef client had problems during its execution."
+msgstr "El último chef client tuvo problemas durante su ejecución."
+
+#: gecoscc/static/js/computer.js:134
+msgid "This workstation is not working properly:"
+msgstr "Esta estación de trabajo no funciona correctamente:"
+
+#: gecoscc/static/js/computer.js:154
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:120
+#: gecoscc/static/js/computer.js:154
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:120
+#: gecoscc/static/js/computer.js:154
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -197,19 +217,23 @@ msgstr "Más"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:528
+#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:550
 msgid "Loading"
 msgstr "Cargando"
 
-#: gecoscc/static/js/tree-views.js:218
+#: gecoscc/static/js/tree-views.js:222
 msgid "Nodes can not be moved between domains."
 msgstr "Los nodos no pueden ser movidos entre dominios."
 
-#: gecoscc/static/js/tree-views.js:254
+#: gecoscc/static/js/tree-views.js:258
 msgid ""
 "Deleting an OU is a permanent action. It will also delete all its "
 "children."
 msgstr "Borrar una UO es una acción permanente. También eliminará todos sus hijos."
+
+#: gecoscc/static/js/tree.js:72
+msgid "Loading nodes..."
+msgstr "Cargando nodos..."
 
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:916
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1

@@ -89,10 +89,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.getDomainAttrs();
             }
 
-            this.checkLastConnection();
+            this.checkErrors();
         },
 
-        checkLastConnection: function () {
+        checkErrors: function () {
             var now = new Date(),
                 lastConnection,
                 interval,
