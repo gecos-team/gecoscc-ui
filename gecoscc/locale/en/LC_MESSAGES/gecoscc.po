@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-03 12:31+0100\n"
+"POT-Creation-Date: 2014-11-03 18:00+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -527,7 +527,7 @@ msgid "Completed tasks"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:3
-msgid "Events and queue"
+msgid "My tasks"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:5
@@ -1090,5 +1090,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Administrator"
+#~ msgstr ""
+
+#~ msgid "Events and queue"
 #~ msgstr ""
 
