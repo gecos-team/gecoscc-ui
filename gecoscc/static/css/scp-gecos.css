@@ -415,6 +415,12 @@ div.groups-widget .chzn-container {
     margin-bottom: 5px;
 }
 
+/* OU view */
+#info .info-icon {
+    text-align: center;
+    font-size: 4em;
+}
+
 /* JSON Forms */
 ._jsonform-array-ul{
     padding-left: 0;
