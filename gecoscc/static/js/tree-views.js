@@ -108,6 +108,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 node,
                 parentId;
 
+            if ($el.attr("id") === "-1") {
+                return;
+            }
+
             this.hideContainerMenu();
             this.activeNode = $el.attr("id");
             this.highlightNodeById(this.activeNode);
