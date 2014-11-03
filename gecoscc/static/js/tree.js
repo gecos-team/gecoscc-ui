@@ -69,7 +69,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.Node = Backbone.Model.extend({
         defaults: {
             id: -1,
-            name: "AUXILIARY1",
+            name: gettext("Loading nodes..."),
             status: "unknown"
         },
 
@@ -191,15 +191,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 path = node.path + ',' + node.id;
 
             node.paginatedChildren = new Models.Container({ path: path });
-
-            if (node.name === this.forestAuxiliary) {
-                promise.reject();
-            } else {
-                node.paginatedChildren.goTo(1, {
-                    success: function () { promise.resolve(); },
-                    error: function () { promise.reject(); }
-                });
-            }
+            node.paginatedChildren.goTo(1, {
+                success: function () { promise.resolve(); },
+                error: function () { promise.reject(); }
+            });
             return promise;
         },
 
@@ -224,9 +219,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     name: n.name,
                     children: []
                 };
-            });
-            nodes = _.sortBy(nodes, function (n) {
-                return n.path.length;
             });
 
             // Create the tree, with only an auxiliary root node
@@ -584,9 +576,20 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         toJSON: function () {
-            var tree = this.get("tree");
+            var tree = this.get("tree"),
+                children;
+
             if (tree) {
-                return _.clone(tree.model.children);
+                children = _.clone(tree.model.children);
+
+                children = _.sortBy(children, function (child) {
+                    return child.name;
+                });
+                children = _.sortBy(children, function (child) {
+                    return child.path.length;
+                });
+
+                return children;
             }
             return {};
         },

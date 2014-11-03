@@ -4,7 +4,7 @@
     <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
 </ul>
 
-<div class="tab-content">
+<div class="tab-content" id="ou">
     <div class="tab-pane fade in active" id="info">
         <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
             <div class="panel-heading">
@@ -18,8 +18,8 @@
                     <% if (isDomain()) { %>
                         <div class="well well-sm">
                             <div class="row">
-                                <div class="col-sm-2">
-                                    <span class="fa fa-info-circle fa-5x info-icon"></span>
+                                <div class="col-sm-2 info-icon">
+                                    <span class="fa fa-globe"></span>
                                 </div>
                                 <div class="col-sm-5">
                                     <dl>

@@ -44,7 +44,11 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             kernel: {},
             filesystem: {},
             policyCollection: new App.Policies.Models.PolicyCollection(),
-            isEditable: undefined
+            isEditable: undefined,
+            icon: "desktop",
+            labelClass: "label-success",
+            iconClass: "info-icon-success",
+            error_last_saved: false
         }
     });
 });
@@ -56,7 +60,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#computer-template",
         tagName: "div",
         className: "col-sm-12",
-        labelClass: "success",
 
         groupsWidget: undefined,
         policiesList: undefined,
@@ -86,27 +89,51 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.getDomainAttrs();
             }
 
-            this.checkLastConnection();
+            this.checkErrors();
         },
 
-        checkLastConnection: function () {
+        checkErrors: function () {
             var now = new Date(),
                 lastConnection,
-                interval;
+                interval,
+                errors = [];
 
+            //No data received
             if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
                 this.model.set("uptime", "-");
                 this.model.set("last_connection", "Error");
-                this.labelClass = "default";
+                this.model.set("iconClass", "info-icon-danger");
+                this.model.set("labelClass", "label-danger");
+                App.showAlert(
+                    "error",
+                    gettext("No data has been received from this workstation."),
+                    gettext("Check connection with Chef server.")
+                );
                 return;
             }
+
 
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
             interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
-                this.labelClass = "danger";
+                this.model.set("iconClass", "info-icon-danger");
+                this.model.set("labelClass", "label-danger");
+                errors.push("<br/> - " + gettext("Chef client is not being executed on time."));
+            }
+
+            if (this.model.get("error_last_saved")) {
+                this.model.set("iconClass", "info-icon-danger");
+                errors.push("<br/> - " + gettext("Last chef client had problems during its execution."));
+            }
+
+            if (!_.isEmpty(errors)) {
+                App.showAlert(
+                    "error",
+                    gettext("This workstation is not working properly:"),
+                    errors
+                );
             }
 
             this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
@@ -157,7 +184,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true);
             }
-            this.$el.find(".connection-label").addClass("label-" + this.labelClass);
         },
 
         saveForm: function (evt) {

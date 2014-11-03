@@ -389,11 +389,24 @@ var App;
 
             _fetchModel: function (model) {
                 model.fetch().done(function () {
-                    App.instances.tree.loadFromPath(
-                        model.get("path"),
-                        model.get("id"),
-                        false
-                    );
+                    var children = App.instances.tree.get("tree").children,
+                        isRoot = _.some(children, function (child) {
+                            return child.model.id === model.id;
+                        }),
+                        isVisible = !_.isUndefined(App.instances.tree.findNodeById(model.id));
+
+                    if (!isRoot && !isVisible) {
+                        App.instances.tree.loadFromPath(
+                            model.get("path"),
+                            model.get("id"),
+                            false
+                        );
+                    } else {
+                        App.instances.tree.openPath(
+                            model.get("path")
+                        );
+                    }
+
                 });
             },
 

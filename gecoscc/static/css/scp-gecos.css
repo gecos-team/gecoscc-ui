@@ -369,7 +369,20 @@ div.groups-widget .chzn-container {
 /* COMPUTERS VIEW */
 
 #computers .info-icon {
-    margin-top: 25px;
+    text-align: center;
+    font-size: 7em;
+}
+
+.info-icon-error {
+    color: #999;
+}
+
+.info-icon-success {
+    color: #5cb85c;
+}
+
+.info-icon-danger {
+    color: #d9534f;
 }
 
 #cut {
@@ -400,6 +413,12 @@ div.groups-widget .chzn-container {
 
 .group.checkbox-inline input{
     margin-bottom: 5px;
+}
+
+/* OU view */
+#ou .info-icon {
+    text-align: center;
+    font-size: 4em;
 }
 
 /* JSON Forms */

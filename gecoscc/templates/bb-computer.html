@@ -19,8 +19,8 @@
                         <div class="row"><div class="col-sm-12">
                             <div class="well well-sm">
                                 <div class="row computer-info">
-                                    <div class="col-sm-2">
-                                        <span class="fa fa-info-circle fa-5x info-icon"></span>
+                                    <div class="col-sm-2 info-icon">
+                                        <span class="fa fa-<%= icon %> <%= iconClass %>"></span>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
@@ -39,7 +39,7 @@
                                             <dt>{{ gettext('Node chef id') }}</dt>
                                             <dd><% if (typeof(node_chef_id) !== "undefined" && node_chef_id !== "") { %> <%= node_chef_id %> <% } else { %>-<% } %></dd>
                                             <dt>{{ gettext('Last connection') }}</dt>
-                                            <dd class="label connection-label"><%= last_connection %></dd>
+                                            <dd class="label connection-label <%= labelClass %>"><%= last_connection %></dd>
                                         </dl>
                                     </div>
                                 </div>
