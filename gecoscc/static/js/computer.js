@@ -46,6 +46,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             policyCollection: new App.Policies.Models.PolicyCollection(),
             isEditable: undefined,
             icon: "desktop",
+            labelClass: "label-success",
             iconClass: "info-icon-success",
             error_last_saved: false
         }
@@ -59,7 +60,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         template: "#computer-template",
         tagName: "div",
         className: "col-sm-12",
-        labelClass: "success",
 
         groupsWidget: undefined,
         policiesList: undefined,
@@ -103,7 +103,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.model.set("uptime", "-");
                 this.model.set("last_connection", "Error");
                 this.model.set("iconClass", "info-icon-danger");
-                this.labelClass = "danger";
+                this.model.set("labelClass", "label-danger");
                 App.showAlert(
                     "error",
                     gettext("No data has been received from this workstation."),
@@ -112,14 +112,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return;
             }
 
+
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
             interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
-
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
                 this.model.set("iconClass", "info-icon-danger");
-                this.labelClass = "danger";
+                this.model.set("labelClass", "label-danger");
                 errors.push("<br/> - " + gettext("Chef client is not being executed on time."));
             }
 
@@ -184,7 +184,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true);
             }
-            this.$el.find(".connection-label").addClass("label-" + this.labelClass);
         },
 
         saveForm: function (evt) {

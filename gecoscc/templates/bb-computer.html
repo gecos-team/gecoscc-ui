@@ -39,7 +39,7 @@
                                             <dt>{{ gettext('Node chef id') }}</dt>
                                             <dd><% if (typeof(node_chef_id) !== "undefined" && node_chef_id !== "") { %> <%= node_chef_id %> <% } else { %>-<% } %></dd>
                                             <dt>{{ gettext('Last connection') }}</dt>
-                                            <dd class="label connection-label"><%= last_connection %></dd>
+                                            <dd class="label connection-label <%= labelClass %>"><%= last_connection %></dd>
                                         </dl>
                                     </div>
                                 </div>
