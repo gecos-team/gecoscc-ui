@@ -129,7 +129,7 @@ var App;
                 }
             }
             return {
-                "iconClasses": App.Tree.Views.iconClasses,
+                "getIcon": App.Tree.Views.getIcon,
                 "items": this.collection.toJSON(),
                 "totalPages": total,
                 "initial": current > inRange + 1,

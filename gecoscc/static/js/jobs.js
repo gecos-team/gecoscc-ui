@@ -20,14 +20,6 @@
 // See the Licence for the specific language governing
 // permissions and limitations under the Licence.
 
-App.module("Job", function (Job, App, Backbone, Marionette, $, _) {
-    "use strict";
-
-    App.addInitializer(function () {
-        // TODO load jobs
-    });
-});
-
 App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
