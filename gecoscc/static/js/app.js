@@ -415,6 +415,7 @@ var App;
 
                 this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
+                App.tree.currentView.highlightNodeById(itemid);
                 model = App.instances.cache.get(itemid);
                 if (_.isUndefined(model)) {
                     Model = this._typeClasses(type)[0];
