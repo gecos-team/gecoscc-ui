@@ -40,62 +40,6 @@ def invalidate_jobs(request):
     }))
 
 
-def cors_headers(request):
-    origin = request.environ.get("HTTP_ORIGIN", '*')
-    if origin == 'null':
-        origin = '*'
-    ac_headers = request.environ.get('HTTP_ACCESS_CONTROL_REQUEST_HEADERS')
-    if ac_headers is not None:
-        return (('access-control-allow-origin', origin),
-                ('access-control-allow-credentials', 'true'),
-                ('access-control-allow-headers', ac_headers))
-    else:
-        return (('access-control-allow-origin', origin),
-                ('access-control-allow-credentials', 'true'))
-
-
-def session_cookie(request):
-    cookie = request.cookies.get('JSESSIONID')
-
-    if not cookie:
-        cookie = 'dummy'
-
-    request.response.set_cookie('JSESSIONID', cookie)
-    return ('Set-Cookie', request.response.headers['Set-Cookie'])
-
-
-def cache_headers(request):
-    d = datetime.now() + td365
-
-    return (
-        ('Access-Control-Max-Age', td365seconds),
-        ('Cache-Control', 'max-age=%d, public' % td365seconds),
-        ('Expires', d.strftime('%a, %d %b %Y %H:%M:%S')),
-    )
-
-
-def sock_info(request):
-    response = request.response
-    response.content_type = 'application/json; charset=UTF-8'
-    response.headerlist.append(
-        ('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0'))
-    response.headerlist.extend(cors_headers(request))
-
-    if request.method == 'OPTIONS':
-        session_cookie(request)
-        response.status = 204
-        response.headerlist.append(
-            ("Access-Control-Allow-Methods", "OPTIONS, GET"))
-        response.headerlist.extend(cache_headers(request))
-        return response
-    info = {'entropy': random.randint(1, 2147483647),
-            'websocket': 'socketio' not in request.environ,  #TODO: Comprobar esto
-            'cookie_needed': True,
-            'origins': ['*:*']}
-    response.body = json.dumps(info)
-    return response
-
-
 class GecosNamespace(BaseNamespace):
 
     # Crea el websocket
@@ -111,7 +55,7 @@ class GecosNamespace(BaseNamespace):
                 data = json.loads(m['data'])
                 self.emit("message", data)
 
-    def on_open(self, *args, **kwargs):
+    def on_subscribe(self, *args, **kwargs):
         self.spawn(self.listener)
 
     def on_close(self, *args, **kwargs):

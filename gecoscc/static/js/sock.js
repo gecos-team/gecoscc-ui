@@ -1,5 +1,5 @@
 /*jslint browser: true, nomen: true, unparam: true, vars: false */
-/*global SockJS, jQuery */
+/*global io, jQuery */
 
 // Copyright 2014 Junta de Andalucia
 //
@@ -22,30 +22,28 @@
 
 var MessageManager = function () {
     "use strict";
-    var Sock = new SockJS('/sockjs'),
+    var socket = io.connect(),
         manager_handlers = {};
+    socket.emit('subscribe');
 
-    Sock.onopen = function () {
-    };
-
-    Sock.onmessage = function (e) {
-        var result = jQuery.parseJSON(e.data);
+    socket.on("message", function (result) {
+        var handlers,
+            handler,
+            i;
         if (result.hasOwnProperty('action')) {
-            var handlers = manager_handlers[result.action] || [];
-            for (var i=0, handler; handler=handlers[i]; ++i) {
+            handlers = manager_handlers[result.action] || [];
+            for (i = 0; i < handlers.length; i += 1) {
+                handler = handlers[i];
                 handler(result.object);
             }
         }
-    };
-
-    Sock.onclose = function() {
-    };
+    });
 
     return {
-        bind: function(action, callback) {
+        bind: function (action, callback) {
             var handlers = manager_handlers[action] = manager_handlers[action] || [];
             handlers.push(callback);
             return this;
         }
-    }
+    };
 };

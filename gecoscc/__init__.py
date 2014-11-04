@@ -12,7 +12,7 @@ from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory
-from gecoscc.socks import socketio_service, sock_info
+from gecoscc.socks import socketio_service
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -45,11 +45,8 @@ def route_config(config):
 
 
 def sockjs_config(config):
-    config.add_route('socket_io', '/sockjs')
+    config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
-
-    config.add_route('socket_info', '/sockjs/info')
-    config.add_view(sock_info, route_name='socket_info')
 
 
 def route_config_auxiliary(config, route_prefix):
