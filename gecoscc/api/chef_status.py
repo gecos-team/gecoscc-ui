@@ -45,13 +45,13 @@ class ChefStatusResource(BaseAPI):
                 if job_status['status'] == 0:
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'finished',
-                                                     'last_update': datetime.datetime.now()}})
+                                                     'last_update': datetime.datetime.utcnow()}})
                     invalidate_jobs(self.request)
                 else:
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'errors',
                                                      'message': job_status.get('message', 'Error'),
-                                                     'last_update': datetime.datetime.now()}})
+                                                     'last_update': datetime.datetime.utcnow()}})
                     invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
             node.save()
