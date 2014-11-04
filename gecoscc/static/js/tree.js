@@ -31,6 +31,7 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
         App.instances.tree.reloadTree(function () {
             App.instances.treePromise.resolve(); // tree is loaded!
         });
+        App.forestAuxiliary = "ForestAux";
 
         treeView = new Tree.Views.NavigationTree({
             model: App.instances.tree
@@ -141,8 +142,6 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.TreeModel = Backbone.Model.extend({
         parser: new TreeModel(),
-
-        forestAuxiliary: "ForestAux",
 
         defaults: {
             tree: null
@@ -294,7 +293,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 newNode = {
                     id: id,
                     type: "ou",
-                    name: this.forestAuxiliary,
+                    name: App.forestAuxiliary,
                     children: [],
                     closed: false,
                     status: "unknown"
@@ -392,6 +391,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         makePath: function (path) {
             var currentNode = this.get("tree"),
+                tree = currentNode,
                 unknownIds = [],
                 pathAsArray = path,
                 that = this;
@@ -401,7 +401,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             _.each(pathAsArray, function (step) {
                 if (step === "root") { return; }
 
-                var node = currentNode.first({ strategy: "breadth" }, function (n) {
+                var node = tree.first({ strategy: "breadth" }, function (n) {
                         return n.model.id === step;
                     });
 
@@ -411,19 +411,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         id: step,
                         path: path,
                         type: "ou",
-                        name: "AUXILIARY5",
+                        name: App.forestAuxiliary,
                         children: [],
                         closed: false,
                         status: "unknown"
                     };
                     node = that.parser.parse(node);
-
-                    if (_.some(path.split(","), function (s) {
-                            return s === that.get("tree").children[0].model.id;
-                        })) {
-                        unknownIds.push(step);
-                        currentNode.addChild(node);
-                    }
+                    unknownIds.push(step);
+                    currentNode.addChild(node);
                 }
                 path += ',' + step;
                 currentNode = node;
@@ -450,9 +445,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     var node = tree.first(function (item) {
                         return item.model.id === n._id;
                     });
-                    node.model.name = n.name;
-                    if (node.model.status !== "paginated") {
-                        node.model.status = "meta-only";
+                    if (!_.isUndefined(node)) {
+                        node.model.name = n.name;
+                        if (node.model.status !== "paginated") {
+                            node.model.status = "meta-only";
+                        }
                     }
                 });
                 if (!silent) { that.trigger("change"); }

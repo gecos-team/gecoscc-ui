@@ -216,7 +216,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var html,
                 that = this;
 
-            if (json.name === this.model.forestAuxiliary) { return ""; }
+            //Do not render auxiliary nodes
+            if (json.name === App.forestAuxiliary) { return ""; }
 
             json.icon = Views.getIcon(json);
 
