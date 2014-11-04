@@ -10,8 +10,9 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
-from gecoscc.eventsmanager import EventsManager, get_jobstorage
+from gecoscc.eventsmanager import get_jobstorage
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory
+from gecoscc.socks import socketio_service, sock_info
 
 
 def read_setting_from_env(settings, key, default=None):
@@ -39,12 +40,16 @@ def route_config(config):
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
-    config.add_sockjs_route('sockjs', prefix='/sockjs',
-                            session=EventsManager,
-                            per_user=True,
-                            cookie_needed=True)
 
     config.add_route('forbidden-view', '/error403/')
+
+
+def sockjs_config(config):
+    config.add_route('socket_io', '/sockjs')
+    config.add_view(socketio_service, route_name='socket_io')
+
+    config.add_route('socket_info', '/sockjs/info')
+    config.add_view(sock_info, route_name='socket_info')
 
 
 def route_config_auxiliary(config, route_prefix):
@@ -170,6 +175,7 @@ def main(global_config, **settings):
 
     route_config(config)
     route_config_auxiliary(config, route_prefix='/sjs/')
+    sockjs_config(config)
 
     config.set_request_property(is_logged, 'is_logged', reify=True)
     config.set_request_property(get_jobstorage, 'jobs', reify=True)

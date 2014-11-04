@@ -27,6 +27,8 @@ requires = [
     'jsonschema==2.3.0',
     'gevent==1.0',
     'gevent-websocket==0.3.6',
+    'gevent-socketio==0.3.6',
+    'redis==2.10.3',
     'WebHelpers==1.3',
     'Paste==1.7.5.1',
     'PyChef==0.2.3',
