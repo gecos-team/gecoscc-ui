@@ -48,13 +48,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             var data = {
                     schema: this.model.get("schema")
                 },
-                id = this.model.get("id"),
-                values;
+                id = this.model.get("id");
 
-            values = this.resource.get("policies")[id];
-            if (!_.isUndefined(values)) {
-                data.values = values;
-            }
+            data.values = this.resource.get("policies")[id] || {};
             data.disabled = this.disabled;
             return data;
         },

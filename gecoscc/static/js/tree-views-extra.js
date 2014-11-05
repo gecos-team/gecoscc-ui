@@ -190,7 +190,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 showNext = this.collection.currentPage < this.collection.totalPages;
 
             _.each(nodes, function (n) {
-                n.icon = Views.iconClasses[n.type];
+                n.icon = Views.getIcon(n);
             });
 
             return {

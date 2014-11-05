@@ -129,7 +129,7 @@ var App;
                 }
             }
             return {
-                "iconClasses": App.Tree.Views.iconClasses,
+                "getIcon": App.Tree.Views.getIcon,
                 "items": this.collection.toJSON(),
                 "totalPages": total,
                 "initial": current > inRange + 1,
@@ -415,6 +415,7 @@ var App;
 
                 this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
+                App.tree.currentView.highlightNodeById(itemid);
                 model = App.instances.cache.get(itemid);
                 if (_.isUndefined(model)) {
                     Model = this._typeClasses(type)[0];

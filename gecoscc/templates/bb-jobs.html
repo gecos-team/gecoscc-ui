@@ -40,8 +40,7 @@
         <% _.each(items, function (item) { %>
             <tr class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> danger <% } %>">
                 <td>
-                    <span class="fa fa-<%= iconClasses[item.type] %>"></span>
-                    Path: <%= item.objpath %>
+                    <span class="fa fa-<%= getIcon(item) %>"></span>
                     <%= item.objname %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">

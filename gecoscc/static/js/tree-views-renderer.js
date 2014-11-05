@@ -26,7 +26,7 @@
 App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Views.iconClasses = {
+    var iconClasses = {
         first: "flag",
         ou: "folder",
         user: "user",
@@ -36,6 +36,21 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         storage: "hdd-o",
         repository: "archive",
         domain: "globe"
+    };
+
+    Views.getIcon = function (item) {
+        var icon,
+            path,
+            level;
+
+        if (item.type === "ou") {
+            path = item.path || item.objpath;
+            level = path.split(",").length - 1;
+            icon = [iconClasses.first, iconClasses.domain][level] || iconClasses.ou;
+        } else {
+            icon = iconClasses[item.type];
+        }
+        return icon;
     };
 
     var treeContainerPre =
@@ -166,7 +181,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 html = this.renderOU(json, ouData, treeNode);
             } else {
                 // It's a regular node
-                json.icon = Views.iconClasses[json.type];
+                json.icon = Views.getIcon(json);
                 html = this._templates.item(json);
             }
 
@@ -199,12 +214,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         this.renderOU = function (json, data, treeNode) {
             var html,
-                that = this,
-                level = json.path.split(",").length - 1;
+                that = this;
 
-            if (json.name === this.model.forestAuxiliary) { return ""; }
+            //Do not render auxiliary nodes
+            if (json.name === App.forestAuxiliary) { return ""; }
 
-            json.icon = [Views.iconClasses.first, Views.iconClasses.domain][level] ||  Views.iconClasses.ou;
+            json.icon = Views.getIcon(json);
 
             html = this._templates.containerPre(json);
             if (data.children.length > 0) {
