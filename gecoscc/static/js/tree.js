@@ -149,10 +149,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
         initialize: function (options) {
             var that = this;
-            this.listenTo(App, 'action_change', function (obj) {
+            this.listenTo(App, 'action_change', function (result) {
+                var obj = result.object;
                 that.updateNodeById(obj._id);
             });
-            this.listenTo(App, 'action_delete', function (obj) {
+            this.listenTo(App, 'action_delete', function (result) {
                 that.reloadTree();
             });
         },

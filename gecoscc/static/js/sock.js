@@ -34,7 +34,7 @@ var MessageManager = function () {
             handlers = manager_handlers[result.action] || [];
             for (i = 0; i < handlers.length; i += 1) {
                 handler = handlers[i];
-                handler(result.object);
+                handler(result);
             }
         }
     });
@@ -44,6 +44,7 @@ var MessageManager = function () {
             var handlers = manager_handlers[action] = manager_handlers[action] || [];
             handlers.push(callback);
             return this;
-        }
+        },
+        socket: socket
     };
 };

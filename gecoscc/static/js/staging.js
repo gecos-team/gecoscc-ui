@@ -34,8 +34,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.listenTo(App, 'action_delete', this.onAction);
         },
 
-        onAction: function (obj) {
-            var model = this.get(obj._id);
+        onAction: function (result) {
+            var obj = result.object,
+                model = this.get(obj._id);
             if (!_.isUndefined(model)) {
                 this.dropModel(model);
             }

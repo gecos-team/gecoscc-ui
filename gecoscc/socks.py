@@ -1,5 +1,4 @@
 import datetime
-import random
 
 import redis
 import simplejson as json
@@ -11,6 +10,8 @@ td365 = datetime.timedelta(days=365)
 td365seconds = int((td365.microseconds +
                     (td365.seconds + td365.days * 24 * 3600) * 10 ** 6) / 10 ** 6)
 
+CHANNEL_WEBSOCKET = 'message'
+
 
 def get_manager(request):
     return redis.Redis()
@@ -18,7 +19,8 @@ def get_manager(request):
 
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
     manager = get_manager(request)
-    manager.publish('message', json.dumps({
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
         'action': 'change',
         'object': schema_detail().serialize(objnew)
     }))
@@ -26,7 +28,8 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
 
 def invalidate_delete(request, schema_detail, objtype, obj):
     manager = get_manager(request)
-    manager.publish('message', json.dumps({
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
         'action': 'delete',
         'object': schema_detail().serialize(obj)
     }))
@@ -34,7 +37,8 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 
 def invalidate_jobs(request):
     manager = get_manager(request)
-    manager.publish('message', json.dumps({
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
         'action': 'jobs',
         'object': None
     }))
@@ -42,31 +46,35 @@ def invalidate_jobs(request):
 
 class GecosNamespace(BaseNamespace):
 
-    # Crea el websocket
+    # Create the websocket
 
     def listener(self):
         r = redis.StrictRedis()
         r = r.pubsub()
 
-        r.subscribe('message')
+        r.subscribe(CHANNEL_WEBSOCKET)
 
         for m in r.listen():
             if m['type'] == 'message':
                 data = json.loads(m['data'])
-                self.emit("message", data)
+                self.emit(CHANNEL_WEBSOCKET, data)
 
     def on_subscribe(self, *args, **kwargs):
+        socketio = self.request.environ.get('socketio', None)
+        if socketio:
+            self.request.session['session_socket_id'] = socketio.sessid
+        self.request.session.save()
         self.spawn(self.listener)
 
     def on_close(self, *args, **kwargs):
         pass
 
-    # Fin Crea el websocket
+    # End Create the websocket
 
-    # Lee el post
+    # Publish the message
     def on_message(self, msg):
         r = redis.Redis()
-        r.publish('message', msg)
+        r.publish(CHANNEL_WEBSOCKET, msg)
 
 
 def socketio_service(request):
