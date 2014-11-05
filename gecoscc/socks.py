@@ -11,6 +11,7 @@ td365seconds = int((td365.microseconds +
                     (td365.seconds + td365.days * 24 * 3600) * 10 ** 6) / 10 ** 6)
 
 CHANNEL_WEBSOCKET = 'message'
+SESSION_SOCKET_ID = 'socked_session_id'
 
 
 def get_manager(request):
@@ -20,7 +21,7 @@ def get_manager(request):
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
     manager = get_manager(request)
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
+        'session_socket_id_emitter': request.session.get(SESSION_SOCKET_ID, ''),
         'action': 'change',
         'object': schema_detail().serialize(objnew)
     }))
@@ -29,7 +30,7 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
 def invalidate_delete(request, schema_detail, objtype, obj):
     manager = get_manager(request)
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
+        'session_socket_id_emitter': request.session.get(SESSION_SOCKET_ID, ''),
         'action': 'delete',
         'object': schema_detail().serialize(obj)
     }))
@@ -38,7 +39,7 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 def invalidate_jobs(request):
     manager = get_manager(request)
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'session_socket_id_emitter': request.session.get('session_socket_id', ''),
+        'session_socket_id_emitter': request.session.get(SESSION_SOCKET_ID, ''),
         'action': 'jobs',
         'object': None
     }))
@@ -60,10 +61,13 @@ class GecosNamespace(BaseNamespace):
                 self.emit(CHANNEL_WEBSOCKET, data)
 
     def on_subscribe(self, *args, **kwargs):
-        socketio = self.request.environ.get('socketio', None)
-        if socketio:
-            self.request.session['session_socket_id'] = socketio.sessid
-        self.request.session.save()
+        remaining = self.request.matchdict.get('remaining', None)
+        if remaining:
+            try:
+                self.request.session[SESSION_SOCKET_ID] = remaining[2]
+                self.request.session._session().save()
+            except IndexError:
+                pass
         self.spawn(self.listener)
 
     def on_close(self, *args, **kwargs):

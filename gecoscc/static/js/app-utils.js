@@ -114,8 +114,6 @@
         onActionChange: function (result) {
             var obj = result.object,
                 socked_session_id = App.instances.message_manager.socket.socket.sessionid;
-            console.log(socked_session_id);
-            console.log(result.session_socket_id_emitter);
             if (socked_session_id !== result.session_socket_id_emitter && this.model.id === obj._id) {
                 App.showAlert(
                     "error",
