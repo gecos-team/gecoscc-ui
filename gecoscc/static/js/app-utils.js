@@ -100,40 +100,9 @@
         //
         // resourceType: "user",
 
-        initialize: function () {
-            this.listenTo(App, 'action_change', this.onActionChange);
-            this.listenTo(App, 'action_delete', this.onActionDelete);
-        },
-
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
-            }
-        },
-
-        onActionChange: function (result) {
-            var obj = result.object,
-                socked_session_id = App.instances.message_manager.socket.socket.sessionid;
-            if (socked_session_id !== result.session_socket_id_emitter && this.model.id === obj._id) {
-                App.showAlert(
-                    "error",
-                    gettext("Object changed."),
-                    gettext("Someone has changed this object while you were working on it, please reload before applying any changes.")
-                );
-                this.disableSave();
-            }
-        },
-
-        onActionDelete: function (result) {
-            var obj = result.object,
-                socked_session_id = App.instances.message_manager.socket.socket.sessionid;
-            if (socked_session_id !== result.session_socket_id_emitter && this.model.id === obj._id) {
-                App.showAlert(
-                    "error",
-                    gettext("Object deleted."),
-                    gettext("Someone has deleted this object while you were working on it")
-                );
-                this.disableSave();
             }
         },
 
@@ -288,7 +257,7 @@
                 that._setPropInModel(relation[0], relation[1]);
             });
 
-            promise = this.model.save();
+            promise = this.model.save({}, { url: that.model.url() + "?token=" + App.instances.staging.token });
             setTimeout(function () {
                 that._showSavingProcess($button, "saved");
                 if (!isNew) {
@@ -327,7 +296,7 @@
                 promise;
 
             this._showSavingProcess($button, "progress");
-            promise = this.model.destroy();
+            promise = this.model.destroy({ url: that.model.url() + "?token=" + App.instances.staging.token });
             setTimeout(function () {
                 that._showSavingProcess($button, "success");
                 App.instances.tree.trigger("change");

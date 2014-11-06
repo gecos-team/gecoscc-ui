@@ -32,14 +32,40 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.toModify = [];
             this.listenTo(App, 'action_change', this.onAction);
             this.listenTo(App, 'action_delete', this.onAction);
+            this.token =  this.createToken();
+        },
+
+        createToken: function () {
+            return Math.random().toString(36).substr(2);
         },
 
         onAction: function (result) {
             var obj = result.object,
                 model = this.get(obj._id);
+
             if (!_.isUndefined(model)) {
                 this.dropModel(model);
             }
+
+            if (this.token !== result.token) {
+                this.alertChange(result.action);
+            }
+        },
+
+        alertChange: function (action) {
+            var actionMessage,
+                warningMessage;
+
+            actionMessage = action === 'change' ? "Object changed." : "Object deleted.";
+            warningMessage = action === 'change' ?
+                    "Someone has changed this object while you were working on it, please reload before applying any changes." :
+                    "Someone has deleted this object while you were working on it";
+
+            App.showAlert(
+                "error",
+                gettext(actionMessage),
+                gettext(warningMessage)
+            );
         },
 
         add: function (models, options) {
@@ -141,7 +167,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 promises.push(promise);
                 promise
                     .done(function (response) {
-                        that.promiseIndex[id].resolve(response);
+                        if (!_.isUndefined(that.promiseIndex[id])) { that.promiseIndex[id].resolve(response); }
                     }).fail(function (response) {
                         that.promiseIndex[model.get("id")].reject(response);
                     }).always(function () {
