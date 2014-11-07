@@ -46,23 +46,23 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             if (!_.isUndefined(model)) {
                 this.dropModel(model);
                 if (this.token !== result.token) {
-                    this.alertChange(result.action);
+                    this.alertChange(result.action, model.get("name"));
                 }
             }
         },
 
-        alertChange: function (action) {
+        alertChange: function (action, name) {
             var actionMessage,
                 warningMessage;
 
-            actionMessage = action === 'change' ? "Object changed." : "Object deleted.";
+            actionMessage = action === 'change' ? "has changed." : "has been deleted.";
             warningMessage = action === 'change' ?
                     "Someone has changed this object while you were working on it, please reload before applying any changes." :
                     "Someone has deleted this object while you were working on it";
 
             App.showAlert(
                 "error",
-                gettext(actionMessage),
+                name + " " + gettext(actionMessage),
                 gettext(warningMessage)
             );
         },
@@ -137,8 +137,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 that.remove(model, options); // Actually remove it from the collection
 
                 if (!options.avoidRestore) {
-                    model.fetch();
-                    // TODO update node in tree
+                    model.fetch().done(function () {
+                        App.instances.tree.trigger("change");
+                    });
                 }
             });
 
