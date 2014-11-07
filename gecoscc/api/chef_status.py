@@ -81,15 +81,30 @@ class ChefStatusResource(BaseAPI):
             return {'ok': False,
                     'message': 'This node does not exist (mongodb)'}
 
-        users_does_not_find = []
         users_recalculate_policies = []
         for chef_user in users:
             username = chef_user['username']
+            if chef_user.get('sudo', False):
+                continue
             user = node_collection.find_one({'name': username,
                                              'path': get_filter_in_domain(node)})
             if not user:
-                users_does_not_find.append(username)
-                continue
+                import ipdb; ipdb.set_trace()
+                node_collection.insert({'name': username,
+                                        'first_name': '',
+                                        'last_name': '',
+                                        'email': '',
+                                        'phone': '',
+                                        'address': '',
+                                        'memberof': [],
+                                        'policies': {},
+                                        'computers': [node['_id']],
+                                        'path': node.get('path', ''),
+                                        'type': 'user',
+                                        'lock': node.get('lock', ''),
+                                        'source': node.get('source', '')})
+                user = node_collection.find_one({'name': username,
+                                                 'path': get_filter_in_domain(node)})
             if 'computers' not in user:
                 computers = []
             else:
@@ -105,7 +120,4 @@ class ChefStatusResource(BaseAPI):
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         chef_node.save()
 
-        if users_does_not_find:
-            return {'ok': False,
-                    'message': 'These users does not exists: %s' % ','.join(users_does_not_find)}
         return {'ok': True}
