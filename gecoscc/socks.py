@@ -3,6 +3,8 @@ import datetime
 import redis
 import simplejson as json
 
+from pyramid.response import Response
+
 from socketio.namespace import BaseNamespace
 from socketio import socketio_manage
 
@@ -48,8 +50,6 @@ def invalidate_jobs(request):
 
 class GecosNamespace(BaseNamespace):
 
-    # Create the websocket
-
     def listener(self):
         r = redis.StrictRedis()
         r = r.pubsub()
@@ -64,15 +64,9 @@ class GecosNamespace(BaseNamespace):
     def on_subscribe(self, *args, **kwargs):
         self.spawn(self.listener)
 
-    def on_close(self, *args, **kwargs):
-        pass
-
-    # End Create the websocket
-
 
 def socketio_service(request):
-    retval = socketio_manage(request.environ,
-                             {'': GecosNamespace},
-                             request=request)
-
-    return retval
+    socketio_manage(request.environ,
+                    {'': GecosNamespace},
+                    request=request)
+    return Response('no-data')
