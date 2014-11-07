@@ -45,10 +45,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
 
             if (!_.isUndefined(model)) {
                 this.dropModel(model);
-            }
-
-            if (this.token !== result.token) {
-                this.alertChange(result.action);
+                if (this.token !== result.token) {
+                    this.alertChange(result.action);
+                }
             }
         },
 
