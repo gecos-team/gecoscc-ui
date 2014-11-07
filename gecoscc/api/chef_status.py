@@ -9,6 +9,7 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Job
+from gecoscc.models import User
 from gecoscc.utils import get_chef_api, get_filter_in_domain, apply_policies_to_user
 from gecoscc.socks import invalidate_jobs
 
@@ -89,22 +90,17 @@ class ChefStatusResource(BaseAPI):
             user = node_collection.find_one({'name': username,
                                              'path': get_filter_in_domain(node)})
             if not user:
-                import ipdb; ipdb.set_trace()
-                node_collection.insert({'name': username,
-                                        'first_name': '',
-                                        'last_name': '',
-                                        'email': '',
-                                        'phone': '',
-                                        'address': '',
-                                        'memberof': [],
-                                        'policies': {},
-                                        'computers': [node['_id']],
-                                        'path': node.get('path', ''),
-                                        'type': 'user',
-                                        'lock': node.get('lock', ''),
-                                        'source': node.get('source', '')})
-                user = node_collection.find_one({'name': username,
-                                                 'path': get_filter_in_domain(node)})
+                user_model = User()
+                user = user_model.serialize({'name': username,
+                                             'path': node.get('path', ''),
+                                             'type': 'user',
+                                             'lock': node.get('lock', ''),
+                                             'source': node.get('source', '')})
+                user['computers'].append(node['_id'])
+                del user['_id']
+                user_id = node_collection.insert(user)
+                user = node_collection.find_one({'_id': user_id})
+            import ipdb; ipdb.set_trace()
             if 'computers' not in user:
                 computers = []
             else:
