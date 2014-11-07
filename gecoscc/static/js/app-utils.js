@@ -388,7 +388,11 @@
             bold: bold,
             text: text
         });
-        App.alerts.show(view);
+        if (_.isUndefined(App.alerts.$el)) {
+            App.alerts.show(view);
+        } else {
+            App.alerts.$el.append(view.render().$el);
+        }
     };
 
     App.getDomainModel = function (id) {
