@@ -3,9 +3,11 @@ import simplejson as json
 
 from pyramid.response import Response
 
-from socketio.namespace import BaseNamespace
 from socketio import socketio_manage
-
+from socketio.namespace import BaseNamespace
+from socketio.server import SocketIOServer
+from socketio.sgunicorn import GeventSocketIOWorker
+from socketio.virtsocket import Socket
 
 CHANNEL_WEBSOCKET = 'message'
 TOKEN = 'token'
@@ -41,6 +43,27 @@ def invalidate_jobs(request):
         'action': 'jobs',
         'object': None
     }))
+
+
+class GecosSocketIOServer(SocketIOServer):
+
+    def get_socket(self, sessid=''):
+        """Return an existing or new client Socket."""
+
+        socket = self.sockets.get(sessid)
+
+        if socket is None:
+            socket = Socket(self, self.config)
+            self.sockets[socket.sessid] = socket
+        else:
+            socket.incr_hits()
+
+        return socket
+
+
+class GecosGeventSocketIOWorker(GeventSocketIOWorker):
+
+    server_class = GecosSocketIOServer
 
 
 class GecosNamespace(BaseNamespace):
