@@ -571,8 +571,10 @@ var App;
         App.instances.cache.drop(result.objectId);
         App.trigger('action_delete', result);
     });
-    App.instances.message_manager.bind('jobs', function () {
-        App.instances.job_collection.fetch();
+    App.instances.message_manager.bind('jobs', function (result) {
+        if (result.username === window.GecosUtils.gecosUser.username) {
+            App.instances.job_collection.fetch();
+        }
     });
     App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));

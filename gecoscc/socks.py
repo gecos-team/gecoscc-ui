@@ -39,9 +39,8 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 def invalidate_jobs(request):
     manager = get_manager(request)
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'token': request.POST.get(USERNAME),
+        'username': request.POST.get(USERNAME),
         'action': 'jobs',
-        'object': None
     }))
 
 

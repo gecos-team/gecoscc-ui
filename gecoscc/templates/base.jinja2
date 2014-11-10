@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="{% block htmlclass %}{% endblock %}">
     <head>
-        <title>Control de Puestos - GECOS</title>
+        <title>{{ gettext('Control Center') }} - GECOS</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -76,7 +76,8 @@
                             confirmModal.find(".modal-body").html("");
                         }
                         confirmModal.modal("show");
-                    }
+                    },
+                    gecosUser: {{ request.user|admin_jsonify|safe }}
                 };
             });
             {% if request.user and request.user.get('is_superuser') %}
