@@ -1,5 +1,3 @@
-import datetime
-
 import redis
 import simplejson as json
 
@@ -8,9 +6,6 @@ from pyramid.response import Response
 from socketio.namespace import BaseNamespace
 from socketio import socketio_manage
 
-td365 = datetime.timedelta(days=365)
-td365seconds = int((td365.microseconds +
-                    (td365.seconds + td365.days * 24 * 3600) * 10 ** 6) / 10 ** 6)
 
 CHANNEL_WEBSOCKET = 'message'
 TOKEN = 'token'
