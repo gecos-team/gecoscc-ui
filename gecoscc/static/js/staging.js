@@ -40,8 +40,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
         },
 
         onAction: function (result) {
-            var obj = result.object,
-                model = this.get(obj._id);
+            var model = this.get(result.objectId);
 
             if (!_.isUndefined(model)) {
                 this.dropModel(model);

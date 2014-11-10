@@ -564,13 +564,11 @@ var App;
 
     App.instances.message_manager = new MessageManager();
     App.instances.message_manager.bind('change', function (result) {
-        var obj = result.object;
-        App.instances.cache.drop(obj._id);
+        App.instances.cache.drop(result.objectId);
         App.trigger('action_change', result);
     });
     App.instances.message_manager.bind('delete', function (result) {
-        var obj = result.object;
-        App.instances.cache.drop(obj._id);
+        App.instances.cache.drop(result.objectId);
         App.trigger('action_delete', result);
     });
     App.instances.message_manager.bind('jobs', function () {
