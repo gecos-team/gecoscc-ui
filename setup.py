@@ -25,6 +25,7 @@ requires = [
     'cornice==0.16.2',
     'jsonschema==2.3.0',
     'gevent==1.0',
+    'gevent-websocket==0.9.3',
     'gevent-socketio==0.3.6',
     'redis==2.10.3',
     'WebHelpers==1.3',
