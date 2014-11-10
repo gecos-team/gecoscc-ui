@@ -184,7 +184,9 @@ class BaseUser(colander.MappingSchema):
 
 class User(Node, BaseUser):
     email = colander.SchemaNode(colander.String(),
-                                validator=colander.Email())
+                                validator=colander.Email(),
+                                default='',
+                                missing='')
     phone = colander.SchemaNode(colander.String(),
                                 default='',
                                 missing='')
