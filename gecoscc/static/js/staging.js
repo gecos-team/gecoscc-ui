@@ -46,25 +46,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             if (!_.isUndefined(model)) {
                 this.dropModel(model);
                 if (this.token !== result.token) {
-                    this.alertChange(result.action, model.get("name"));
+                    App.showChangeAlert(result.action, model.get("name"), model.get("id"));
                 }
             }
-        },
-
-        alertChange: function (action, name) {
-            var actionMessage,
-                warningMessage;
-
-            actionMessage = action === 'change' ? "has changed." : "has been deleted.";
-            warningMessage = action === 'change' ?
-                    "Someone has changed this object while you were working on it, please reload before applying any changes." :
-                    "Someone has deleted this object while you were working on it";
-
-            App.showAlert(
-                "error",
-                name + " " + gettext(actionMessage),
-                gettext(warningMessage)
-            );
         },
 
         add: function (models, options) {

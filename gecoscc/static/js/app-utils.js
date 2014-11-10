@@ -23,7 +23,7 @@
 (function (App, Backbone, $, _) {
     "use strict";
 
-    var AlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex, urlExtendRegex;
+    var AlertView, ChangesAlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex, urlExtendRegex;
 
     /*
     * Regular expressions taken from:
@@ -393,6 +393,48 @@
         } else {
             App.alerts.$el.append(view.render().$el);
         }
+    };
+
+    ChangesAlertView = Backbone.Marionette.ItemView.extend({
+        template: "#change-alert-template",
+        tagName: "div",
+
+        events: {
+            "click button.btn-primary": "commitChanges",
+            "click button.discard": "removeModel",
+            "click button.btn-default": "updateTree"
+        },
+
+        onRender: function () {
+            var $el = this.$el;
+            $el.find(".modal").modal();
+            $el.find(".modal").on('hidden.bs.modal', function () {
+                $el.find(".modal").remove();
+            });
+        }
+    });
+
+    App.showChangeAlert = function (action, nodeName, id) {
+        var view,
+            label,
+            $el = $("#staging-modal-changes"),
+            elem = '<a href="/#byid/' + id + '">' + nodeName + "</a>";
+
+        if ($el.find(".modal").length === 0) {
+            view = new ChangesAlertView({
+                el: "#staging-modal-changes",
+            });
+            view.render();
+        }
+
+        label = action === 'change' ?
+                    '<span class="label label-primary">' + gettext('Modified') + '</span>' :
+                    '<span class="label label-danger">' + gettext('Deleted') + '</span>';
+        $el.find(".nodes-changed").append('<li>' + label + elem + '</li>');
+
+        $el.find("a").off().on('click', function () {
+                $el.find(".modal").modal("hide");
+            });
     };
 
     App.getDomainModel = function (id) {
