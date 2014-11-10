@@ -154,7 +154,6 @@ def main(global_config, **settings):
 
     config.include('pyramid_jinja2')
     config.include('pyramid_beaker')
-    config.include('pyramid_sockjs')
     config.include('pyramid_celery')
     config.include('cornice')
 

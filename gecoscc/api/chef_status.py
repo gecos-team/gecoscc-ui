@@ -9,8 +9,13 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Job
+from gecoscc.models import User
 from gecoscc.utils import get_chef_api, get_filter_in_domain, apply_policies_to_user
 from gecoscc.socks import invalidate_jobs
+
+
+USERS_OLD = 'ohai_gecos.users_old'
+USERS_OHAI = 'ohai_gecos.users'
 
 
 @resource(path='/chef/status/',
@@ -19,6 +24,13 @@ class ChefStatusResource(BaseAPI):
 
     schema_detail = Job
     collection_name = 'jobs'
+
+    def get_attr(self, node, attr):
+        try:
+            attr_value = node.attributes.get_dotted(attr)
+        except KeyError:
+            attr_value = []
+        return attr_value
 
     def put(self):
         node_id = self.request.POST.get('node_id')
@@ -56,40 +68,43 @@ class ChefStatusResource(BaseAPI):
             node.attributes.set_dotted('job_status', {})
             node.save()
 
-        try:
-            users_old = node.attributes.get_dotted('ohai_gecos.users_old')
-        except KeyError:
-            users_old = []
-        try:
-            users = node.attributes.get_dotted('ohai_gecos.users')
-        except KeyError:
-            users = []
+        users_old = self.get_attr(node, USERS_OLD)
+        users = self.get_attr(node, USERS_OHAI)
         if not users_old or users_old != users:
             return self.check_users(node)
         return {'ok': True}
 
     def check_users(self, chef_node):
         node_collection = self.request.db.nodes
-        try:
-            users = chef_node.attributes.get_dotted('ohai_gecos.users')
-        except KeyError:
-            users = []
 
+        users_old = self.get_attr(chef_node, USERS_OLD)
+        users = self.get_attr(chef_node, USERS_OHAI)
         node_id = chef_node.name
-        node = node_collection.find_one({'node_chef_id': node_id, 'type': 'computer'})
+        node = node_collection.find_one({'node_chef_id': node_id,
+                                         'type': 'computer'})
         if not node:
             return {'ok': False,
                     'message': 'This node does not exist (mongodb)'}
 
-        users_does_not_find = []
         users_recalculate_policies = []
         for chef_user in users:
             username = chef_user['username']
+            if chef_user in users_old or chef_user.get('sudo', False):
+                continue
             user = node_collection.find_one({'name': username,
+                                             'type': 'user',
                                              'path': get_filter_in_domain(node)})
             if not user:
-                users_does_not_find.append(username)
-                continue
+                user_model = User()
+                user = user_model.serialize({'name': username,
+                                             'path': node.get('path', ''),
+                                             'type': 'user',
+                                             'lock': node.get('lock', ''),
+                                             'source': node.get('source', '')})
+                user['computers'].append(node['_id'])
+                del user['_id']
+                user_id = node_collection.insert(user)
+                user = node_collection.find_one({'_id': user_id})
             if 'computers' not in user:
                 computers = []
             else:
@@ -105,7 +120,4 @@ class ChefStatusResource(BaseAPI):
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         chef_node.save()
 
-        if users_does_not_find:
-            return {'ok': False,
-                    'message': 'These users does not exists: %s' % ','.join(users_does_not_find)}
         return {'ok': True}
