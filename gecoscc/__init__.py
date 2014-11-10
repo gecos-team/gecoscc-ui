@@ -35,7 +35,6 @@ def route_config(config):
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
 
-    config.add_route('groups', '/groups/', factory=LoggedFactory)
     config.add_route('reports', '/reports/', factory=LoggedFactory)
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
