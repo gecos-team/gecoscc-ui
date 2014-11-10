@@ -400,41 +400,56 @@
         tagName: "div",
 
         events: {
-            "click button.btn-primary": "commitChanges",
-            "click button.discard": "removeModel",
-            "click button.btn-default": "updateTree"
+            "click a": "close",
+            "click btn-default": "close"
+        },
+
+        data: {
+            nodes: []
+        },
+
+        close: function () {
+            this.$el.find(".modal").modal("hide");
+        },
+
+        serializeData: function () {
+            return this.data;
+        },
+
+        initialize: function (options) {
+            this.data.nodes.push.apply(this.data.nodes, options.node);
         },
 
         onRender: function () {
-            var $el = this.$el;
-            $el.find(".modal").modal();
+            var $el = this.$el,
+                that = this;
             $el.find(".modal").on('hidden.bs.modal', function () {
                 $el.find(".modal").remove();
+                that.data.nodes = [];
             });
         }
     });
 
-    App.showChangeAlert = function (action, nodeName, id) {
-        var view,
-            label,
-            $el = $("#staging-modal-changes"),
-            elem = '<a href="/#byid/' + id + '">' + nodeName + "</a>";
+    App.showChangeAlert = function (data) {
+        var $el = $("#staging-modal-changes"),
+            view;
 
         if ($el.find(".modal").length === 0) {
-            view = new ChangesAlertView({
+            App.instances.changes = new ChangesAlertView({
                 el: "#staging-modal-changes",
+                node: [data]
+            });
+            App.instances.changes.render();
+            App.instances.changes.$el.find(".modal").modal();
+        } else {
+            App.instances.changes.data.nodes.push(data);
+            view = new ChangesAlertView({
+                node: App.instances.changes.data
             });
             view.render();
+            App.instances.changes.$el.find(".nodes-changed").html(view.$el.find(".nodes-changed").html());
         }
 
-        label = action === 'change' ?
-                    '<span class="label label-primary">' + gettext('Modified') + '</span>' :
-                    '<span class="label label-danger">' + gettext('Deleted') + '</span>';
-        $el.find(".nodes-changed").append('<li>' + label + elem + '</li>');
-
-        $el.find("a").off().on('click', function () {
-                $el.find(".modal").modal("hide");
-            });
     };
 
     App.getDomainModel = function (id) {

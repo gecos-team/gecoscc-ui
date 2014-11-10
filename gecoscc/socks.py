@@ -23,7 +23,8 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'change',
-        'objectId': unicode(objnew['_id'])
+        'objectId': unicode(objnew['_id']),
+        'user': request.user['username']
     }))
 
 
@@ -32,7 +33,8 @@ def invalidate_delete(request, schema_detail, objtype, obj):
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
-        'objectId': unicode(obj['_id'])
+        'objectId': unicode(obj['_id']),
+        'user': request.user['username']
     }))
 
 

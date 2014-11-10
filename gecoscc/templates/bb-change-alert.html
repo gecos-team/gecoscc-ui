@@ -6,7 +6,18 @@
         <h4 class="modal-title">{{ gettext('Another administrator has changed the following nodes:') }}</h4>
       </div>
       <div class="modal-body">
-        <ul class="nodes-changed list-unstyled"></ul>
+        <ul class="nodes-changed list-unstyled">
+          <% _.each(nodes, function (node) { %>
+            <li>
+              <% if (node.action === 'change') { %>
+                <span class="label label-primary"> {{ gettext('Modified by') }} <%= ' ' + node.user %> </span>
+              <% } else { %>
+                <span class="label label-danger"> {{ gettext('Deleted by') }} <%= ' ' + node.user %> </span>
+              <% } %>
+              <a href="/#byid/<%= node.id %>"> <%= node.nodeName %> </a>
+            </li>
+          <% }) %>
+        </ul>
         <p>{{ gettext('Your changes are lost. Please make your changes again.') }}</p>
       </div>
       <div class="modal-footer">
