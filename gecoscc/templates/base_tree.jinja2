@@ -126,6 +126,7 @@
     </div><!-- /.modal -->
 
     <div id="staging-modal-viewport"></div>
+    <div id="staging-modal-changes"></div>
 {% endblock %}
 
 {% block extrajs %}
@@ -170,6 +171,7 @@
     <script src="{{request.application_url}}/static/js/jobs.js"></script>
 
     <script type="text/html" id="alert-template">{% include "bb-alert.html" %}</script>
+    <script type="text/html" id="change-alert-template">{% include "bb-change-alert.html" %}</script>
     <script type="text/html" id="breadcrumb-template">{% include "bb-breadcrumb.html" %}</script>
     <script type="text/html" id="computer-template">{% include "bb-computer.html" %}</script>
     <script type="text/html" id="jobs-template">{% include "bb-jobs.html" %}</script>

@@ -114,6 +114,18 @@ footer {
     margin-right: 10px;
 }
 
+.nodes-changed li{
+    border-bottom: 1px solid #DDD;
+    line-height: 1.2em;
+    margin-bottom: 0.5em;
+    clear: both;
+    min-height: 26px;
+}
+
+.nodes-changed li span.label{
+    margin-right: 10px;
+}
+
 /* NAVIGATION TREE */
 
 #tree-selection-info {
