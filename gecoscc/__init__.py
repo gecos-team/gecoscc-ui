@@ -39,7 +39,6 @@ def route_config(config):
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
-
     config.add_route('forbidden-view', '/error403/')
 
 
@@ -169,7 +168,6 @@ def main(global_config, **settings):
                           'pyramid.events.NewRequest')
 
     route_config(config)
-    route_config_auxiliary(config, route_prefix='/sjs/')
     sockjs_config(config)
 
     config.set_request_property(is_logged, 'is_logged', reify=True)
