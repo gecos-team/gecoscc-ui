@@ -1,3 +1,4 @@
+import json
 import os
 import pymongo
 
@@ -128,6 +129,11 @@ def celery_config(config):
             })
 
 
+def locale_config(config):
+    settings = config.registry.settings
+    settings['pyramid.locales'] = json.loads(settings['pyramid.locales'])
+
+
 def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
@@ -138,6 +144,7 @@ def main(global_config, **settings):
     userdb_config(config)
     auth_config(config)
     celery_config(config)
+    locale_config(config)
 
     config.add_translation_dirs('gecoscc:locale/')
 
