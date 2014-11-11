@@ -1,9 +1,9 @@
 <div class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
+      <div class="modal-header alert alert-danger">
         <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title">{{ gettext('Another administrator has changed the following nodes:') }}</h4>
+        <h4 class="modal-title">{{ gettext('The following nodes have changed:') }}</h4>
       </div>
       <div class="modal-body">
         <ul class="nodes-changed list-unstyled">
@@ -18,7 +18,7 @@
             </li>
           <% }) %>
         </ul>
-        <p>{{ gettext('Your changes are lost. Please make your changes again.') }}</p>
+        <p>{{ gettext('Other administrators have modified these nodes, your saved changes are lost. Please make your changes again.') }}</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Close') }}</button>

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-11-03 18:00+0100\n"
+"POT-Creation-Date: 2014-11-11 09:42+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -16,70 +16,50 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:118
-msgid "Object changed."
-msgstr "Objeto cambiado."
-
-#: gecoscc/static/js/app-utils.js:119
-msgid ""
-"Someone has changed this object while you were working on it, please "
-"reload before applying any changes."
-msgstr ""
-"Alguien ha cambiado este objeto mientras estabas trabajando en él, por "
-"favor refresca antes de encolar los cambios."
-
-#: gecoscc/static/js/app-utils.js:129
-msgid "Object deleted."
-msgstr "Objeto borrado"
-
-#: gecoscc/static/js/app-utils.js:130
-msgid "Someone has deleted this object while you were working on it"
-msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
-
-#: gecoscc/static/js/app-utils.js:239
+#: gecoscc/static/js/app-utils.js:217
 msgid "Staging"
 msgstr "Almacenando temporalmente"
 
-#: gecoscc/static/js/app-utils.js:243
+#: gecoscc/static/js/app-utils.js:221
 msgid "Save"
 msgstr "Guardar"
 
-#: gecoscc/static/js/app-utils.js:243
-#: gecoscc/static/js/tree-views-renderer.js:80
+#: gecoscc/static/js/app-utils.js:221
+#: gecoscc/static/js/tree-views-renderer.js:95
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/static/js/app-utils.js:244
+#: gecoscc/static/js/app-utils.js:222
 msgid "Done"
 msgstr "Completado"
 
-#: gecoscc/static/js/app-utils.js:253
+#: gecoscc/static/js/app-utils.js:231
 msgid "Something went wrong, please try again in a few moments."
 msgstr "Se produjo un error, por favor, pruebe de nuevo más tarde."
 
-#: gecoscc/static/js/app-utils.js:254
+#: gecoscc/static/js/app-utils.js:232
 #, python-format
 msgid "Resource ID: %s"
 msgstr "ID del recurso: %s"
 
-#: gecoscc/static/js/app-utils.js:258
+#: gecoscc/static/js/app-utils.js:236
 msgid "Status"
 msgstr "Estado"
 
-#: gecoscc/static/js/app-utils.js:272
+#: gecoscc/static/js/app-utils.js:250
 msgid "Invalid data."
 msgstr "Datos inválidos."
 
-#: gecoscc/static/js/app-utils.js:273
+#: gecoscc/static/js/app-utils.js:251
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:310
+#: gecoscc/static/js/app-utils.js:288
 #, python-format
 msgid "Saving the %s failed."
 msgstr "El guardado de %s ha fallado."
 
-#: gecoscc/static/js/app-utils.js:341
+#: gecoscc/static/js/app-utils.js:319
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr "No se pudo eliminar el %s"
@@ -130,11 +110,11 @@ msgstr "El dominio no es Gecos."
 msgid "Only local users can be added."
 msgstr "Solo los usuarios locales pueden ser añadidos."
 
-#: gecoscc/static/js/app.js:503
+#: gecoscc/static/js/app.js:504
 msgid "Policies can't be directly accessed."
 msgstr "No se puede acceder a las políticas directamente."
 
-#: gecoscc/static/js/app.js:504
+#: gecoscc/static/js/app.js:505
 msgid ""
 "You need to load the node that has the policy assigned first. Try again "
 "now."
@@ -142,7 +122,7 @@ msgstr ""
 "Es necesario cargar primero el nodo que tiene la política asignada. "
 "Pruebe ahora de nuevo."
 
-#: gecoscc/static/js/app.js:510
+#: gecoscc/static/js/app.js:511
 msgid "Policy"
 msgstr "Política"
 
@@ -188,36 +168,36 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/policies-form-generator.js:130
+#: gecoscc/static/js/policies-form-generator.js:126
 msgid "Policy successfully saved."
 msgstr "Política guardada satisfactoriamente"
 
-#: gecoscc/static/js/policies-form-generator.js:155
+#: gecoscc/static/js/policies-form-generator.js:151
 msgid "Policy successfully deleted."
 msgstr "Política borrada satisfactoriamente"
 
-#: gecoscc/static/js/staging.js:64
+#: gecoscc/static/js/staging.js:78
 msgid "Resource marked for deletion."
 msgstr "Recurso marcado para borrado."
 
-#: gecoscc/static/js/staging.js:65
+#: gecoscc/static/js/staging.js:79
 msgid "Your latest changes in this resource will be ignored."
 msgstr "Sus últimos cambios en este recurso serán ignorados."
 
-#: gecoscc/static/js/tree-views-renderer.js:57
-#: gecoscc/static/js/tree-views-renderer.js:77
+#: gecoscc/static/js/tree-views-renderer.js:72
+#: gecoscc/static/js/tree-views-renderer.js:92
 msgid "Add new"
 msgstr "Añadir nuevo"
 
-#: gecoscc/static/js/tree-views-renderer.js:71
+#: gecoscc/static/js/tree-views-renderer.js:86
 msgid "More"
 msgstr "Más"
 
-#: gecoscc/static/js/tree-views-renderer.js:83
+#: gecoscc/static/js/tree-views-renderer.js:98
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:547
 msgid "Loading"
 msgstr "Cargando"
 
@@ -231,7 +211,7 @@ msgid ""
 "children."
 msgstr "Borrar una UO es una acción permanente. También eliminará todos sus hijos."
 
-#: gecoscc/static/js/tree.js:72
+#: gecoscc/static/js/tree.js:73
 msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 
@@ -249,4 +229,16 @@ msgstr ""
 
 #~ msgid "Computer"
 #~ msgstr "Puesto de trabajo"
+
+#~ msgid "Object changed."
+#~ msgstr "Objeto cambiado."
+
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "Object deleted."
+#~ msgstr "Objeto borrado"
+
+#~ msgid "Someone has deleted this object while you were working on it"
+#~ msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
 
