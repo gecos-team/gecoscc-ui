@@ -11,7 +11,6 @@ from socketio.virtsocket import Socket
 
 CHANNEL_WEBSOCKET = 'message'
 TOKEN = 'token'
-USERNAME = 'gcc_username'
 
 
 def get_manager(request):
@@ -38,10 +37,11 @@ def invalidate_delete(request, schema_detail, objtype, obj):
     }))
 
 
-def invalidate_jobs(request):
+def invalidate_jobs(request, user=None):
+    user = user or request.user
     manager = get_manager(request)
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'username': request.POST.get(USERNAME),
+        'username': user.get('username'),
         'action': 'jobs',
     }))
 

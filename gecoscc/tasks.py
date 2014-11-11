@@ -15,6 +15,7 @@ from jsonschema.exceptions import ValidationError
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy
+from gecoscc.socks import invalidate_jobs
 # It is necessary import here: apply_policies_to_computer and apply_policies_to_user
 from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
@@ -380,7 +381,7 @@ class ChefTask(Task):
     def report_error(self, exception, job_ids, computer, prefix=None):
         message = 'No save in chef server.'
         if prefix:
-            message = "%s %s" % (message, prefix)
+            message = "%s %s" % (prefix, message)
         message = "%s %s" % (message, unicode(exception))
         for job_id in job_ids:
             self.db.jobs.update(
@@ -409,6 +410,7 @@ class ChefTask(Task):
         api = get_chef_api(self.app.conf, user)
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
+        are_new_jobs = False
         for computer in computers:
             try:
                 job_ids_by_computer = []
@@ -421,6 +423,7 @@ class ChefTask(Task):
                     node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
                 if not updated:
                     continue
+                are_new_jobs = True
                 self.validate_data(node, cookbook, api)
                 node.save()
                 if error_last_saved:
@@ -430,10 +433,14 @@ class ChefTask(Task):
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
+                are_new_jobs = True
             except Exception as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer)
+                are_new_jobs = True
+        if are_new_jobs:
+            invalidate_jobs(self.request, user)
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)
