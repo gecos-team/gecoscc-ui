@@ -76,12 +76,15 @@ class GecosNamespace(BaseNamespace):
         r = redis.StrictRedis(**settings['redis.conf'])
         r = r.pubsub()
 
-        r.subscribe(CHANNEL_WEBSOCKET)
+        try:
+            r.subscribe(CHANNEL_WEBSOCKET)
 
-        for m in r.listen():
-            if m['type'] == 'message':
-                data = json.loads(m['data'])
-                self.emit(CHANNEL_WEBSOCKET, data)
+            for m in r.listen():
+                if m['type'] == 'message':
+                    data = json.loads(m['data'])
+                    self.emit(CHANNEL_WEBSOCKET, data)
+        except redis.ConnectionError:
+            self.emit(CHANNEL_WEBSOCKET, {'redis':'error'})
 
     def on_subscribe(self, *args, **kwargs):
         self.spawn(self.listener)
