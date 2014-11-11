@@ -14,13 +14,13 @@ CHANNEL_WEBSOCKET = 'message'
 TOKEN = 'token'
 
 
-def get_manager(request):
+def get_manager():
     settings = get_current_registry().settings
     return redis.Redis(**settings['redis.conf'])
 
 
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'change',
@@ -30,7 +30,7 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
 
 
 def invalidate_delete(request, schema_detail, objtype, obj):
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
@@ -41,7 +41,7 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 
 def invalidate_jobs(request, user=None):
     user = user or request.user
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'username': user.get('username'),
         'action': 'jobs',
