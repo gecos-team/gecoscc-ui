@@ -17,7 +17,8 @@ def setAcceptedLanguagesLocale(event):
     accepted = event.request.accept_language
     settings = get_current_registry().settings
     default_locale_name = settings['pyramid.default_locale_name']
-    event.request._LOCALE_ = accepted.best_match(('en', 'es'), default_locale_name)
+    locales = settings['pyramid.locales']
+    event.request._LOCALE_ = accepted.best_match(locales, default_locale_name)
 
 
 @subscriber(NewRequest)
