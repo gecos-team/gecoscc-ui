@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-11-11 09:42+0100\n"
+"POT-Creation-Date: 2014-11-11 13:21+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -16,50 +16,70 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:217
+#: gecoscc/static/js/app-utils.js:123
+msgid "Object changed."
+msgstr "Objeto cambiado."
+
+#: gecoscc/static/js/app-utils.js:124
+msgid ""
+"Someone has changed this object while you were working on it, please "
+"reload before applying any changes."
+msgstr ""
+"Alguien ha modificado este objeto mientras estabas trabajando en él, por favor "
+"recarga antes de aplicar tus cambios."
+
+#: gecoscc/static/js/app-utils.js:134
+msgid "Object deleted."
+msgstr "Objeto borrado"
+
+#: gecoscc/static/js/app-utils.js:135
+msgid "Someone has deleted this object while you were working on it"
+msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
+
+#: gecoscc/static/js/app-utils.js:245
 msgid "Staging"
 msgstr "Almacenando temporalmente"
 
-#: gecoscc/static/js/app-utils.js:221
+#: gecoscc/static/js/app-utils.js:249
 msgid "Save"
 msgstr "Guardar"
 
-#: gecoscc/static/js/app-utils.js:221
+#: gecoscc/static/js/app-utils.js:249
 #: gecoscc/static/js/tree-views-renderer.js:95
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/static/js/app-utils.js:222
+#: gecoscc/static/js/app-utils.js:250
 msgid "Done"
 msgstr "Completado"
 
-#: gecoscc/static/js/app-utils.js:231
+#: gecoscc/static/js/app-utils.js:259
 msgid "Something went wrong, please try again in a few moments."
 msgstr "Se produjo un error, por favor, pruebe de nuevo más tarde."
 
-#: gecoscc/static/js/app-utils.js:232
+#: gecoscc/static/js/app-utils.js:260
 #, python-format
 msgid "Resource ID: %s"
 msgstr "ID del recurso: %s"
 
-#: gecoscc/static/js/app-utils.js:236
+#: gecoscc/static/js/app-utils.js:264
 msgid "Status"
 msgstr "Estado"
 
-#: gecoscc/static/js/app-utils.js:250
+#: gecoscc/static/js/app-utils.js:278
 msgid "Invalid data."
 msgstr "Datos inválidos."
 
-#: gecoscc/static/js/app-utils.js:251
+#: gecoscc/static/js/app-utils.js:279
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:288
+#: gecoscc/static/js/app-utils.js:316
 #, python-format
 msgid "Saving the %s failed."
 msgstr "El guardado de %s ha fallado."
 
-#: gecoscc/static/js/app-utils.js:319
+#: gecoscc/static/js/app-utils.js:347
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr "No se pudo eliminar el %s"

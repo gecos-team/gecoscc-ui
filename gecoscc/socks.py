@@ -14,13 +14,13 @@ CHANNEL_WEBSOCKET = 'message'
 TOKEN = 'token'
 
 
-def get_manager(request):
+def get_manager():
     settings = get_current_registry().settings
     return redis.Redis(**settings['redis.conf'])
 
 
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'change',
@@ -30,7 +30,7 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
 
 
 def invalidate_delete(request, schema_detail, objtype, obj):
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
@@ -41,7 +41,7 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 
 def invalidate_jobs(request, user=None):
     user = user or request.user
-    manager = get_manager(request)
+    manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'username': user.get('username'),
         'action': 'jobs',
@@ -76,12 +76,15 @@ class GecosNamespace(BaseNamespace):
         r = redis.StrictRedis(**settings['redis.conf'])
         r = r.pubsub()
 
-        r.subscribe(CHANNEL_WEBSOCKET)
+        try:
+            r.subscribe(CHANNEL_WEBSOCKET)
 
-        for m in r.listen():
-            if m['type'] == 'message':
-                data = json.loads(m['data'])
-                self.emit(CHANNEL_WEBSOCKET, data)
+            for m in r.listen():
+                if m['type'] == 'message':
+                    data = json.loads(m['data'])
+                    self.emit(CHANNEL_WEBSOCKET, data)
+        except redis.ConnectionError:
+            self.emit(CHANNEL_WEBSOCKET, {'redis':'error'})
 
     def on_subscribe(self, *args, **kwargs):
         self.spawn(self.listener)

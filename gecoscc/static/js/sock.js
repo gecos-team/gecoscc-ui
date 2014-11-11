@@ -30,6 +30,12 @@ var MessageManager = function () {
         var handlers,
             handler,
             i;
+
+        if (result.hasOwnProperty('redis')) {
+            if(result.redis === 'error'){
+                $("#redis-modal").modal({backdrop: 'static'});
+            }
+        }
         if (result.hasOwnProperty('action')) {
             handlers = manager_handlers[result.action] || [];
             for (i = 0; i < handlers.length; i += 1) {
