@@ -1,3 +1,4 @@
+import json
 import os
 import pymongo
 
@@ -43,6 +44,8 @@ def route_config(config):
 
 
 def sockjs_config(config):
+    settings = config.registry.settings
+    settings['redis.conf'] = json.loads(settings['redis.conf'])
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
 

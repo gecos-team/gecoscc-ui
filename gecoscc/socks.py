@@ -2,6 +2,7 @@ import redis
 import simplejson as json
 
 from pyramid.response import Response
+from pyramid.threadlocal import get_current_registry
 
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
@@ -14,7 +15,8 @@ TOKEN = 'token'
 
 
 def get_manager(request):
-    return redis.Redis()
+    settings = get_current_registry().settings
+    return redis.Redis(**settings['redis.conf'])
 
 
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
@@ -70,7 +72,8 @@ class GecosGeventSocketIOWorker(GeventSocketIOWorker):
 class GecosNamespace(BaseNamespace):
 
     def listener(self):
-        r = redis.StrictRedis()
+        settings = get_current_registry().settings
+        r = redis.StrictRedis(**settings['redis.conf'])
         r = r.pubsub()
 
         r.subscribe(CHANNEL_WEBSOCKET)
