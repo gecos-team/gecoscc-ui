@@ -39,6 +39,10 @@ var MessageManager = function () {
         }
     });
 
+    socket.on('disconnect', function() {
+        $("#socket-modal").modal({backdrop: 'static'});
+    });
+
     return {
         bind: function (action, callback) {
             var handlers = manager_handlers[action] = manager_handlers[action] || [];
