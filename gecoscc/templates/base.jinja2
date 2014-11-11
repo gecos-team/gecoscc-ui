@@ -102,7 +102,11 @@
                         }
                         confirmModal.modal("show");
                     },
-                    gecosUser: {{ request.user|admin_jsonify|safe }}
+                    {% if request.user %}
+                        gecosUser: {{ request.user|admin_jsonify|safe }}
+                    {% else %}
+                        gecosUser: null
+                    {% endif %}
                 };
             });
             {% if request.user and request.user.get('is_superuser') %}

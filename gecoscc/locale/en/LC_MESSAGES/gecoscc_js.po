@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-11 09:42+0100\n"
+"POT-Creation-Date: 2014-11-11 13:21+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -17,50 +17,68 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:217
+#: gecoscc/static/js/app-utils.js:123
+msgid "Object changed."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:124
+msgid ""
+"Someone has changed this object while you were working on it, please "
+"reload before applying any changes."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:134
+msgid "Object deleted."
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:135
+msgid "Someone has deleted this object while you were working on it"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:245
 msgid "Staging"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:221
+#: gecoscc/static/js/app-utils.js:249
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:221
+#: gecoscc/static/js/app-utils.js:249
 #: gecoscc/static/js/tree-views-renderer.js:95
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:222
+#: gecoscc/static/js/app-utils.js:250
 msgid "Done"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:231
+#: gecoscc/static/js/app-utils.js:259
 msgid "Something went wrong, please try again in a few moments."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:232
+#: gecoscc/static/js/app-utils.js:260
 #, python-format
 msgid "Resource ID: %s"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:236
+#: gecoscc/static/js/app-utils.js:264
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:250
+#: gecoscc/static/js/app-utils.js:278
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:251
+#: gecoscc/static/js/app-utils.js:279
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:288
+#: gecoscc/static/js/app-utils.js:316
 #, python-format
 msgid "Saving the %s failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:319
+#: gecoscc/static/js/app-utils.js:347
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr ""
