@@ -225,7 +225,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
                 modelCut.set("path", modelParent.get("path") + "," + modelParent.get("id"));
 
-                modelCut.save().done(
+                modelCut.saveWithToken().done(
                     function () {
                         $("#" + modelCut.get("id")).remove();
                         App.instances.tree.updateNodeById(modelParent.get("id"));

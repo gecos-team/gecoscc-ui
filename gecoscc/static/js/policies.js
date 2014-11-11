@@ -78,14 +78,14 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         removePolicy: function (id) {
             this.get("policyCollection").remove(id);
             delete this.get("policies")[id];
-            this.save();
+            this.saveWithToken();
             App.instances.staging.toModify.push(this.get("id"));
         },
 
         addPolicy: function (policyModel, values) {
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
-            this.save();
+            this.saveWithToken();
             App.instances.staging.toModify.push(this.get("id"));
         },
 

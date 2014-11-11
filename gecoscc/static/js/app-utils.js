@@ -82,6 +82,11 @@
             return result;
         },
 
+        saveWithToken: function () {
+            var that = this;
+            return this.save({}, { url: that.url() + "?token=" + App.instances.staging.token });
+        },
+
         save: function () {
             return App.instances.staging.add(this, { arguments: arguments });
         },
@@ -257,7 +262,7 @@
                 that._setPropInModel(relation[0], relation[1]);
             });
 
-            promise = this.model.save({}, { url: that.model.url() + "?token=" + App.instances.staging.token });
+            promise = this.model.saveWithToken();
             setTimeout(function () {
                 that._showSavingProcess($button, "saved");
                 if (!isNew) {
