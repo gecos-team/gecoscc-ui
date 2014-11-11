@@ -40,6 +40,9 @@ class RegisterComputerResource(BaseAPI):
         if not computer_id:
             return {'ok': False,
                     'message': 'Node does not exist (in chef)'}
+        elif computer_id == 'duplicated':
+            return {'ok': False,
+                    'message': 'There is another node with this name (in gcc)'}
         computer = self.collection.find_one({'_id': computer_id})
         apply_policies_to_computer(self.collection, computer, self.request.user)
         return {'ok': True}
