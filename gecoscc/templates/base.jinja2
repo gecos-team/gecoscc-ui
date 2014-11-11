@@ -43,6 +43,20 @@
             </div><!-- /.modal-dialog -->
         </div><!-- /.modal -->
 
+        <div id="socket-modal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header alert alert-danger">
+                        <h4 class="modal-title">{{ gettext('Connection problems') }}</h4>
+                    </div>
+                    <div class="modal-body"><p>{{ gettext('There are problems to connect with the server, please reload page.') }}</p></div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="javascript:window.location.reload()" class="btn btn-default" data-dismiss="modal">{{ gettext('Reload page') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <span class="pull-right">&copy; 2013 <a href="http://www.github.com/gecos-team">GECOS CC</a></span>
         </footer>
@@ -81,7 +95,7 @@
                 };
             });
             {% if request.user and request.user.get('is_superuser') %}
-            var emptyTree = 
+            var emptyTree =
                 '<a href="#newroot">\n' +
                 '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
                 '</a>\n';
