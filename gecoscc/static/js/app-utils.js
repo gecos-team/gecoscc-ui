@@ -111,6 +111,34 @@
             }
         },
 
+        initialize: function () {
+            this.listenTo(App, 'action_change', this.onActionChange);
+            this.listenTo(App, 'action_delete', this.onActionDelete);
+        },
+
+        onActionChange: function (obj) {
+            if (App.instances.staging.token !== obj.token && this.model.id === obj.objectId) {
+                App.showAlert(
+                    "error",
+                    gettext("Object changed."),
+                    gettext("Someone has changed this object while you were working on it, please reload before applying any changes.")
+                );
+                this.disableSave();
+            }
+        },
+
+        onActionDelete: function (obj) {
+            if (App.instances.staging.token !== obj.token && this.model.id === obj.objectId) {
+                App.showAlert(
+                    "error",
+                    gettext("Object deleted."),
+                    gettext("Someone has deleted this object while you were working on it")
+                );
+                this.disableSave();
+            }
+        },
+
+
         disableSave: function () {
             var $save = this.$el.find("#submit");
             $save.attr('disabled', 'disabled');
