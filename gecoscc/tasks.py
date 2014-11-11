@@ -628,6 +628,7 @@ def object_created(user, objtype, obj, computers=None):
             return func(user, obj, computers=computers)
         except Exception as e:
             self.report_unknown_error(e, user, obj, 'created')
+            invalidate_jobs(self.request, user)
     else:
         self.log('error', 'The method {0}_created does not exist'.format(
             objtype))
@@ -642,6 +643,7 @@ def object_changed(user, objtype, objnew, objold, computers=None):
             return func(user, objnew, objold, computers=computers)
         except Exception as e:
             self.report_unknown_error(e, user, objnew, 'changed')
+            invalidate_jobs(self.request, user)
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
             objtype))
@@ -656,6 +658,7 @@ def object_moved(user, objtype, objnew, objold):
             return func(user, objnew, objold)
         except Exception as e:
             self.report_unknown_error(e, user, objnew, 'moved')
+            invalidate_jobs(self.request, user)
     else:
         self.log('error', 'The method {0}_changed does not exist'.format(
             objtype))
@@ -664,13 +667,13 @@ def object_moved(user, objtype, objnew, objold):
 @task(base=ChefTask)
 def object_deleted(user, objtype, obj):
     self = object_changed
-
     func = getattr(self, '{0}_deleted'.format(objtype), None)
     if func is not None:
         try:
             return func(user, obj)
         except Exception as e:
             self.report_unknown_error(e, user, obj, 'deleted')
+            invalidate_jobs(self.request, user)
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
