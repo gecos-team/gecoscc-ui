@@ -14,7 +14,8 @@ from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
                                  master_policy_no_updated_or_403)
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
-from gecoscc.utils import get_computer_of_user, get_filter_in_domain, get_filter_nodes_parents_ou, oids_filter
+from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
+                           oids_filter, check_unique_node_name_by_type_at_domain)
 
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
@@ -317,20 +318,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 class TreeResourcePaginated(ResourcePaginated):
 
     def check_unique_node_name_by_type_at_domain(self, obj):
-        filters = {}
-        levels = obj['path'].count(',')
-        if levels >= 2:
-            filters['path'] = get_filter_in_domain(obj)
-        else:
-            current_path = obj['path']
-            filters['path'] = ','.join(current_path)
-
-        filters['name'] = obj['name']
-        filters['type'] = obj['type']
-
-        if '_id' in obj:
-            filters['_id'] = {'$ne': obj['_id']}
-        return self.request.db.nodes.find(filters).count() == 0
+        return check_unique_node_name_by_type_at_domain(self.request.db.nodes, obj)
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """

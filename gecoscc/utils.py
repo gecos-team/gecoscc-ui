@@ -10,6 +10,7 @@ from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
+
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
@@ -381,6 +382,7 @@ def get_cookbook(api, cookbook_name):
 
 
 def register_node(api, node_id, ou, collection_nodes):
+    from gecoscc.models import Computer
     node = ChefNode(node_id, api)
     if not node.attributes.to_dict():
         return False
@@ -388,20 +390,21 @@ def register_node(api, node_id, ou, collection_nodes):
         computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
     except KeyError:
         computer_name = node_id
-    node_id = collection_nodes.insert({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
-                                       'name': computer_name,
-                                       'type': 'computer',
-                                       'lock': False,
-                                       'source': SOURCE_DEFAULT,
-                                       'memberof': [],
-                                       'policies': {},
-                                       'registry': '',
-                                       'family': 'desktop',
-                                       'node_chef_id': node_id})
-    return node_id
+    comp_model = Computer()
+    computer = comp_model.serialize({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
+                                     'name': computer_name,
+                                     'type': 'computer',
+                                     'source': ou.get('source', SOURCE_DEFAULT),
+                                     'node_chef_id': node_id})
+    del computer['_id']
+    if check_unique_node_name_by_type_at_domain(collection_nodes, computer):
+        node_id = collection_nodes.insert(computer)
+        return node_id
+    return 'duplicated'
 
 
 def update_node(api, node_id, ou, collection_nodes):
+    from gecoscc.models import Computer
     node = ChefNode(node_id, api)
     if not node.attributes.to_dict():
         return False
@@ -409,17 +412,15 @@ def update_node(api, node_id, ou, collection_nodes):
         computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
     except KeyError:
         computer_name = node_id
+    comp_model = Computer()
+    computer = comp_model.serialize({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
+                                     'name': computer_name,
+                                     'type': 'computer',
+                                     'source': ou.get('source', SOURCE_DEFAULT),
+                                     'node_chef_id': node_id})
+    del computer['_id']
     node_id = collection_nodes.update({'node_chef_id': node_id},
-                                      {'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
-                                       'name': computer_name,
-                                       'type': 'computer',
-                                       'lock': False,
-                                       'source': SOURCE_DEFAULT,
-                                       'memberof': [],
-                                       'policies': {},
-                                       'registry': '',
-                                       'family': 'desktop',
-                                       'node_chef_id': node_id})
+                                      computer)
     return node_id
 
 
@@ -454,6 +455,23 @@ def get_domain(node, collection_node):
 def get_filter_in_domain(node):
     path_domain = get_domain_path(node)
     return {'$regex': '^%s' % ','.join(path_domain)}
+
+
+def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
+    filters = {}
+    levels = obj['path'].count(',')
+    if levels >= 2:
+        filters['path'] = get_filter_in_domain(obj)
+    else:
+        current_path = obj['path']
+        filters['path'] = ','.join(current_path)
+
+    filters['name'] = obj['name']
+    filters['type'] = obj['type']
+
+    if '_id' in obj:
+        filters['_id'] = {'$ne': obj['_id']}
+    return collection_nodes.find(filters).count() == 0
 
 
 def _is_local_user(user):
