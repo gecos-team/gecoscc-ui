@@ -246,6 +246,12 @@
                 $li.find("textarea").toggleClass("hide");
             });
 
+            {% if websockets_enabled %}
+                window.GecosUtils.websocketsEnabled = {{ websockets_enabled }};
+            {% else %}
+                window.GecosUtils.websocketsEnabled = null;
+            {% endif %}
+
             App.start();
         });
     </script>
