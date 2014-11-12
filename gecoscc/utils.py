@@ -16,6 +16,7 @@ RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
+USE_NODE = 'use_node'
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
