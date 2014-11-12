@@ -1,6 +1,10 @@
+import datetime
+import json
 import os
+import pytz
 
-from bson import ObjectId
+
+from bson import ObjectId, json_util
 from copy import deepcopy
 
 from chef import ChefAPI, Client
@@ -16,6 +20,7 @@ RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
+USE_NODE = 'use_node'
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -173,6 +178,8 @@ def remove_chef_computer_data(computer, api):
     if node_chef_id:
         node = ChefNode(node_chef_id, api)
         if node:
+            if is_node_busy_and_reserve_it(node, api):
+                raise NodeBusyException
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
@@ -180,7 +187,7 @@ def remove_chef_computer_data(computer, api):
                 if mgmt == USER_MGMT:
                     continue
                 cookbook.pop(mgmt)
-            node.save()
+            save_node_and_free(node)
 
 
 def remove_chef_user_data(user, computers, api):
@@ -191,6 +198,8 @@ def remove_chef_user_data(user, computers, api):
         if node_chef_id:
             node = ChefNode(node_chef_id, api)
         if node:
+            if is_node_busy_and_reserve_it(node, api):
+                raise NodeBusyException
             try:
                 user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
                 for policy in user_mgmt:
@@ -201,9 +210,46 @@ def remove_chef_user_data(user, computers, api):
                         users.pop(user['name'])
                     except KeyError:
                         continue
-                node.save()
+                save_node_and_free(node)
             except KeyError:
-                pass
+                save_node_and_free(node)
+
+
+TIME_TO_EXP = datetime.timedelta(hours=1)
+
+
+def is_node_busy_and_reserve_it(node, api, controller_requestor='gcc'):
+    current_use_node = node.attributes.get(USE_NODE, {})
+    current_use_node_control = current_use_node.get('control', None)
+    current_use_node_exp_date = current_use_node.get('exp_date', None)
+    if current_use_node_exp_date:
+        current_use_node_exp_date = json.loads(current_use_node_exp_date, object_hook=json_util.object_hook)
+        current_use_node_exp_date = current_use_node_exp_date.astimezone(pytz.utc).replace(tzinfo=None)
+        now = datetime.datetime.now()
+        if now - current_use_node_exp_date > TIME_TO_EXP:
+            current_use_node_control = None
+    if current_use_node_control == controller_requestor:
+        return False
+    elif current_use_node_control is None:
+        exp_date = datetime.datetime.utcnow() + TIME_TO_EXP
+        node.attributes.set_dotted(USE_NODE, {'control': controller_requestor,
+                                              'exp_date': json.dumps(exp_date, default=json_util.default)})
+        node.save()
+        node2 = ChefNode(node.name, api)  # second check
+        current_use_node2 = node2.attributes.get(USE_NODE, {})
+        current_use_control2 = current_use_node2.get('control', None)
+        if current_use_control2 == controller_requestor:
+            return False
+    return True
+
+
+def save_node_and_free(node):
+    node.attributes.set_dotted(USE_NODE, {})
+    node.save()
+
+
+class NodeBusyException(Exception):
+    pass
 
 
 # Utils to NodeAttributes chef class
