@@ -50,10 +50,10 @@ class ChefStatusResource(BaseAPI):
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
-        if is_node_busy_and_reserve_it(node, api):
-            raise NodeBusyException
         job_status = node.attributes.get('job_status')
         if job_status:
+            if is_node_busy_and_reserve_it(node, api):
+                raise NodeBusyException
             for job_id, job_status in job_status.to_dict().items():
                 job = self.collection.find_one({'_id': ObjectId(job_id)})
                 if not job:
