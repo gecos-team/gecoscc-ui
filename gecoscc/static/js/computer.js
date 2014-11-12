@@ -96,24 +96,25 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             var now = new Date(),
                 lastConnection,
                 interval,
+                chef_client,
                 errors = [];
 
             //No data received
             if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
-                this.model.set("uptime", "-");
-                this.model.set("last_connection", "Error");
-                this.model.set("iconClass", "info-icon-danger");
-                this.model.set("labelClass", "label-danger");
-                App.showAlert(
-                    "error",
+                this.alertError(
                     gettext("No data has been received from this workstation."),
                     gettext("Check connection with Chef server.")
                 );
                 return;
             }
 
-
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
+            chef_client = this.model.get("ohai").chef_client;
+            if (_.isUndefined(chef_client)) {
+                this.alertError(gettext("This workstation has incomplete Ohai information."));
+                return;
+            }
+
             interval = this.model.get("ohai").chef_client.interval / 60;
             now.setMinutes(now.getMinutes() - interval);
             if (lastConnection < now) {
@@ -137,6 +138,18 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
+        },
+
+        alertError: function (strong, text) {
+            this.model.set("uptime", "-");
+            this.model.set("last_connection", "Error");
+            this.model.set("iconClass", "info-icon-danger");
+            this.model.set("labelClass", "label-danger");
+            App.showAlert(
+                "error",
+                strong,
+                text
+            );
         },
 
         calculateTimeToNow: function (time) {
