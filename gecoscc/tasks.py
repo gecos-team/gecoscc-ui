@@ -433,6 +433,7 @@ class ChefTask(Task):
                 node = Node(node_chef_id, api)
                 if is_node_busy_and_reserve_it(node, api, 'gcc'):
                     self.report_node_busy(computer, user, obj, action)
+                    are_new_jobs = True
                     continue
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
