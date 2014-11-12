@@ -40,8 +40,7 @@ class ChefClientRunResource(BaseAPI):
         if not node.attributes.to_dict():
             return {'ok': False,
                     'message': 'The node does not exists (in chef)'}
-        is_busy = is_node_busy_and_reserve_it(node, api, 'client')
-        if is_busy:
+        if is_node_busy_and_reserve_it(node, api, 'client'):
             return {'ok': False,
                     'message': 'The node is busy'}
         return {'ok': True}

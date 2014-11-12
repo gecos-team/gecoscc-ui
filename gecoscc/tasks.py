@@ -20,7 +20,8 @@ from gecoscc.socks import invalidate_jobs
 from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
-                           delete_dotted, to_deep_dict, is_node_busy_and_reserve_it, save_node_and_free,
+                           delete_dotted, to_deep_dict, reserve_node_or_raise,
+                           save_node_and_free, NodeBusyException,
                            apply_policies_to_computer, apply_policies_to_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
@@ -431,10 +432,7 @@ class ChefTask(Task):
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = Node(node_chef_id, api)
-                if is_node_busy_and_reserve_it(node, api, 'gcc'):
-                    self.report_node_busy(computer, user, obj, action)
-                    are_new_jobs = True
-                    continue
+                reserve_node_or_raise(node, api, 'gcc')
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
@@ -448,6 +446,9 @@ class ChefTask(Task):
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
+            except NodeBusyException as e:
+                self.report_node_busy(computer, user, obj, action)
+                are_new_jobs = True
             except ValidationError as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
