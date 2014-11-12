@@ -11,8 +11,8 @@ from gecoscc.api import BaseAPI
 from gecoscc.models import Job
 from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
-                           apply_policies_to_user, is_node_busy_and_reserve_it,
-                           save_node_and_free, NodeBusyException)
+                           apply_policies_to_user, reserve_node_or_raise,
+                           save_node_and_free)
 from gecoscc.socks import invalidate_jobs
 
 
@@ -52,8 +52,7 @@ class ChefStatusResource(BaseAPI):
         node = Node(node_id, api)
         job_status = node.attributes.get('job_status')
         if job_status:
-            if is_node_busy_and_reserve_it(node, api):
-                raise NodeBusyException
+            reserve_node_or_raise(node, api)
             for job_id, job_status in job_status.to_dict().items():
                 job = self.collection.find_one({'_id': ObjectId(job_id)})
                 if not job:

@@ -19,9 +19,8 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import (get_chef_api, is_node_busy_and_reserve_it,
-                           save_node_and_free, MASTER_DEFAULT,
-                           NodeBusyException)
+from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
+                           save_node_and_free, MASTER_DEFAULT)
 
 logger = logging.getLogger(__name__)
 
@@ -530,8 +529,7 @@ class ADImport(BaseAPI):
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
                     chef_server_node = Node(mongoObject['name'], api=chef_server_api)
-                    if is_node_busy_and_reserve_it(chef_server_node, chef_server_api):
-                        raise NodeBusyException
+                    reserve_node_or_raise(chef_server_node, chef_server_api)
                     ohai_gecos_in_runlist = self.RECIPE_NAME_OHAI_GECOS in chef_server_node.run_list
                     gecos_ws_mgmt_in_runlist = self.RECIPE_NAME_GECOS_WS_MGMT in chef_server_node.run_list
                     if not ohai_gecos_in_runlist and not gecos_ws_mgmt_in_runlist:

@@ -178,8 +178,7 @@ def remove_chef_computer_data(computer, api):
     if node_chef_id:
         node = ChefNode(node_chef_id, api)
         if node:
-            if is_node_busy_and_reserve_it(node, api):
-                raise NodeBusyException
+            reserve_node_or_raise(node, api)
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
@@ -198,8 +197,7 @@ def remove_chef_user_data(user, computers, api):
         if node_chef_id:
             node = ChefNode(node_chef_id, api)
         if node:
-            if is_node_busy_and_reserve_it(node, api):
-                raise NodeBusyException
+            reserve_node_or_raise(node, api)
             try:
                 user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
                 for policy in user_mgmt:
@@ -216,6 +214,11 @@ def remove_chef_user_data(user, computers, api):
 
 
 TIME_TO_EXP = datetime.timedelta(hours=1)
+
+
+def reserve_node_or_raise(node, api, controller_requestor='gcc'):
+    if is_node_busy_and_reserve_it(node, api, controller_requestor):
+        raise NodeBusyException
 
 
 def is_node_busy_and_reserve_it(node, api, controller_requestor='gcc'):
