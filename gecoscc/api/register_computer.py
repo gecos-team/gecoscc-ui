@@ -8,7 +8,7 @@ from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import get_chef_api, register_node, apply_policies_to_computer
-
+from gecoscc.socks import update_tree
 
 @resource(path='/register/computer/',
           description='Register computer from chef',
@@ -45,6 +45,7 @@ class RegisterComputerResource(BaseAPI):
                     'message': 'There is another node with this name (in gcc)'}
         computer = self.collection.find_one({'_id': computer_id})
         apply_policies_to_computer(self.collection, computer, self.request.user)
+        update_tree()
         return {'ok': True}
 
     def put(self):
