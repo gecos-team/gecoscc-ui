@@ -130,6 +130,13 @@
 {% endblock %}
 
 {% block extrajs %}
+    <script>
+        {% if websockets_enabled %}
+            window.websocketsEnabled = {{ websockets_enabled }};
+        {% else %}
+            window.websocketsEnabled = null;
+        {% endif %}
+    </script>
     <script src="{{request.application_url}}/static/js/libs/backbone-1.1.2.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/backbone.paginator-0.8.1.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/backbone-marionette-1.7.3.min.js"></script>
@@ -245,12 +252,6 @@
                     .addClass(hidden ? "fa-caret-down" : "fa-caret-right");
                 $li.find("textarea").toggleClass("hide");
             });
-
-            {% if websockets_enabled %}
-                window.GecosUtils.websocketsEnabled = {{ websockets_enabled }};
-            {% else %}
-                window.GecosUtils.websocketsEnabled = null;
-            {% endif %}
 
             App.start();
         });

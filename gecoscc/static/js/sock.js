@@ -22,9 +22,6 @@
 
 var MessageManager = function () {
     "use strict";
-    if (!window.GecosUtils.websocketsEnabled) {
-        return;
-    }
     var socket = io.connect(),
         manager_handlers = {};
     socket.emit('subscribe');

@@ -562,19 +562,21 @@ var App;
         App.events.show(new JobsView({collection: App.instances.job_collection}));
     });
 
-    App.instances.message_manager = new MessageManager();
-    App.instances.message_manager.bind('change', function (result) {
-        App.instances.cache.drop(result.objectId);
-        App.trigger('action_change', result);
-    });
-    App.instances.message_manager.bind('delete', function (result) {
-        App.instances.cache.drop(result.objectId);
-        App.trigger('action_delete', result);
-    });
-    App.instances.message_manager.bind('jobs', function (result) {
-        if (result.username === window.GecosUtils.gecosUser.username) {
-            App.instances.job_collection.fetch();
-        }
-    });
+    if (window.websocketsEnabled) {
+        App.instances.message_manager = new MessageManager();
+        App.instances.message_manager.bind('change', function (result) {
+            App.instances.cache.drop(result.objectId);
+            App.trigger('action_change', result);
+        });
+        App.instances.message_manager.bind('delete', function (result) {
+            App.instances.cache.drop(result.objectId);
+            App.trigger('action_delete', result);
+        });
+        App.instances.message_manager.bind('jobs', function (result) {
+            if (result.username === window.GecosUtils.gecosUser.username) {
+                App.instances.job_collection.fetch();
+            }
+        });
+    }
     App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));
