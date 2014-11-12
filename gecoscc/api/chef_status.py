@@ -10,7 +10,9 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.api import BaseAPI
 from gecoscc.models import Job
 from gecoscc.models import User
-from gecoscc.utils import get_chef_api, get_filter_in_domain, apply_policies_to_user
+from gecoscc.utils import (get_chef_api, get_filter_in_domain,
+                           apply_policies_to_user, is_node_busy_and_reserve_it,
+                           save_node_and_free, NodeBusyException)
 from gecoscc.socks import invalidate_jobs
 
 
@@ -48,6 +50,8 @@ class ChefStatusResource(BaseAPI):
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
+        if is_node_busy_and_reserve_it(node, api):
+            raise NodeBusyException
         job_status = node.attributes.get('job_status')
         if job_status:
             for job_id, job_status in job_status.to_dict().items():
@@ -66,12 +70,13 @@ class ChefStatusResource(BaseAPI):
                                                      'last_update': datetime.datetime.utcnow()}})
                     invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
-            node.save()
 
         users_old = self.get_attr(node, USERS_OLD)
         users = self.get_attr(node, USERS_OHAI)
         if not users_old or users_old != users:
             return self.check_users(node)
+        if job_status:
+            save_node_and_free(node)
         return {'ok': True}
 
     def check_users(self, chef_node):
@@ -118,6 +123,6 @@ class ChefStatusResource(BaseAPI):
             apply_policies_to_user(node_collection, user, self.request.user)
 
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
-        chef_node.save()
+        save_node_and_free(chef_node)
 
         return {'ok': True}
