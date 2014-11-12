@@ -61,6 +61,15 @@ def invalidate_jobs(request, user=None):
         'action': 'jobs',
     }))
 
+def update_tree():
+    if not is_websockets_enabled():
+        return
+
+    manager = get_manager()
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'action': 'update_tree'
+    }))
+
 
 class GecosSocketIOServer(SocketIOServer):
 
