@@ -2,6 +2,8 @@ import json
 import os
 import pymongo
 
+from ConfigParser import ConfigParser
+
 from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
 from pyramid.config import Configurator
@@ -43,12 +45,16 @@ def route_config(config):
     config.add_route('forbidden-view', '/error403/')
 
 
-def sockjs_config(config):
+def sockjs_config(config, global_config):
     settings = config.registry.settings
     settings['redis.conf'] = json.loads(settings['redis.conf'])
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
 
+    parser = ConfigParser({'here': global_config['here']})
+    parser.read(global_config['__file__'])
+    for k, v in parser.items('server:main'):
+        settings['server:main:' + k] = v
 
 def route_config_auxiliary(config, route_prefix):
     config.add_route('sockjs_home', route_prefix)
@@ -177,7 +183,7 @@ def main(global_config, **settings):
                           'pyramid.events.NewRequest')
 
     route_config(config)
-    sockjs_config(config)
+    sockjs_config(config, global_config)
 
     config.set_request_property(is_logged, 'is_logged', reify=True)
     config.set_request_property(get_jobstorage, 'jobs', reify=True)

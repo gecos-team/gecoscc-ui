@@ -1,15 +1,16 @@
 import logging
+import json
 
 from pyramid.security import remember, forget, authenticated_userid
 from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render
 from pyramid.response import Response
-
 from pyramid.view import view_config, forbidden_view_config
 
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
+from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
 
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 @view_config(route_name='home', renderer='templates/base_tree.jinja2',
              permission='edit')
 def home(context, request):
-    return {}
+    return {'websockets_enabled': json.dumps(is_websockets_enabled())}
 
 
 @view_config(route_name='reports', renderer='templates/reports.jinja2',

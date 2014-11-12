@@ -19,7 +19,15 @@ def get_manager():
     return redis.Redis(**settings['redis.conf'])
 
 
+def is_websockets_enabled():
+    settings = get_current_registry().settings
+    return settings['server:main:worker_class'] == 'gecoscc.socks.GecosGeventSocketIOWorker'
+
+
 def invalidate_change(request, schema_detail, objtype, objnew, objold):
+    if not is_websockets_enabled():
+        return
+
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
@@ -30,6 +38,9 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
 
 
 def invalidate_delete(request, schema_detail, objtype, obj):
+    if not is_websockets_enabled():
+        return
+
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'token': request.GET.get(TOKEN, ''),
@@ -40,6 +51,9 @@ def invalidate_delete(request, schema_detail, objtype, obj):
 
 
 def invalidate_jobs(request, user=None):
+    if not is_websockets_enabled():
+        return
+
     user = user or request.user
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
@@ -52,7 +66,6 @@ class GecosSocketIOServer(SocketIOServer):
 
     def get_socket(self, sessid=''):
         """Return an existing or new client Socket."""
-
         socket = self.sockets.get(sessid)
 
         if socket is None:
@@ -72,7 +85,11 @@ class GecosGeventSocketIOWorker(GeventSocketIOWorker):
 class GecosNamespace(BaseNamespace):
 
     def listener(self):
+        if not is_websockets_enabled():
+            return
+
         settings = get_current_registry().settings
+
         r = redis.StrictRedis(**settings['redis.conf'])
         r = r.pubsub()
 

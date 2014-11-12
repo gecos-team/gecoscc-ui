@@ -32,7 +32,7 @@ var MessageManager = function () {
             i;
 
         if (result.hasOwnProperty('redis')) {
-            if(result.redis === 'error'){
+            if (result.redis === 'error') {
                 $("#redis-modal").modal({backdrop: 'static'});
             }
         }
@@ -45,7 +45,7 @@ var MessageManager = function () {
         }
     });
 
-    socket.on('disconnect', function() {
+    socket.on('disconnect', function () {
         $("#socket-modal").modal({backdrop: 'static'});
     });
 
