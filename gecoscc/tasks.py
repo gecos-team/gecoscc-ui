@@ -437,6 +437,7 @@ class ChefTask(Task):
                 else:
                     node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
                 if not updated:
+                    save_node_and_free(node)
                     continue
                 self.validate_data(node, cookbook, api)
                 save_node_and_free(node)
@@ -449,10 +450,15 @@ class ChefTask(Task):
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
+                save_node_and_free(node)
             except Exception as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer)
+                try:
+                    save_node_and_free(node)
+                except:
+                    pass
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)

@@ -118,10 +118,10 @@ class ChefStatusResource(BaseAPI):
                 node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 users_recalculate_policies.append(user)
 
-        for user in users_recalculate_policies:
-            apply_policies_to_user(node_collection, user, self.request.user)
-
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)
+
+        for user in users_recalculate_policies:
+            apply_policies_to_user(node_collection, user, self.request.user)
 
         return {'ok': True}
