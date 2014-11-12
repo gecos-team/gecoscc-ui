@@ -20,7 +20,7 @@ from gecoscc.socks import invalidate_jobs
 from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
-                           delete_dotted, to_deep_dict,
+                           delete_dotted, to_deep_dict, is_node_busy_and_reserve_it, save_node_and_free,
                            apply_policies_to_computer, apply_policies_to_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
@@ -393,6 +393,21 @@ class ChefTask(Task):
             self.db.nodes.update({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
+    def report_node_busy(self, computer, user, obj, action):
+        job_storage = JobStorage(self.db.jobs, user)
+        job_status = 'errors'
+        message = 'No save in chef server. The node is busy'
+        job = dict(obj=obj,
+                   op=action,
+                   status=job_status,
+                   message=message,
+                   computer=computer,
+                   administrator_username=user['username'])
+        job_storage.create(**job)
+        if not computer.get('error_last_saved', False):
+            self.db.nodes.update({'_id': computer['_id']},
+                                 {'$set': {'error_last_saved': True}})
+
     def report_unknown_error(self, exception, user, obj, action, computer=None):
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'errors'
@@ -416,6 +431,10 @@ class ChefTask(Task):
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = Node(node_chef_id, api)
+                if is_node_busy_and_reserve_it(node, api, 'gcc'):
+                    self.report_node_busy(computer, user, obj, action)
+                    are_new_jobs = True
+                    continue
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
@@ -425,7 +444,7 @@ class ChefTask(Task):
                     continue
                 are_new_jobs = True
                 self.validate_data(node, cookbook, api)
-                node.save()
+                save_node_and_free(node)
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
