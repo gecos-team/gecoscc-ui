@@ -96,8 +96,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             var now = new Date(),
                 lastConnection,
                 interval,
-                chef_client,
-                errors = [];
+                chef_client;
 
             //No data received
             if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
@@ -119,21 +118,21 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             now.setMinutes(now.getMinutes() - interval);
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
-                this.model.set("iconClass", "info-icon-danger");
-                this.model.set("labelClass", "label-danger");
-                errors.push("<br/> - " + gettext("Chef client is not being executed on time."));
+                this.model.set("iconClass", "info-icon-warning");
+                this.model.set("labelClass", "label-warning");
+                App.showAlert(
+                    "warning",
+                    gettext("This workstation is not working properly:"),
+                    "<br/> - " + gettext("Chef client is not being executed on time.")
+                );
             }
 
             if (this.model.get("error_last_saved")) {
                 this.model.set("iconClass", "info-icon-danger");
-                errors.push("<br/> - " + gettext("Last chef client had problems during its execution."));
-            }
-
-            if (!_.isEmpty(errors)) {
                 App.showAlert(
                     "error",
                     gettext("This workstation is not working properly:"),
-                    errors
+                    "<br/> - " + gettext("Last chef client had problems during its execution.")
                 );
             }
 
