@@ -96,6 +96,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             var now = new Date(),
                 lastConnection,
                 interval,
+                intervalDelta,
                 chef_client;
 
             //No data received
@@ -115,7 +116,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             interval = this.model.get("ohai").chef_client.interval / 60;
-            now.setMinutes(now.getMinutes() - interval);
+            intervalDelta = 10;
+            now.setMinutes(now.getMinutes() - interval - intervalDelta);
             if (lastConnection < now) {
                 this.model.set("uptime", "-");
                 this.model.set("iconClass", "info-icon-warning");
