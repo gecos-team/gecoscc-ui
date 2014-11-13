@@ -120,12 +120,9 @@ class ChefStatusResource(BaseAPI):
                 users_recalculate_policies.append(user)
                 add_computer_to_user(node['_id'], user['_id'])
 
-<<<<<<< HEAD
         if reload_clients:
             update_tree()
 
-=======
->>>>>>> review
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)
 
