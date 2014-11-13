@@ -13,7 +13,7 @@ from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            apply_policies_to_user, reserve_node_or_raise,
                            save_node_and_free)
-from gecoscc.socks import invalidate_jobs
+from gecoscc.socks import invalidate_jobs, add_computer_to_user, update_tree
 
 
 USERS_OLD = 'ohai_gecos.users_old'
@@ -90,6 +90,7 @@ class ChefStatusResource(BaseAPI):
                     'message': 'This node does not exist (mongodb)'}
 
         users_recalculate_policies = []
+        reload_clients = False
         for chef_user in users:
             username = chef_user['username']
             if chef_user in users_old or chef_user.get('sudo', False):
@@ -108,6 +109,7 @@ class ChefStatusResource(BaseAPI):
                 del user['_id']
                 user_id = node_collection.insert(user)
                 user = node_collection.find_one({'_id': user_id})
+                reload_clients = True
             if 'computers' not in user:
                 computers = []
             else:
@@ -116,6 +118,10 @@ class ChefStatusResource(BaseAPI):
                 computers.append(node['_id'])
                 node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 users_recalculate_policies.append(user)
+                add_computer_to_user(node['_id'], user['_id'])
+
+        if reload_clients:
+            update_tree()
 
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)

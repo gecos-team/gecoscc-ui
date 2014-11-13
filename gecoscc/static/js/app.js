@@ -589,6 +589,15 @@ var App;
                 }
             });
         });
+        App.instances.message_manager.bind('add_computer_to_user', function (result) {
+            var user = App.instances.cache.get(result.user),
+                computers;
+            if (!_.isUndefined(user) && !_.isUndefined(user.get("computers"))) {
+                computers = user.get("computers");
+                computers.push(result.computer);
+                user.set("computers", computers);
+            }
+        });
     }
     App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));

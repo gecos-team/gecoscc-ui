@@ -61,6 +61,7 @@ def invalidate_jobs(request, user=None):
         'action': 'jobs',
     }))
 
+
 def update_tree():
     if not is_websockets_enabled():
         return
@@ -68,6 +69,18 @@ def update_tree():
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'action': 'update_tree'
+    }))
+
+
+def add_computer_to_user(computer, user):
+    if not is_websockets_enabled():
+        return
+
+    manager = get_manager()
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'action': 'add_computer_to_user',
+        'computer': computer,
+        'user': user
     }))
 
 
