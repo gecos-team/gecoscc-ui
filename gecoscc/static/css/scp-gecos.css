@@ -389,6 +389,10 @@ div.groups-widget .chzn-container {
     color: #999;
 }
 
+.info-icon-warning {
+    color: #f0ad4e;
+}
+
 .info-icon-success {
     color: #5cb85c;
 }

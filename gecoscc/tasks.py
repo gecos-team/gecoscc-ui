@@ -456,6 +456,7 @@ class ChefTask(Task):
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
                 save_node_and_free(node)
                 are_new_jobs = True
+
             except Exception as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
@@ -467,6 +468,7 @@ class ChefTask(Task):
                 are_new_jobs = True
         if are_new_jobs:
             invalidate_jobs(self.request, user)
+
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)
