@@ -79,8 +79,8 @@ def add_computer_to_user(computer, user):
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
         'action': 'add_computer_to_user',
-        'computer': computer,
-        'user': user
+        'computer': unicode(computer),
+        'user': unicode(user)
     }))
 
 

@@ -119,6 +119,7 @@ class ChefStatusResource(BaseAPI):
                 node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 users_recalculate_policies.append(user)
                 add_computer_to_user(node['_id'], user['_id'])
+                reload_clients = True
 
         if reload_clients:
             update_tree()
