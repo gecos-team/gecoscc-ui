@@ -110,16 +110,15 @@ class ChefStatusResource(BaseAPI):
                 user_id = node_collection.insert(user)
                 user = node_collection.find_one({'_id': user_id})
                 reload_clients = True
-            if 'computers' not in user:
-                computers = []
-            else:
-                computers = user['computers']
-            if node['_id'] not in computers:
-                computers.append(node['_id'])
-                node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 users_recalculate_policies.append(user)
-                add_computer_to_user(node['_id'], user['_id'])
-                reload_clients = True
+            else:
+                computers= user.get('computers', [])
+                if node['_id'] not in computers:
+                    computers.append(node['_id'])
+                    node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                    users_recalculate_policies.append(user)
+                    add_computer_to_user(node['_id'], user['_id'])
+                    reload_clients = True
 
         if reload_clients:
             update_tree()
