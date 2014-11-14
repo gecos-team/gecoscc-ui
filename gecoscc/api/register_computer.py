@@ -8,7 +8,7 @@ from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import get_chef_api, register_node, apply_policies_to_computer
-from gecoscc.socks import update_tree
+from gecoscc.socks import delete_computer, update_tree
 
 
 @resource(path='/register/computer/',
@@ -61,11 +61,12 @@ class RegisterComputerResource(BaseAPI):
 
     def delete(self):
         node_id = self.request.GET.get('node_id')
+        computer = self.collection.find_one({'node_chef_id': node_id})
         node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
         num_node_deleted = node_deleted['n']
         if num_node_deleted >= 1:
-            update_tree()
             if num_node_deleted == 1:
+                delete_computer(computer['_id'])
                 return {'ok': True}
             return {'ok': False,
                     'message': 'Deleted %s computers' % num_node_deleted}

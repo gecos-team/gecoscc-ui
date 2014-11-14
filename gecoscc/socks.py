@@ -83,6 +83,18 @@ def add_computer_to_user(computer, user):
         'user': unicode(user)
     }))
 
+def delete_computer(object_id):
+    if not is_websockets_enabled():
+        return
+
+    manager = get_manager()
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'token': '',
+        'action': 'delete',
+        'objectId': unicode(object_id),
+        'user': 'Chef server'
+    }))
+
 
 class GecosSocketIOServer(SocketIOServer):
 
