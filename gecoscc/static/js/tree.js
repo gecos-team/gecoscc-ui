@@ -153,7 +153,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 that.updateNodeById(result.objectId);
             });
             this.listenTo(App, 'action_delete', function (result) {
-                App.tree.currentView.$el.find("#" + result.objectId).remove();
+                that.reloadTree();
             });
         },
         getUrl: function (options) {
