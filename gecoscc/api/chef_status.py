@@ -109,14 +109,13 @@ class ChefStatusResource(BaseAPI):
                 del user['_id']
                 user_id = node_collection.insert(user)
                 user = node_collection.find_one({'_id': user_id})
-            if 'computers' not in user:
-                computers = []
-            else:
-                computers = user['computers']
-            if node['_id'] not in computers:
-                computers.append(node['_id'])
-                node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 users_recalculate_policies.append(user)
+            else:
+                computers= user.get('computers', [])
+                if node['_id'] not in computers:
+                    computers.append(node['_id'])
+                    node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                    users_recalculate_policies.append(user)
 
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)
