@@ -265,7 +265,7 @@ var App;
                 var model = App.instances.cache.get(id),
                     parent,
                     url;
-
+                App.alerts.close();
                 App.main.show(App.instances.loaderView);
                 if (_.isUndefined(model)) {
                     $.ajax("/api/nodes/" + id + '/').done(function (response) {
