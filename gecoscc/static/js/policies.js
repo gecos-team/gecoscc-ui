@@ -97,6 +97,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
     Models.PolicyModel = Backbone.Model.extend({
         defaults: {
             name: "",
+            name_es: "",
             schema: {},
             values: {}
         },

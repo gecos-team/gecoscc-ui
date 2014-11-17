@@ -169,6 +169,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.checkErrors();
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }
