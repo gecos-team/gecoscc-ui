@@ -64,10 +64,14 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             }
             $.ajax(url).done(function (response) {
                 _.each(response.policies, function (p) {
-                    var model = collection.get(p._id);
+                    var model = collection.get(p._id),
+                        name_local = "name_" + App.language;
 
                     if (_.isUndefined(model)) { return; }
                     model.set("name", p.name);
+                    if (!_.isUndefined(p[name_local])) {
+                        model.set(name_local, p[name_local]);
+                    }
                     model.set("support_os", p.support_os);
                     model.set("schema", p.schema);
                 });

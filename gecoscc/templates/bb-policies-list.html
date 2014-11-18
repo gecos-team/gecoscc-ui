@@ -13,7 +13,7 @@
             <tr id="<%= policy.id %>" class="
                 <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
             ">
-                <td><%= (App.languaje === 'es' && policy.name_es !== "")? policy.name_es : policy.name %></td>
+                <td><%= policy['name_' + App.language] || policy.name %></td>
                 <td>
                     <% if (policy.support_os && policy.support_os.length > 0) { %>
                         <% _.each(policy.support_os, function (os) { %>
