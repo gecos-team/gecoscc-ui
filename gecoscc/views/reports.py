@@ -9,6 +9,8 @@ except ImportError:
 from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
+from gecoscc.i18n import gettext as _
+
 
 class CSVRenderer(object):
 
@@ -62,9 +64,13 @@ def report_file(context, request):
                  treatment_string_to_csv(item, 'email'),
                  treatment_string_to_csv(item, 'phone'),
                  treatment_string_to_csv(item, 'address')) for item in query]
-
-        return {'header': [u'Id', u'Name', u'first name', u'last name', u'email', u'phone', 'address'],
-                'rows': rows}
+        header = (_(u'Id').encode('utf-8'),
+                  _(u'Username').encode('utf-8'),
+                  _(u'First name').encode('utf-8'),
+                  _(u'Last name').encode('utf-8'),
+                  _(u'Email').encode('utf-8'),
+                  _(u'Phone').encode('utf-8'),
+                  _(u'Address').encode('utf-8'))
     elif report_type == 'computer':
         rows = [(item['_id'],
                  treatment_string_to_csv(item, 'name'),
@@ -72,5 +78,11 @@ def report_file(context, request):
                  treatment_string_to_csv(item, 'registry'),
                  treatment_string_to_csv(item, 'serial'),
                  treatment_string_to_csv(item, 'node_chef_id')) for item in query]
-        return {'header': [u'Id', u'Name', u'Type', u'Registry', u'Serial', u'Node Chef id'],
-                'rows': rows}
+        header = (_(u'Id').encode('utf-8'),
+                  _(u'Name').encode('utf-8'),
+                  _(u'Type').encode('utf-8'),
+                  _(u'Registry number').encode('utf-8'),
+                  _(u'Serial number').encode('utf-8'),
+                  _(u'Node chef id').encode('utf-8'))
+    return {'header': header,
+            'rows': rows}
