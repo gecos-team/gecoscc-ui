@@ -585,3 +585,11 @@ class Policy(colander.MappingSchema):
 
 class Policies(colander.SequenceSchema):
     policies = Policy()
+
+
+class Package(colander.MappingSchema):
+    name = colander.SchemaNode(colander.String())
+
+
+class Packages(colander.SequenceSchema):
+    packages = Package()

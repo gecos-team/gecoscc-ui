@@ -33,6 +33,8 @@ requires = [
     'jsonschema==2.3.0',
     'ordereddict==1.1',
     'xmltodict==0.9.0',
+    'requests==2.4.3',
+    'BeautifulSoup==3.2.1'
 ]
 
 setup(name='gecoscc',
