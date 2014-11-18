@@ -23,12 +23,12 @@
                             <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
                         </li>
                     {% endif %}
+                    <li class="{% block nav_bar_reports %}{% endblock %}">
+                        <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
+                    </li>
                     <li>
                         <a href="{{ help_manual_url }}">{{ gettext('Help') }}</a>
                     </li>
-                    {#<li class="{% block nav_bar_reports %}{% endblock %}">
-                        <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
-                    </li>#}
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">{{ request.user['username'] }} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
