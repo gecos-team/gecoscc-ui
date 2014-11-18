@@ -438,3 +438,9 @@ legend {
     cursor: pointer;
     cursor: hand;
 }
+
+/* Reports */
+
+.btn-export {
+    padding: 3px 12px;
+}

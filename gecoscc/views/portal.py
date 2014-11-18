@@ -22,12 +22,6 @@ def home(context, request):
     return {}
 
 
-@view_config(route_name='reports', renderer='templates/reports.jinja2',
-             permission='edit')
-def reports(context, request):
-    return {}
-
-
 class LoginViews(BaseView):
 
     @view_config(route_name='login', renderer='templates/login.jinja2')

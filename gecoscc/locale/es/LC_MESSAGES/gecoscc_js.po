@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-11-03 18:00+0100\n"
+"POT-Creation-Date: 2014-11-18 13:38+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -45,7 +45,7 @@ msgid "Save"
 msgstr "Guardar"
 
 #: gecoscc/static/js/app-utils.js:243
-#: gecoscc/static/js/tree-views-renderer.js:80
+#: gecoscc/static/js/tree-views-renderer.js:95
 msgid "Delete"
 msgstr "Borrar"
 
@@ -130,11 +130,11 @@ msgstr "El dominio no es Gecos."
 msgid "Only local users can be added."
 msgstr "Solo los usuarios locales pueden ser añadidos."
 
-#: gecoscc/static/js/app.js:503
+#: gecoscc/static/js/app.js:504
 msgid "Policies can't be directly accessed."
 msgstr "No se puede acceder a las políticas directamente."
 
-#: gecoscc/static/js/app.js:504
+#: gecoscc/static/js/app.js:505
 msgid ""
 "You need to load the node that has the policy assigned first. Try again "
 "now."
@@ -142,7 +142,7 @@ msgstr ""
 "Es necesario cargar primero el nodo que tiene la política asignada. "
 "Pruebe ahora de nuevo."
 
-#: gecoscc/static/js/app.js:510
+#: gecoscc/static/js/app.js:511
 msgid "Policy"
 msgstr "Política"
 
@@ -150,35 +150,39 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:109
+#: gecoscc/static/js/computer.js:105
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:110
+#: gecoscc/static/js/computer.js:106
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:123
-msgid "Chef client is not being executed on time."
-msgstr "Chef client no se está ejecutando en el intervalo de tiempo definido."
+#: gecoscc/static/js/computer.js:114
+msgid "This workstation has incomplete Ohai information."
+msgstr ""
 
-#: gecoscc/static/js/computer.js:128
-msgid "Last chef client had problems during its execution."
-msgstr "El último chef client tuvo problemas durante su ejecución."
-
-#: gecoscc/static/js/computer.js:134
+#: gecoscc/static/js/computer.js:127 gecoscc/static/js/computer.js:136
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:128
+msgid "Chef client is not being executed on time."
+msgstr "Chef client no se está ejecutando en el intervalo de tiempo definido."
+
+#: gecoscc/static/js/computer.js:137
+msgid "Last chef client had problems during its execution."
+msgstr "El último chef client tuvo problemas durante su ejecución."
+
+#: gecoscc/static/js/computer.js:168
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:168
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:168
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -188,11 +192,11 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/policies-form-generator.js:130
+#: gecoscc/static/js/policies-form-generator.js:127
 msgid "Policy successfully saved."
 msgstr "Política guardada satisfactoriamente"
 
-#: gecoscc/static/js/policies-form-generator.js:155
+#: gecoscc/static/js/policies-form-generator.js:152
 msgid "Policy successfully deleted."
 msgstr "Política borrada satisfactoriamente"
 
@@ -204,20 +208,20 @@ msgstr "Recurso marcado para borrado."
 msgid "Your latest changes in this resource will be ignored."
 msgstr "Sus últimos cambios en este recurso serán ignorados."
 
-#: gecoscc/static/js/tree-views-renderer.js:57
-#: gecoscc/static/js/tree-views-renderer.js:77
+#: gecoscc/static/js/tree-views-renderer.js:72
+#: gecoscc/static/js/tree-views-renderer.js:92
 msgid "Add new"
 msgstr "Añadir nuevo"
 
-#: gecoscc/static/js/tree-views-renderer.js:71
+#: gecoscc/static/js/tree-views-renderer.js:86
 msgid "More"
 msgstr "Más"
 
-#: gecoscc/static/js/tree-views-renderer.js:83
+#: gecoscc/static/js/tree-views-renderer.js:98
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:105 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:547
 msgid "Loading"
 msgstr "Cargando"
 
@@ -231,7 +235,7 @@ msgid ""
 "children."
 msgstr "Borrar una UO es una acción permanente. También eliminará todos sus hijos."
 
-#: gecoscc/static/js/tree.js:72
+#: gecoscc/static/js/tree.js:73
 msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 
