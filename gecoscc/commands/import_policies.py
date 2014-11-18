@@ -21,6 +21,27 @@ POLICY_EMITTER_NAMES = {
     'storage_can_view': 'Available storages',
 }
 
+LANGUAGES = ['es']
+POLICY_EMITTER_NAMES_LOCALIZED = {
+    'es': {
+        'printer_can_view': 'Impresoras disponibles',
+        'repository_can_view': 'Repositorios disponibles',
+        'storage_can_view': 'Almacenamientos disponibles',
+    }
+}
+
+EMITTER_LIST_LOCALIZED = {
+    'es': 'Lista de %s'
+}
+
+EMITTER_LOCALIZED = {
+    'es': {
+        'printer': 'Impresoras',
+        'repository': 'Repositorios',
+        'storage': 'Almacenamientos',
+    }
+}
+
 POLICY_EMITTER_PATH = {
     'printer_can_view': 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list',
     'repository_can_view': 'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list',
@@ -115,6 +136,9 @@ class Command(BaseCommand):
 
         cookbook = get_cookbook(api, cookbook_name)
 
+        languajes = self.settings.get('pyramid.locales')
+        languajes.remove(self.settings.get('pyramid.default_locale_name'))
+
         policies = {}
         try:
             for key, value in cookbook['metadata']['attributes']['json_schema']['object']['properties']['gecos_ws_mgmt']['properties'].items():
@@ -153,10 +177,18 @@ class Command(BaseCommand):
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
                 title = value['title']
+
+                titles = {}
+                for lan in languajes:
+                    titles[lan] = value['title_' + lan]
+
                 value = {'properties': value['properties']['users']['patternProperties']['.*']['properties']}
                 if 'updated_by' in value.get('properties', {}):
                     del value['properties']['updated_by']
                 value['title'] = title
+                for lan in languajes:
+                    value['title_' + lan] = titles[lan]
+
             elif 'network_mgmt' in path:
                 targets = ['computer']
             else:
@@ -172,12 +204,17 @@ class Command(BaseCommand):
                 'support_os': support_os,
             }
 
+            for lan in languajes:
+                policy['name_' + lan] = value['title_' + lan]
+
             self.treatment_policy(policy)
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
                 slug = emiter_police_slug(emiter)
                 schema = deepcopy(SCHEMA_EMITTER)
                 schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
+                for lan in languajes:
+                    schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % EMITTER_LOCALIZED[lan][emiter]
                 schema['properties']['object_related_list']['autocomplete_url'] = POLICY_EMITTER_URL[slug]
                 policy = {
                     'name': POLICY_EMITTER_NAMES[slug],
@@ -188,4 +225,6 @@ class Command(BaseCommand):
                     'schema': schema,
                     'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default']
                 }
+                for lan in languajes:
+                    policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
