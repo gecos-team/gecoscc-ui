@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-11 13:20+0100\n"
+"POT-Creation-Date: 2014-11-18 14:55+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -62,17 +62,18 @@ msgid "The passwords do not match"
 msgstr ""
 
 #: gecoscc/models.py:176 gecoscc/templates/bb-user.html:25
-#: gecoscc/templates/admins/list.jinja2:33
+#: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:69
 msgid "First name"
 msgstr ""
 
 #: gecoscc/models.py:180 gecoscc/templates/bb-user.html:29
-#: gecoscc/templates/admins/list.jinja2:34
+#: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:70
 msgid "Last name"
 msgstr ""
 
 #: gecoscc/models.py:270 gecoscc/templates/bb-user.html:21
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
+#: gecoscc/views/reports.py:68
 msgid "Username"
 msgstr ""
 
@@ -85,6 +86,7 @@ msgid "Repeat the password"
 msgstr ""
 
 #: gecoscc/models.py:285 gecoscc/templates/bb-user.html:35
+#: gecoscc/views/reports.py:71
 msgid "Email"
 msgstr ""
 
@@ -301,7 +303,11 @@ msgstr ""
 msgid "Administrators"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:27
+#: gecoscc/templates/base_navbar.jinja2:26 gecoscc/templates/reports.jinja2:10
+msgid "Reports"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:30
 msgid "Help"
 msgstr ""
 
@@ -328,7 +334,7 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:199 gecoscc/templates/bb-computer.html:85
+#: gecoscc/templates/base_tree.jinja2:206 gecoscc/templates/bb-computer.html:85
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:51
 msgid "Loading"
 msgstr ""
@@ -405,7 +411,7 @@ msgstr ""
 msgid "Gecos cc id"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:39
+#: gecoscc/templates/bb-computer.html:39 gecoscc/views/reports.py:86
 msgid "Node chef id"
 msgstr ""
 
@@ -417,7 +423,7 @@ msgstr ""
 #: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
-#: gecoscc/templates/bb-storage.html:12
+#: gecoscc/templates/bb-storage.html:12 gecoscc/views/reports.py:82
 msgid "Name"
 msgstr ""
 
@@ -447,15 +453,17 @@ msgid "John's laptop"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-computer.html:146
-#: gecoscc/templates/bb-printer.html:58
+#: gecoscc/templates/bb-printer.html:58 gecoscc/views/reports.py:83
 msgid "Type"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:70 gecoscc/templates/bb-printer.html:88
+#: gecoscc/views/reports.py:84
 msgid "Registry number"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:82
+#: gecoscc/views/reports.py:85
 msgid "Serial number"
 msgstr ""
 
@@ -850,7 +858,7 @@ msgstr ""
 msgid "john.doe"
 msgstr ""
 
-#: gecoscc/templates/bb-user.html:39
+#: gecoscc/templates/bb-user.html:39 gecoscc/views/reports.py:73
 msgid "Address"
 msgstr ""
 
@@ -864,6 +872,18 @@ msgstr ""
 
 #: gecoscc/templates/login.jinja2:24
 msgid "GECOS CC Login"
+msgstr ""
+
+#: gecoscc/templates/reports.jinja2:15
+msgid "Users"
+msgstr ""
+
+#: gecoscc/templates/reports.jinja2:15 gecoscc/templates/reports.jinja2:16
+msgid "Export to CSV"
+msgstr ""
+
+#: gecoscc/templates/reports.jinja2:16
+msgid "Workstations"
 msgstr ""
 
 #: gecoscc/templates/admins/add.jinja2:12
@@ -939,12 +959,20 @@ msgstr ""
 msgid "User deleted successfully"
 msgstr ""
 
-#: gecoscc/views/portal.py:44 gecoscc/views/portal.py:50
+#: gecoscc/views/portal.py:39 gecoscc/views/portal.py:45
 msgid "Please enter the correct username and password"
 msgstr ""
 
-#: gecoscc/views/portal.py:55
+#: gecoscc/views/portal.py:50
 msgid "Welcome ${username}"
+msgstr ""
+
+#: gecoscc/views/reports.py:67 gecoscc/views/reports.py:81
+msgid "Id"
+msgstr ""
+
+#: gecoscc/views/reports.py:72
+msgid "Phone"
 msgstr ""
 
 #~ msgid "NFS v3"
@@ -1134,5 +1162,32 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Your changes are lost. Please make your changes again."
+#~ msgstr ""
+
+#~ msgid "Work stations"
+#~ msgstr ""
+
+#~ msgid "first name"
+#~ msgstr ""
+
+#~ msgid "last name"
+#~ msgstr ""
+
+#~ msgid "email"
+#~ msgstr ""
+
+#~ msgid "phone"
+#~ msgstr ""
+
+#~ msgid "address"
+#~ msgstr ""
+
+#~ msgid "Registry"
+#~ msgstr ""
+
+#~ msgid "Serial"
+#~ msgstr ""
+
+#~ msgid "Node Chef id"
 #~ msgstr ""
 

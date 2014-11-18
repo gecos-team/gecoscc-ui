@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-11-11 13:21+0100\n"
+"POT-Creation-Date: 2014-11-18 14:55+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -25,8 +25,8 @@ msgid ""
 "Someone has changed this object while you were working on it, please "
 "reload before applying any changes."
 msgstr ""
-"Alguien ha modificado este objeto mientras estabas trabajando en él, por favor "
-"recarga antes de aplicar tus cambios."
+"Alguien ha modificado este objeto mientras estabas trabajando en él, por "
+"favor recarga antes de aplicar tus cambios."
 
 #: gecoscc/static/js/app-utils.js:134
 msgid "Object deleted."
@@ -150,35 +150,39 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:109
+#: gecoscc/static/js/computer.js:105
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:110
+#: gecoscc/static/js/computer.js:106
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:123
-msgid "Chef client is not being executed on time."
-msgstr "Chef client no se está ejecutando en el intervalo de tiempo definido."
+#: gecoscc/static/js/computer.js:114
+msgid "This workstation has incomplete Ohai information."
+msgstr ""
 
-#: gecoscc/static/js/computer.js:128
-msgid "Last chef client had problems during its execution."
-msgstr "El último chef client tuvo problemas durante su ejecución."
-
-#: gecoscc/static/js/computer.js:134
+#: gecoscc/static/js/computer.js:127 gecoscc/static/js/computer.js:136
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:128
+msgid "Chef client is not being executed on time."
+msgstr "Chef client no se está ejecutando en el intervalo de tiempo definido."
+
+#: gecoscc/static/js/computer.js:137
+msgid "Last chef client had problems during its execution."
+msgstr "El último chef client tuvo problemas durante su ejecución."
+
+#: gecoscc/static/js/computer.js:168
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:168
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:168
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -188,11 +192,11 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/policies-form-generator.js:126
+#: gecoscc/static/js/policies-form-generator.js:127
 msgid "Policy successfully saved."
 msgstr "Política guardada satisfactoriamente"
 
-#: gecoscc/static/js/policies-form-generator.js:151
+#: gecoscc/static/js/policies-form-generator.js:152
 msgid "Policy successfully deleted."
 msgstr "Política borrada satisfactoriamente"
 

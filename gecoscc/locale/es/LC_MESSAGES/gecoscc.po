@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-11-11 13:20+0100\n"
+"POT-Creation-Date: 2014-11-18 14:55+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -61,17 +61,18 @@ msgid "The passwords do not match"
 msgstr "Las contraseñas con coinciden"
 
 #: gecoscc/models.py:176 gecoscc/templates/bb-user.html:25
-#: gecoscc/templates/admins/list.jinja2:33
+#: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:69
 msgid "First name"
 msgstr "Nombre"
 
 #: gecoscc/models.py:180 gecoscc/templates/bb-user.html:29
-#: gecoscc/templates/admins/list.jinja2:34
+#: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:70
 msgid "Last name"
 msgstr "Apellidos"
 
 #: gecoscc/models.py:270 gecoscc/templates/bb-user.html:21
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
+#: gecoscc/views/reports.py:68
 msgid "Username"
 msgstr "Nombre de usuario"
 
@@ -84,6 +85,7 @@ msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
 #: gecoscc/models.py:285 gecoscc/templates/bb-user.html:35
+#: gecoscc/views/reports.py:71
 msgid "Email"
 msgstr "Correo electrónico"
 
@@ -304,7 +306,11 @@ msgstr "Inicio"
 msgid "Administrators"
 msgstr "Administradores"
 
-#: gecoscc/templates/base_navbar.jinja2:27
+#: gecoscc/templates/base_navbar.jinja2:26 gecoscc/templates/reports.jinja2:10
+msgid "Reports"
+msgstr "Informes"
+
+#: gecoscc/templates/base_navbar.jinja2:30
 msgid "Help"
 msgstr "Ayuda"
 
@@ -331,7 +337,7 @@ msgstr "Salir"
 msgid "Search"
 msgstr "Buscar"
 
-#: gecoscc/templates/base_tree.jinja2:199 gecoscc/templates/bb-computer.html:85
+#: gecoscc/templates/base_tree.jinja2:206 gecoscc/templates/bb-computer.html:85
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:51
 msgid "Loading"
 msgstr "Cargando"
@@ -410,7 +416,7 @@ msgstr "Marca y modelo"
 msgid "Gecos cc id"
 msgstr "Id de Gecos cc"
 
-#: gecoscc/templates/bb-computer.html:39
+#: gecoscc/templates/bb-computer.html:39 gecoscc/views/reports.py:86
 msgid "Node chef id"
 msgstr "Id del nodo chef"
 
@@ -422,7 +428,7 @@ msgstr "Última conexión"
 #: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
-#: gecoscc/templates/bb-storage.html:12
+#: gecoscc/templates/bb-storage.html:12 gecoscc/views/reports.py:82
 msgid "Name"
 msgstr "Nombre"
 
@@ -452,15 +458,17 @@ msgid "John's laptop"
 msgstr "Portátil de Juan"
 
 #: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-computer.html:146
-#: gecoscc/templates/bb-printer.html:58
+#: gecoscc/templates/bb-printer.html:58 gecoscc/views/reports.py:83
 msgid "Type"
 msgstr "Tipo"
 
 #: gecoscc/templates/bb-computer.html:70 gecoscc/templates/bb-printer.html:88
+#: gecoscc/views/reports.py:84
 msgid "Registry number"
 msgstr "Número de registro"
 
 #: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:82
+#: gecoscc/views/reports.py:85
 msgid "Serial number"
 msgstr "Número de serie"
 
@@ -857,7 +865,7 @@ msgstr "Nadie"
 msgid "john.doe"
 msgstr "juan.nadie"
 
-#: gecoscc/templates/bb-user.html:39
+#: gecoscc/templates/bb-user.html:39 gecoscc/views/reports.py:73
 msgid "Address"
 msgstr "Dirección"
 
@@ -872,6 +880,18 @@ msgstr "Número de teléfono"
 #: gecoscc/templates/login.jinja2:24
 msgid "GECOS CC Login"
 msgstr ""
+
+#: gecoscc/templates/reports.jinja2:15
+msgid "Users"
+msgstr "Usuarios"
+
+#: gecoscc/templates/reports.jinja2:15 gecoscc/templates/reports.jinja2:16
+msgid "Export to CSV"
+msgstr "Exportar a CSV"
+
+#: gecoscc/templates/reports.jinja2:16
+msgid "Workstations"
+msgstr "Estaciones de trabajo"
 
 #: gecoscc/templates/admins/add.jinja2:12
 #: gecoscc/templates/admins/list.jinja2:60
@@ -946,13 +966,21 @@ msgstr "Usuario borrado insatisfactoriamente de chef"
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
-#: gecoscc/views/portal.py:44 gecoscc/views/portal.py:50
+#: gecoscc/views/portal.py:39 gecoscc/views/portal.py:45
 msgid "Please enter the correct username and password"
 msgstr "Por favor, introduzca el nombre de usuario y contraseña correctos"
 
-#: gecoscc/views/portal.py:55
+#: gecoscc/views/portal.py:50
 msgid "Welcome ${username}"
 msgstr "Bienvenido ${username}"
+
+#: gecoscc/views/reports.py:67 gecoscc/views/reports.py:81
+msgid "Id"
+msgstr "Identificador"
+
+#: gecoscc/views/reports.py:72
+msgid "Phone"
+msgstr "Teléfono"
 
 #~ msgid "Automatic installation"
 #~ msgstr "Instalación automática"
@@ -1097,4 +1125,26 @@ msgstr "Bienvenido ${username}"
 
 #~ msgid "Your changes are lost. Please make your changes again."
 #~ msgstr ""
+
+# | msgid "First name"
+#~ msgid "first name"
+#~ msgstr "Nombre"
+
+# | msgid "Last name"
+#~ msgid "last name"
+#~ msgstr "Apellidos"
+
+# | msgid "Email"
+#~ msgid "email"
+#~ msgstr "Correo electrónico"
+
+# | msgid "Address"
+#~ msgid "address"
+#~ msgstr "Dirección"
+
+#~ msgid "Registry"
+#~ msgstr "Número de registro"
+
+#~ msgid "Serial"
+#~ msgstr "Número de Serie"
 

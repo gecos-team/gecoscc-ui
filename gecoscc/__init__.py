@@ -39,11 +39,13 @@ def route_config(config):
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
 
-    config.add_route('reports', '/reports/', factory=LoggedFactory)
+    config.add_route('reports', '/reports/', factory=SuperUserFactory)
+    config.add_route('report_file', '/report/{report_type}/', factory=SuperUserFactory)
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
     config.add_route('forbidden-view', '/error403/')
+    config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
 
 
 def sockjs_config(config, global_config):
