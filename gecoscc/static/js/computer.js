@@ -108,6 +108,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
 
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
+            this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
             chef_client = this.model.get("ohai").chef_client;
             if (_.isUndefined(chef_client)) {
                 this.alertError(gettext("This workstation has incomplete Ohai information."));
@@ -137,8 +138,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     "<br/> - " + gettext("Chef client is not being executed on time.")
                 );
             }
-
-            this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
         },
 
         alertError: function (strong, text) {
