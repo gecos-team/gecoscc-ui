@@ -70,22 +70,26 @@ class ResourcePaginatedReadOnly(BaseAPI):
     class BadResourceDefinition(Exception):
         pass
 
-    def get_objects_filter(self):
-        query = []
-        if not self.request.method == 'GET':
-            return []
+    def set_name_filter(self, query, key_name='name'):
         if 'name' in self.request.GET:
             query.append({
-                'name': self.request.GET.get('name')
+                key_name: self.request.GET.get('name')
             })
 
         if 'iname' in self.request.GET:
             query.append({
-                'name': {
+                key_name: {
                     '$regex': '.*{0}.*'.format(self.request.GET.get('iname')),
                     '$options': '-i'
                 }
             })
+
+    def get_objects_filter(self):
+        query = []
+        if not self.request.method == 'GET':
+            return []
+
+        self.set_name_filter(query)
 
         if 'oids' in self.request.GET:
             oid_filters = oids_filter(self.request)

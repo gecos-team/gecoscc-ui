@@ -4,6 +4,7 @@ from cornice.resource import resource
 from pyramid.threadlocal import get_current_request, get_current_registry
 
 from gecoscc.api import ResourcePaginatedReadOnly
+from gecoscc.i18n import is_default_language
 from gecoscc.models import Policy, Policies
 from gecoscc.permissions import api_login_required
 
@@ -45,11 +46,14 @@ class PoliciesResource(ResourcePaginatedReadOnly):
 
     @property
     def order_field(self):
-        request = get_current_request()
-        settings = get_current_registry().settings
-        if request.locale_name == settings.get('pyramid.default_locale_name'):
+        if is_default_language():
             return 'name'
-        return 'name_%s' % request.locale_name
+        return 'name_%s' % get_current_request().locale_name
+
+    def set_name_filter(self, query, key_name='name'):
+        if not is_default_language():
+            key_name = 'name_%s' % get_current_request().locale_name
+        super(PoliciesResource, self).set_name_filter(query, key_name)
 
     def get_objects_filter(self):
         filters = super(PoliciesResource, self).get_objects_filter()

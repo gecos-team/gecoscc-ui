@@ -39,3 +39,9 @@ def gettext(string, *args, **kwargs):
 
 
 gettext_lazy = lazy(gettext, six.text_type)
+
+
+def is_default_language():
+    request = get_current_request()
+    settings = get_current_registry().settings
+    return request.locale_name == settings.get('pyramid.default_locale_name')
