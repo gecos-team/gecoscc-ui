@@ -233,7 +233,7 @@ def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attemp
 
 def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
     settings = get_current_registry().settings
-    seconds_block_is_busy = settings.get('chef.seconds_block_is_busy')
+    seconds_block_is_busy = int(settings.get('chef.seconds_block_is_busy'))
     time_to_exp = datetime.timedelta(seconds=seconds_block_is_busy)
     node = ChefNode(node_id, api)
     current_use_node = node.attributes.get(USE_NODE, {})

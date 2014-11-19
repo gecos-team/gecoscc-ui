@@ -2,6 +2,8 @@ import logging
 
 from datetime import datetime
 
+from pyramid.threadlocal import get_current_registry
+
 from gecoscc.models import JOB_STATUS
 
 logger = logging.getLogger(__name__)
@@ -43,7 +45,7 @@ class JobStorage(object):
             raise self.JobOperationForbidden()
 
     def create(self, obj=None, op=None, status=None,
-               computer=None, policyname=None,
+               computer=None, policy=None,
                administrator_username=None,
                message=None):
         if obj is None or op is None or status is None:
@@ -56,6 +58,11 @@ class JobStorage(object):
         objname = obj['name']
         objpath = obj['path']
         objtype = obj['type']
+
+        if policy is None:
+            policyname = None
+        else:
+            policyname = policy.get('name', None)
 
         computer = computer or {}
 
@@ -81,6 +88,14 @@ class JobStorage(object):
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
         }
+        if policy:
+            settings = get_current_registry().settings
+            languages = settings.get('pyramid.locales')
+            default_locale_name = settings.get('pyramid.default_locale_name')
+            for lang in languages:
+                if lang == default_locale_name:
+                    continue
+                job['policyname_%s' % lang] = policy.get('name_%s' % lang)
         if message:
             job['message'] = message
         return self.collection.insert(job)

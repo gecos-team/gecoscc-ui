@@ -150,17 +150,28 @@ def celery_config(config):
 def locale_config(config):
     settings = config.registry.settings
     settings['pyramid.locales'] = json.loads(settings['pyramid.locales'])
-    from gecoscc.models import Policy, Policies
+    needs_patching = False
+    from gecoscc.models import Policy, Policies, Job, Jobs
     for locale in settings['pyramid.locales']:
         if locale == settings['pyramid.default_locale_name']:
             continue
+        needs_patching = True
         Policy.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
                                                                name='name_%s' % locale,
                                                                default='',
                                                                missing=''))
-    Policies.policies = Policy(name='policies')
-    Policies.__class_schema_nodes__ = [Policies.policies]
-    Policies.__all_schema_nodes__ = [Policies.policies]
+        Job.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
+                                                            name='policyname_%s' % locale,
+                                                            default='',
+                                                            missing=''))
+    if needs_patching:
+        Policies.policies = Policy(name='policies')
+        Policies.__class_schema_nodes__ = [Policies.policies]
+        Policies.__all_schema_nodes__ = [Policies.policies]
+
+        Jobs.jobs = Job(name='jobs')
+        Jobs.__class_schema_nodes__ = [Jobs.jobs]
+        Jobs.__all_schema_nodes__ = [Jobs.jobs]
 
 
 def main(global_config, **settings):

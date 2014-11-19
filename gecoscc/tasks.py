@@ -336,7 +336,7 @@ class ChefTask(Task):
                                     op=action,
                                     status=job_status,
                                     computer=computer,
-                                    policyname=policy['name'],
+                                    policy=policy,
                                     administrator_username=user['username'])
         job_ids.append(unicode(job_id))
         job_ids_by_computer.append(job_id)
