@@ -1,4 +1,3 @@
-from chef import Node
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
@@ -36,11 +35,11 @@ class ChefClientRunResource(BaseAPI):
                     'message': 'The admin user %s does not exists' % username}
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
-        node = Node(node_id, api)
+        node, is_busy = is_node_busy_and_reserve_it(node_id, api, 'client', attempts=3)
         if not node.attributes.to_dict():
             return {'ok': False,
                     'message': 'The node does not exists (in chef)'}
-        if is_node_busy_and_reserve_it(node, api, 'client'):
+        if is_busy:
             return {'ok': False,
                     'message': 'The node is busy'}
         return {'ok': True}

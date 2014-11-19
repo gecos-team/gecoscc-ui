@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from bson import ObjectId
 
@@ -51,8 +52,10 @@ class ChefStatusResource(BaseAPI):
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
         job_status = node.attributes.get('job_status')
+        reserve_node = False
         if job_status:
-            reserve_node_or_raise(node, api)
+            node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+            reserve_node = True
             for job_id, job_status in job_status.to_dict().items():
                 job = self.collection.find_one({'_id': ObjectId(job_id)})
                 if not job:
@@ -72,6 +75,8 @@ class ChefStatusResource(BaseAPI):
         users_old = self.get_attr(node, USERS_OLD)
         users = self.get_attr(node, USERS_OHAI)
         if not users_old or users_old != users:
+            if not reserve_node:
+                node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
             return self.check_users(node)
         if job_status:
             save_node_and_free(node)
@@ -112,7 +117,7 @@ class ChefStatusResource(BaseAPI):
                 reload_clients = True
                 users_recalculate_policies.append(user)
             else:
-                computers= user.get('computers', [])
+                computers = user.get('computers', [])
                 if node['_id'] not in computers:
                     computers.append(node['_id'])
                     node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})

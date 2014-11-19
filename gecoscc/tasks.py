@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from copy import deepcopy
 
@@ -431,8 +432,7 @@ class ChefTask(Task):
             try:
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
-                node = Node(node_chef_id, api)
-                reserve_node_or_raise(node, api, 'gcc')
+                node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
@@ -468,7 +468,6 @@ class ChefTask(Task):
                 are_new_jobs = True
         if are_new_jobs:
             invalidate_jobs(self.request, user)
-
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)

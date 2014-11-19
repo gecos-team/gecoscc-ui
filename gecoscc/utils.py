@@ -2,7 +2,8 @@ import datetime
 import json
 import os
 import pytz
-
+import random
+import time
 
 from bson import ObjectId, json_util
 from copy import deepcopy
@@ -176,9 +177,8 @@ def delete_chef_admin_user(api, settings, username):
 def remove_chef_computer_data(computer, api):
     node_chef_id = computer.get('node_chef_id', None)
     if node_chef_id:
-        node = ChefNode(node_chef_id, api)
+        node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
         if node:
-            reserve_node_or_raise(node, api)
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
@@ -195,33 +195,47 @@ def remove_chef_user_data(user, computers, api):
     for computer in computers:
         node_chef_id = computer.get('node_chef_id', None)
         if node_chef_id:
-            node = ChefNode(node_chef_id, api)
-        if node:
-            reserve_node_or_raise(node, api)
-            try:
-                user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
-                for policy in user_mgmt:
-                    try:
-                        users = user_mgmt.get(policy).get('users')
-                        if not users:
+            node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
+            if node:
+                try:
+                    user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
+                    for policy in user_mgmt:
+                        try:
+                            users = user_mgmt.get(policy).get('users')
+                            if not users:
+                                continue
+                            users.pop(user['name'])
+                        except KeyError:
                             continue
-                        users.pop(user['name'])
-                    except KeyError:
-                        continue
-                save_node_and_free(node)
-            except KeyError:
-                save_node_and_free(node)
+                    save_node_and_free(node)
+                except KeyError:
+                    save_node_and_free(node)
 
 
-TIME_TO_EXP = datetime.timedelta(hours=1)
-
-
-def reserve_node_or_raise(node, api, controller_requestor='gcc'):
-    if is_node_busy_and_reserve_it(node, api, controller_requestor):
+def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
+    node, is_busy = is_node_busy_and_reserve_it(node_id, api, controller_requestor, attempts)
+    if is_busy:
         raise NodeBusyException
+    return node
 
 
-def is_node_busy_and_reserve_it(node, api, controller_requestor='gcc'):
+def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attempts=1):
+    is_busy = True
+    for attempt in range(attempts):
+        node, is_busy = _is_node_busy_and_reserve_it(node_id, api, controller_requestor)
+        if not is_busy:
+            break
+        settings = get_current_registry().settings
+        seconds_sleep_is_busy = settings.get('chef.seconds_sleep_is_busy')
+        time.sleep(int(seconds_sleep_is_busy))
+    return (node, is_busy)
+
+
+def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
+    settings = get_current_registry().settings
+    seconds_block_is_busy = settings.get('chef.seconds_block_is_busy')
+    time_to_exp = datetime.timedelta(seconds=seconds_block_is_busy)
+    node = ChefNode(node_id, api)
     current_use_node = node.attributes.get(USE_NODE, {})
     current_use_node_control = current_use_node.get('control', None)
     current_use_node_exp_date = current_use_node.get('exp_date', None)
@@ -229,12 +243,12 @@ def is_node_busy_and_reserve_it(node, api, controller_requestor='gcc'):
         current_use_node_exp_date = json.loads(current_use_node_exp_date, object_hook=json_util.object_hook)
         current_use_node_exp_date = current_use_node_exp_date.astimezone(pytz.utc).replace(tzinfo=None)
         now = datetime.datetime.now()
-        if now - current_use_node_exp_date > TIME_TO_EXP:
+        if now - current_use_node_exp_date > time_to_exp:
             current_use_node_control = None
     if current_use_node_control == controller_requestor:
-        return False
+        return (node, False)
     elif current_use_node_control is None:
-        exp_date = datetime.datetime.utcnow() + TIME_TO_EXP
+        exp_date = datetime.datetime.utcnow() + time_to_exp
         node.attributes.set_dotted(USE_NODE, {'control': controller_requestor,
                                               'exp_date': json.dumps(exp_date, default=json_util.default)})
         node.save()
@@ -242,8 +256,8 @@ def is_node_busy_and_reserve_it(node, api, controller_requestor='gcc'):
         current_use_node2 = node2.attributes.get(USE_NODE, {})
         current_use_control2 = current_use_node2.get('control', None)
         if current_use_control2 == controller_requestor:
-            return False
-    return True
+            return (node2, False)
+    return (node, True)
 
 
 def save_node_and_free(node):

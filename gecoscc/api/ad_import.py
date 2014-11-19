@@ -5,6 +5,7 @@ Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed 
 
 import logging
 import re
+import random
 
 from ordereddict import OrderedDict
 from gzip import GzipFile
@@ -12,7 +13,6 @@ from xml.dom import minidom
 from StringIO import StringIO
 
 from bson import ObjectId
-from chef import Node
 from chef import Client
 from cornice.resource import resource
 from pyramid.threadlocal import get_current_registry
@@ -528,8 +528,10 @@ class ADImport(BaseAPI):
 
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
-                    chef_server_node = Node(mongoObject['name'], api=chef_server_api)
-                    reserve_node_or_raise(chef_server_node, chef_server_api)
+                    chef_server_node = reserve_node_or_raise(mongoObject['name'],
+                                                             chef_server_api,
+                                                             'gcc-ad-import-%s' % random.random(),
+                                                             attempts=3)
                     ohai_gecos_in_runlist = self.RECIPE_NAME_OHAI_GECOS in chef_server_node.run_list
                     gecos_ws_mgmt_in_runlist = self.RECIPE_NAME_GECOS_WS_MGMT in chef_server_node.run_list
                     if not ohai_gecos_in_runlist and not gecos_ws_mgmt_in_runlist:
