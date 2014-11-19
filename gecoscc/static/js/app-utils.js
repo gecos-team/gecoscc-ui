@@ -415,6 +415,7 @@
             bold: bold,
             text: text
         });
+
         App.alerts.show(view);
     };
 
