@@ -136,8 +136,8 @@ class Command(BaseCommand):
 
         cookbook = get_cookbook(api, cookbook_name)
 
-        languajes = self.settings.get('pyramid.locales')
-        languajes.remove(self.settings.get('pyramid.default_locale_name'))
+        languages = self.settings.get('pyramid.locales')
+        languages.remove(self.settings.get('pyramid.default_locale_name'))
 
         policies = {}
         try:
@@ -179,14 +179,14 @@ class Command(BaseCommand):
                 title = value['title']
 
                 titles = {}
-                for lan in languajes:
+                for lan in languages:
                     titles[lan] = value['title_' + lan]
 
                 value = {'properties': value['properties']['users']['patternProperties']['.*']['properties']}
                 if 'updated_by' in value.get('properties', {}):
                     del value['properties']['updated_by']
                 value['title'] = title
-                for lan in languajes:
+                for lan in languages:
                     value['title_' + lan] = titles[lan]
 
             elif 'network_mgmt' in path:
@@ -204,7 +204,7 @@ class Command(BaseCommand):
                 'support_os': support_os,
             }
 
-            for lan in languajes:
+            for lan in languages:
                 policy['name_' + lan] = value['title_' + lan]
 
             self.treatment_policy(policy)
@@ -213,7 +213,7 @@ class Command(BaseCommand):
                 slug = emiter_police_slug(emiter)
                 schema = deepcopy(SCHEMA_EMITTER)
                 schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
-                for lan in languajes:
+                for lan in languages:
                     schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % EMITTER_LOCALIZED[lan][emiter]
                 schema['properties']['object_related_list']['autocomplete_url'] = POLICY_EMITTER_URL[slug]
                 policy = {
@@ -225,6 +225,6 @@ class Command(BaseCommand):
                     'schema': schema,
                     'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default']
                 }
-                for lan in languajes:
+                for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
