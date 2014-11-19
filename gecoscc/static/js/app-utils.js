@@ -421,11 +421,7 @@
             bold: bold,
             text: text
         });
-        if (_.isUndefined(App.alerts.$el)) {
-            App.alerts.show(view);
-        } else {
-            App.alerts.$el.append(view.render().$el);
-        }
+        App.alerts.show(view);
     };
 
     ChangesAlertView = Backbone.Marionette.ItemView.extend({
@@ -482,7 +478,6 @@
             view.render();
             App.instances.changes.$el.find(".nodes-changed").html(view.$el.find(".nodes-changed").html());
         }
-
     };
 
     App.getDomainModel = function (id) {
