@@ -1,6 +1,8 @@
 
 from cornice.resource import resource
 
+from pyramid.threadlocal import get_current_request, get_current_registry
+
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Policy, Policies
 from gecoscc.permissions import api_login_required
@@ -40,7 +42,14 @@ class PoliciesResource(ResourcePaginatedReadOnly):
     mongo_filter = {}
     objtype = 'policy'
     collection_name = 'policies'
-    order_field = 'name'
+
+    @property
+    def order_field(self):
+        request = get_current_request()
+        settings = get_current_registry().settings
+        if request.locale_name == settings.get('pyramid.default_locale_name'):
+            return 'name'
+        return 'name_%s' % request.locale_name
 
     def get_objects_filter(self):
         filters = super(PoliciesResource, self).get_objects_filter()
