@@ -88,4 +88,4 @@ class Command(BaseCommand):
 
     def parse_line(self, line):
         key_value = line.split(':')
-        return {'key': key_value[0], 'value': key_value[1]}
+        return {'key': key_value[0], 'value': key_value[1].strip()}
