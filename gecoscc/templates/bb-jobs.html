@@ -47,7 +47,7 @@
                     <%= item.computername %>
                 </td>
                 <td>
-                    <%= item.policyname %>
+                    <%= item['policyname_' + App.language] || item.policyname %>
                 </td>
                 <td style="max-width: <%= screen.width / 2 %>px">
                     <span class="fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
