@@ -56,8 +56,8 @@ def sockjs_config(config, global_config):
 
     parser = ConfigParser({'here': global_config['here']})
     parser.read(global_config['__file__'])
-    for k, v in parser.items('server:main'):
-        settings['server:main:' + k] = v
+    settings['server:main:worker_class'] = parser.get('server:main', 'worker_class')
+
 
 def route_config_auxiliary(config, route_prefix):
     config.add_route('sockjs_home', route_prefix)
