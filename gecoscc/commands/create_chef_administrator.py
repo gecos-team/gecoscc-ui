@@ -30,39 +30,39 @@ class Command(BaseCommand):
             '-u', '--username',
             dest='username',
             action='store',
-            help=('The user username')
+            help='The user username'
         ),
         make_option(
             '-e', '--email',
             dest='email',
             action='store',
-            help=('The email username')
+            help='The email username'
         ),
         make_option(
             '-n', '--noinput',
             dest='noinput',
             action='store_true',
             default=False,
-            help=("Don't ask the password")
+            help="Don't ask the password"
         ),
         make_option(
             '-a', '--administrator',
             dest='chef_username',
             action='store',
-            help=('An existing chef administrator username')
+            help='An existing chef administrator username'
         ),
         make_option(
             '-k', '--key',
             dest='chef_pem',
             action='store',
-            help=('The pem file that contains the chef administrator private key')
+            help='The pem file that contains the chef administrator private key'
         ),
         make_option(
             '-s', '--is-superuser',
             dest='is_superuser',
             action='store_true',
             default=False,
-            help=("is superuser?")
+            help="is superuser?"
         ),
     ]
 

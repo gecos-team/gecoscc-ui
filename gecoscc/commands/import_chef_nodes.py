@@ -21,13 +21,13 @@ class Command(BaseCommand):
             '-a', '--administrator',
             dest='chef_username',
             action='store',
-            help=('An existing chef administrator username')
+            help='An existing chef administrator username'
         ),
         make_option(
             '-k', '--key',
             dest='chef_pem',
             action='store',
-            help=('The pem file that contains the chef administrator private key')
+            help='The pem file that contains the chef administrator private key'
         ),
     ]
 

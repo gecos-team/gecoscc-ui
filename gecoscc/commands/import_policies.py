@@ -90,26 +90,26 @@ class Command(BaseCommand):
             dest='policies',
             action='append',
             default=[],
-            help=('Key of the policy to import. Use multiple times to import multiple policies')
+            help='Key of the policy to import. Use multiple times to import multiple policies'
         ),
         make_option(
             '-i', '--ignore-emitter-policies',
             dest='ignore_emitter_policies',
             action='store_true',
             default=False,
-            help=('Ignore emitter policies')
+            help='Ignore emitter policies'
         ),
         make_option(
             '-a', '--administrator',
             dest='chef_username',
             action='store',
-            help=('An existing chef administrator username')
+            help='An existing chef administrator username'
         ),
         make_option(
             '-k', '--key',
             dest='chef_pem',
             action='store',
-            help=('The pem file that contains the chef administrator private key')
+            help='The pem file that contains the chef administrator private key'
         ),
     ]
 

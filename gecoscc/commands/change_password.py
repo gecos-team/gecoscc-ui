@@ -28,14 +28,14 @@ class Command(BaseCommand):
             '-u', '--username',
             dest='username',
             action='store',
-            help=('The user username')
+            help='The user username'
         ),
         make_option(
             '-n', '--noinput',
             dest='noinput',
             action='store_true',
             default=False,
-            help=("Don't ask the password")
+            help="Don't ask the password"
         ),
     ]
 
