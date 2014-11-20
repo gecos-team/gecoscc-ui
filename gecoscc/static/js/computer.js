@@ -78,6 +78,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onBeforeRender: function () {
+            this.checkErrors();
+
             //Set domain dependent atributes
             var path = this.model.get("path");
 
@@ -88,8 +90,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 this.getDomainAttrs();
             }
-
-            this.checkErrors();
         },
 
         checkErrors: function () {

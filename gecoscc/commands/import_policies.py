@@ -74,6 +74,8 @@ SCHEMA_EMITTER = {
 
 EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders_res')
 
+PACKAGE_POLICY = 'package_res'
+PACKAGE_POLICY_URL = '/api/packages/'
 
 class Command(BaseCommand):
     description = """
@@ -165,6 +167,8 @@ class Command(BaseCommand):
                 continue
             elif key in EXCLUDE_POLICIES:
                 continue
+            if key == PACKAGE_POLICY:
+                self.set_packages_url(value)
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
@@ -228,3 +232,9 @@ class Command(BaseCommand):
                 for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
+
+    def set_packages_url(self, value):
+        value['properties']['package_list']['autocomplete_url'] = PACKAGE_POLICY_URL
+        value['properties']['package_list']['items']['enum'] = []
+        value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
+        value['properties']['pkgs_to_remove']['items']['enum'] = []
