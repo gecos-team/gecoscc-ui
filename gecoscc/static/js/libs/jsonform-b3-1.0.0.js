@@ -639,16 +639,22 @@ jsonform.elementTypes = {
           more,
           cachedData,
           cachedRequests = {},
-          lastTerm = "";
+          lastTerm = "",
+          data = {};
 
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
 
       if (node.value) {
         $(node.el).addClass("hidden");
+          if (_.contains(["package_list[]", "pkgs_to_remove[]"], node.formElement.name)){
+            data = {name: node.value};
+          } else {
+            data = {oids: node.value};
+          }
         promise = $.ajax({
           url: parent.autocomplete_url,
           dataType: 'json',
-          data: {oids: node.value}
+          data: data
         });
       } else {
         promise = $.Deferred();
@@ -657,13 +663,14 @@ jsonform.elementTypes = {
 
       promise.done(function (res) {
         if(!_.isUndefined(res)) {
-          if(res.nodes.length === 0) {
+          var collection = res.nodes || res.packages;
+          if(collection.length === 0) {
             node.schemaElement.enum.push(node.value);
             $(node.el).find("input").attr('value', node.value);
             $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
             return;
           } else {
-            res = res.nodes[0];
+            res = collection[0];
           }
         }
         $(node.el).find("input").html("");
@@ -697,7 +704,9 @@ jsonform.elementTypes = {
                       },
                       type: 'GET',
                       success: function(data) {
-                          var nodes = data.nodes.map(function (n) {
+                          var collection = data.nodes || data.packages,
+                              nodes = collection.map(function (n) {
+                            n._id = n._id || n.name;
                             node.schemaElement.enum.push(n._id);
                             return {
                               text: n.name,
@@ -706,7 +715,7 @@ jsonform.elementTypes = {
                             };
                           });
 
-                          more = data.nodes.length >= pagesize;
+                          more = collection.length >= pagesize;
                           if(data.page === 1) {
                               cachedData = nodes;
                           } else  {
@@ -721,9 +730,9 @@ jsonform.elementTypes = {
           },
           initSelection : function (element, callback) {
             if(!_.isUndefined(res)){
-              $(node.el).find("input").last().attr('value', res._id);
-              node.schemaElement.enum.push(res._id);
-              var data = {id: res._id, text: res.name};
+              $(node.el).find("input").last().attr('value', res._id || res.name);
+              node.schemaElement.enum.push(res._id || res.name);
+              var data = {id: res._id || res.name, text: res.name};
               callback(data);
             }
           }

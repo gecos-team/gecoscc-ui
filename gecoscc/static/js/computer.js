@@ -90,8 +90,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 this.getDomainAttrs();
             }
-
-
         },
 
         checkErrors: function () {
