@@ -1,3 +1,5 @@
+import time
+
 import requests
 
 from optparse import make_option
@@ -66,6 +68,15 @@ class Command(BaseCommand):
             default='scheherezade-'
         ),
     ]
+
+    def waiting_to_celery(self, db):
+        print 'waiting to celery'
+        current_jobs_count = db.jobs.count()
+        print 'Current jobs: %s' % current_jobs_count
+        time.sleep(10)
+        current_jobs_count2 = db.jobs.count()
+        if current_jobs_count2 > current_jobs_count:
+            self.wait_to_celery(db)
 
     def command(self):
         db = self.pyramid.db
@@ -147,3 +158,5 @@ class Command(BaseCommand):
                 print '\t %s' % res.json()['message']
             else:
                 print 'Unknow error %s at chef client' % new_node_name
+
+        self.waiting_to_celery(db)
