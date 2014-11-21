@@ -32,14 +32,12 @@ class Command(BaseCommand):
             '-o', '--organisational-unit-id',
             dest='ou_id',
             action='store',
-            default=False,
             help='Organisational unit id'
         ),
         make_option(
             '-c', '--copy-computer-id',
             dest='comp_id',
             action='store',
-            default=False,
             help='Computer id'
         ),
         make_option(
@@ -68,6 +66,15 @@ class Command(BaseCommand):
             default='scheherezade-'
         ),
     ]
+
+    required_options = (
+        'number',
+        'ou_id',
+        'comp_id',
+        'gcc_username',
+        'gcc_password',
+        'gcc_url',
+    )
 
     def waiting_to_celery(self, db):
         print 'waiting to celery'
