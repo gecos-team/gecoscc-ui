@@ -663,7 +663,7 @@ jsonform.elementTypes = {
 
       promise.done(function (res) {
         if(!_.isUndefined(res)) {
-          var collection = res.nodes || res.packages;
+          var collection = res.nodes || res.packages || res.software_profiles;
           if(collection.length === 0) {
             node.schemaElement.enum.push(node.value);
             $(node.el).find("input").attr('value', node.value);
@@ -704,7 +704,7 @@ jsonform.elementTypes = {
                       },
                       type: 'GET',
                       success: function(data) {
-                          var collection = data.nodes || data.packages,
+                          var collection = data.software_profiles || data.nodes || data.packages,
                               nodes = collection.map(function (n) {
                             n._id = n._id || n.name;
                             node.schemaElement.enum.push(n._id);

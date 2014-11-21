@@ -596,6 +596,7 @@ class Packages(colander.SequenceSchema):
 
 
 class SoftwareProfile(colander.MappingSchema):
+    _id = colander.SchemaNode(ObjectIdField())
     name = colander.SchemaNode(colander.String())
     packages = StringList(missing=[], default=[])
 
