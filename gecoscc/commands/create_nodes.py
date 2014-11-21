@@ -81,6 +81,10 @@ class Command(BaseCommand):
         if not comp:
             print 'Error this computer has not node_chef_id'
             return
+        policies = comp.get('policies', None)
+        if policies != {}:
+            print 'Error this computer should not have any policies'
+            return
         admin = db.adminusers.find_one({'username': self.options.gcc_username})
         if not admin:
             print 'Error this admin does not exists'
@@ -100,8 +104,23 @@ class Command(BaseCommand):
                     if attr == 'automatic':
                         automatic_dict = node.automatic.to_dict()
                         automatic_dict['ohai_gecos']['pclabel'] = new_node_name
+                        user1 = 'user-%s-1' % new_node_name
+                        user2 = 'user-%s-2' % new_node_name
+                        automatic_dict['ohai_gecos']['users'] = [{'username': user1,
+                                                                  'home': '/home/%s' % user1,
+                                                                  'gid': 1000,
+                                                                  'sudo': False,
+                                                                  'uid': 1000},
+                                                                 {'username': user2,
+                                                                  'home': '/home/%s' % user2,
+                                                                  'gid': 1000,
+                                                                  'sudo': False,
+                                                                  'uid': 1001}]
+
                         automatic = NodeAttributes(automatic_dict)
                         setattr(new_node, attr, automatic)
+                    elif attr == 'normal':
+                        node.normal.set_dotted('ohai_gecos', {})
                     else:
                         setattr(new_node, attr, getattr(node, attr))
             new_node.save()
@@ -116,4 +135,15 @@ class Command(BaseCommand):
                 print '\t %s' % res.json()['message']
             else:
                 print 'Unknow error %s at gcc' % new_node_name
-                
+
+            res = requests.put('%s/chef/status/' % self.options.gcc_url,
+                               {'node_id': new_node_name,
+                                'gcc_username': self.options.gcc_username})
+
+            if res.ok and res.json()['ok']:
+                print 'Chef client %s' % new_node_name
+            elif res.ok and not res.json()['ok']:
+                print 'Error %s at chef client' % new_node_name
+                print '\t %s' % res.json()['message']
+            else:
+                print 'Unknow error %s at chef client' % new_node_name
