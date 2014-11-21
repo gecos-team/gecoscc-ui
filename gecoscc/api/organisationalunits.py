@@ -2,14 +2,14 @@ from cornice.resource import resource
 
 from gecoscc.api import TreeResourcePaginated
 from gecoscc.models import OrganisationalUnit, OrganisationalUnits
-from gecoscc.permissions import api_login_required
+from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import is_domain, MASTER_DEFAULT
 
 
 @resource(collection_path='/api/ous/',
           path='/api/ous/{oid}/',
           description='Organisatinal Units resource',
-          validators=(api_login_required,))
+          validators=(http_basic_login_required,))
 class OrganisationalUnitResource(TreeResourcePaginated):
 
     schema_collection = OrganisationalUnits

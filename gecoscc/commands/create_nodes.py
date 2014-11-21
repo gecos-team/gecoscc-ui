@@ -1,5 +1,3 @@
-import time
-
 import requests
 
 from optparse import make_option
@@ -11,6 +9,7 @@ from chef.node import NodeAttributes
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import get_chef_api
+from gecoscc.tests_utils import waiting_to_celery
 
 
 class Command(BaseCommand):
@@ -75,15 +74,6 @@ class Command(BaseCommand):
         'gcc_password',
         'gcc_url',
     )
-
-    def waiting_to_celery(self, db):
-        print 'waiting to celery'
-        current_jobs_count = db.jobs.count()
-        print 'Current jobs: %s' % current_jobs_count
-        time.sleep(10)
-        current_jobs_count2 = db.jobs.count()
-        if current_jobs_count2 > current_jobs_count:
-            self.wait_to_celery(db)
 
     def command(self):
         db = self.pyramid.db
@@ -166,4 +156,4 @@ class Command(BaseCommand):
             else:
                 print 'Unknow error %s at chef client' % new_node_name
 
-        self.waiting_to_celery(db)
+        waiting_to_celery(db)
