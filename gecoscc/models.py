@@ -593,3 +593,12 @@ class Package(colander.MappingSchema):
 
 class Packages(colander.SequenceSchema):
     packages = Package()
+
+
+class SoftwareProfile(colander.MappingSchema):
+    name = colander.SchemaNode(colander.String())
+    packages = StringList(missing=[], default=[])
+
+
+class SoftwareProfiles(colander.SequenceSchema):
+    software_profiles = SoftwareProfile()
