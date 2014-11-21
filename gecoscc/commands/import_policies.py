@@ -77,6 +77,18 @@ EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders
 PACKAGE_POLICY = 'package_res'
 PACKAGE_POLICY_URL = '/api/packages/'
 
+SPROFILES_SLUG = 'software_profile'
+SPROFILES_PATH = 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'
+SPROFILES_LOCALIZED_NAME = 'Available software_profiles'
+SPROFILES_LOCALIZED_NAME_LOCALIZED = {
+    'es': 'Perfiles de Software disponibles'
+}
+SPROFILES_LOCALIZED = {
+    'es': 'Perfiles de Software'
+}
+SPROFILES_URL = '/api/software_profiles/'
+SPROFILES_URL_TARGETS = ['ou', 'computer', 'group']
+
 class Command(BaseCommand):
     description = """
        Import existing policies in chef server.
@@ -129,6 +141,7 @@ class Command(BaseCommand):
         else:
             self.db.policies.update({'slug': policy_slug}, new_policy)
             print "Updated policy: %s" % policy_slug
+
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
@@ -212,6 +225,9 @@ class Command(BaseCommand):
                 policy['name_' + lan] = value['title_' + lan]
 
             self.treatment_policy(policy)
+
+        self.create_software_profiles_policy(policies, languages)
+
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
                 slug = emiter_police_slug(emiter)
@@ -233,8 +249,30 @@ class Command(BaseCommand):
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
 
+
     def set_packages_url(self, value):
         value['properties']['package_list']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['package_list']['items']['enum'] = []
         value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['pkgs_to_remove']['items']['enum'] = []
+
+
+    def create_software_profiles_policy(self, policies, languages):
+        slug = 'software_profile'
+        schema = deepcopy(SCHEMA_EMITTER)
+        schema['properties']['object_related_list']['title'] = '%s list' % 'Software Profiles'
+        for lan in languages:
+            schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % SPROFILES_LOCALIZED[lan]
+        schema['properties']['object_related_list']['autocomplete_url'] = SPROFILES_URL
+        policy = {
+            'name': SPROFILES_LOCALIZED_NAME,
+            'slug': slug,
+            'path': SPROFILES_PATH,
+            'targets': SPROFILES_URL_TARGETS,
+            'is_emitter_policy': False,
+            'schema': schema,
+            'support_os': policies[SPROFILES_PATH.split('.')[2]]['properties']['support_os']['default']
+        }
+        for lan in languages:
+            policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]
+        self.treatment_policy(policy)

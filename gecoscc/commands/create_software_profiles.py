@@ -14,6 +14,8 @@ class Command(BaseCommand):
             new_profile = profile_model.serialize({'name': name, 'packages': profiles[name]})
             db_profile = collection.find_one({'name': name})
 
+            del new_profile['_id']
+
             if not db_profile:
                 collection.insert(new_profile)
                 print "Imported profile: %s" % name
