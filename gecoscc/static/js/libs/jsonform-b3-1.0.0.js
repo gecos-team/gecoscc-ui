@@ -640,13 +640,32 @@ jsonform.elementTypes = {
           cachedData,
           cachedRequests = {},
           lastTerm = "",
-          data = {};
+          data = {},
+          resNode,
+          addedTerm = false;
+
+      var addTerm = function (list, term) {
+          addedTerm = !_.some(list, function (n) { return n.text == term; });
+          if (!addedTerm) {
+            return;
+          }
+          list.push({
+            text: term,
+            value: term,
+            id: term
+          });
+          node.schemaElement.enum.push(term);
+      };
+
+      var isPackagesPolicy = function () {
+          return _.contains(["package_list[]", "pkgs_to_remove[]"], node.formElement.name);
+      };
 
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
 
       if (node.value) {
         $(node.el).addClass("hidden");
-          if (_.contains(["package_list[]", "pkgs_to_remove[]"], node.formElement.name)){
+          if (isPackagesPolicy()){
             data = {name: node.value};
           } else {
             data = {oids: node.value};
@@ -661,16 +680,24 @@ jsonform.elementTypes = {
         promise.resolve();
       }
 
+      $(node.el).append('<div class="alert alert-warning">' + gettext("Package not found in server repositories") + '</div>');
+      $(node.el).find(".alert").hide();
+
       promise.done(function (res) {
         if(!_.isUndefined(res)) {
           var collection = res.nodes || res.packages || res.software_profiles;
           if(collection.length === 0) {
             node.schemaElement.enum.push(node.value);
             $(node.el).find("input").attr('value', node.value);
-            $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
-            return;
+            if (!_.isUndefined(res.packages)) {
+              resNode = {name: node.value};
+              $(node.el).find(".alert").show();
+            } else {
+              $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
+              return;
+            }
           } else {
-            res = collection[0];
+            resNode = collection[0];
           }
         }
         $(node.el).find("input").html("");
@@ -684,8 +711,14 @@ jsonform.elementTypes = {
                       return re.test(d.text);
                   });
                   cachedRequests[query.term] = _.clone(cachedData);
+                  if (isPackagesPolicy()) {
+                    addTerm(cachedData, query.term);
+                  }
                   query.callback({results: cachedData});
               } else if (cachedRequests[query.term]) {
+                  if (isPackagesPolicy()) {
+                    addTerm(cachedRequests[query.term], query.term);
+                  }
                   query.callback({results: cachedRequests[query.term]});
               } else {
                   $.ajax({
@@ -729,12 +762,18 @@ jsonform.elementTypes = {
               lastTerm = query.term;
           },
           initSelection : function (element, callback) {
-            if(!_.isUndefined(res)){
-              $(node.el).find("input").last().attr('value', res._id || res.name);
-              node.schemaElement.enum.push(res._id || res.name);
-              var data = {id: res._id || res.name, text: res.name};
+            if(!_.isUndefined(resNode)){
+              $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
+              node.schemaElement.enum.push(resNode._id || resNode.name);
+              var data = {id: resNode._id || resNode.name, text: resNode.name};
               callback(data);
             }
+          }
+        }).on("change", function(e) {
+          if(e.val != lastTerm || !addedTerm){
+            $(node.el).find(".alert").hide();
+          } else {
+            $(node.el).find(".alert").show();
           }
         });
         $(node.el).removeClass("hidden");
@@ -922,7 +961,7 @@ jsonform.elementTypes = {
       var boundaries = node.getArrayBoundaries();
       node.resetDeleteEvents();
 
-      var warning = node.title + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      var warning = (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
       $(node.el).find(".alert-warning").html(warning);
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
