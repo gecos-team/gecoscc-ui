@@ -30,28 +30,36 @@ class Command(BaseCommand):
 
         print '\n\n\nLooking for new packages...'
         for url in packages_urls:
-            r = requests.get(url)
+            try:
+                r = requests.get(url)
+            except requests.exceptions.RequestException:
+                print "Error downloading file: " + url
+                continue
+
             packages_list = gzip.GzipFile(fileobj=StringIO(r.content), mode='rb')
-
             package_model = Package()
-
             package = {}
-            for line in packages_list:
-                try:
-                    key_value = self.parse_line(line)
-                except IndexError:
-                    continue
 
-                if key_value['key'] == PACKAGE_NAME_TOKEN:
-                    package['name'] = key_value['value']
-                    packages.append(package['name'])
+            try:
+                for line in packages_list:
+                    try:
+                        key_value = self.parse_line(line)
+                    except IndexError:
+                        continue
 
-                    new_package = package_model.serialize(package)
-                    db_package = self.db.packages.find_one({'name': package['name']})
+                    if key_value['key'] == PACKAGE_NAME_TOKEN:
+                        package['name'] = key_value['value']
+                        packages.append(package['name'])
 
-                    if not db_package:
-                        self.db.packages.insert(new_package)
-                        print "Imported package: %s" % package['name']
+                        new_package = package_model.serialize(package)
+                        db_package = self.db.packages.find_one({'name': package['name']})
+
+                        if not db_package:
+                            self.db.packages.insert(new_package)
+                            print "Imported package: %s" % package['name']
+            except IOError:
+                print "Error decompressing file: " + url
+                continue
 
         removed = self.db.packages.remove({'name': {'$nin': packages}})
         print '\n\n\nRemoved ' + str(removed['n']) + ' packages.'
@@ -59,7 +67,12 @@ class Command(BaseCommand):
 
     def get_packages_urls(self, url):
         packages = []
-        r = requests.get(url)
+        try:
+            r = requests.get(url)
+        except requests.exceptions.RequestException:
+            print "Error parsing repository: " + url
+            return packages
+
         links = self.get_links(r.text)
 
         if PACKAGES_FILE in links:
