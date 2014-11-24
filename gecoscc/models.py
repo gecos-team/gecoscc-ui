@@ -603,3 +603,13 @@ class SoftwareProfile(colander.MappingSchema):
 
 class SoftwareProfiles(colander.SequenceSchema):
     software_profiles = SoftwareProfile()
+
+
+class PrinterModel(colander.MappingSchema):
+    manufacturer = colander.SchemaNode(colander.String())
+    model = colander.SchemaNode(colander.String())
+
+
+class PrintersModels(colander.SequenceSchema):
+    printers = Printer()
+
