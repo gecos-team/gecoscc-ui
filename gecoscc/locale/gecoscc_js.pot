@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 2.0.0\n"
+"Project-Id-Version: gecoscc 2.1.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-18 14:55+0100\n"
+"POT-Creation-Date: 2014-11-24 13:40+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -142,11 +142,11 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:105
+#: gecoscc/static/js/computer.js:104
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:106
+#: gecoscc/static/js/computer.js:105
 msgid "Check connection with Chef server."
 msgstr ""
 
@@ -154,27 +154,27 @@ msgstr ""
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:127 gecoscc/static/js/computer.js:136
+#: gecoscc/static/js/computer.js:122 gecoscc/static/js/computer.js:137
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:128
-msgid "Chef client is not being executed on time."
-msgstr ""
-
-#: gecoscc/static/js/computer.js:137
+#: gecoscc/static/js/computer.js:123
 msgid "Last chef client had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:168
+#: gecoscc/static/js/computer.js:138
+msgid "Chef client is not being executed on time."
+msgstr ""
+
+#: gecoscc/static/js/computer.js:167
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:168
+#: gecoscc/static/js/computer.js:167
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:168
+#: gecoscc/static/js/computer.js:167
 msgid "Minutes"
 msgstr ""
 
@@ -229,8 +229,13 @@ msgstr ""
 msgid "Loading nodes..."
 msgstr ""
 
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:916
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:683
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:22
+msgid "Package not found in server repositories"
+msgstr ""
+
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:964
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:22
 msgid ""
 "contains items that are outside your scope, please consult a global "
 "administrator if you need more information."
