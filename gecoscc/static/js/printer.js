@@ -109,6 +109,11 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 cachedRequests = {},
                 lastTerm = "",
                 that = this;
+
+            if (manufacturer !== '') {
+                this.$el.find('#model').attr('disabled', false);
+            }
+
             this.$el.find('#model').select2({
                 initSelection : function (element, callback) {
                     var model = that.$el.find('#model').attr('value'),
