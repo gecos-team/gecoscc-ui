@@ -19,7 +19,7 @@ class Command(BaseCommand):
     def command(self):
         urls = json.loads(self.settings.get('printers.urls'))
 
-        collection = self.db.printers
+        collection = self.db.printer_models
         printer_model = PrinterModel()
 
         manufacturers = set()

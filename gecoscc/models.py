@@ -97,6 +97,31 @@ class Unique(object):
             err_msg = _(self.err_msg, mapping={'val': value})
             node.raise_invalid(err_msg)
 
+class PrinterModelValidator(object):
+    err_msg = 'Invalid printer model'
+
+    def __call__(self, node, value):
+        request = pyramid.threadlocal.get_current_request()
+        manufacturer = request.json['manufacturer']
+        model = request.json['model']
+        from gecoscc.db import get_db
+        mongodb = get_db(request)
+
+        if not mongodb.printer_models.find_one({'manufacturer': manufacturer, 'model': model}):
+            node.raise_invalid(self.err_msg)
+
+
+class PrinterManufacturerValidator(object):
+    err_msg = 'Invalid printer manufacturer'
+
+    def __call__(self, node, value):
+        request = pyramid.threadlocal.get_current_request()
+        from gecoscc.db import get_db
+        mongodb = get_db(request)
+
+        if not mongodb.printer_models.find_one({'manufacturer': value}):
+            node.raise_invalid(self.err_msg)
+
 
 class LowerAlphaNumeric(object):
     err_msg = _('Only lowercase letters or numbers')
@@ -108,7 +133,7 @@ class LowerAlphaNumeric(object):
 
 
 class URLExtend(object):
-    err_msg = _('Invalid URL')
+    err_msg = 'Invalid URL'
     regex = re.compile(r'^(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]$')
 
     def __call__(self, node, value):
@@ -452,8 +477,10 @@ class Printer(Node):
                                     default='laser',
                                     validator=colander.OneOf(
                                         PRINTER_TYPE.keys()))
-    manufacturer = colander.SchemaNode(colander.String())
-    model = colander.SchemaNode(colander.String())
+    manufacturer = colander.SchemaNode(colander.String(),
+                                       validator=PrinterManufacturerValidator())
+    model = colander.SchemaNode(colander.String(),
+                                validator=PrinterModelValidator())
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
