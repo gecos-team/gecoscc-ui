@@ -2958,7 +2958,7 @@ formNode.prototype.resetDeleteEvents = function () {
     var idx = $(evt.target).parent().attr('data-idx')
             || $(evt.target).parent().parent().attr('data-idx'),
         boundaries = that.getArrayBoundaries();
-    idx = Number.parseInt(idx);
+    idx = parseInt(idx, 10);
     evt.preventDefault();
     evt.stopPropagation();
     if (boundaries.minItems > 0) {
