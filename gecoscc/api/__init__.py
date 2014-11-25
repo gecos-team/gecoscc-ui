@@ -106,6 +106,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
     def get_object_filter(self):
         return {}
 
+    def get_distinct_filter(self, objects):
+        return objects
+
     def get_oid_filter(self, oid):
         if issubclass(self.schema_detail, Node):
             can_access_to_this_path(self.request, self.collection, oid)
@@ -138,6 +141,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
         ).count()
 
         objects = self.collection.find(mongo_query, **extraargs).sort(self.order_field)
+        objects = self.get_distinct_filter(objects)
         pages = int(nodes_count / pagesize)
         if nodes_count % pagesize > 0:
             pages += 1
