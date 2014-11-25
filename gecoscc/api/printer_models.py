@@ -19,9 +19,12 @@ class PrinterModelsResource(ResourcePaginatedReadOnly):
 
     collection_name = objtype
 
+    order_field = 'model'
+
     def get_distinct_filter(self, objects):
         if self.request.GET.get('manufacturers_list'):
             objects = objects.distinct('manufacturer')
+            objects.sort()
             objects = [{'manufacturer':m, 'model':''} for m in objects]
         return objects
 
