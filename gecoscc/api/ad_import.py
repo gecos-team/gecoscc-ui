@@ -15,12 +15,15 @@ from StringIO import StringIO
 from bson import ObjectId
 from chef import Client
 from cornice.resource import resource
+
 from pyramid.threadlocal import get_current_registry
+from pyramid.httpexceptions import HTTPBadRequest
+
 
 from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
-                           save_node_and_free, MASTER_DEFAULT)
+                           save_node_and_free, is_domain, MASTER_DEFAULT)
 
 logger = logging.getLogger(__name__)
 
@@ -305,7 +308,7 @@ class ADImport(BaseAPI):
         if contador > 0:
             newObj['name'] = u'{0}_{1}'.format(nombreBase, contador)
 
-    def _convertADObjectToMongoObject(self, rootOU, mongoObjects, objSchema, adObj):
+    def _convertADObjectToMongoObject(self, rootOU, mongoObjects, objSchema, adObj, is_ad_master):
 
         def update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj):
             """
@@ -367,50 +370,50 @@ class ADImport(BaseAPI):
         # Try to get an already exist object
         mongoObj = self.request.db[self.mongoCollectionName].find_one({'adObjectGUID': adObj.attributes['ObjectGUID'].value})
         if mongoObj is not None:
-            return update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj)
+            if is_ad_master:
+                return update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj)
+            return {}
         else:
             return new_object(self, rootOU, mongoObjects, objSchema, adObj)
 
-    def _getRootOU(self, ouSchema, xmlDomain):
+    def _getRootOU(self, ouSchema, xmlDomain, is_ad_master):
         # Get already exists root OU
-        rootOUID = self.request.POST['rootOU']
-        rootOU = None
-        if rootOUID not in [None, '', 'root']:
-            filterRootOU = {
-                '_id': ObjectId(rootOUID),
-                'type': ouSchema['mongoType']
-            }
-            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
-        if rootOU is None:
-            filterRootOU = {
-                'path': 'root',
-                'type': ouSchema['mongoType']
-            }
-            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        rootOUID = self.request.POST.get('rootOU', None)
+        if not rootOUID:
+            raise HTTPBadRequest('GECOSCC needs a rootOU param')
+        filterRootOU = {
+            '_id': ObjectId(rootOUID),
+            'type': ouSchema['mongoType']
+        }
+        rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        if not rootOU:
+            raise HTTPBadRequest('rootOU does not exists')
+        if not is_domain(rootOU):
+            raise HTTPBadRequest('This id is not of the a domain')
 
-        # Save changes to root OU
-        newRootOU = {
-            'name': xmlDomain.attributes['Name'].value,
+        updateRootOU = {
             'extra': xmlDomain.attributes['DistinguishedName'].value,
-            'source': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value),
-            'type': ouSchema['mongoType'],
-            'lock': 'false',
-            'policies': {},
-            'path': 'root',
+            'source': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value,
+                                           xmlDomain.attributes['ObjectGUID'].value),
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
-            'master': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value) if self.request.POST['master'] == 'True' else MASTER_DEFAULT,
             'master_policies': {}
         }
-        if rootOU is None:
-            self.request.db[self.mongoCollectionName].insert(newRootOU)
-            return newRootOU
-        else:
-            for key, value in newRootOU.items():
-                if key not in ['name', 'path', 'policies']:  # TODO: Proper update the object name
-                    rootOU[key] = value
-            self.request.db[self.mongoCollectionName].update(filterRootOU, rootOU)
-            return rootOU
+        has_updated = False
+        if is_ad_master:
+            updateRootOU['master'] = u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value)
+            has_updated = True
+        elif not is_ad_master:
+            if 'adObjectGUID' not in rootOU:
+                updateRootOU['master'] = MASTER_DEFAULT
+                has_updated = True
+            elif rootOU['master'] != MASTER_DEFAULT:
+                updateRootOU['master'] = MASTER_DEFAULT
+                has_updated = True
+        if has_updated:
+            self.request.db[self.mongoCollectionName].update(filterRootOU, {'$set': updateRootOU})
+            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        return rootOU
 
     def _saveMongoObject(self, mongoObject):
         if '_id' not in mongoObject.keys():
@@ -454,7 +457,8 @@ class ADImport(BaseAPI):
 
             # Get the root OU
             xmlDomain = xmldoc.getElementsByTagName('Domain')[0]
-            rootOU = self._getRootOU(self.importSchema[0], xmlDomain)
+            is_ad_master = self.request.POST['master'] == 'True'
+            rootOU = self._getRootOU(self.importSchema[0], xmlDomain, is_ad_master)
 
             # Convert from AD objects to MongoDB objects
             mongoObjects = {}
@@ -463,9 +467,9 @@ class ADImport(BaseAPI):
                 for adObj in objs:
                     if not adObj.hasAttribute('ObjectGUID'):
                         raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
-                    mongoObject = self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj)
-                    mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
-
+                    mongoObject = self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj, is_ad_master)
+                    if mongoObject != {}:
+                        mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
             # Order mongoObjects by dependences
             mongoObjects[rootOU['adDistinguishedName']] = rootOU
             mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
