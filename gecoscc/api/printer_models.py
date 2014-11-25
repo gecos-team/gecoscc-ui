@@ -24,3 +24,17 @@ class PrinterModelsResource(ResourcePaginatedReadOnly):
             objects = objects.distinct('manufacturer')
             objects = [{'manufacturer':m, 'model':''} for m in objects]
         return objects
+
+    def set_name_filter(self, query, key_name='manufacturer'):
+        if 'manufacturer' in self.request.GET:
+            query.append({
+                key_name: self.request.GET.get('manufacturer')
+            })
+
+        if 'imodel' in self.request.GET:
+            query.append({
+                'model': {
+                    '$regex': '.*{0}.*'.format(self.request.GET.get('imodel')),
+                    '$options': '-i'
+                }
+            })
