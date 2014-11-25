@@ -637,6 +637,5 @@ class PrinterModel(colander.MappingSchema):
     model = colander.SchemaNode(colander.String())
 
 
-class PrintersModels(colander.SequenceSchema):
-    printers = Printer()
-
+class PrinterModels(colander.SequenceSchema):
+    printers = PrinterModel()
