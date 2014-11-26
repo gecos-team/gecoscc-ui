@@ -3,6 +3,7 @@ from cornice.resource import resource
 from gecoscc.api import BaseAPI
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import http_basic_login_required
+from gecoscc.permissions import user_nodes_filter
 
 
 @resource(path='/computers/list/',
@@ -20,6 +21,9 @@ class ComputerPublicResource(BaseAPI):
     collection_name = 'nodes'
 
     def get(self):
+        filters = user_nodes_filter(self.request, ou_type='ou_availables')
+        filters['type'] = self.objtype
+        computers_query = self.collection.find(filters)
         computers = [{'node_chef_id': comp['node_chef_id'],
-                      'name': comp['name']} for comp in self.collection.find({'type': self.objtype}) if comp.get('node_chef_id', None)]
+                      'name': comp['name']} for comp in computers_query if comp.get('node_chef_id', None)]
         return {'computers': computers}

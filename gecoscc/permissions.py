@@ -95,12 +95,12 @@ def master_policy_no_updated_or_403(request, collection_nodes, obj):
                 raise HTTPForbidden()
 
 
-def nodes_path_filter(request):
+def nodes_path_filter(request, ou_type='ou_managed'):
     params = request.GET
     maxdepth = int(params.get('maxdepth', 0))
     path = request.GET.get('path', None)
     range_depth = '0,{0}'.format(maxdepth)
-    ou_managed_ids = request.user.get('ou_managed', [])
+    ou_managed_ids = request.user.get(ou_type, [])
     if not request.user.get('is_superuser') or ou_managed_ids:
         if path == 'root':
             return {
@@ -126,6 +126,15 @@ def nodes_path_filter(request):
             '$regex': r'^{0}(,[^,]*){{{1}}}$'.format(path, range_depth),
         }
     }
+
+
+def user_nodes_filter(request, ou_type='ou_managed'):
+    ou_managed_ids = request.user.get(ou_type, [])
+    if ou_managed_ids:
+        return {'path': {'$regex': '.*%s.*' % '|'.join(ou_managed_ids)}}
+    elif request.user.get('is_superuser'):
+        return {}
+    raise HTTPForbidden()
 
 
 class RootFactory(object):
