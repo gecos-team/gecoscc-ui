@@ -308,9 +308,9 @@ class ADImport(BaseAPI):
         if contador > 0:
             newObj['name'] = u'{0}_{1}'.format(nombreBase, contador)
 
-    def _convertADObjectToMongoObject(self, rootOU, mongoObjects, objSchema, adObj, is_ad_master):
+    def _convertADObjectToMongoObject(self, rootOU, mongoObjects, objSchema, adObj, is_ad_master, report):
 
-        def update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj):
+        def update_object(self, objSchema, mongoObj, adObj):
             """
             Update an object from a collection with a GUID in common.
             """
@@ -330,8 +330,6 @@ class ADImport(BaseAPI):
             for attrib in objSchema['staticAttributes']:
                 if attrib['key'] not in mongoObj.keys():
                     mongoObj[attrib['key']] = attrib['value']
-
-            # self._fixDuplicateName(mongoObjects, objSchema['mongoType'], mongoObj)
 
             return mongoObj
 
@@ -371,12 +369,14 @@ class ADImport(BaseAPI):
         mongoObj = self.request.db[self.mongoCollectionName].find_one({'adObjectGUID': adObj.attributes['ObjectGUID'].value})
         if mongoObj is not None:
             if is_ad_master:
-                return update_object(self, rootOU, mongoObjects, objSchema, mongoObj, adObj)
+                report['updated'] += 1
+                return update_object(self, objSchema, mongoObj, adObj)
             return {}
         else:
+            report['inserted'] += 1
             return new_object(self, rootOU, mongoObjects, objSchema, adObj)
 
-    def _getRootOU(self, ouSchema, xmlDomain, is_ad_master):
+    def _getRootOU(self, ouSchema, xmlDomain, is_ad_master, report):
         # Get already exists root OU
         rootOUID = self.request.POST.get('rootOU', None)
         if not rootOUID:
@@ -400,6 +400,7 @@ class ADImport(BaseAPI):
             'master_policies': {}
         }
         has_updated = False
+        report['total'] += 1
         if is_ad_master:
             updateRootOU['master'] = u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value)
             has_updated = True
@@ -412,6 +413,7 @@ class ADImport(BaseAPI):
                 has_updated = True
         if has_updated:
             self.request.db[self.mongoCollectionName].update(filterRootOU, {'$set': updateRootOU})
+            report['updated'] += 1
             rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
         return rootOU
 
@@ -455,27 +457,34 @@ class ADImport(BaseAPI):
             # Read XML data
             xmldoc = minidom.parseString(xmldata)
 
+            # Initialize report
+            report = {'inserted': 0,
+                      'updated': 0,
+                      'total': 0}
+
             # Get the root OU
             xmlDomain = xmldoc.getElementsByTagName('Domain')[0]
             is_ad_master = self.request.POST['master'] == 'True'
-            rootOU = self._getRootOU(self.importSchema[0], xmlDomain, is_ad_master)
+            rootOU = self._getRootOU(self.importSchema[0], xmlDomain, is_ad_master, report)
 
             # Convert from AD objects to MongoDB objects
             mongoObjects = {}
+
             for objSchema in self.importSchema:
                 objs = xmldoc.getElementsByTagName(objSchema['adName'])
                 for adObj in objs:
                     if not adObj.hasAttribute('ObjectGUID'):
                         raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
-                    mongoObject = self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj, is_ad_master)
+                    mongoObject = self._convertADObjectToMongoObject(rootOU, mongoObjects, objSchema, adObj, is_ad_master, report)
+                    report['total'] += 1
                     if mongoObject != {}:
                         mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
             # Order mongoObjects by dependences
-            mongoObjects[rootOU['adDistinguishedName']] = rootOU
-            mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
+            if mongoObjects:
+                mongoObjects[rootOU['adDistinguishedName']] = rootOU
+                mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, rootOU)
 
             # Save each MongoDB objects
-            successCounter = 1  # root OU already saved
             properRootOUADDN = rootOU['adDistinguishedName']
             for index, mongoObject in mongoObjects.items():
                 if index == properRootOUADDN:
@@ -491,7 +500,6 @@ class ADImport(BaseAPI):
                 mongoObject['path'] = path
                 # Save mongoObject
                 self._saveMongoObject(mongoObject)
-                successCounter += 1
 
             # AD Fixes
             chef_server_api = get_chef_api(get_current_registry().settings, self.request.user)
@@ -556,11 +564,11 @@ class ADImport(BaseAPI):
                     self._saveMongoObject(mongoObject)
 
             # Return result
-            totalCounter = len(mongoObjects)
-            return {
-                'status': '{0} of {1} objects imported successfully.'.format(successCounter, totalCounter),
-                'ok': True if successCounter == totalCounter else False
-            }
+            status = '{0} inserted, {1} updated of {2} objects imported successfully.'.format(report['inserted'],
+                                                                                              report['updated'],
+                                                                                              report['total'])
+            return {'status': status,
+                    'ok': True}
         except Exception as e:
             logger.exception(e)
             return {
