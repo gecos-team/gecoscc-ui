@@ -84,7 +84,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     isEditable = domain.get("master") === "gecos";
                     if (!isEditable) { isEditable = that.model.get("source") === "gecos"; }
                     that.model.set("isEditable", isEditable);
-                    that.model.set("master_policies", isEditable? [] : domain.get("master_policies"));
+                    that.model.set("master_policies", isEditable ? [] : domain.get("master_policies"));
                     that.render();
                 });
             }
@@ -112,7 +112,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             this.policiesList.render();
             if (!this.model.get("isEditable")) {
-                this.$el.find("textarea,input,select").prop("disabled", true);
+                this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
         },
 

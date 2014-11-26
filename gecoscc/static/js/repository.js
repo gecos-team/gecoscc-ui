@@ -83,7 +83,7 @@ App.module("Repository.Views", function (Views, App, Backbone, Marionette, $, _)
             }
 
             if (!this.model.get("isEditable")) {
-                this.$el.find("textarea,input,select").prop("disabled", true);
+                this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
         },
 
