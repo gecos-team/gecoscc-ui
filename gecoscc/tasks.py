@@ -22,7 +22,7 @@ from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
-                           save_node_and_free, NodeBusyException,
+                           save_node_and_free, NodeBusyException, NodeNotInitialized,
                            apply_policies_to_computer, apply_policies_to_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
@@ -397,25 +397,21 @@ class ChefTask(Task):
             self.db.nodes.update({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
+    def report_node_not_initialized(self, computer, user, obj, action):
+        message = 'No save in chef server. The node is not initialized, it is possible that this node was imported from AD or LDAP'
+        self.report_generic_error(user, obj, action, message, computer)
+
     def report_node_busy(self, computer, user, obj, action):
-        job_storage = JobStorage(self.db.jobs, user)
-        job_status = 'errors'
         message = 'No save in chef server. The node is busy'
-        job = dict(obj=obj,
-                   op=action,
-                   status=job_status,
-                   message=message,
-                   computer=computer,
-                   administrator_username=user['username'])
-        job_storage.create(**job)
-        if not computer.get('error_last_saved', False):
-            self.db.nodes.update({'_id': computer['_id']},
-                                 {'$set': {'error_last_saved': True}})
+        self.report_generic_error(user, obj, action, message, computer)
 
     def report_unknown_error(self, exception, user, obj, action, computer=None):
+        message = 'No save in chef server. %s' % unicode(exception)
+        self.report_generic_error(user, obj, action, message, computer)
+
+    def report_generic_error(self, user, obj, action, message, computer=None):
         job_storage = JobStorage(self.db.jobs, user)
         job_status = 'errors'
-        message = 'No save in chef server. %s' % unicode(exception)
         job = dict(obj=obj,
                    op=action,
                    status=job_status,
@@ -432,9 +428,13 @@ class ChefTask(Task):
         are_new_jobs = False
         for computer in computers:
             try:
+                self.log('info', computer['name'])
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
+                self.log('info', node_chef_id)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+                if not node.get(self.app.conf.get('chef.cookbook_name')):
+                    raise NodeNotInitialized
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
@@ -449,6 +449,10 @@ class ChefTask(Task):
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
+            except NodeNotInitialized as e:
+                self.report_node_not_initialized(computer, user, obj, action)
+                are_new_jobs = True
+                save_node_and_free(node)
             except NodeBusyException as e:
                 self.report_node_busy(computer, user, obj, action)
                 are_new_jobs = True
