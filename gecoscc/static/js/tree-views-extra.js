@@ -214,6 +214,18 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             App.instances.router.navigate("byid/" + id, { trigger: true });
         },
 
+        highlightNodeById: function (id) {
+            var $item = this.$el.find('#' + id);
+
+            this.$el.find(".tree-selected").removeClass("tree-selected");
+            if ($item.is(".tree-container")) {
+                // It's a container
+                $item.find(".tree-container-header").first().addClass("tree-selected");
+            } else {
+                $item.addClass("tree-selected");
+            }
+        },
+
         paginate: function (evt) {
             evt.preventDefault();
             var page = this.collection.currentPage,
