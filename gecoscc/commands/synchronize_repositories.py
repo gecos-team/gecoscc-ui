@@ -21,9 +21,10 @@ class Command(BaseCommand):
         packages = []
         packages_urls = []
         repositories = json.loads(self.settings.get('repositories'))
+        num_packages = 0
 
         for repo in repositories:
-            print '\n\n\nFetching: ' + repo
+            print '\n\n\nFetching: ', repo
             dists_url = repo + 'dists/'
             repo_packages = self.get_packages_urls(dists_url)
             packages_urls.extend(repo_packages)
@@ -33,7 +34,7 @@ class Command(BaseCommand):
             try:
                 r = requests.get(url)
             except requests.exceptions.RequestException:
-                print "Error downloading file: " + url
+                print "Error downloading file: ", url
                 continue
 
             packages_list = gzip.GzipFile(fileobj=StringIO(r.content), mode='rb')
@@ -56,13 +57,16 @@ class Command(BaseCommand):
 
                         if not db_package:
                             self.db.packages.insert(new_package)
-                            print "Imported package: %s" % package['name']
+                            num_packages += 1
+                            print "Imported package:", package['name']
             except IOError:
-                print "Error decompressing file: " + url
+                print "Error decompressing file:", url
                 continue
 
+        print '\n\nImported %d packages' % num_packages
+
         removed = self.db.packages.remove({'name': {'$nin': packages}})
-        print '\n\n\nRemoved ' + str(removed['n']) + ' packages.'
+        print 'Removed %d packages.\n\n\n' % removed['n']
 
 
     def get_packages_urls(self, url):
@@ -70,7 +74,7 @@ class Command(BaseCommand):
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException:
-            print "Error parsing repository: " + url
+            print "Error parsing repository:", url
             return packages
 
         links = self.get_links(r.text)
@@ -78,7 +82,7 @@ class Command(BaseCommand):
         if PACKAGES_FILE in links:
             package_url = url + PACKAGES_FILE
             packages.append(package_url)
-            print 'Found packages file: ' + package_url
+            print 'Found packages file: ', package_url
         else:
             for link in links:
                 if link[-1] == '/':
