@@ -502,41 +502,41 @@ class ADImport(BaseAPI):
                 self._saveMongoObject(mongoObject)
 
             # AD Fixes
+
             chef_server_api = get_chef_api(get_current_registry().settings, self.request.user)
+            if is_ad_master:
+                for index, mongoObject in mongoObjects.items():
+                    if mongoObject['type'] == 'group':
+                        if mongoObject['members'] != []:
+                            mongoObject['members'] = []
+                            self._saveMongoObject(mongoObject)
+
             for index, mongoObject in mongoObjects.items():
                 updateMongoObject = False
-
-                # Emails
-                if mongoObject['type'] == 'user':
-                    if ('email' not in mongoObject.keys() or mongoObject['email'] == '') and 'adEmailAddress' in mongoObject.keys():
-                        mongoObject['email'] = mongoObject['adEmailAddress']
-                    del mongoObject['adEmailAddress']
-                    # Check that email are unique and not empty
-                    if mongoObject['email'] == '':
-                        mongoObject['email'] = u'{0}@example.com'.format(mongoObject['name'])
-                    updateMongoObject = True
-
                 # MemberOf
-                if mongoObject['type'] in ['user', 'computer']:
-                    if 'memberof' not in mongoObject.keys():
+                if mongoObject['type'] in ('user', 'computer'):
+                    if 'memberof' not in mongoObject or is_ad_master:
                         mongoObject['memberof'] = []
-                    if 'adPrimaryGroup' in mongoObject.keys() and mongoObject['adPrimaryGroup']:
+                    if 'adPrimaryGroup' in mongoObject and mongoObject['adPrimaryGroup']:
                         group = mongoObjects[mongoObject['adPrimaryGroup']]
                         if not mongoObject['_id'] in group['members']:
                             group['members'].append(mongoObject['_id'])
                             self._saveMongoObject(group)
-                        mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
-                        del mongoObject['adPrimaryGroup']
-                        updateMongoObject = True
-                    if 'adMemberOf' in mongoObject.keys() and mongoObject['adMemberOf']:
+                        if mongoObjects[mongoObject['adPrimaryGroup']]['_id'] not in mongoObject['memberof']:
+                            mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
+                            del mongoObject['adPrimaryGroup']
+                            updateMongoObject = True
+                    if 'adMemberOf' in mongoObject and mongoObject['adMemberOf']:
                         for group_id in mongoObject['adMemberOf']:
                             group = mongoObjects[group_id]
-                            mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
+                            if mongoObjects[group_id]['_id'] not in mongoObject['memberof']:
+                                mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
+                                updateMongoObject = True
+
                             if not mongoObject['_id'] in group['members']:
                                 group['members'].append(mongoObject['_id'])
                                 self._saveMongoObject(group)
                         del mongoObject['adMemberOf']
-                        updateMongoObject = True
 
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
