@@ -15,6 +15,21 @@
             </div>
             <div class="bootstrap-admin-panel-content dashboard">
                 <form role="form">
+                    <div class="row"><div class="col-sm-12">
+                        <div class="well well-sm">
+                            <div class="row">
+                                <div class="col-sm-2 info-icon">
+                                    <span class="fa fa-user"></span>
+                                </div>
+                                <div class="col-sm-10">
+                                    <dl>
+                                        <dt>{{ gettext('Computers this user has logged in:') }}</dt>
+                                        <dd><% if (!_.isEmpty(computer_names)) { %><%= computer_names %><% } else { %>{{ gettext('None')}}<% } %></dd>
+                                    </dl>
+                                </div>
+                            </div>
+                        </div>
+                    </div></div>
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="form-group">

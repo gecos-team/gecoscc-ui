@@ -37,7 +37,8 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
             phone: "",
             email: "",
             policyCollection: new App.Policies.Models.PolicyCollection(),
-            isEditable: undefined
+            isEditable: undefined,
+            computer_names: []
         }
     });
 });

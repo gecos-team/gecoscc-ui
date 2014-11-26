@@ -380,7 +380,7 @@ div.groups-widget .chzn-container {
 
 /* COMPUTERS VIEW */
 
-#computers .info-icon {
+.info-icon {
     text-align: center;
     font-size: 7em;
 }
