@@ -21,7 +21,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 
 from gecoscc.api import BaseAPI
-from gecoscc.permissions import http_basic_login_required
+from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
                            MASTER_DEFAULT)
@@ -387,6 +387,7 @@ class ADImport(BaseAPI):
             'type': ouSchema['mongoType']
         }
         rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+        can_access_to_this_path(self.request, self.request.db[self.mongoCollectionName], rootOU, ou_type='ou_availables')
         if not rootOU:
             raise HTTPBadRequest('rootOU does not exists')
         if not is_domain(rootOU):
