@@ -22,7 +22,7 @@ from gecoscc.utils import (get_chef_api,
                            get_cookbook, get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
-                           save_node_and_free, NodeBusyException, NodeNotInitialized,
+                           save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
@@ -397,8 +397,8 @@ class ChefTask(Task):
             self.db.nodes.update({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
-    def report_node_not_initialized(self, computer, user, obj, action):
-        message = 'No save in chef server. The node is not initialized, it is possible that this node was imported from AD or LDAP'
+    def report_node_not_linked(self, computer, user, obj, action):
+        message = 'No save in chef server. The node is not linked, it is possible that this node was imported from AD or LDAP'
         self.report_generic_error(user, obj, action, message, computer)
 
     def report_node_busy(self, computer, user, obj, action):
@@ -434,7 +434,7 @@ class ChefTask(Task):
                 self.log('info', node_chef_id)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
-                    raise NodeNotInitialized
+                    raise NodeNotLinked
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
@@ -449,8 +449,8 @@ class ChefTask(Task):
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
-            except NodeNotInitialized as e:
-                self.report_node_not_initialized(computer, user, obj, action)
+            except NodeNotLinked as e:
+                self.report_node_not_linked(computer, user, obj, action)
                 are_new_jobs = True
                 save_node_and_free(node)
             except NodeBusyException as e:

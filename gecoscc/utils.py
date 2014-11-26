@@ -269,7 +269,7 @@ class NodeBusyException(Exception):
     pass
 
 
-class NodeNotInitialized(Exception):
+class NodeNotLinked(Exception):
     pass
 
 # Utils to NodeAttributes chef class
