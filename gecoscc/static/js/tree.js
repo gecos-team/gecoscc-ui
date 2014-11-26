@@ -39,6 +39,7 @@ App.module("Tree", function (Tree, App, Backbone, Marionette, $, _) {
         App.tree.show(treeView);
 
         App.instances.tree.on("change", function () {
+            treeView.activeNode = App.tree.currentView.activeNode;
             App.tree.show(treeView);
             _.each(App.instances.staging.toDelete, function (id) {
                 $("#" + id).addClass("deleted");
