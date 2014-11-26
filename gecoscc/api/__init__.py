@@ -234,11 +234,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             object_moved.delay(self.request.user, self.objtype, obj, old_obj)
         else:
             object_changed.delay(self.request.user, self.objtype, obj, old_obj)
-            invalidate_change(self.request, self.schema_detail, self.objtype, obj, old_obj)
+            invalidate_change(self.request, obj)
 
     def notify_deleted(self, obj):
         object_deleted.delay(self.request.user, self.objtype, obj)
-        invalidate_delete(self.request, self.schema_detail, self.objtype, obj)
+        invalidate_delete(self.request, obj)
 
     def put(self):
         obj = self.request.validated

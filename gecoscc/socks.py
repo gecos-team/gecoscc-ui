@@ -24,7 +24,7 @@ def is_websockets_enabled():
     return settings['server:main:worker_class'] == 'gecoscc.socks.GecosGeventSocketIOWorker'
 
 
-def invalidate_change(request, schema_detail, objtype, objnew, objold):
+def invalidate_change(request, objnew):
     if not is_websockets_enabled():
         return
 
@@ -37,7 +37,7 @@ def invalidate_change(request, schema_detail, objtype, objnew, objold):
     }))
 
 
-def invalidate_delete(request, schema_detail, objtype, obj):
+def invalidate_delete(request, obj):
     if not is_websockets_enabled():
         return
 

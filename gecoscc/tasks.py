@@ -428,13 +428,12 @@ class ChefTask(Task):
         are_new_jobs = False
         for computer in computers:
             try:
-                self.log('info', computer['name'])
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 self.log('info', node_chef_id)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
-                    raise NodeNotLinked
+                    raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
                 if error_last_saved:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)

@@ -215,7 +215,7 @@ def remove_chef_user_data(user, computers, api):
 def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
     node, is_busy = is_node_busy_and_reserve_it(node_id, api, controller_requestor, attempts)
     if is_busy:
-        raise NodeBusyException
+        raise NodeBusyException("Node %s is busy" % node_id)
     return node
 
 

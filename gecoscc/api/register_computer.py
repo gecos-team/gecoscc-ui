@@ -8,7 +8,7 @@ from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import get_chef_api, register_node, apply_policies_to_computer
-from gecoscc.socks import delete_computer, update_tree
+from gecoscc.socks import delete_computer, update_tree, invalidate_change
 
 
 @resource(path='/register/computer/',
@@ -56,7 +56,7 @@ class RegisterComputerResource(BaseAPI):
             return {'ok': False,
                     'message': 'Computer does not exists'}
         apply_policies_to_computer(self.collection, computer, self.request.user)
-        update_tree()
+        invalidate_change(self.request, computer)
         return {'ok': True}
 
     def delete(self):
