@@ -37,7 +37,7 @@ class PrinterModelsResource(ResourcePaginatedReadOnly):
         if 'imodel' in self.request.GET:
             query.append({
                 'model': {
-                    '$regex': '.*{0}.*'.format(self.request.GET.get('imodel')),
+                    '$regex': u'.*{0}.*'.format(self.request.GET.get('imodel')),
                     '$options': '-i'
                 }
             })
