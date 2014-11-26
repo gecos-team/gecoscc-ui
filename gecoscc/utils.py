@@ -315,6 +315,13 @@ def delete_dotted(dest, key):
 
 # Visibility utils
 
+def is_visible_group(db, group_id, node, ou_id=None):
+    ou_id = ou_id or node['path'].split(',')[-1]
+    return db.nodes.find_one({'_id': group_id,
+                              'path': get_filter_nodes_parents_ou(db,
+                                                                  ou_id,
+                                                                  node['_id'])})
+
 
 def visibility_group(db, obj):
     groups = obj['memberof']
@@ -322,12 +329,8 @@ def visibility_group(db, obj):
     hide_groups = []
     ou_id = obj['path'].split(',')[-1]
     for group_id in groups:
-        is_visible_group = db.nodes.find_one(
-            {'_id': group_id,
-             'path': get_filter_nodes_parents_ou(db,
-                                                 ou_id,
-                                                 obj['_id'])})
-        if is_visible_group:
+        is_visible = is_visible_group(db, group_id, obj, ou_id)
+        if is_visible:
             visible_groups.append(group_id)
         else:
             hide_groups.append(group_id)

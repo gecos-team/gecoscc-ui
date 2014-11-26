@@ -23,7 +23,8 @@ from pyramid.httpexceptions import HTTPBadRequest
 from gecoscc.api import BaseAPI
 from gecoscc.permissions import http_basic_login_required
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
-                           save_node_and_free, is_domain, MASTER_DEFAULT)
+                           save_node_and_free, is_domain, is_visible_group,
+                           MASTER_DEFAULT)
 
 logger = logging.getLogger(__name__)
 
@@ -450,6 +451,7 @@ class ADImport(BaseAPI):
 
     def post(self):
         try:
+            db = self.request.db
             # Read GZIP data
             postedfile = self.request.POST['media'].file
             xmldata = GzipFile('', 'r', 9, StringIO(postedfile.read())).read()
@@ -495,7 +497,7 @@ class ADImport(BaseAPI):
 
                 # Find parent
                 mongoObjectParent = mongoObjects[nodePath]
-                mongoObjectParent = self.request.db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
+                mongoObjectParent = db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
                 path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
                 mongoObject['path'] = path
                 # Save mongoObject
@@ -517,25 +519,30 @@ class ADImport(BaseAPI):
                 if mongoObject['type'] in ('user', 'computer'):
                     if 'memberof' not in mongoObject or is_ad_master:
                         mongoObject['memberof'] = []
+
                     if 'adPrimaryGroup' in mongoObject and mongoObject['adPrimaryGroup']:
                         group = mongoObjects[mongoObject['adPrimaryGroup']]
-                        if not mongoObject['_id'] in group['members']:
-                            group['members'].append(mongoObject['_id'])
-                            self._saveMongoObject(group)
-                        if mongoObjects[mongoObject['adPrimaryGroup']]['_id'] not in mongoObject['memberof']:
-                            mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
-                            del mongoObject['adPrimaryGroup']
-                            updateMongoObject = True
-                    if 'adMemberOf' in mongoObject and mongoObject['adMemberOf']:
-                        for group_id in mongoObject['adMemberOf']:
-                            group = mongoObjects[group_id]
-                            if mongoObjects[group_id]['_id'] not in mongoObject['memberof']:
-                                mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
-                                updateMongoObject = True
-
+                        if is_visible_group(db, group['_id'], mongoObject):
                             if not mongoObject['_id'] in group['members']:
                                 group['members'].append(mongoObject['_id'])
                                 self._saveMongoObject(group)
+
+                            if mongoObjects[mongoObject['adPrimaryGroup']]['_id'] not in mongoObject['memberof']:
+                                mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
+                        updateMongoObject = True
+                        del mongoObject['adPrimaryGroup']
+
+                    if 'adMemberOf' in mongoObject and mongoObject['adMemberOf']:
+                        for group_id in mongoObject['adMemberOf']:
+                            group = mongoObjects[group_id]
+                            if is_visible_group(db, group['_id'], mongoObject):
+                                if not mongoObject['_id'] in group['members']:
+                                    group['members'].append(mongoObject['_id'])
+                                    self._saveMongoObject(group)
+
+                                if mongoObjects[group_id]['_id'] not in mongoObject['memberof']:
+                                    mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
+                        updateMongoObject = True
                         del mongoObject['adMemberOf']
 
                 # Create Chef-Server Nodes
