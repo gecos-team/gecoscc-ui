@@ -97,9 +97,15 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                         that.$el.find('#model').attr('value', '');
                         that.setModelsSelect(man.val);
                     });
-                    that.setModelsSelect(that.$el.find('#manufacturer').attr('value'));
+                    if (that.model.get("isEditable")) {
+                        that.setModelsSelect(that.$el.find('#manufacturer').attr('value'));
+                    }
                 }
             });
+
+            if (!this.model.get("isEditable")) {
+                this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
+            }
         },
 
         setModelsSelect: function (manufacturer) {

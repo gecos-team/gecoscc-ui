@@ -197,7 +197,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
             });
             if (!this.model.get("isEditable")) {
-                this.$el.find("textarea,input,select").prop("disabled", true);
+                this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
         },
 
