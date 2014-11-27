@@ -387,11 +387,14 @@ class ADImport(BaseAPI):
             'type': ouSchema['mongoType']
         }
         rootOU = self.collection.find_one(filterRootOU)
-        can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
+
         if not rootOU:
             raise HTTPBadRequest('rootOU does not exists')
+
+        can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
+
         if not is_domain(rootOU):
-            raise HTTPBadRequest('This id is not of the a domain')
+            raise HTTPBadRequest('rootOU param is not a domain id')
 
         updateRootOU = {
             'extra': xmlDomain.attributes['DistinguishedName'].value,
