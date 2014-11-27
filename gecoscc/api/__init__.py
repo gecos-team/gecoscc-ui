@@ -298,11 +298,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             raise HTTPNotFound()
         old_obj = deepcopy(obj)
 
-        if not self.integrity_validation(obj):
-            if len(self.request.errors) < 1:
-                self.request.errors.add('body', 'object', 'Integrity error')
-            return
-
         obj = self.pre_save(obj)
         obj = self.pre_delete(obj)
 
