@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-26 09:25+0100\n"
+"POT-Creation-Date: 2014-11-27 14:22+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -790,11 +790,11 @@ msgstr ""
 
 #: gecoscc/templates/bb-staging-button.html:8
 #: gecoscc/templates/bb-staging-report.html:31
-msgid "Execute changes"
+msgid "Apply changes"
 msgstr ""
 
 #: gecoscc/templates/bb-staging-report.html:6
-msgid "Staged changes pending of execution"
+msgid "Stored changes, pending of execution"
 msgstr ""
 
 #: gecoscc/templates/bb-staging-report.html:13
@@ -1200,5 +1200,14 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Invalid URL"
+#~ msgstr ""
+
+#~ msgid "Execute changes"
+#~ msgstr ""
+
+#~ msgid "Staged changes pending of execution"
+#~ msgstr ""
+
+#~ msgid "Stored changes, execution pending"
 #~ msgstr ""
 

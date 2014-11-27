@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-26 09:25+0100\n"
+"POT-Creation-Date: 2014-11-27 14:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -775,11 +775,11 @@ msgstr ""
 
 #: gecoscc/templates/bb-staging-button.html:8
 #: gecoscc/templates/bb-staging-report.html:31
-msgid "Execute changes"
+msgid "Apply changes"
 msgstr ""
 
 #: gecoscc/templates/bb-staging-report.html:6
-msgid "Staged changes pending of execution"
+msgid "Stored changes, pending of execution"
 msgstr ""
 
 #: gecoscc/templates/bb-staging-report.html:13

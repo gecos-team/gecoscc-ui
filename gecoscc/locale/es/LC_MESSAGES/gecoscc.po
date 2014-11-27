@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-11-26 09:25+0100\n"
+"POT-Creation-Date: 2014-11-27 14:22+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -797,11 +797,11 @@ msgstr "En progreso"
 
 #: gecoscc/templates/bb-staging-button.html:8
 #: gecoscc/templates/bb-staging-report.html:31
-msgid "Execute changes"
-msgstr "Encolar cambios"
+msgid "Apply changes"
+msgstr "Aplicar cambios"
 
 #: gecoscc/templates/bb-staging-report.html:6
-msgid "Staged changes pending of execution"
+msgid "Stored changes, pending of execution"
 msgstr "Cambios almacenados, pendientes de ejecución"
 
 #: gecoscc/templates/bb-staging-report.html:13
@@ -1158,4 +1158,7 @@ msgstr "Teléfono"
 
 #~ msgid "Invalid URL"
 #~ msgstr "URL invalida"
+
+#~ msgid "Execute changes"
+#~ msgstr "Encolar cambios"
 

@@ -21,6 +21,8 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 
 from gecoscc.api import BaseAPI
+from gecoscc.models import (OU_ORDER, OrganisationalUnit, Group, User,
+                            Computer, Printer, Storage)
 from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
@@ -48,6 +50,7 @@ class ADImport(BaseAPI):
         {
             'adName': 'OrganizationalUnit',
             'mongoType': 'ou',
+            'serializeModel': OrganisationalUnit,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -74,11 +77,16 @@ class ADImport(BaseAPI):
                 {
                     'key': 'master_policies',
                     'value': {}
+                },
+                {
+                    'key': 'node_order',
+                    'value': OU_ORDER
                 }]
         },
         {
             'adName': 'User',
             'mongoType': 'user',
+            'serializeModel': User,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -130,6 +138,7 @@ class ADImport(BaseAPI):
         {
             'adName': 'Group',
             'mongoType': 'group',
+            'serializeModel': Group,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -162,6 +171,7 @@ class ADImport(BaseAPI):
         {
             'adName': 'Computer',
             'mongoType': 'computer',
+            'serializeModel': Computer,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -188,11 +198,17 @@ class ADImport(BaseAPI):
                     'mongo': 'adPrimaryGroup'
                 }
             ],
-            'staticAttributes': []
+            'staticAttributes': [
+                {
+                    'key': 'error_last_saved',
+                    'value': False
+                }
+            ]
         },
         {
             'adName': 'Printer',
             'mongoType': 'printer',
+            'serializeModel': Printer,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -241,6 +257,7 @@ class ADImport(BaseAPI):
         {
             'adName': 'Volume',
             'mongoType': 'storage',
+            'serializeModel': Storage,
             'attributes': [
                 {
                     'ad': 'ObjectGUID',
@@ -356,10 +373,13 @@ class ADImport(BaseAPI):
                 newObj[attrib['key']] = attrib['value']
 
             # Add additional attributes.
+            defaultValues = objSchema['serializeModel']().serialize({})
+            del defaultValues['_id']
             newObj['source'] = rootOU['source']
             newObj['type'] = objSchema['mongoType']
-            newObj['lock'] = 'false'
             newObj['policies'] = {}
+            defaultValues.update(newObj)
+            newObj = defaultValues
 
             self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj)
 
