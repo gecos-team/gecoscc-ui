@@ -46,6 +46,7 @@ def invalidate_delete(request, obj):
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
         'objectId': unicode(obj['_id']),
+        'path': obj['path'],
         'user': request.user['username']
     }))
 
