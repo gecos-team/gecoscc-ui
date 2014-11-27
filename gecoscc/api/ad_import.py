@@ -43,7 +43,7 @@ class ADImport(BaseAPI):
     RECIPE_NAME_OHAI_GECOS = 'recipe[ohai-gecos]'
     RECIPE_NAME_GECOS_WS_MGMT = 'recipe[gecos_ws_mgmt]'
 
-    mongoCollectionName = 'nodes'
+    collection_name = 'nodes'
     importSchema = [
         {
             'adName': 'OrganizationalUnit',
@@ -290,7 +290,7 @@ class ADImport(BaseAPI):
                     contador = 1
 
         # Each object already in database
-        collection = self.request.db[self.mongoCollectionName].find({
+        collection = self.collection.find({
             'name': {
                 '$regex': u'{0}(_\d+)?'.format(nombreBase)
             },
@@ -367,7 +367,7 @@ class ADImport(BaseAPI):
             return newObj
 
         # Try to get an already exist object
-        mongoObj = self.request.db[self.mongoCollectionName].find_one({'adObjectGUID': adObj.attributes['ObjectGUID'].value})
+        mongoObj = self.collection.find_one({'adObjectGUID': adObj.attributes['ObjectGUID'].value})
         if mongoObj is not None:
             if is_ad_master:
                 report['updated'] += 1
@@ -386,8 +386,8 @@ class ADImport(BaseAPI):
             '_id': ObjectId(rootOUID),
             'type': ouSchema['mongoType']
         }
-        rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
-        can_access_to_this_path(self.request, self.request.db[self.mongoCollectionName], rootOU, ou_type='ou_availables')
+        rootOU = self.collection.find_one(filterRootOU)
+        can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
         if not rootOU:
             raise HTTPBadRequest('rootOU does not exists')
         if not is_domain(rootOU):
@@ -414,18 +414,18 @@ class ADImport(BaseAPI):
                 updateRootOU['master'] = MASTER_DEFAULT
                 has_updated = True
         if has_updated:
-            self.request.db[self.mongoCollectionName].update(filterRootOU, {'$set': updateRootOU})
+            self.collection.update(filterRootOU, {'$set': updateRootOU})
             report['updated'] += 1
-            rootOU = self.request.db[self.mongoCollectionName].find_one(filterRootOU)
+            rootOU = self.collection.find_one(filterRootOU)
         return rootOU
 
     def _saveMongoObject(self, mongoObject):
         if '_id' not in mongoObject.keys():
             # Insert object
-            return self.request.db[self.mongoCollectionName].insert(mongoObject)
+            return self.collection.insert(mongoObject)
         else:
             # Update object
-            return self.request.db[self.mongoCollectionName].update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
+            return self.collection.update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
 
     def _orderByDependencesMongoObjects(self, mongoObjects, rootOU):
 
@@ -450,8 +450,19 @@ class ADImport(BaseAPI):
                 mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
         return mongoObjects
 
+    def _warningGroup(self, group, mongoObject, report):
+        if 'group' not in report['warnings']:
+            report['warnings']['group'] = []
+        report['warnings']['group'].append("The relation between %s and %s is not a relation valid at GCC" % (mongoObject['name'], group['name']))
+
     def post(self):
         try:
+            # Initialize report
+            report = {'inserted': 0,
+                      'updated': 0,
+                      'total': 0,
+                      'warnings': {}}
+
             db = self.request.db
             # Read GZIP data
             postedfile = self.request.POST['media'].file
@@ -459,11 +470,6 @@ class ADImport(BaseAPI):
 
             # Read XML data
             xmldoc = minidom.parseString(xmldata)
-
-            # Initialize report
-            report = {'inserted': 0,
-                      'updated': 0,
-                      'total': 0}
 
             # Get the root OU
             xmlDomain = xmldoc.getElementsByTagName('Domain')[0]
@@ -498,7 +504,7 @@ class ADImport(BaseAPI):
 
                 # Find parent
                 mongoObjectParent = mongoObjects[nodePath]
-                mongoObjectParent = db[self.mongoCollectionName].find_one({'_id': mongoObjectParent['_id']})
+                mongoObjectParent = self.collection.find_one({'_id': mongoObjectParent['_id']})
                 path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
                 mongoObject['path'] = path
                 # Save mongoObject
@@ -530,6 +536,8 @@ class ADImport(BaseAPI):
 
                             if mongoObjects[mongoObject['adPrimaryGroup']]['_id'] not in mongoObject['memberof']:
                                 mongoObject['memberof'].append(mongoObjects[mongoObject['adPrimaryGroup']]['_id'])
+                        else:
+                            self._warningGroup(group, mongoObject, report)
                         updateMongoObject = True
                         del mongoObject['adPrimaryGroup']
 
@@ -543,6 +551,8 @@ class ADImport(BaseAPI):
 
                                 if mongoObjects[group_id]['_id'] not in mongoObject['memberof']:
                                     mongoObject['memberof'].append(mongoObjects[group_id]['_id'])
+                            else:
+                                self._warningGroup(group, mongoObject, report)
                         updateMongoObject = True
                         del mongoObject['adMemberOf']
 
@@ -575,14 +585,13 @@ class ADImport(BaseAPI):
             status = '{0} inserted, {1} updated of {2} objects imported successfully.'.format(report['inserted'],
                                                                                               report['updated'],
                                                                                               report['total'])
-            return {'status': status,
-                    'ok': True}
+            response = {'status': status,
+                        'ok': True}
         except Exception as e:
             logger.exception(e)
-            return {
-                'status': u'{0}'.format(e),
-                'ok': False
-            }
-
-    def get_collection(self, collection=None):
-        return {}
+            response = {'status': u'{0}'.format(e),
+                        'ok': False}
+        warnings = report.get('warnings', [])
+        if warnings:
+            response['warnings'] = warnings
+        return response
