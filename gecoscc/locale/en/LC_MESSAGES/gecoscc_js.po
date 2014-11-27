@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-26 09:25+0100\n"
+"POT-Creation-Date: 2014-11-27 14:22+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -216,7 +216,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:547
+#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:557
 msgid "Loading"
 msgstr ""
 
@@ -230,7 +230,7 @@ msgid ""
 "children."
 msgstr ""
 
-#: gecoscc/static/js/tree.js:73
+#: gecoscc/static/js/tree.js:74
 msgid "Loading nodes..."
 msgstr ""
 

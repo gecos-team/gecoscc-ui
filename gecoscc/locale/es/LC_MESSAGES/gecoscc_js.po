@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-11-26 09:25+0100\n"
+"POT-Creation-Date: 2014-11-27 14:22+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -221,7 +221,7 @@ msgstr "Más"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:547
+#: gecoscc/static/js/tree-views-renderer.js:120 gecoscc/static/js/tree.js:557
 msgid "Loading"
 msgstr "Cargando"
 
@@ -235,7 +235,7 @@ msgid ""
 "children."
 msgstr "Borrar una UO es una acción permanente. También eliminará todos sus hijos."
 
-#: gecoscc/static/js/tree.js:73
+#: gecoscc/static/js/tree.js:74
 msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 

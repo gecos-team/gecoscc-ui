@@ -5,6 +5,6 @@
     <% if (inProgress) { %>
         <span class="fa fa-spin fa-spinner"></span> {{ gettext('In progress') }}
     <% } else { %>
-        {{ gettext('Execute changes') }}<% if (changes > 0) { print(": " + changes); } %>
+        {{ gettext('Apply changes') }}<% if (changes > 0) { print(": " + changes); } %>
     <% } %>
 </button>
