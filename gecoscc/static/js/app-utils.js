@@ -256,13 +256,18 @@
 
         _errorMessage: function (id, response) {
             var message = [
-                gettext("Something went wrong, please try again in a few moments."),
+                gettext("Something went wrong, please try again in a few moments.") + '</br>',
                 interpolate(gettext("Resource ID: %s"), [id])
-            ];
+            ],
+                json = response.responseJSON;
 
             if (_.has(response, "status") && _.has(response, "statusText")) {
                 message.push("- " + gettext("Status") + response.status +
-                             ": " + response.statusText);
+                             ": " + response.statusText + '</br>');
+            }
+
+            if (_.has(json, "errors") && _.first(json.errors).name === "object") {
+                message.push("Server response: "  + _.first(json.errors).description);
             }
             return message.join(' ');
         },

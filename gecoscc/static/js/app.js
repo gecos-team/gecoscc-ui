@@ -380,7 +380,7 @@ var App;
                         return;
                     }
                     parent = App.instances.tree.findNodeById(containerid);
-                    path = parent.path + ',' + parent.id;
+                    path = (parent.path || parent.get('path')) + ',' + parent.id;
                     model.set("path", path);
 
                     App.main.show(view);
