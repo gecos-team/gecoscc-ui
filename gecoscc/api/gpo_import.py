@@ -30,6 +30,10 @@ class GPOImport(BaseAPI):
     collection_name = 'nodes'
     collection_policies_name = 'policies'
 
+    def __init__(self, request):
+        super(GPOImport, self).__init__(request)
+        self.collection_policies = self.request.db[self.collection_policies_name]
+
     def _cleanPrefixNamespaces(self, xml):
         if isinstance(xml, dict):
             for old_key in xml.keys():
@@ -62,28 +66,27 @@ class GPOImport(BaseAPI):
             if not rootOUID:
                 raise HTTPBadRequest('GECOSCC needs a rootOU param')
             rootOU = None
-            if rootOUID not in [None, '', 'root']:
-                filterRootOU = {
-                    '_id': ObjectId(rootOUID),
-                    'type': 'ou'
-                }
-                rootOU = self.collection.find_one(filterRootOU)
-                if not rootOU:
-                    raise HTTPBadRequest('rootOU does not exists')
+            filterRootOU = {
+                '_id': ObjectId(rootOUID),
+                'type': 'ou'
+            }
+            rootOU = self.collection.find_one(filterRootOU)
+            if not rootOU:
+                raise HTTPBadRequest('rootOU does not exists')
 
-                can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
+            can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
 
-                if not is_domain(rootOU):
-                    raise HTTPBadRequest('rootOU param is not a domain id')
+            if not is_domain(rootOU):
+                raise HTTPBadRequest('rootOU param is not a domain id')
 
-                policies_slugs = self.request.POST.getall('masterPolicy[]')
-                for policy_slug in policies_slugs:
-                    policy = self.collection_policies.find_one({'slug': policy_slug})
-                    if 'master_policies' not in rootOU:
-                        rootOU['master_policies'] = {}
-                    if policy is not None and policy['_id'] not in rootOU['master_policies'].keys():
-                        rootOU['master_policies'][str(policy['_id'])] = True
-                self.collection.update(filterRootOU, rootOU)
+            policies_slugs = self.request.POST.getall('masterPolicy[]')
+            for policy_slug in policies_slugs:
+                policy = self.collection_policies.find_one({'slug': policy_slug})
+                if 'master_policies' not in rootOU:
+                    rootOU['master_policies'] = {}
+                if policy is not None and policy['_id'] not in rootOU['master_policies'].keys():
+                    rootOU['master_policies'][str(policy['_id'])] = True
+            self.collection.update(filterRootOU, rootOU)
 
             # Read GPOs data
             postedfile = self.request.POST['media1'].file
@@ -110,7 +113,3 @@ class GPOImport(BaseAPI):
             'status': status,
             'ok': ok
         }
-
-    def __init__(self, request):
-        super(GPOImport, self).__init__(request)
-        self.collection_policies = self.request.db[self.collection_policies_name]
