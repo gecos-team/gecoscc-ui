@@ -79,7 +79,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
         if 'iname' in self.request.GET:
             query.append({
                 key_name: {
-                    '$regex': '.*{0}.*'.format(self.request.GET.get('iname')),
+                    '$regex': u'.*{0}.*'.format(self.request.GET.get('iname')),
                     '$options': '-i'
                 }
             })
