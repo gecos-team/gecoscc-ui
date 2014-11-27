@@ -577,17 +577,12 @@ var App;
                 App.instances.job_collection.fetch();
             }
         });
-        App.instances.message_manager.bind('update_tree', function () {
-            var path;
-            App.instances.tree.reloadTree(function () {
-                if (App.tree.currentView.activeNode) {
-                    path = App.instances.cache.get(App.tree.currentView.activeNode).get("path");
-                    App.instances.tree.loadFromPath(
-                        path,
-                        App.tree.currentView.activeNode
-                    );
-                }
-            });
+        App.instances.message_manager.bind('update_tree', function (result) {
+            var path = result.path;
+            App.instances.tree.loadFromPath(
+                path,
+                App.tree.currentView.activeNode
+            );
         });
         App.instances.message_manager.bind('add_computer_to_user', function (result) {
             var user = App.instances.cache.get(result.user),

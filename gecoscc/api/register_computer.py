@@ -46,7 +46,7 @@ class RegisterComputerResource(BaseAPI):
                     'message': 'There is another node with this name (in gcc)'}
         computer = self.collection.find_one({'_id': computer_id})
         apply_policies_to_computer(self.collection, computer, self.request.user)
-        update_tree()
+        update_tree(computer['path'])
         return {'ok': True}
 
     def put(self):

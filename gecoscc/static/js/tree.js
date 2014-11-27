@@ -149,12 +149,21 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function (options) {
-            var that = this;
+            var that = this,
+                parent;
             this.listenTo(App, 'action_change', function (result) {
                 that.updateNodeById(result.objectId);
             });
             this.listenTo(App, 'action_delete', function (result) {
-                that.reloadTree();
+                parent = _.last(result.path.split(','));
+                parent = App.instances.tree.findNodeById(parent);
+                if (_.isUndefined(parent) || _.isUndefined(parent.paginatedChildren)) {
+                    return;
+                }
+                App.instances.tree.loadFromPath(
+                    result.path,
+                    App.tree.currentView.activeNode
+                );
             });
         },
         getUrl: function (options) {

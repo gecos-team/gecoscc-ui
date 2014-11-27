@@ -126,7 +126,7 @@ class ChefStatusResource(BaseAPI):
                     reload_clients = True
 
         if reload_clients:
-            update_tree()
+            update_tree(user['path'])
 
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)

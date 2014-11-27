@@ -46,6 +46,7 @@ def invalidate_delete(request, obj):
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
         'objectId': unicode(obj['_id']),
+        'path': obj['path'],
         'user': request.user['username']
     }))
 
@@ -62,13 +63,14 @@ def invalidate_jobs(request, user=None):
     }))
 
 
-def update_tree():
+def update_tree(path = 'root'):
     if not is_websockets_enabled():
         return
 
     manager = get_manager()
     manager.publish(CHANNEL_WEBSOCKET, json.dumps({
-        'action': 'update_tree'
+        'action': 'update_tree',
+        'path': path
     }))
 
 
