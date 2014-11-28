@@ -26,8 +26,9 @@ from gecoscc.models import (OU_ORDER, OrganisationalUnit, Group, User,
 from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
+                           apply_policies_to_computer, apply_policies_to_user,
+                           get_filter_in_domain,
                            MASTER_DEFAULT)
-
 logger = logging.getLogger(__name__)
 
 
@@ -326,7 +327,7 @@ class ADImport(BaseAPI):
         if contador > 0:
             newObj['name'] = u'{0}_{1}'.format(nombreBase, contador)
 
-    def _convertADObjectToMongoObject(self, domain, mongoObjects, objSchema, adObj, is_ad_master, report):
+    def _convertADObjectToMongoObject(self, domain, mongoObjects, objSchema, adObj, is_ad_master, report, objects_apply_policy):
 
         def update_object(self, objSchema, mongoObj, adObj):
             """
@@ -351,7 +352,7 @@ class ADImport(BaseAPI):
 
             return mongoObj
 
-        def new_object(self, domain, mongoObjects, objSchema, adObj):
+        def new_object(self, domain, mongoObjects, objSchema, adObj, objects_apply_policy):
             """
             Create an object into a collection.
             """
@@ -381,6 +382,9 @@ class ADImport(BaseAPI):
             defaultValues.update(newObj)
             newObj = defaultValues
 
+            if newObj['type'] in ('computer', 'user'):
+                objects_apply_policy[newObj['type']].append(newObj['name'])
+
             self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj)
 
             # Save the new object
@@ -395,7 +399,7 @@ class ADImport(BaseAPI):
             return {}
         else:
             report['inserted'] += 1
-            return new_object(self, domain, mongoObjects, objSchema, adObj)
+            return new_object(self, domain, mongoObjects, objSchema, adObj, objects_apply_policy)
 
     def _get_domain(self, ouSchema, xmlDomain, is_ad_master, report):
         # Get already exists root domain
@@ -487,6 +491,9 @@ class ADImport(BaseAPI):
                       'total': 0,
                       'warnings': {}}
 
+            objects_apply_policy = {'computer': [],
+                                    'user': []}
+
             db = self.request.db
             # Read GZIP data
             postedfile = self.request.POST['media'].file
@@ -508,7 +515,7 @@ class ADImport(BaseAPI):
                 for adObj in objs:
                     if not adObj.hasAttribute('ObjectGUID'):
                         raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
-                    mongoObject = self._convertADObjectToMongoObject(domain, mongoObjects, objSchema, adObj, is_ad_master, report)
+                    mongoObject = self._convertADObjectToMongoObject(domain, mongoObjects, objSchema, adObj, is_ad_master, report, objects_apply_policy)
                     report['total'] += 1
                     if mongoObject != {}:
                         mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
@@ -535,8 +542,8 @@ class ADImport(BaseAPI):
                 self._saveMongoObject(mongoObject)
 
             # AD Fixes
-
-            chef_server_api = get_chef_api(get_current_registry().settings, self.request.user)
+            admin_user = self.request.user
+            chef_server_api = get_chef_api(get_current_registry().settings, admin_user)
             if is_ad_master:
                 for index, mongoObject in mongoObjects.items():
                     if mongoObject['type'] == 'group':
@@ -604,6 +611,14 @@ class ADImport(BaseAPI):
                 # Save changes
                 if updateMongoObject:
                     self._saveMongoObject(mongoObject)
+
+            # apply policies to new objects
+            for node_type, node_names in objects_apply_policy.items():
+                nodes = self.collection.find({'name': {'$in': node_names},
+                                              'path': get_filter_in_domain(domain)})
+                for node in nodes:
+                    apply_policies_function = globals()['apply_policies_to_%s' % node['type']]
+                    apply_policies_function(self.collection, node, admin_user, api=chef_server_api)
 
             # Return result
             status = '{0} inserted, {1} updated of {2} objects imported successfully.'.format(report['inserted'],

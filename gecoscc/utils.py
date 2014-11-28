@@ -395,11 +395,13 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
-        object_changed.delay(auth_user, 'ou', ou, {}, computers=[computer])
+        if ou.get('policies', {}):
+            object_changed.delay(auth_user, 'ou', ou, {}, computers=[computer])
 
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
-        object_changed.delay(auth_user, 'group', group, {}, computers=[computer])
+        if group.get('policies', {}):
+            object_changed.delay(auth_user, 'group', group, {}, computers=[computer])
 
     object_created.delay(auth_user, 'computer', computer, computers=[computer])
 
@@ -419,11 +421,13 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
 
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
-        object_changed.delay(auth_user, 'ou', ou, {}, computers=computers)
+        if ou.get('policies', {}):
+            object_changed.delay(auth_user, 'ou', ou, {}, computers=computers)
 
     groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
     for group in groups:
-        object_changed.delay(auth_user, 'group', group, {}, computers=computers)
+        if group.get('policies', {}):
+            object_changed.delay(auth_user, 'group', group, {}, computers=computers)
 
     object_created.delay(auth_user, 'user', user, computers=computers)
 
