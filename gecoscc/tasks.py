@@ -579,12 +579,14 @@ class ChefTask(Task):
         raise NotImplementedError
 
     def ou_deleted(self, user, obj):
-        self.object_deleted(user, obj)
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
-        nodes = self.db.nodes.find({'path': ou_path})
-        for node in nodes:
-            node_deleted_function = getattr(self, '%s_deleted' % node['type'])
-            node_deleted_function(user, node)
+        types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
+        for node_type in types_to_remove:
+            nodes_by_type = self.db.nodes.find({'path': ou_path,
+                                                'type': node_type})
+            for node in nodes_by_type:
+                node_deleted_function = getattr(self, '%s_deleted' % node_type)
+                node_deleted_function(user, node)
         self.db.nodes.remove({'path': ou_path})
         self.log_action('deleted', 'OU', obj)
 
