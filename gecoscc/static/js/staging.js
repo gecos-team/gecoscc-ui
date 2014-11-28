@@ -67,7 +67,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                     throw "Staging collection only works with Backbone models";
                 }
 
-                var id = model.get("id"),
+                var id = model.get("id") || model.get("name"),
                     promise = $.Deferred();
 
                 promises.push(promise);
@@ -139,7 +139,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 promises = [];
 
             _.chain(this.models).clone().each(function (model) {
-                var id = model.get("id"),
+                var id = model.get("id")  || model.get("name"),
                     action = Backbone.Model.prototype.save,
                     args = [],
                     promise;
@@ -157,7 +157,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                     .done(function (response) {
                         if (!_.isUndefined(that.promiseIndex[id])) { that.promiseIndex[id].resolve(response); }
                     }).fail(function (response) {
-                        that.promiseIndex[model.get("id")].reject(response);
+                        that.promiseIndex[id].reject(response);
                     }).always(function () {
                         that.dropModel(model, { avoidRestore: true });
                     });

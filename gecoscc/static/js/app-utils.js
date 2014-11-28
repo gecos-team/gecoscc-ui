@@ -259,15 +259,18 @@
                 gettext("Something went wrong, please try again in a few moments.") + '</br>',
                 interpolate(gettext("Resource ID: %s"), [id])
             ],
-                json = response.responseJSON;
+                json = response.responseJSON,
+                that = this;
 
             if (_.has(response, "status") && _.has(response, "statusText")) {
                 message.push("- " + gettext("Status") + response.status +
                              ": " + response.statusText + '</br>');
             }
 
-            if (_.has(json, "errors") && _.first(json.errors).name === "object") {
-                message.push("Server response: "  + _.first(json.errors).description);
+            if (_.has(json, "errors")) {
+                _.each(json.errors, function (error) {
+                    message.push("Error in node: " + that.model.get("name") + " - Server response: "  + error.description);
+                });
             }
             return message.join(' ');
         },
