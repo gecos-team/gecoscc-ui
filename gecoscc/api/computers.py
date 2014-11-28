@@ -44,7 +44,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'cpu': '%s %s' % (cpu.get('vendor_id', ''), cpu.get('model_name', '')),
                            'product_name': dmi.get('system', {}).get('product_name', ''),
                            'manufacturer': dmi.get('system', {}).get('manufacturer', ''),
-                           'ram': dmi.get('processor', {}).get('size', ''),
+                           'ram': ohai.get('memory', {}).get('total', ''),
                            'lsb': ohai.get('lsb', {}),
                            'kernel': ohai.get('kernel', {}),
                            'filesystem': ohai.get('filesystem', {}),
