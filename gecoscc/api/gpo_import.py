@@ -95,7 +95,7 @@ class GPOImport(BaseAPI):
             # Apply each xmlgpo
             for xmlgpo in xmlgpos['report']['GPO']:
                 for gpoconversorclass in GPOConversor.__subclasses__():
-                    if not gpoconversorclass(self.request.db).apply(self._cleanPrefixNamespaces(xmlgpo)):
+                    if not gpoconversorclass(self.request).apply(self._cleanPrefixNamespaces(xmlgpo)):
                         # TODO Report error to somewhere
                         ok = False
                     else:
