@@ -3,17 +3,20 @@
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
 
+from gecoscc.utils import get_domain
+
 __all__ = ['desktop_background', 'sharing_permissions', 'automatic_updates', 'file_browser', 'user_mount', 'shutdown_options']
 
 
 class GPOConversor(object):
 
-    mongoCollectionName = 'nodes'
+    collection_name = 'nodes'
 
     xml_sid_guid = None
 
     def __init__(self, db):
         self.db = db
+        self.collection = self.db[self.collection_name]
 
     def get_guid_from_sid(self, sid):
         for item in self.xml_sid_guid['items']['item']:
@@ -24,10 +27,10 @@ class GPOConversor(object):
     def _saveMongoADObject(self, mongoObject):
         if '_id' not in mongoObject.keys():
             # Insert object
-            return self.db[self.mongoCollectionName].insert(mongoObject)
+            return self.collection.insert(mongoObject)
         else:
             # Update object
-            return self.db[self.mongoCollectionName].update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
+            return self.collection.update({'adObjectGUID': mongoObject['adObjectGUID']}, mongoObject)
 
     def getNodesFromPath(self, lst, path):
 
@@ -61,12 +64,16 @@ class GPOConversor(object):
             for guid in entry['guids']:
                 if result is False:
                     break
-                node = self.db[self.mongoCollectionName].find_one({'adObjectGUID': guid})
+                node = self.collection.find_one({'adObjectGUID': guid})
+                domain = get_domain(node, self.collection)
                 if node is None:
                     result = False
                     # TODO: Inform about the problem
                     continue
                 for policy in entry['policies']:
-                    node['policies'][policy.keys()[0]] = policy[policy.keys()[0]]
+                    policy_id = policy.keys()[0]
+                    if policy_id not in domain.get('master_policies', {}) and node.get('policies', {}).get(policy_id, None):
+                        continue
+                    node['policies'][policy_id] = policy[policy_id]
                 result = self._saveMongoADObject(node)
         return result
