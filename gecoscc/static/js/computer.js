@@ -81,14 +81,23 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.checkErrors();
 
             //Set domain dependent atributes
-            var path = this.model.get("path");
+            var path = this.model.get("path"),
+                ram = this.model.get("ram");
 
-            if (this.model.get("isEditable") !== undefined) { return; }
+            if (!_.isUndefined(this.model.get("isEditable"))) { return; }
 
-            if (path.split(',')[0] === "undefined") {
+            if (!_.isUndefined(path.split(',')[0])) {
                 this.model.set("isEditable", true);
             } else {
                 this.getDomainAttrs();
+            }
+
+            if (!_.isUndefined(ram)) {
+                // remove units and convert to MB
+                ram = ram.slice(0, -2);
+                ram = parseInt(ram) / 1024;
+                ram = ram.toFixed() + " MB";
+                this.model.set("ram", ram);
             }
         },
 
