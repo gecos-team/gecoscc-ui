@@ -321,7 +321,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 class TreeResourcePaginated(ResourcePaginated):
 
     def check_unique_node_name_by_type_at_domain(self, obj):
-        return check_unique_node_name_by_type_at_domain(self.request.db.nodes, obj)
+        unique = check_unique_node_name_by_type_at_domain(self.request.db.nodes, obj)
+        if not unique:
+            self.request.errors.add(
+                        'body', 'name',
+                        "Name must be unique in domain.")
+        return unique
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
