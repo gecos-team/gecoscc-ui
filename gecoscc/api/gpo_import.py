@@ -61,32 +61,31 @@ class GPOImport(BaseAPI):
             xmlsid_guid = xmltodict.parse(xmldata)
             GPOConversor.xml_sid_guid = xmlsid_guid
 
-            # Update rootOU with master_policies
-            rootOUID = self.request.POST.get('rootOU', None)
-            if not rootOUID:
-                raise HTTPBadRequest('GECOSCC needs a rootOU param')
-            rootOU = None
-            filterRootOU = {
-                '_id': ObjectId(rootOUID),
+            # Update domain with master_policies
+            domain_id = self.request.POST.get('domainId', None)
+            if not domain_id:
+                raise HTTPBadRequest('GECOSCC needs a domainId param')
+            filter_domain = {
+                '_id': ObjectId(domain_id),
                 'type': 'ou'
             }
-            rootOU = self.collection.find_one(filterRootOU)
-            if not rootOU:
-                raise HTTPBadRequest('rootOU does not exists')
+            domain = self.collection.find_one(filter_domain)
+            if not domain:
+                raise HTTPBadRequest('domain does not exists')
 
-            can_access_to_this_path(self.request, self.collection, rootOU, ou_type='ou_availables')
+            can_access_to_this_path(self.request, self.collection, domain, ou_type='ou_availables')
 
-            if not is_domain(rootOU):
-                raise HTTPBadRequest('rootOU param is not a domain id')
+            if not is_domain(domain):
+                raise HTTPBadRequest('domain param is not a domain id')
 
             policies_slugs = self.request.POST.getall('masterPolicy[]')
             for policy_slug in policies_slugs:
                 policy = self.collection_policies.find_one({'slug': policy_slug})
-                if 'master_policies' not in rootOU:
-                    rootOU['master_policies'] = {}
-                if policy is not None and policy['_id'] not in rootOU['master_policies'].keys():
-                    rootOU['master_policies'][str(policy['_id'])] = True
-            self.collection.update(filterRootOU, rootOU)
+                if 'master_policies' not in domain:
+                    domain['master_policies'] = {}
+                if policy is not None and policy['_id'] not in domain['master_policies']:
+                    domain['master_policies'][str(policy['_id'])] = True
+            self.collection.update(filter_domain, domain)
 
             # Read GPOs data
             postedfile = self.request.POST['media1'].file
