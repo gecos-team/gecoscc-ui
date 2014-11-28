@@ -23,6 +23,11 @@ class ComputerPublicResource(BaseAPI):
     def get(self):
         filters = user_nodes_filter(self.request, ou_type='ou_availables')
         filters['type'] = self.objtype
+        q = self.request.GET.get('q', None)
+        if q:
+            filters['name'] = {'$regex': '%s.*' % q,
+                               '$options': '-i'}
+
         computers_query = self.collection.find(filters)
         computers = [{'node_chef_id': comp['node_chef_id'],
                       'name': comp['name']} for comp in computers_query if comp.get('node_chef_id', None)]
