@@ -55,6 +55,10 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             }
         },
 
+        getArgumentIndexId: function (model) {
+            return model.get("id") || (model.get("type") + model.get("name"));
+        },
+
         add: function (models, options) {
             var that = this,
                 promises = [];
@@ -67,7 +71,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                     throw "Staging collection only works with Backbone models";
                 }
 
-                var id = model.get("id") || model.get("name"),
+                var id = that.getArgumentIndexId(model),
                     promise = $.Deferred();
 
                 promises.push(promise);
@@ -110,7 +114,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                     throw "Staging collection only works with Backbone models";
                 }
 
-                var id = model.get("id");
+                var id = that.getArgumentIndexId(model);
                 delete that.promiseIndex[id];
                 delete that.argumentsIndex[id];
                 that.toDelete = _.reject(that.toDelete, function (objId) {
@@ -139,7 +143,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 promises = [];
 
             _.chain(this.models).clone().each(function (model) {
-                var id = model.get("id")  || model.get("name"),
+                var id = that.getArgumentIndexId(model),
                     action = Backbone.Model.prototype.save,
                     args = [],
                     promise;

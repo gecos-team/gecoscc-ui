@@ -256,23 +256,33 @@
 
         _errorMessage: function (id, response) {
             var message = [
-                gettext("Something went wrong, please try again in a few moments.") + '</br>',
-                interpolate(gettext("Resource ID: %s"), [id])
+                gettext("Something went wrong, please check errors and try again.") + '</br>'
             ],
                 json = response.responseJSON,
                 that = this;
 
-            if (_.has(response, "status") && _.has(response, "statusText")) {
+            if (_.has(response, "status") && response.status !== 400 && _.has(response, "statusText")) {
                 message.push("- " + gettext("Status") + response.status +
                              ": " + response.statusText + '</br>');
             }
 
             if (_.has(json, "errors")) {
                 _.each(json.errors, function (error) {
-                    message.push("Error in node: " + that.model.get("name") + " - Server response: "  + error.description);
+                    message.push(gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
                 });
             }
             return message.join(' ');
+        },
+
+        _addErrorMessage: function (response) {
+            var json = response.responseJSON,
+                that = this;
+
+            if (_.has(json, "errors")) {
+                _.each(json.errors, function (error) {
+                    $(".server-errors").append('<br/>' + gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
+                });
+            }
         },
 
         saveModel: function ($button, mapping) {
@@ -319,11 +329,15 @@
             });
             promise.fail(function (response) {
                 if (response !== "avoid alert") {
-                    App.showAlert(
-                        "error",
-                        interpolate(gettext("Saving the %s failed."), [that.model.resourceType]),
-                        that._errorMessage(that.model.get("id"), response)
-                    );
+                    if ($(".server-errors").length === 0) {
+                        App.showAlert(
+                            "error server-errors",
+                            gettext("Applying changes has failed."),
+                            that._errorMessage(that.model.get("id"), response)
+                        );
+                    } else {
+                        that._addErrorMessage(response);
+                    }
                 }
             });
 
@@ -423,7 +437,7 @@
     App.showAlert = function (type, bold, text) {
         var view;
 
-        if (type === "error") { type = "danger"; }
+        type = type.replace("error", "danger");
         view = new AlertView({
             type: type,
             bold: bold,
