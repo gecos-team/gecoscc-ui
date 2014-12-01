@@ -40,7 +40,7 @@ class Command(BaseCommand):
             temp.write(StringIO(res.content).read())
             temp.flush()
 
-            tar = tarfile.open('/home/abeiztegui/Descargas/foomatic-db-current.tar.gz')
+            tar = tarfile.open(temp.name)
             members = tar.getmembers()
 
             for member in members:
