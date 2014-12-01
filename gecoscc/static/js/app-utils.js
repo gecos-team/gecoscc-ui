@@ -268,7 +268,8 @@
 
             if (_.has(json, "errors")) {
                 _.each(json.errors, function (error) {
-                    message.push(gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
+                    message.push("&#8226; " + gettext("Error in node: ") + that.model.get("name") +
+                                    " - " + gettext("Server response: ") + error.description);
                 });
             }
             return message.join(' ');
@@ -280,7 +281,7 @@
 
             if (_.has(json, "errors")) {
                 _.each(json.errors, function (error) {
-                    $(".server-errors").append('<br/>' + gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
+                    $(".server-errors").append('<br/>&#8226; ' + gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
                 });
             }
         },

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-11-27 14:22+0100\n"
+"POT-Creation-Date: 2014-12-01 09:10+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -53,32 +53,34 @@ msgid "Done"
 msgstr ""
 
 #: gecoscc/static/js/app-utils.js:259
-msgid "Something went wrong, please try again in a few moments."
+msgid "Something went wrong, please check errors and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:260
-#, python-format
-msgid "Resource ID: %s"
-msgstr ""
-
-#: gecoscc/static/js/app-utils.js:264
+#: gecoscc/static/js/app-utils.js:265
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:278
+#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:283
+msgid "Error in node: "
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:283
+msgid "Server response: "
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:296
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:279
+#: gecoscc/static/js/app-utils.js:297
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:316
-#, python-format
-msgid "Saving the %s failed."
+#: gecoscc/static/js/app-utils.js:335
+msgid "Applying changes has failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:347
+#: gecoscc/static/js/app-utils.js:369
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr ""
@@ -145,39 +147,39 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:104
+#: gecoscc/static/js/computer.js:113
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:105
+#: gecoscc/static/js/computer.js:114
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:114
+#: gecoscc/static/js/computer.js:123
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:122 gecoscc/static/js/computer.js:137
+#: gecoscc/static/js/computer.js:131 gecoscc/static/js/computer.js:146
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:123
+#: gecoscc/static/js/computer.js:132
 msgid "Last chef client had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:138
+#: gecoscc/static/js/computer.js:147
 msgid "Chef client is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:167
+#: gecoscc/static/js/computer.js:176
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:167
+#: gecoscc/static/js/computer.js:176
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:167
+#: gecoscc/static/js/computer.js:176
 msgid "Minutes"
 msgstr ""
 
@@ -195,11 +197,11 @@ msgstr ""
 msgid "Policy successfully deleted."
 msgstr ""
 
-#: gecoscc/static/js/staging.js:78
+#: gecoscc/static/js/staging.js:82
 msgid "Resource marked for deletion."
 msgstr ""
 
-#: gecoscc/static/js/staging.js:79
+#: gecoscc/static/js/staging.js:83
 msgid "Your latest changes in this resource will be ignored."
 msgstr ""
 
@@ -262,5 +264,14 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Someone has deleted this object while you were working on it"
+#~ msgstr ""
+
+#~ msgid "Something went wrong, please try again in a few moments."
+#~ msgstr ""
+
+#~ msgid "Resource ID: %s"
+#~ msgstr ""
+
+#~ msgid "Saving the %s failed."
 #~ msgstr ""
 
