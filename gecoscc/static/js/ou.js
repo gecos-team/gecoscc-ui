@@ -101,7 +101,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                         list;
 
                     list = response.policies.map(function (p) {
-                        return p.name;
+                        return p['name_' + App.language] || p.name;
                     });
                     list = list.join(", ");
                     $masterPolicies.append("<dd>" + list + "</dd>");
