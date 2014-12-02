@@ -18,6 +18,9 @@
     <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
         <span class="fa fa-refresh"></span>
     </button>
+    <span id="archiveTasks" class="pull-right <% if (!isMaximized) { print('hide'); } %>">
+        <a href="#" id="archiveTasks">{{ gettext('Archive Tasks') }}</a>
+    </span>
 </div>
 <div class="bootstrap-admin-panel-content table-responsive">
     <table class="table table-striped table-bordered">

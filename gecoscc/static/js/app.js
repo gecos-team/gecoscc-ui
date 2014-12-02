@@ -57,7 +57,8 @@ var App;
             "click span.filters #tasksProcessing": "tasksProcessing",
             "click span.filters #tasksFinished": "tasksFinished",
             "click span.filters #tasksErrors": "tasksErrors",
-            "click span.filters #tasksWarnings": "tasksWarnings"
+            "click span.filters #tasksWarnings": "tasksWarnings",
+            "click #archiveTasks": "archiveTasks"
         },
 
         refresh: function () {
@@ -93,6 +94,17 @@ var App;
             this.collection.status = 'warnings';
             this.tasksFilter();
         },
+        archiveTasks: function (evt) {
+            var that = this;
+            evt.preventDefault();
+            $.ajax({
+                url: '/api/archive_jobs/',
+                type: 'PUT',
+                success: function () {
+                    that.tasksFilter();
+                }
+            });
+        },
         maximize: function (evt) {
             var events = this.$el;
             evt.preventDefault();
@@ -103,6 +115,7 @@ var App;
             $(document.body).append(events);
             events.find(".short").addClass("hide");
             events.find(".long").removeClass("hide");
+            events.find("#archiveTasks").removeClass("hide");
             events.addClass("maximize");
             this.isMaximized = true;
         },
@@ -116,6 +129,7 @@ var App;
             $("#sidebar").append(events);
             events.find(".short").removeClass("hide");
             events.find(".long").addClass("hide");
+            events.find("#archiveTasks").addClass("hide");
             events.removeClass("maximize");
             this.isMaximized = false;
         },
