@@ -66,7 +66,7 @@ class RegisterComputerResource(BaseAPI):
         num_node_deleted = node_deleted['n']
         if num_node_deleted >= 1:
             if num_node_deleted == 1:
-                delete_computer(computer['_id'])
+                delete_computer(computer['_id'], computer['path'])
                 return {'ok': True}
             return {'ok': False,
                     'message': 'Deleted %s computers' % num_node_deleted}

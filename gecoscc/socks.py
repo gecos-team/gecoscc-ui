@@ -85,7 +85,7 @@ def add_computer_to_user(computer, user):
         'user': unicode(user)
     }))
 
-def delete_computer(object_id):
+def delete_computer(object_id, path):
     if not is_websockets_enabled():
         return
 
@@ -94,6 +94,7 @@ def delete_computer(object_id):
         'token': '',
         'action': 'delete',
         'objectId': unicode(object_id),
+        'path': path,
         'user': 'Chef server'
     }))
 
