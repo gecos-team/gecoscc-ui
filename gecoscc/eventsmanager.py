@@ -87,6 +87,7 @@ class JobStorage(object):
             'administrator_username': administrator_username,
             'created': datetime.utcnow(),
             'last_update': datetime.utcnow(),
+            'archived': False
         }
         if policy:
             settings = get_current_registry().settings

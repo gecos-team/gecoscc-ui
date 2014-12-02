@@ -1,3 +1,4 @@
+import json
 import pymongo
 
 from cornice.resource import resource
@@ -32,4 +33,7 @@ class JobResource(ResourcePaginatedReadOnly):
         status = self.request.GET.get('status', '')
         if status:
             filters.append({'status': status})
+        archived = self.request.GET.get('archived', '')
+        if archived:
+            filters.append({'archived': json.loads(archived)})
         return filters

@@ -57,6 +57,7 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
 
     Models.JobCollection = Backbone.Paginator.requestPager.extend({
         model: Models.JobModel,
+        archived: false,
         paginator_core: {
             type: "GET",
             dataType: "json",
@@ -78,9 +79,8 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
         server_api: {
             page: function () { return this.currentPage; },
             pagesize: function () { return this.perPage; },
-            status:  function () {
-                return this.status;
-            }
+            status:  function () { return this.status; },
+            archived:  function () { return this.archived; }
         },
         parse: function (response) {
             this.totalPages = response.pages;

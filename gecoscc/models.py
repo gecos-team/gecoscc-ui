@@ -581,6 +581,9 @@ class Job(colander.MappingSchema):
     # Verify that the status selected already exists
     status = colander.SchemaNode(colander.String(),
                                  validator=colander.OneOf(JOB_STATUS.keys()))
+    archived = colander.SchemaNode(RealBoolean(),
+                                   default=False,
+                                   missing=False)
     message = colander.SchemaNode(colander.String(),
                                   default='',
                                   missing='')
