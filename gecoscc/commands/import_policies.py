@@ -89,6 +89,7 @@ SPROFILES_LOCALIZED = {
 SPROFILES_URL = '/api/software_profiles/'
 SPROFILES_URL_TARGETS = ['ou', 'computer', 'group']
 
+
 class Command(BaseCommand):
     description = """
        Import existing policies in chef server.
@@ -141,7 +142,6 @@ class Command(BaseCommand):
         else:
             self.db.policies.update({'slug': policy_slug}, new_policy)
             print "Updated policy: %s" % policy_slug
-
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
@@ -226,7 +226,7 @@ class Command(BaseCommand):
 
             self.treatment_policy(policy)
 
-        #self.create_software_profiles_policy(policies, languages)
+        self.create_software_profiles_policy(policies, languages)
 
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
@@ -249,13 +249,11 @@ class Command(BaseCommand):
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
 
-
     def set_packages_url(self, value):
         value['properties']['package_list']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['package_list']['items']['enum'] = []
         value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['pkgs_to_remove']['items']['enum'] = []
-
 
     def create_software_profiles_policy(self, policies, languages):
         slug = 'software_profile'
