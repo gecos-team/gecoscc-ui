@@ -5,6 +5,7 @@
             <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Tasks') }}</a> |
             <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Tasks') }}</a> |
             <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Tasks') }}</a> |
+            <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Tasks') }}</a> |
             <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Tasks') }}</a>
         </span>
     </div>
@@ -38,7 +39,9 @@
         </thead>
         <tbody>
         <% _.each(items, function (item) { %>
-            <tr class="task<% if (item.status==='finished') { %> success<% } if (item.status==='errors') { %> danger <% } %>">
+            <tr class="task<%   if (item.status==='finished') { %> success<% }
+                                if (item.status==='errors') { %> danger <% }
+                                if (item.status==='warnings') { %> warning <% } %>">
                 <td>
                     <span class="fa fa-<%= getIcon(item) %>"></span>
                     <%= item.objname %>
@@ -50,7 +53,11 @@
                     <%= item['policyname_' + App.language] || item.policyname %>
                 </td>
                 <td style="max-width: <%= screen.width / 2 %>px">
-                    <span class="fa <% if (item.status==='finished') { %> fa-check<% } else if (item.status==='errors') { %> fa-times<% } else { %> fa-clock-o<% } %>" title="<%= item.status %>"></span>
+                    <span class="fa <% if (item.status==='finished') { %> fa-check<% }
+                                        else if (item.status==='errors') { %> fa-times<% }
+                                        else if (item.status==='warnings') { %> fa-exclamation<% }
+                                        else { %> fa-clock-o<% } %>"
+                                        title="<%= item.status %>"></span>
                     <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
                 </td>
             </tr>

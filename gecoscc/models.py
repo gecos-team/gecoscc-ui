@@ -557,8 +557,11 @@ JOB_STATUS = {
     # All the changes were applied SUCCESSFULLY
     'finished': _('Changes applied'),
 
+    # There were warnings during the process
+    'warnings': _('There were errors'),
+
     # There was errors during the process
-    'errors': _('There was errors'),
+    'errors': _('There were errors'),
 }
 
 

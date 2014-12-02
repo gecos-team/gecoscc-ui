@@ -56,7 +56,8 @@ var App;
             "click span.filters #tasksAll": "tasksAll",
             "click span.filters #tasksProcessing": "tasksProcessing",
             "click span.filters #tasksFinished": "tasksFinished",
-            "click span.filters #tasksErrors": "tasksErrors"
+            "click span.filters #tasksErrors": "tasksErrors",
+            "click span.filters #tasksWarnings": "tasksWarnings"
         },
 
         refresh: function () {
@@ -85,6 +86,11 @@ var App;
         tasksErrors: function (evt) {
             evt.preventDefault();
             this.collection.status = 'errors';
+            this.tasksFilter();
+        },
+        tasksWarnings: function (evt) {
+            evt.preventDefault();
+            this.collection.status = 'warnings';
             this.tasksFilter();
         },
         maximize: function (evt) {

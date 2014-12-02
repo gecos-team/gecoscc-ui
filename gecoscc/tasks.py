@@ -399,7 +399,7 @@ class ChefTask(Task):
 
     def report_node_not_linked(self, computer, user, obj, action):
         message = 'No save in chef server. The node is not linked, it is possible that this node was imported from AD or LDAP'
-        self.report_generic_error(user, obj, action, message, computer)
+        self.report_generic_error(user, obj, action, message, computer, status='warnings')
 
     def report_node_busy(self, computer, user, obj, action):
         message = 'No save in chef server. The node is busy'
@@ -409,9 +409,9 @@ class ChefTask(Task):
         message = 'No save in chef server. %s' % unicode(exception)
         self.report_generic_error(user, obj, action, message, computer)
 
-    def report_generic_error(self, user, obj, action, message, computer=None):
+    def report_generic_error(self, user, obj, action, message, computer=None, status='errors'):
         job_storage = JobStorage(self.db.jobs, user)
-        job_status = 'errors'
+        job_status = status
         job = dict(obj=obj,
                    op=action,
                    status=job_status,
