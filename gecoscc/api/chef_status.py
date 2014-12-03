@@ -56,6 +56,8 @@ class ChefStatusResource(BaseAPI):
         if job_status:
             node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
             reserve_node = True
+            chef_client_error = False
+
             for job_id, job_status in job_status.to_dict().items():
                 job = self.collection.find_one({'_id': ObjectId(job_id)})
                 if not job:
@@ -65,10 +67,12 @@ class ChefStatusResource(BaseAPI):
                                            {'$set': {'status': 'finished',
                                                      'last_update': datetime.datetime.utcnow()}})
                 else:
+                    chef_client_error = True
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'errors',
                                                      'message': job_status.get('message', 'Error'),
                                                      'last_update': datetime.datetime.utcnow()}})
+            self.request.db.nodes.update({'node_chef_id': node_id},{'$set':{'error_last_chef_client': chef_client_error}})
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
 
