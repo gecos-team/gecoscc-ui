@@ -110,6 +110,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 intervalDelta,
                 chef_client;
 
+            this.model.set("iconClass", "info-icon-success");
+            this.model.set("labelClass", "label-success");
+
             lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
             this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
 

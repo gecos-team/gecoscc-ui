@@ -149,17 +149,17 @@
             if (!_.isUndefined(evt)) {
                 evt.preventDefault();
             }
+            App.instances.staging.dropModel(this.model);
+            $("#alerts-area .alert").slideUp('fast', function () {
+                $(this).find("button.close").click();
+            });
             $(this.el).fadeOut(function () {
                 that.groupsWidget = undefined;
                 that.policiesList = undefined;
                 that.model.fetch().done(function () {
                     that.render();
                 }).done(function () {
-                    $(that.el).fadeIn(function () {
-                        $("#alerts-area .alert").slideUp(function () {
-                            $(this).find("button.close").click();
-                        });
-                    });
+                    $(that.el).fadeIn();
                 });
             });
         },
