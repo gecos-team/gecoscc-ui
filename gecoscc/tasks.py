@@ -435,7 +435,8 @@ class ChefTask(Task):
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
-                if error_last_saved:
+                error_last_chef_client = computer.get('error_last_chef_client', False)
+                if error_last_saved or error_last_chef_client:
                     node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
                 else:
                     node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)

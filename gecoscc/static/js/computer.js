@@ -48,7 +48,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             icon: "desktop",
             labelClass: "label-success",
             iconClass: "info-icon-success",
-            error_last_saved: false
+            error_last_saved: false,
+            error_last_chef_client: true
         }
     });
 });
@@ -95,7 +96,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!_.isUndefined(ram)) {
                 // remove units and convert to MB
                 ram = ram.slice(0, -2);
-                ram = parseInt(ram) / 1024;
+                ram = parseInt(ram, 10) / 1024;
                 ram = ram.toFixed() + " MB";
                 this.model.set("ram", ram);
             }
@@ -103,12 +104,17 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         checkErrors: function () {
             var now = new Date(),
+                ohai = this.model.get("ohai"),
                 lastConnection,
                 interval,
                 intervalDelta,
                 chef_client;
 
-            if (this.model.get("ohai") === "" || _.isUndefined(this.model.get("ohai").ohai_time)) {
+            lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
+            this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
+
+
+            if (ohai === "") {
                 this.alertError(
                     gettext("No data has been received from this workstation."),
                     gettext("Check connection with Chef server.")
@@ -116,9 +122,16 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return;
             }
 
-            lastConnection = new Date(this.model.get("ohai").ohai_time * 1000);
-            this.model.set("last_connection", this.calculateTimeToNow(lastConnection));
-            chef_client = this.model.get("ohai").chef_client;
+            if (_.isUndefined(ohai.ohai_time)) {
+                this.model.set("last_connection", "Error");
+                this.alertWarning(
+                    gettext("This workstation is not linked."),
+                    gettext("It is possible that this node was imported from AD or LDAP.")
+                );
+                return;
+            }
+
+            chef_client = ohai.chef_client;
             if (_.isUndefined(chef_client)) {
                 this.alertError(gettext("This workstation has incomplete Ohai information."));
                 return;
@@ -129,20 +142,26 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.showAlert(
                     "error",
                     gettext("This workstation is not working properly:"),
+                    "<br/> - " + gettext("There were errors while saving this node in Chef")
+                );
+                return;
+            }
+
+            if (this.model.get("error_last_chef_client")) {
+                this.model.set("iconClass", "info-icon-danger");
+                App.showAlert(
+                    "error",
+                    gettext("This workstation is not working properly:"),
                     "<br/> - " + gettext("Last chef client had problems during its execution.")
                 );
                 return;
             }
 
-            interval = this.model.get("ohai").chef_client.interval / 60;
+            interval = ohai.chef_client.interval / 60;
             intervalDelta = 10;
             now.setMinutes(now.getMinutes() - interval - intervalDelta);
             if (lastConnection < now) {
-                this.model.set("uptime", "-");
-                this.model.set("iconClass", "info-icon-warning");
-                this.model.set("labelClass", "label-warning");
-                App.showAlert(
-                    "warning",
+                this.alertWarning(
                     gettext("This workstation is not working properly:"),
                     "<br/> - " + gettext("Chef client is not being executed on time.")
                 );
@@ -156,6 +175,17 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.model.set("labelClass", "label-danger");
             App.showAlert(
                 "error",
+                strong,
+                text
+            );
+        },
+
+        alertWarning: function (strong, text) {
+            this.model.set("uptime", "-");
+            this.model.set("iconClass", "info-icon-warning");
+            this.model.set("labelClass", "label-warning");
+            App.showAlert(
+                "warning",
                 strong,
                 text
             );

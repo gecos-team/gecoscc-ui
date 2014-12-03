@@ -454,6 +454,8 @@ class Computer(Node):
                                        missing='')
     error_last_saved = colander.SchemaNode(RealBoolean(),
                                            default=False)
+    error_last_chef_client = colander.SchemaNode(RealBoolean(),
+                                           default=False)
 
 
 class Computers(colander.SequenceSchema):
