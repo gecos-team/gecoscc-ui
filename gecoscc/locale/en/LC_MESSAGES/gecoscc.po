@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-01 09:10+0100\n"
+"POT-Creation-Date: 2014-12-03 09:33+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -242,8 +242,8 @@ msgstr ""
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:561
-msgid "There was errors"
+#: gecoscc/models.py:561 gecoscc/models.py:564
+msgid "There were errors"
 msgstr ""
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
@@ -372,12 +372,12 @@ msgstr ""
 msgid "Policies"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:29
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:37
 msgid "Workstation"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:13
-#: gecoscc/templates/bb-groups-form.html:12 gecoscc/templates/bb-jobs.html:17
+#: gecoscc/templates/bb-groups-form.html:12 gecoscc/templates/bb-jobs.html:22
 #: gecoscc/templates/bb-ou.html:12 gecoscc/templates/bb-printer.html:4
 #: gecoscc/templates/bb-repository.html:4 gecoscc/templates/bb-storage.html:4
 #: gecoscc/templates/bb-user.html:12
@@ -586,31 +586,47 @@ msgid "Finished Tasks"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:8
+msgid "Warnings Tasks"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:9
 msgid "Errors Tasks"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:11
+#: gecoscc/templates/bb-jobs.html:12
+msgid "Active"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:13
+msgid "Archived"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:16
 msgid "Maximize"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:14
+#: gecoscc/templates/bb-jobs.html:19
 msgid "Minimize"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:26
+#: gecoscc/templates/bb-jobs.html:25
+msgid "Archive Tasks"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:34
 msgid "Emiter node"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:29 gecoscc/templates/bb-new-element.html:12
+#: gecoscc/templates/bb-jobs.html:37 gecoscc/templates/bb-new-element.html:12
 #: gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:32
+#: gecoscc/templates/bb-jobs.html:40
 msgid "Policy"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:35
+#: gecoscc/templates/bb-jobs.html:43
 msgid "Trace"
 msgstr ""
 
@@ -1209,5 +1225,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Stored changes, execution pending"
+#~ msgstr ""
+
+#~ msgid "There was errors"
 #~ msgstr ""
 

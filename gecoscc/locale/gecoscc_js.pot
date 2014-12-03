@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 2.1.2\n"
+"Project-Id-Version: gecoscc 2.1.3\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-01 09:10+0100\n"
+"POT-Creation-Date: 2014-12-03 09:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,84 +59,84 @@ msgstr ""
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:283
+#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:284
 msgid "Error in node: "
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:283
+#: gecoscc/static/js/app-utils.js:272 gecoscc/static/js/app-utils.js:284
 msgid "Server response: "
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:296
+#: gecoscc/static/js/app-utils.js:297
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:297
+#: gecoscc/static/js/app-utils.js:298
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:335
+#: gecoscc/static/js/app-utils.js:336
 msgid "Applying changes has failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:369
+#: gecoscc/static/js/app-utils.js:370
 #, python-format
 msgid "Couldn't delete the %s."
 msgstr ""
 
-#: gecoscc/static/js/app.js:293
+#: gecoscc/static/js/app.js:327
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:298
+#: gecoscc/static/js/app.js:332
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:299
+#: gecoscc/static/js/app.js:333
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:300
+#: gecoscc/static/js/app.js:334
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:301
+#: gecoscc/static/js/app.js:335
 msgid "Workstation"
 msgstr ""
 
-#: gecoscc/static/js/app.js:302
+#: gecoscc/static/js/app.js:336
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:303
+#: gecoscc/static/js/app.js:337
 msgid "Remote Storage"
 msgstr ""
 
-#: gecoscc/static/js/app.js:304
+#: gecoscc/static/js/app.js:338
 msgid "Software Repository"
 msgstr ""
 
-#: gecoscc/static/js/app.js:350
+#: gecoscc/static/js/app.js:384
 msgid "First level OUs can only add new OUs."
 msgstr ""
 
-#: gecoscc/static/js/app.js:364
+#: gecoscc/static/js/app.js:398
 msgid "Domain is not Gecos."
 msgstr ""
 
-#: gecoscc/static/js/app.js:365
+#: gecoscc/static/js/app.js:399
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:504
+#: gecoscc/static/js/app.js:538
 msgid "Policies can't be directly accessed."
 msgstr ""
 
-#: gecoscc/static/js/app.js:505
+#: gecoscc/static/js/app.js:539
 msgid "You need to load the node that has the policy assigned first. Try again now."
 msgstr ""
 
-#: gecoscc/static/js/app.js:511
+#: gecoscc/static/js/app.js:545
 msgid "Policy"
 msgstr ""
 
