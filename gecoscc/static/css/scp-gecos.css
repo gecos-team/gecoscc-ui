@@ -456,3 +456,9 @@ legend {
 .btn-export {
     padding: 3px 12px;
 }
+
+/* Jobs */
+
+.btn.refresh, .btn.archiveTasks {
+    margin-right: 3px;
+}

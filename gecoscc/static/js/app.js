@@ -58,7 +58,9 @@ var App;
             "click span.filters #tasksFinished": "tasksFinished",
             "click span.filters #tasksErrors": "tasksErrors",
             "click span.filters #tasksWarnings": "tasksWarnings",
-            "click #archiveTasks": "archiveTasks"
+            "click span.filters #tasksActives": "tasksActives",
+            "click span.filters #tasksArchived": "tasksArchived",
+            "click button.archiveTasks": "archiveTasks"
         },
 
         refresh: function () {
@@ -94,6 +96,16 @@ var App;
             this.collection.status = 'warnings';
             this.tasksFilter();
         },
+        tasksActives: function (evt) {
+            evt.preventDefault();
+            this.collection.archived = false;
+            this.tasksFilter();
+        },
+        tasksArchived: function (evt) {
+            evt.preventDefault();
+            this.collection.archived = true;
+            this.tasksFilter();
+        },
         archiveTasks: function (evt) {
             var that = this;
             evt.preventDefault();
@@ -115,7 +127,6 @@ var App;
             $(document.body).append(events);
             events.find(".short").addClass("hide");
             events.find(".long").removeClass("hide");
-            events.find("#archiveTasks").removeClass("hide");
             events.addClass("maximize");
             this.isMaximized = true;
         },
@@ -129,9 +140,11 @@ var App;
             $("#sidebar").append(events);
             events.find(".short").removeClass("hide");
             events.find(".long").addClass("hide");
-            events.find("#archiveTasks").addClass("hide");
             events.removeClass("maximize");
             this.isMaximized = false;
+            this.collection.status = '';
+            this.collection.archived = false;
+            this.tasksFilter();
         },
         serializeData: function () {
             var paginator = [],
@@ -159,7 +172,8 @@ var App;
                 "pages": paginator,
                 "showPaginator": paginator.length > 1,
                 "isMaximized": this.isMaximized,
-                "status": this.collection.status
+                "status": this.collection.status,
+                "archived": this.collection.archived
             };
         },
         goToPage: function (evt) {

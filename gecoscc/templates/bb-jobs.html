@@ -8,6 +8,10 @@
             <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Tasks') }}</a> |
             <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Tasks') }}</a>
         </span>
+        <span class="filters <% if (!isMaximized) { print('hide'); } %>">
+            <a href="#" id="tasksActives" class="<% if (!archived) { print('active'); } %>">{{ gettext('Active') }}</a> |
+            <a href="#" id="tasksArchived" class="<% if (archived) { print('active'); } %>">{{ gettext('Archived') }}</a>
+        </span>
     </div>
     <button id="maximize" class="btn btn-xs btn-default pull-right <% if (isMaximized) { print('hide'); } %>" title="{{ gettext('Maximize') }}">
         <span class="fa fa-plus"></span>
@@ -18,9 +22,9 @@
     <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
         <span class="fa fa-refresh"></span>
     </button>
-    <span id="archiveTasks" class="pull-right <% if (!isMaximized) { print('hide'); } %>">
-        <a href="#" id="archiveTasks">{{ gettext('Archive Tasks') }}</a>
-    </span>
+    <button class="btn btn-xs btn-default pull-right archiveTasks" title="{{ gettext('Archive Tasks') }}">
+        <span class="fa fa-archive"></span>
+    </button>
 </div>
 <div class="bootstrap-admin-panel-content table-responsive">
     <table class="table table-striped table-bordered">
