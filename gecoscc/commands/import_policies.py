@@ -226,7 +226,7 @@ class Command(BaseCommand):
 
             self.treatment_policy(policy)
 
-        self.create_software_profiles_policy(policies, languages)
+        #self.create_software_profiles_policy(policies, languages)
 
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
