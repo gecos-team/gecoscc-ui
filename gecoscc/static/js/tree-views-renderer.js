@@ -126,7 +126,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 html = "",
                 that = this;
 
-            if (_.isUndefined(tree)) {
+            if (_.isEmpty(tree)) {
                 // Empty tree
                 html = this._templates.emptyTree({});
             } else {

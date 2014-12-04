@@ -112,7 +112,7 @@
             {% if request.user and request.user.get('is_superuser') %}
             var emptyTree =
                 '<a href="#newroot">\n' +
-                '    <span class="fa fa-plus"></span> ' + gettext('Add new root OU') + '\n' +
+                '    <span class="fa fa-plus"></span> ' + '{{ gettext('Add new root OU') }}' + '\n' +
                 '</a>\n';
             {% else %}
             var emptyTree = "";

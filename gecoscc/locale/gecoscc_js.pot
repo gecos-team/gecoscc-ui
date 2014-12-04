@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 2.1.3\n"
+"Project-Id-Version: gecoscc 2.1.4\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-12-03 12:07+0100\n"
+"POT-Creation-Date: 2014-12-04 08:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -128,15 +128,7 @@ msgstr ""
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:538
-msgid "Policies can't be directly accessed."
-msgstr ""
-
-#: gecoscc/static/js/app.js:539
-msgid "You need to load the node that has the policy assigned first. Try again now."
-msgstr ""
-
-#: gecoscc/static/js/app.js:545
+#: gecoscc/static/js/app.js:540
 msgid "Policy"
 msgstr ""
 
@@ -144,52 +136,52 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:119
+#: gecoscc/static/js/computer.js:122
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:120
+#: gecoscc/static/js/computer.js:123
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:128
+#: gecoscc/static/js/computer.js:131
 msgid "This workstation is not linked."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:129
+#: gecoscc/static/js/computer.js:132
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:136
+#: gecoscc/static/js/computer.js:139
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:144 gecoscc/static/js/computer.js:154
-#: gecoscc/static/js/computer.js:165
+#: gecoscc/static/js/computer.js:147 gecoscc/static/js/computer.js:157
+#: gecoscc/static/js/computer.js:168
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:145
+#: gecoscc/static/js/computer.js:148
 msgid "There were errors while saving this node in Chef"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:155
+#: gecoscc/static/js/computer.js:158
 msgid "Last chef client had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:166
+#: gecoscc/static/js/computer.js:169
 msgid "Chef client is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:206
+#: gecoscc/static/js/computer.js:209
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:206
+#: gecoscc/static/js/computer.js:209
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:206
+#: gecoscc/static/js/computer.js:209
 msgid "Minutes"
 msgstr ""
 

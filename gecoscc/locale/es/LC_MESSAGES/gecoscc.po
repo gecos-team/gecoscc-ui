@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-12-03 12:07+0100\n"
+"POT-Creation-Date: 2014-12-04 08:42+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -284,6 +284,10 @@ msgstr "Recargar página"
 #: gecoscc/templates/base.jinja2:66
 msgid "Redis server is stopped, please contact an administrator."
 msgstr "El servidor Redis está parado, por favor contacta con un administrador."
+
+#: gecoscc/templates/base.jinja2:115
+msgid "Add new root OU"
+msgstr "Añadir nueva UO raíz"
 
 #: gecoscc/templates/base_navbar.jinja2:19
 msgid "Home"
