@@ -126,6 +126,10 @@ class ADImport(BaseAPI):
                     'mongo': 'first_name'
                 },
                 {
+                    'ad': 'LastName',
+                    'mongo': 'last_name'
+                },
+                {
                     'ad': 'OfficePhone',
                     'mongo': 'phone'
                 }
