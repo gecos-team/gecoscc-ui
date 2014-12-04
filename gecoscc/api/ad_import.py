@@ -408,6 +408,7 @@ class ADImport(BaseAPI):
     def _get_domain(self, ouSchema, xmlDomain, is_ad_master, report):
         # Get already exists root domain
         domain_id = self.request.POST.get('domainId', None)
+        system_type = self.request.POST.get('systemType', 'ad')
         if not domain_id:
             raise HTTPBadRequest('GECOSCC needs a domainId param')
 
@@ -427,8 +428,9 @@ class ADImport(BaseAPI):
 
         update_domain = {
             'extra': xmlDomain.attributes['DistinguishedName'].value,
-            'source': u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value,
-                                           xmlDomain.attributes['ObjectGUID'].value),
+            'source': u'{0}:{1}:{2}'.format(system_type,
+                                            xmlDomain.attributes['DistinguishedName'].value,
+                                            xmlDomain.attributes['ObjectGUID'].value),
             'adObjectGUID': xmlDomain.attributes['ObjectGUID'].value,
             'adDistinguishedName': xmlDomain.attributes['DistinguishedName'].value,
             'master_policies': {}
@@ -436,7 +438,9 @@ class ADImport(BaseAPI):
         has_updated = False
         report['total'] += 1
         if is_ad_master:
-            update_domain['master'] = u'ad:{0}:{1}'.format(xmlDomain.attributes['DistinguishedName'].value, xmlDomain.attributes['ObjectGUID'].value)
+            update_domain['master'] = u'{0}:{1}:{2}'.format(system_type,
+                                                            xmlDomain.attributes['DistinguishedName'].value,
+                                                            xmlDomain.attributes['ObjectGUID'].value)
             has_updated = True
         elif not is_ad_master:
             if 'adObjectGUID' not in domain:
