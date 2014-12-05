@@ -2,6 +2,7 @@ import datetime
 import random
 
 from bson import ObjectId
+from copy import deepcopy
 
 from chef import Node
 from cornice.resource import resource
@@ -12,8 +13,8 @@ from gecoscc.api import BaseAPI
 from gecoscc.models import Job
 from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
-                           apply_policies_to_user, reserve_node_or_raise,
-                           save_node_and_free)
+                           apply_policies_to_user, remove_policies_of_computer,
+                           reserve_node_or_raise, save_node_and_free)
 from gecoscc.socks import invalidate_jobs, add_computer_to_user, update_tree
 
 
@@ -72,7 +73,7 @@ class ChefStatusResource(BaseAPI):
                                            {'$set': {'status': 'errors',
                                                      'message': job_status.get('message', 'Error'),
                                                      'last_update': datetime.datetime.utcnow()}})
-            self.request.db.nodes.update({'node_chef_id': node_id},{'$set':{'error_last_chef_client': chef_client_error}})
+            self.request.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
 
@@ -129,6 +130,21 @@ class ChefStatusResource(BaseAPI):
                     add_computer_to_user(node['_id'], user['_id'])
                     reload_clients = True
 
+        users_remove_policies = []
+
+        for chef_user in users_old:
+            username = chef_user['username']
+            if chef_user in users or chef_user.get('sudo', False):
+                continue
+            user = node_collection.find_one({'name': username,
+                                             'type': 'user',
+                                             'path': get_filter_in_domain(node)})
+            computers = user['computers']
+            if node['_id'] in computers:
+                users_remove_policies.append(deepcopy(user))
+                computers.remove(node['_id'])
+                node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+
         if reload_clients:
             update_tree(user['path'])
 
@@ -137,5 +153,8 @@ class ChefStatusResource(BaseAPI):
 
         for user in users_recalculate_policies:
             apply_policies_to_user(node_collection, user, self.request.user)
+
+        for user in users_remove_policies:
+            remove_policies_of_computer(user, node, self.request.user)
 
         return {'ok': True}

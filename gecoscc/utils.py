@@ -434,6 +434,14 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     object_created.delay(auth_user, 'user', user, computers=computers)
 
 
+def remove_policies_of_computer(user, computer, auth_user):
+    from gecoscc.tasks import object_changed
+    user_without_policies = deepcopy(user)
+    user_without_policies['policies'] = {}
+    computer['user'] = user
+    object_changed.delay(auth_user, 'user', user_without_policies, user, computers=[computer])
+
+
 def get_pem_for_username(settings, username, pem_name):
     return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
 
