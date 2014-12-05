@@ -27,8 +27,22 @@ class UserResource(TreeLeafResourcePaginated):
         computers_ids = [ObjectId(c) for c in result.get('computers')]
         node_collection = self.request.db.nodes
 
-        computers = node_collection.find({'_id': {'$in': computers_ids},'type': 'computer'})
+        computers = node_collection.find({'_id': {'$in': computers_ids}, 'type': 'computer'})
         computer_names = [computer['name'] for computer in computers]
 
         result.update({'computer_names': computer_names})
         return result
+
+    def integrity_validation(self, obj, real_obj=None):
+        val = super(UserResource, self).integrity_validation(obj, real_obj=real_obj)
+        if self.request.method == 'POST':
+            if obj.get('computers', None):
+                self.request.errors.add('body', 'object', 'Integrity error')
+                val = False
+        elif self.request.method == 'PUT':
+            new_computers = obj.get('computers', None)
+            old_computers = real_obj.get('computers', None)
+            if new_computers != old_computers:
+                self.request.errors.add('body', 'object', 'Integrity error, please refresh the object and save again')
+                val = False
+        return val
