@@ -112,8 +112,8 @@ class Command(BaseCommand):
                     if attr == 'automatic':
                         automatic_dict = node.automatic.to_dict()
                         automatic_dict['ohai_gecos']['pclabel'] = new_node_name
-                        user1 = 'user-%s-1' % new_node_name
-                        user2 = 'user-%s-2' % new_node_name
+                        user1 = 'user.name-%s-1' % new_node_name
+                        user2 = 'user.name-%s-2' % new_node_name
                         automatic_dict['ohai_gecos']['users'] = [{'username': user1,
                                                                   'home': '/home/%s' % user1,
                                                                   'gid': 1000,
