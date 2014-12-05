@@ -91,12 +91,12 @@ def storage_related_reverse(obj_emiter, obj, node, field_chef, **kwargs):
         inv_rules = dict(zip(EMITTER_OBJECT_RULES[obj_type].values(),
                              EMITTER_OBJECT_RULES[obj_type].keys()))
         field_pk = inv_rules['name']
-    for object_related in objects_related:
+    for username, object_related in objects_related.items():
         for i, storage in enumerate(object_related.get('gtkbookmarks', [])):
             if new_object_related[field_pk] == storage[field_pk]:
                 object_related['gtkbookmarks'][i] = new_object_related
                 break
-    return objects_related
+    return objects_related.to_dict()
 
 
 def storage_related(objs_ui, obj, node, field_chef, **kwargs):
@@ -125,13 +125,17 @@ RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_fold
 # User policies
 
 
+def get_username_chef_format(user):
+    return user['name'].replace('.', '###')
+
+
 def users_list(obj_ui, obj, node, field_chef, *kwargs):
     users = deepcopy(node.attributes.get_dotted(field_chef))
     if not users:
         users = {}
     else:
         users = users.to_dict()
-    username = obj['name']
+    username = get_username_chef_format(obj)
     if username in users:
         node_obj = users[username]
         if obj_ui:

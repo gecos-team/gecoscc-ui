@@ -15,7 +15,7 @@ from jsonschema.exceptions import ValidationError
 
 
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.rules import get_rules, is_user_policy
+from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format
 from gecoscc.socks import invalidate_jobs
 # It is necessary import here: apply_policies_to_computer and apply_policies_to_user
 from gecoscc.utils import (get_chef_api,
@@ -241,7 +241,7 @@ class ChefTask(Task):
                 user = computer['user']
             else:
                 user = obj
-            updated_path += '.users.' + user['name']
+            updated_path += '.users.' + get_username_chef_format(user)
         updated_path += '.updated_by'
         return updated_path
 
@@ -452,7 +452,7 @@ class ChefTask(Task):
             except NodeNotLinked as e:
                 self.report_node_not_linked(computer, user, obj, action)
                 are_new_jobs = True
-                save_node_and_free(node)
+                save_node_and_free(node, api, refresh=True)
             except NodeBusyException as e:
                 self.report_node_busy(computer, user, obj, action)
                 are_new_jobs = True
@@ -460,7 +460,7 @@ class ChefTask(Task):
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
-                save_node_and_free(node)
+                save_node_and_free(node, api, refresh=True)
                 are_new_jobs = True
 
             except Exception as e:
@@ -468,7 +468,7 @@ class ChefTask(Task):
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer)
                 try:
-                    save_node_and_free(node)
+                    save_node_and_free(node, api, refresh=True)
                 except:
                     pass
                 are_new_jobs = True

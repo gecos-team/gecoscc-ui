@@ -260,7 +260,9 @@ def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
     return (node, True)
 
 
-def save_node_and_free(node):
+def save_node_and_free(node, api=None, refresh=False):
+    if refresh and api:
+        node = ChefNode(node.name, api)
     node.attributes.set_dotted(USE_NODE, {})
     node.save()
 
