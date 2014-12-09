@@ -96,6 +96,63 @@
                 arguments: arguments,
                 destroy: true
             });
+        },
+
+        _showErrorMessage: function (response) {
+            if ($(".server-errors").length === 0) {
+                App.showAlert(
+                    "error server-errors",
+                    gettext("Applying changes has failed."),
+                    this._errorMessage(response)
+                );
+            } else {
+                this._addErrorMessage(response);
+            }
+        },
+
+        _errorMessage: function (response) {
+            var message = [
+                gettext("Something went wrong, please check errors and try again.") + '</br>'
+            ],
+                json = response.responseJSON,
+                that = this;
+
+            if (_.has(response, "status") && !_.contains([400, 404], response.status) && _.has(response, "statusText")) {
+                message.push("- " + gettext("Status") + response.status +
+                             ": " + response.statusText + '</br>');
+            }
+
+            if (!_.isUndefined(json) && _.has(json, "errors")) {
+                _.each(json.errors, function (error) {
+                    message.push("&#8226; " + gettext("Error in node: ") + '<strong>' + that.get("name") + '</strong>' +
+                                    " - " + gettext("Server response: ") + error.description);
+                });
+            }
+
+            if (_.has(response, "status") && response.status === 404) {
+                message.push("&#8226; " + gettext("Error in node: ") + '<strong>' + that.get("name") + '</strong>' +
+                                    " - " + gettext("This node has been deleted by another administrator."));
+                App.instances.tree.loadFromPath(that.get("path"));
+            }
+
+            return message.join(' ');
+        },
+
+        _addErrorMessage: function (response) {
+            var json = response.responseJSON,
+                that = this;
+
+            if (!_.isUndefined(json) && _.has(json, "errors")) {
+                _.each(json.errors, function (error) {
+                    $(".server-errors").append('<br/>&#8226; ' + gettext("Error in node: ") + '<strong>' + that.get("name") + '</strong> - ' + gettext("Server response: ") + error.description);
+                });
+            }
+
+            if (_.has(response, "status") && response.status === 404) {
+                $(".server-errors").append("&#8226; " + gettext("Error in node: ") + '<strong>' + that.get("name") + '</strong>' +
+                                    " - " + gettext("This node has been deleted by another administrator."));
+                App.instances.tree.loadFromPath(that.get("path"));
+            }
         }
     });
 
@@ -254,38 +311,6 @@
             }, 2000);
         },
 
-        _errorMessage: function (id, response) {
-            var message = [
-                gettext("Something went wrong, please check errors and try again.") + '</br>'
-            ],
-                json = response.responseJSON,
-                that = this;
-
-            if (_.has(response, "status") && response.status !== 400 && _.has(response, "statusText")) {
-                message.push("- " + gettext("Status") + response.status +
-                             ": " + response.statusText + '</br>');
-            }
-
-            if (_.has(json, "errors")) {
-                _.each(json.errors, function (error) {
-                    message.push("&#8226; " + gettext("Error in node: ") + that.model.get("name") +
-                                    " - " + gettext("Server response: ") + error.description);
-                });
-            }
-            return message.join(' ');
-        },
-
-        _addErrorMessage: function (response) {
-            var json = response.responseJSON,
-                that = this;
-
-            if (_.has(json, "errors")) {
-                _.each(json.errors, function (error) {
-                    $(".server-errors").append('<br/>&#8226; ' + gettext("Error in node: ") + that.model.get("name") + " - " + gettext("Server response: ") + error.description);
-                });
-            }
-        },
-
         saveModel: function ($button, mapping) {
             var that = this,
                 promise = $.Deferred(),
@@ -316,7 +341,7 @@
                     App.instances.staging.toModify.push(that.model.get("id"));
                 }
                 App.instances.tree.trigger("change");
-            }, 1000);
+            }, 100);
 
             promise.done(function () {
                 if (isNew) {
@@ -329,17 +354,7 @@
                 }
             });
             promise.fail(function (response) {
-                if (response !== "avoid alert") {
-                    if ($(".server-errors").length === 0) {
-                        App.showAlert(
-                            "error server-errors",
-                            gettext("Applying changes has failed."),
-                            that._errorMessage(that.model.get("id"), response)
-                        );
-                    } else {
-                        that._addErrorMessage(response);
-                    }
-                }
+                that.model._showErrorMessage(response);
             });
 
             return promise;
@@ -359,18 +374,10 @@
             }, 1000);
 
             promise.done(function () {
-                // FIXME should it try to make it show the page where this node
-                // (the one being deleted) was?
                 App.instances.tree.loadFromPath(that.model.get("path"));
             });
             promise.fail(function (response) {
-                if (response !== "avoid alert") {
-                    App.showAlert(
-                        "error",
-                        interpolate(gettext("Couldn't delete the %s."), [that.model.resourceType]),
-                        that._errorMessage(that.model.get("id"), response)
-                    );
-                }
+                that.model._showErrorMessage(response);
             });
         },
 
