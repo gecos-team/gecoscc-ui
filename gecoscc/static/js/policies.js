@@ -80,16 +80,30 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         },
 
         removePolicy: function (id) {
+            var that = this,
+                promise;
+
             this.get("policyCollection").remove(id);
             delete this.get("policies")[id];
-            this.saveWithToken();
+
+            promise = this.saveWithToken();
+            promise.fail(function (response) {
+                that._showErrorMessage(response);
+            });
             App.instances.staging.toModify.push(this.get("id"));
         },
 
         addPolicy: function (policyModel, values) {
+            var that = this,
+                promise;
+
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
-            this.saveWithToken();
+
+            promise = this.saveWithToken();
+            promise.fail(function (response) {
+                that._showErrorMessage(response);
+            });
             App.instances.staging.toModify.push(this.get("id"));
         },
 
