@@ -353,12 +353,12 @@ class ChefTask(Task):
         policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
 
-    def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer):
+    def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer, force_update):
         updated = False
         if action not in ['changed', 'created']:
             raise ValueError('The action should be changed or created')
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
-            if self.is_updating_policies(obj, objold):
+            if force_update or self.is_updating_policies(obj, objold):
                 rule_type = 'policies'
                 for policy_id, action in self.get_policies(rule_type, action, obj, objold):
                     policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
@@ -372,7 +372,7 @@ class ChefTask(Task):
             return (node, updated)
         elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
             rule_type = 'save'
-            if self.is_updated_node(obj, objold):
+            if force_update or self.is_updated_node(obj, objold):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
@@ -436,10 +436,8 @@ class ChefTask(Task):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
                 error_last_chef_client = computer.get('error_last_chef_client', False)
-                if error_last_saved or error_last_chef_client:
-                    node, updated = self.update_node(user, computer, obj, {}, node, action, job_ids_by_computer)
-                else:
-                    node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer)
+                force_update = error_last_saved or error_last_chef_client
+                node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer, force_update)
                 if not updated:
                     save_node_and_free(node)
                     continue
