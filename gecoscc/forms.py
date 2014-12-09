@@ -93,7 +93,7 @@ class AdminUserAddForm(BaseAdminUserForm):
         user = self.request.user
         api = get_chef_api(settings, user)
         try:
-            create_chef_admin_user(api, settings, admin_user['username'], admin_user['plain_password'])
+            create_chef_admin_user(api, settings, admin_user['username'])
             self.created_msg(_('User created successfully'))
             return True
         except ChefServerError as e:

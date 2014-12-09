@@ -3,6 +3,7 @@ import json
 import os
 import pytz
 import random
+import string
 import time
 
 from bson import ObjectId, json_util
@@ -133,6 +134,10 @@ def oids_filter(request):
 # Chef utils
 
 
+def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for x in range(size))
+
+
 def get_chef_api(settings, user):
     username = user['username']
     chef_url = settings.get('chef.url')
@@ -153,7 +158,9 @@ def _get_chef_api(chef_url, username, chef_pem):
     return api
 
 
-def create_chef_admin_user(api, settings, username, password):
+def create_chef_admin_user(api, settings, username, password=None):
+    if password is None:
+        password = password_generator()
     data = {'name': username, 'password': password, 'admin': True}
     chef_user = api.api_request('POST', '/users', data=data)
     user_private_key = chef_user.get('private_key', None)
