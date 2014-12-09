@@ -15,7 +15,7 @@ from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            apply_policies_to_user, remove_policies_of_computer,
                            reserve_node_or_raise, save_node_and_free)
-from gecoscc.socks import invalidate_jobs, add_computer_to_user, update_tree
+from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_user, update_tree
 
 
 USERS_OLD = 'ohai_gecos.users_old'
@@ -128,7 +128,7 @@ class ChefStatusResource(BaseAPI):
                     node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                     users_recalculate_policies.append(user)
                     add_computer_to_user(node['_id'], user['_id'])
-                    reload_clients = True
+                    invalidate_change(self.request, user)
 
         users_remove_policies = []
 
@@ -144,9 +144,10 @@ class ChefStatusResource(BaseAPI):
                 users_remove_policies.append(deepcopy(user))
                 computers.remove(node['_id'])
                 node_collection.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                invalidate_change(self.request, user)
 
         if reload_clients:
-            update_tree(user['path'])
+            update_tree(node.get('path', ''))
 
         chef_node.normal.set_dotted('ohai_gecos.users_old', users)
         save_node_and_free(chef_node)
