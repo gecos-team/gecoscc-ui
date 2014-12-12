@@ -486,6 +486,8 @@ def register_node(api, node_id, ou, collection_nodes):
                                      'node_chef_id': node_id})
     del computer['_id']
     if check_unique_node_name_by_type_at_domain(collection_nodes, computer):
+        if collection_nodes.find({'node_chef_id': node_id}):
+            return 'duplicated-node-id'
         node_id = collection_nodes.insert(computer)
         return node_id
     return 'duplicated'
