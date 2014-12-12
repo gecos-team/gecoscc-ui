@@ -323,8 +323,6 @@ class ChefTask(Task):
         return [unicode(ou['_id']) for ou in ous]
 
     def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, job_ids_by_computer):
-        if action == DELETED_POLICY_ACTION:
-            return
         if node.attributes.has_dotted(attr):
             job_ids = node.attributes.get_dotted(attr)
         else:
