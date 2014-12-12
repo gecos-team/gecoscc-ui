@@ -78,8 +78,8 @@ PACKAGE_POLICY = 'package_res'
 PACKAGE_POLICY_URL = '/api/packages/'
 
 SPROFILES_SLUG = 'software_profile'
-SPROFILES_PATH = 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list'
-SPROFILES_LOCALIZED_NAME = 'Available software_profiles'
+SPROFILES_PATH = 'gecos_ws_mgmt.software_mgmt.package_profile_res'
+SPROFILES_NAME = 'Software Profiles'
 SPROFILES_LOCALIZED_NAME_LOCALIZED = {
     'es': 'Perfiles de Software disponibles'
 }
@@ -226,7 +226,7 @@ class Command(BaseCommand):
 
             self.treatment_policy(policy)
 
-        #self.create_software_profiles_policy(policies, languages)
+        self.create_software_profiles_policy(policies, languages)
 
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
@@ -256,20 +256,23 @@ class Command(BaseCommand):
         value['properties']['pkgs_to_remove']['items']['enum'] = []
 
     def create_software_profiles_policy(self, policies, languages):
-        slug = 'software_profile'
+        slug = 'package_profile_res'
         schema = deepcopy(SCHEMA_EMITTER)
         schema['properties']['object_related_list']['title'] = '%s list' % 'Software Profiles'
         for lan in languages:
             schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % SPROFILES_LOCALIZED[lan]
         schema['properties']['object_related_list']['autocomplete_url'] = SPROFILES_URL
+        schema['properties']['package_list'] = schema['properties']['object_related_list']
+        del schema['properties']['object_related_list']
+        schema['required'] = ['package_list']
         policy = {
-            'name': SPROFILES_LOCALIZED_NAME,
+            'name': SPROFILES_NAME,
             'slug': slug,
             'path': SPROFILES_PATH,
             'targets': SPROFILES_URL_TARGETS,
             'is_emitter_policy': False,
             'schema': schema,
-            'support_os': policies[SPROFILES_PATH.split('.')[2]]['properties']['support_os']['default']
+            'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default']
         }
         for lan in languages:
             policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]

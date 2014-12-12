@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-12-04 08:42+0100\n"
+"POT-Creation-Date: 2014-12-09 14:26+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -16,11 +16,36 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:123
+#: gecoscc/static/js/app-utils.js:105
+msgid "Applying changes has failed."
+msgstr "Se han producido fallos al aplicar sus cambios."
+
+#: gecoscc/static/js/app-utils.js:115
+msgid "Something went wrong, please check errors and try again."
+msgstr "Compruebe la lista de errores y pruebe de nuevo."
+
+#: gecoscc/static/js/app-utils.js:121
+msgid "Status"
+msgstr "Estado"
+
+#: gecoscc/static/js/app-utils.js:127 gecoscc/static/js/app-utils.js:133
+#: gecoscc/static/js/app-utils.js:147 gecoscc/static/js/app-utils.js:152
+msgid "Error in node: "
+msgstr "Error en el nodo: "
+
+#: gecoscc/static/js/app-utils.js:128 gecoscc/static/js/app-utils.js:147
+msgid "Server response: "
+msgstr "Respuesta del servidor: "
+
+#: gecoscc/static/js/app-utils.js:134 gecoscc/static/js/app-utils.js:153
+msgid "This node has been deleted by another administrator."
+msgstr "Este nodo ha sido borrado por otro administrador."
+
+#: gecoscc/static/js/app-utils.js:180
 msgid "Object changed."
 msgstr "Objeto cambiado."
 
-#: gecoscc/static/js/app-utils.js:124
+#: gecoscc/static/js/app-utils.js:181
 msgid ""
 "Someone has changed this object while you were working on it, please "
 "reload before applying any changes."
@@ -28,63 +53,38 @@ msgstr ""
 "Alguien ha modificado este objeto mientras estabas trabajando en él, por "
 "favor recarga antes de aplicar tus cambios."
 
-#: gecoscc/static/js/app-utils.js:134
+#: gecoscc/static/js/app-utils.js:191
 msgid "Object deleted."
 msgstr "Objeto borrado"
 
-#: gecoscc/static/js/app-utils.js:135
+#: gecoscc/static/js/app-utils.js:192
 msgid "Someone has deleted this object while you were working on it"
 msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
 
-#: gecoscc/static/js/app-utils.js:245
+#: gecoscc/static/js/app-utils.js:302
 msgid "Staging"
 msgstr "Almacenando temporalmente"
 
-#: gecoscc/static/js/app-utils.js:249
+#: gecoscc/static/js/app-utils.js:306
 msgid "Save"
 msgstr "Guardar"
 
-#: gecoscc/static/js/app-utils.js:249
+#: gecoscc/static/js/app-utils.js:306
 #: gecoscc/static/js/tree-views-renderer.js:95
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/static/js/app-utils.js:250
+#: gecoscc/static/js/app-utils.js:307
 msgid "Done"
 msgstr "Completado"
 
-#: gecoscc/static/js/app-utils.js:259
-msgid "Something went wrong, please check errors and try again."
-msgstr "Compruebe la lista de errores y pruebe de nuevo."
-
-#: gecoscc/static/js/app-utils.js:265
-msgid "Status"
-msgstr "Estado"
-
-#: gecoscc/static/js/app-utils.js:271 gecoscc/static/js/app-utils.js:284
-msgid "Error in node: "
-msgstr "Error en el nodo: "
-
-#: gecoscc/static/js/app-utils.js:272 gecoscc/static/js/app-utils.js:284
-msgid "Server response: "
-msgstr "Respuesta del servidor: "
-
-#: gecoscc/static/js/app-utils.js:297
+#: gecoscc/static/js/app-utils.js:322
 msgid "Invalid data."
 msgstr "Datos inválidos."
 
-#: gecoscc/static/js/app-utils.js:298
+#: gecoscc/static/js/app-utils.js:323
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
-
-#: gecoscc/static/js/app-utils.js:336
-msgid "Applying changes has failed."
-msgstr "Se han producido fallos al aplicar sus cambios."
-
-#: gecoscc/static/js/app-utils.js:370
-#, python-format
-msgid "Couldn't delete the %s."
-msgstr "No se pudo eliminar el %s"
 
 #: gecoscc/static/js/app.js:327
 msgid "New element"
@@ -280,12 +280,6 @@ msgstr ""
 #~ msgid "Policies can't be directly accessed."
 #~ msgstr "No se puede acceder a las políticas directamente."
 
-#~ msgid ""
-#~ "You need to load the node that "
-#~ "has the policy assigned first. Try "
-#~ "again now."
-#~ msgstr ""
-#~ "Es necesario cargar primero el nodo "
-#~ "que tiene la política asignada. Pruebe"
-#~ " ahora de nuevo."
+#~ msgid "Couldn't delete the %s."
+#~ msgstr "No se pudo eliminar el %s"
 
