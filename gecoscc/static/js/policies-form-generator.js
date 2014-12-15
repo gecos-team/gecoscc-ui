@@ -84,6 +84,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             options.validate = jjv();
             options.resourceId = this.resource.get("id");
             options.ouId = _.last(this.resource.get("path").split(","));
+            options.slug = policyData.slug;
             $html.find("form").jsonForm(options);
 
             this.$el.html($html);

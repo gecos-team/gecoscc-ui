@@ -64,6 +64,7 @@
 
   var resourceId;
   var ouId;
+  var slug;
 
   // From backbonejs
   var escapeHTML = function (string) {
@@ -658,7 +659,7 @@ jsonform.elementTypes = {
       };
 
       var isPackagesPolicy = function () {
-          return _.contains(["package_list[]", "pkgs_to_remove[]"], node.formElement.name);
+          return slug === "package";
       };
 
       if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
@@ -3839,6 +3840,7 @@ $.fn.jsonForm = function(options) {
   var formElt = this;
   resourceId = options.resourceId;
   ouId = options.ouId;
+  slug = options.slug;
   options = _.defaults({}, options, {submitEvent: 'submit'});
 
   var form = new formTree();
