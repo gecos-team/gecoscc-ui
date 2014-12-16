@@ -66,7 +66,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             policyData = this.mixinTemplateHelpers(this.model.toJSON());
             policyData.resource = this.resource;
             policyData.name = policyData["name_" + App.language] || policyData.name;
-            policyData.slug = this.model.get('slug').slice(0, -4);
+
+            if (this.model.get('slug').slice(0, -4) === '_res') {
+                policyData.slug = this.model.get('slug').slice(0, -4);
+            }
 
             template = this.getTemplate();
             $html = $(Marionette.Renderer.render(template, policyData));
