@@ -161,7 +161,7 @@ class ChefTask(Task):
                 object_related_id_list = obj[rule_type][policy_id]['object_related_list']
                 object_related_list = []
                 for object_related_id in object_related_id_list:
-                    if policy['slug'] == SOFTWARE_PROFILE_SLUG
+                    if policy['slug'] == SOFTWARE_PROFILE_SLUG:
                         object_related = self.db.software_profiles.find_one({'_id': ObjectId(object_related_id)})
                         object_related['type'] = 'software_profile'
                     else:
