@@ -34,7 +34,8 @@ EMITTER_OBJECT_RULES = {
                    'deb_src': 'deb_src',
                    'repo_key': 'repo_key',
                    'key_server': 'key_server'},
-    'storage': ('name', 'uri')
+    'storage': ('name', 'uri'),
+    'software_profile': 'packages',
 }
 
 
@@ -52,6 +53,8 @@ def get_object_related(obj_related, attrs=None):
             if obj_related[obj_ui_attr] == '':
                 continue
             obj[obj_attr] = obj_related[obj_ui_attr]
+    elif isinstance(attrs, basestring):
+        obj = obj_related[attrs]
     return obj
 
 
@@ -60,7 +63,10 @@ def object_related_list(objs_ui, **kwargs):
     if objs_ui:
         attrs = EMITTER_OBJECT_RULES.get(objs_ui['type'])
         for obj_ui in objs_ui['object_related_list']:
-            objs.append(get_object_related(obj_ui, attrs))
+            if obj_ui['type'] == 'software_profile':
+                objs.extend(get_object_related(obj_ui, attrs))
+            else:
+                objs.append(get_object_related(obj_ui, attrs))
     return objs
 
 
@@ -120,10 +126,13 @@ RULES_SOFTWARE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.software_mgmt.software_sou
 # Storage can view
 RULES_STORAGE_CAN_VIEW_REVERSE_RES = {'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users': storage_related_reverse}
 
+# Software profiles res
+RULES_SOFTWARE_PROFILE_RES = {'gecos_ws_mgmt.software_mgmt.package_profile_res.package_list': object_related_list}
+
 # End emitter policies
 
-# User policies
 
+# User policies
 
 def get_username_chef_format(user):
     return user['name'].replace('.', '###')
@@ -161,6 +170,7 @@ RULES_NODE = {
             'printer_can_view': RULES_PRINTER_CAN_VIEW_RES,
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'local_users_res': RULES_LOCAL_USERS_RES,
+            'package_profile_res': RULES_SOFTWARE_PROFILE_RES,
         },
     },
     'ou': {
@@ -170,6 +180,7 @@ RULES_NODE = {
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
             'local_users_res': RULES_LOCAL_USERS_RES,
+            'package_profile_res': RULES_SOFTWARE_PROFILE_RES,
         },
     },
     'group': {
@@ -179,6 +190,7 @@ RULES_NODE = {
             'repository_can_view': RULES_SOFTWARE_CAN_VIEW_RES,
             'storage_can_view': RULES_STORAGE_CAN_VIEW_RES,
             'local_users_res': RULES_LOCAL_USERS_RES,
+            'package_profile_res': RULES_SOFTWARE_PROFILE_RES,
         },
     },
     'user': {

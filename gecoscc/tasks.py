@@ -29,6 +29,7 @@ from gecoscc.utils import (get_chef_api,
 
 
 DELETED_POLICY_ACTION = 'deleted'
+SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 
 
 class ChefTask(Task):
@@ -160,7 +161,11 @@ class ChefTask(Task):
                 object_related_id_list = obj[rule_type][policy_id]['object_related_list']
                 object_related_list = []
                 for object_related_id in object_related_id_list:
-                    object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
+                    if policy['slug'] == SOFTWARE_PROFILE_SLUG
+                        object_related = self.db.software_profiles.find_one({'_id': ObjectId(object_related_id)})
+                        object_related['type'] = 'software_profile'
+                    else:
+                        object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
                     if not object_related:
                         continue
                     object_related_list.append(object_related)
@@ -218,7 +223,11 @@ class ChefTask(Task):
                         updated = True
                     except KeyError:
                         pass
-                elif obj_ui_field != node.attributes.get_dotted(field_chef):
+                try:
+                    value_field_chef = node.attributes.get_dotted(field_chef)
+                except KeyError:
+                    value_field_chef = None
+                if obj_ui_field != value_field_chef:
                     node.attributes.set_dotted(field_chef, obj_ui_field)
                     updated = True
             if job_attr not in attributes_jobs_updated:
