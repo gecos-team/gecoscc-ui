@@ -547,6 +547,11 @@ def get_filter_in_domain(node):
     return {'$regex': '^%s' % ','.join(path_domain)}
 
 
+def get_filter_this_domain(domain):
+    path_domain = '%s,%s' % (domain['path'], unicode(domain['_id']))
+    return {'$regex': '^%s' % path_domain}
+
+
 def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
     filters = {}
     levels = obj['path'].count(',')

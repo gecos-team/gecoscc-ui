@@ -27,7 +27,7 @@ from gecoscc.permissions import http_basic_login_required, can_access_to_this_pa
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
                            apply_policies_to_computer, apply_policies_to_user,
-                           get_filter_in_domain,
+                           get_filter_this_domain,
                            MASTER_DEFAULT)
 logger = logging.getLogger(__name__)
 
@@ -201,6 +201,10 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'PrimaryGroup',
                     'mongo': 'adPrimaryGroup'
+                },
+                {
+                    'ad': 'Family',
+                    'mongo': 'family'
                 }
             ],
             'staticAttributes': [
@@ -289,7 +293,7 @@ class ADImport(BaseAPI):
         }
     ]
 
-    def _fixDuplicateName(self, mongoObjects, mongoType, newObj):
+    def _fixDuplicateName(self, mongoObjects, mongoType, newObj, domain):
         """
         Fix duplicate name append an _counter to the name
         """
@@ -316,7 +320,8 @@ class ADImport(BaseAPI):
             'name': {
                 '$regex': u'{0}(_\d+)?'.format(nombreBase)
             },
-            'type': mongoType}, {
+            'type': mongoType,
+            'path': get_filter_this_domain(domain)}, {
             'name': 1
         })
         for mongoObject in collection:
@@ -386,10 +391,10 @@ class ADImport(BaseAPI):
             defaultValues.update(newObj)
             newObj = defaultValues
 
+            self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj, domain)
+
             if newObj['type'] in ('computer', 'user'):
                 objects_apply_policy[newObj['type']].append(newObj['name'])
-
-            self._fixDuplicateName(mongoObjects, objSchema['mongoType'], newObj)
 
             # Save the new object
             return newObj
@@ -399,11 +404,11 @@ class ADImport(BaseAPI):
         if mongoObj is not None:
             if is_ad_master:
                 report['updated'] += 1
-                return update_object(self, objSchema, mongoObj, adObj)
-            return {}
+                return update_object(self, objSchema, mongoObj, adObj), True
+            return mongoObj, False
         else:
             report['inserted'] += 1
-            return new_object(self, domain, mongoObjects, objSchema, adObj, objects_apply_policy)
+            return new_object(self, domain, mongoObjects, objSchema, adObj, objects_apply_policy), True
 
     def _get_domain(self, ouSchema, xmlDomain, is_ad_master, report):
         # Get already exists root domain
@@ -517,19 +522,21 @@ class ADImport(BaseAPI):
 
             # Convert from AD objects to MongoDB objects
             mongoObjects = {}
-
+            mongoObjectsPath = {}
             for objSchema in self.importSchema:
                 objs = xmldoc.getElementsByTagName(objSchema['adName'])
                 for adObj in objs:
                     if not adObj.hasAttribute('ObjectGUID'):
                         raise Exception('An Active Directory object must has "ObjectGUID" attrib.')
-                    mongoObject = self._convertADObjectToMongoObject(domain, mongoObjects, objSchema, adObj, is_ad_master, report, objects_apply_policy)
+                    mongoObject, is_saving = self._convertADObjectToMongoObject(domain, mongoObjects, objSchema, adObj, is_ad_master, report, objects_apply_policy)
                     report['total'] += 1
-                    if mongoObject != {}:
+                    if is_saving:
                         mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
+                    mongoObjectsPath[mongoObject['adDistinguishedName']] = mongoObject
             # Order mongoObjects by dependences
             if mongoObjects:
                 mongoObjects[domain['adDistinguishedName']] = domain
+                mongoObjectsPath[domain['adDistinguishedName']] = domain
                 mongoObjects = self._orderByDependencesMongoObjects(mongoObjects, domain)
 
             # Save each MongoDB objects
@@ -542,7 +549,7 @@ class ADImport(BaseAPI):
                 nodePath = ','.join(listPath[1:])
 
                 # Find parent
-                mongoObjectParent = mongoObjects[nodePath]
+                mongoObjectParent = mongoObjectsPath[nodePath]
                 mongoObjectParent = self.collection.find_one({'_id': mongoObjectParent['_id']})
                 path = '{0},{1}'.format(mongoObjectParent['path'], str(mongoObjectParent['_id']))
                 mongoObject['path'] = path
@@ -615,6 +622,7 @@ class ADImport(BaseAPI):
                     if not chef_server_client.exists:
                         chef_server_client.save()
                     mongoObject['node_chef_id'] = mongoObject['name']
+                    updateMongoObject = True
 
                 # Save changes
                 if updateMongoObject:
@@ -623,7 +631,8 @@ class ADImport(BaseAPI):
             # apply policies to new objects
             for node_type, node_names in objects_apply_policy.items():
                 nodes = self.collection.find({'name': {'$in': node_names},
-                                              'path': get_filter_in_domain(domain)})
+                                              'path': get_filter_this_domain(domain),
+                                              'type': node_type})
                 for node in nodes:
                     apply_policies_function = globals()['apply_policies_to_%s' % node['type']]
                     apply_policies_function(self.collection, node, admin_user, api=chef_server_api)

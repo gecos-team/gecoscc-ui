@@ -428,7 +428,6 @@ class ChefTask(Task):
             try:
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
-                self.log('info', node_chef_id)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
@@ -458,7 +457,6 @@ class ChefTask(Task):
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
                 save_node_and_free(node, api, refresh=True)
                 are_new_jobs = True
-
             except Exception as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
