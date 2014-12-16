@@ -5,7 +5,7 @@ from copy import deepcopy
 
 from bson import ObjectId
 
-from chef import Node
+from chef import Node, Client
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -561,6 +561,8 @@ class ChefTask(Task):
             api = get_chef_api(self.app.conf, user)
             node = Node(node_chef_id, api)
             node.delete()
+            client = Client(node_chef_id, api=api)
+            client.delete()
         self.log_action('deleted', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
