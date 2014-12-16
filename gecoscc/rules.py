@@ -26,7 +26,7 @@ RULES_LOCAL_USERS_RES = {'gecos_ws_mgmt.misc_mgmt.local_users_res.users_list': e
 # Emitter policies
 
 EMITTER_OBJECT_RULES = {
-    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd_uri'),
+    'printer': ('name', 'manufacturer', 'model', 'uri', 'ppd_uri', 'oppolicy'),
     'repository': {'repo_name': 'name',
                    'uri': 'uri',
                    'components': 'components',
