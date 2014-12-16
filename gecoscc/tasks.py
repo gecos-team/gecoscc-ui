@@ -341,6 +341,8 @@ class ChefTask(Task):
         computer_name = computer['name']
         if is_user_policy(policy.get('path', '')) and 'user' in computer:
             computer['user_and_name'] = '%s / %s' % (computer_name, computer['user']['name'])
+        else:
+            computer['user_and_name'] = None
         job_id = job_storage.create(obj=obj,
                                     op=action,
                                     status=job_status,
