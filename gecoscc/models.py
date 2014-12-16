@@ -473,6 +473,11 @@ PRINTER_CONN_TYPE = {
     'local': _('Local'),
 }
 
+PRINTER_OPPOLICY_TYPE = {
+    'default': _('Default'),
+    'authenticated': _('Authenticated'),
+}
+
 
 class Printer(Node):
     printtype = colander.SchemaNode(colander.String(),
@@ -504,6 +509,10 @@ class Printer(Node):
                                   default='',
                                   missing='',
                                   validator=URLExtend())
+    oppolicy =  colander.SchemaNode(colander.String(),
+                                     default='default',
+                                     validator=colander.OneOf(
+                                         PRINTER_OPPOLICY_TYPE.keys()))
 
 
 class Printers(colander.SequenceSchema):

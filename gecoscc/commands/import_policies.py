@@ -262,15 +262,12 @@ class Command(BaseCommand):
         for lan in languages:
             schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % SPROFILES_LOCALIZED[lan]
         schema['properties']['object_related_list']['autocomplete_url'] = SPROFILES_URL
-        schema['properties']['package_list'] = schema['properties']['object_related_list']
-        del schema['properties']['object_related_list']
-        schema['required'] = ['package_list']
         policy = {
             'name': SPROFILES_NAME,
             'slug': slug,
             'path': SPROFILES_PATH,
             'targets': SPROFILES_URL_TARGETS,
-            'is_emitter_policy': False,
+            'is_emitter_policy': True,
             'schema': schema,
             'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default']
         }

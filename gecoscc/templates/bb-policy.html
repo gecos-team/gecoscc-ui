@@ -1,7 +1,7 @@
 <div id="<% if (typeof id !== 'undefined') { print('resource_' + id); } %>" class="panel panel-default">
     <div class="panel-heading">
         <div class="text-muted bootstrap-admin-box-title">{{ gettext('Configure policy:') }} <%= name %></div>
-        <a href="http://forja.guadalinex.org/webs/gecos/doc/v2/doku.php?id=gecoscc:politicas:<%= slug %>"
+        <a href="{{ help_manual_url }}?id=gecoscc:politicas:<%= slug %>"
         class="pull-right" target="_blank">{{ gettext('Help') }}</a>
     </div>
     <div class="bootstrap-admin-panel-content dashboard">

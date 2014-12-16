@@ -45,7 +45,16 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12">
+                <div class="col-md-3 col-sm-4 col-xs-12">
+                    <div class="form-group">
+                        <label>{{ gettext('Operation Policy') }}</label>
+                        <select id="oppolicy" class="form-control" required>
+                            <option value="default" <% if (oppolicy === "default") { print("selected"); } %>>{{ gettext('Default') }}</option>
+                            <option value="authenticated" <% if (oppolicy === "authenticated") { print("selected"); } %>>{{ gettext('Authenticated') }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-9 col-sm-8 col-xs-12">
                     <div class="form-group">
                         <label for="ppd_uri">{{ gettext('PPD URI') }}</label>
                         <input id="ppd_uri" type="text" class="form-control urlExtend" value="<%= ppd_uri %>">

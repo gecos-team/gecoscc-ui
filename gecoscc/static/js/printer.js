@@ -41,6 +41,7 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             connection: "network",
             uri: "",
             ppd_uri: "",
+            oppolicy: "default",
             isEditable: undefined
         }
     });
@@ -188,7 +189,8 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 location: "#location",
                 connection: "#connection option:selected",
                 uri: "#uri",
-                ppd_uri: "#ppd_uri"
+                ppd_uri: "#ppd_uri",
+                oppolicy: "#oppolicy"
             });
         }
     });
