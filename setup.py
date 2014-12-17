@@ -38,8 +38,15 @@ requires = [
     'BeautifulSoup==3.2.1'
 ]
 
+
+def get_version():
+    with open('gecoscc/version.py') as f:
+        for line in f:
+            if line.startswith('__VERSION__'):
+                return eval(line.split('=')[-1])
+
 setup(name='gecoscc',
-      version='2.1.6',
+      version=get_version(),
       description='gecoscc',
       long_description=README + '\n\n' + CHANGES,
       classifiers=[
