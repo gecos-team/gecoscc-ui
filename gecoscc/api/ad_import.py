@@ -12,6 +12,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import json
 import logging
 import re
 import random
@@ -31,7 +32,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import (OU_ORDER, OrganisationalUnit, Group, User,
-                            Computer, Printer, Storage)
+                            Computer, Printer, Storage, Repository)
 from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
@@ -214,7 +215,7 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Family',
                     'mongo': 'family'
-                }
+                },
             ],
             'staticAttributes': [
                 {
@@ -255,7 +256,28 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'driverName',
                     'mongo': 'model'
-                }
+                },
+                {
+                    'ad': 'PPDUri',
+                    'mongo': 'ppd_uri'
+                },
+                {
+                    'ad': 'PrintType',
+                    'mongo': 'printtype'
+                },
+                {
+                    'ad': 'Registry',
+                    'mongo': 'registry'
+                },
+                {
+                    'ad': 'Serial',
+                    'mongo': 'serial'
+                },
+                {
+                    'ad': 'Uri',
+                    'mongo': 'uri'
+                },
+
             ],
             'staticAttributes': [
                 {
@@ -299,7 +321,52 @@ class ADImport(BaseAPI):
                 }
             ],
             'staticAttributes': []
-        }
+        },
+        {
+            'adName': 'Repository',
+            'mongoType': 'repository',
+            'serializeModel': Repository,
+            'attributes': [
+                {
+                    'ad': 'ObjectGUID',
+                    'mongo': 'adObjectGUID'
+                },
+                {
+                    'ad': 'DistinguishedName',
+                    'mongo': 'adDistinguishedName'
+                },
+                {
+                    'ad': 'Name',
+                    'mongo': 'name'
+                },
+                {
+                    'ad': 'Description',
+                    'mongo': 'extra'
+                },
+                {
+                    'ad': 'Components',
+                    'mongo': 'components',
+                    'json': True
+                },
+                {
+                    'ad': 'Distribution',
+                    'mongo': 'distribution'
+                },
+                {
+                    'ad': 'RepoKey',
+                    'mongo': 'repo_key'
+                },
+                {
+                    'ad': 'KeyServer',
+                    'mongo': 'key_server'
+                },
+                {
+                    'ad': 'Uri',
+                    'mongo': 'uri'
+                }
+            ],
+            'staticAttributes': []
+        },
     ]
 
     def _fixDuplicateName(self, mongoObjects, mongoType, newObj, domain):
@@ -357,6 +424,8 @@ class ADImport(BaseAPI):
                 if attrib['mongo'] != 'name':  # TODO: Proper update the object name
                     if adObj.hasAttribute(attrib['ad']):
                         mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                        if attrib.get('json', False) and mongoObj[attrib['mongo']]:
+                            mongoObj[attrib['mongo']] = json.loads(mongoObj[attrib['mongo']])
                     else:
                         elements = adObj.getElementsByTagName(attrib['ad'])
                         if elements.length > 0:
@@ -365,7 +434,7 @@ class ADImport(BaseAPI):
                             for item in items:
                                 mongoObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             for attrib in objSchema['staticAttributes']:
-                if attrib['key'] not in mongoObj.keys():
+                if attrib['key'] not in mongoObj:
                     mongoObj[attrib['key']] = attrib['value']
 
             return mongoObj
@@ -380,6 +449,8 @@ class ADImport(BaseAPI):
             for attrib in objSchema['attributes']:
                 if adObj.hasAttribute(attrib['ad']):
                     newObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                    if attrib.get('json', False) and mongoObj[attrib['mongo']]:
+                        mongoObj[attrib['mongo']] = json.loads(mongoObj[attrib['mongo']])
                 else:
                     elements = adObj.getElementsByTagName(attrib['ad'])
                     if elements.length > 0:
@@ -389,7 +460,8 @@ class ADImport(BaseAPI):
                             newObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             # Add static attributes
             for attrib in objSchema['staticAttributes']:
-                newObj[attrib['key']] = attrib['value']
+                if attrib['key'] not in newObj:
+                    newObj[attrib['key']] = attrib['value']
 
             # Add additional attributes.
             defaultValues = objSchema['serializeModel']().serialize({})
