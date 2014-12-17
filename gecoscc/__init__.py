@@ -10,6 +10,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+
 import colander
 import json
 import os
@@ -217,6 +218,9 @@ def main(global_config, **settings):
                           'pyramid.events.NewRequest')
 
     config.add_subscriber('gecoscc.i18n.add_localizer',
+                          'pyramid.events.NewRequest')
+
+    config.add_subscriber('gecoscc.context_processors.set_version',
                           'pyramid.events.NewRequest')
 
     route_config(config)
