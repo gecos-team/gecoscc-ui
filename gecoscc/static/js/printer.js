@@ -107,6 +107,10 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+
+            if (!_.isUndefined(this.model.id)) {
+                this.$el.find("#name").attr('disabled', 'disabled');
+            }
         },
 
         setModelsSelect: function (manufacturer) {
