@@ -234,13 +234,14 @@ class ChefTask(Task):
                         updated = True
                     except KeyError:
                         pass
-                try:
-                    value_field_chef = node.attributes.get_dotted(field_chef)
-                except KeyError:
-                    value_field_chef = None
-                if obj_ui_field != value_field_chef:
-                    node.attributes.set_dotted(field_chef, obj_ui_field)
-                    updated = True
+                else:
+                    try:
+                        value_field_chef = node.attributes.get_dotted(field_chef)
+                    except KeyError:
+                        value_field_chef = None
+                    if obj_ui_field != value_field_chef:
+                        node.attributes.set_dotted(field_chef, obj_ui_field)
+                        updated = True
             if job_attr not in attributes_jobs_updated:
                 if updated:
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)

@@ -109,6 +109,7 @@ class Unique(object):
             err_msg = _(self.err_msg, mapping={'val': value})
             node.raise_invalid(err_msg)
 
+
 class PrinterModelValidator(object):
     err_msg = 'Invalid printer model'
 
@@ -467,7 +468,7 @@ class Computer(Node):
     error_last_saved = colander.SchemaNode(RealBoolean(),
                                            default=False)
     error_last_chef_client = colander.SchemaNode(RealBoolean(),
-                                           default=False)
+                                                 default=False)
 
 
 class Computers(colander.SequenceSchema):
@@ -521,10 +522,10 @@ class Printer(Node):
                                   default='',
                                   missing='',
                                   validator=URLExtend())
-    oppolicy =  colander.SchemaNode(colander.String(),
-                                     default='default',
-                                     validator=colander.OneOf(
-                                         PRINTER_OPPOLICY_TYPE.keys()))
+    oppolicy = colander.SchemaNode(colander.String(),
+                                   default='default',
+                                   validator=colander.OneOf(
+                                       PRINTER_OPPOLICY_TYPE.keys()))
 
 
 class Printers(colander.SequenceSchema):
