@@ -101,7 +101,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 ohai = this.model.get("ohai"),
                 lastConnection,
                 interval,
-                intervalDelta,
                 chef_client;
 
             this.model.set("iconClass", "info-icon-success");
@@ -154,7 +153,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return;
             }
 
-            interval = window.GecosUtils.update_error_interval;
+            interval = App.update_error_interval || 24;
             now.setHours(now.getHours() - interval);
             if (lastConnection < now) {
                 this.alertWarning(
