@@ -149,7 +149,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.showAlert(
                     "error",
                     gettext("This workstation is not working properly:"),
-                    "<br/> - " + gettext("Last chef client had problems during its execution.")
+                    "<br/> - " + gettext("Last synchronization had problems during its execution.")
                 );
                 return;
             }
@@ -160,7 +160,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (lastConnection < now) {
                 this.alertWarning(
                     gettext("This workstation is not working properly:"),
-                    "<br/> - " + gettext("Chef client is not being executed on time.")
+                    "<br/> - " + gettext("Synchronization is not being executed on time.")
                 );
             }
         },
