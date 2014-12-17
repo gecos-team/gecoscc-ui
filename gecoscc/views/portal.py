@@ -17,6 +17,7 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.renderers import render
 from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
+from pyramid.threadlocal import get_current_registry
 
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
@@ -31,7 +32,10 @@ logger = logging.getLogger(__name__)
 @view_config(route_name='home', renderer='templates/base_tree.jinja2',
              permission='edit')
 def home(context, request):
-    return {'websockets_enabled': json.dumps(is_websockets_enabled())}
+    return {
+        'websockets_enabled': json.dumps(is_websockets_enabled()),
+        'update_error_interval': get_current_registry().settings['update_error_interval']
+    }
 
 
 class LoginViews(BaseView):

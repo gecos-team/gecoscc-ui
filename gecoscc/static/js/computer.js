@@ -154,9 +154,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return;
             }
 
-            interval = ohai.chef_client.interval / 60;
-            intervalDelta = 10;
-            now.setMinutes(now.getMinutes() - interval - intervalDelta);
+            interval = window.GecosUtils.update_error_interval;
+            now.setHours(now.getHours() - interval);
             if (lastConnection < now) {
                 this.alertWarning(
                     gettext("This workstation is not working properly:"),

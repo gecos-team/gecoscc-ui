@@ -102,6 +102,7 @@
                         }
                         confirmModal.modal("show");
                     },
+                    update_error_interval: {{ update_error_interval }},
                     {% if request.user %}
                         gecosUser: {{ request.user|admin_jsonify|safe }}
                     {% else %}
