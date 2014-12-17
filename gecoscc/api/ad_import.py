@@ -246,7 +246,28 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'driverName',
                     'mongo': 'model'
-                }
+                },
+                {
+                    'ad': 'PPDUri',
+                    'mongo': 'ppd_uri'
+                },
+                {
+                    'ad': 'PrintType',
+                    'mongo': 'printtype'
+                },
+                {
+                    'ad': 'Registry',
+                    'mongo': 'registry'
+                },
+                {
+                    'ad': 'Serial',
+                    'mongo': 'serial'
+                },
+                {
+                    'ad': 'Uri',
+                    'mongo': 'uri'
+                },
+
             ],
             'staticAttributes': [
                 {
@@ -356,7 +377,7 @@ class ADImport(BaseAPI):
                             for item in items:
                                 mongoObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             for attrib in objSchema['staticAttributes']:
-                if attrib['key'] not in mongoObj.keys():
+                if attrib['key'] not in mongoObj:
                     mongoObj[attrib['key']] = attrib['value']
 
             return mongoObj
@@ -380,7 +401,8 @@ class ADImport(BaseAPI):
                             newObj[attrib['mongo']].append(item.childNodes[0].nodeValue)
             # Add static attributes
             for attrib in objSchema['staticAttributes']:
-                newObj[attrib['key']] = attrib['value']
+                if attrib['key'] not in newObj:
+                    newObj[attrib['key']] = attrib['value']
 
             # Add additional attributes.
             defaultValues = objSchema['serializeModel']().serialize({})
