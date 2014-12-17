@@ -4,6 +4,7 @@ import gzip
 import os
 import tempfile
 import tarfile
+import re
 
 import xml.etree.ElementTree as ET
 
@@ -17,6 +18,8 @@ from gecoscc.models import PrinterModel
 
 PPD = 'PPD'
 PRINTER = 'printer'
+
+postscript_re = re.compile(u'Postscript', re.IGNORECASE)
 
 class Command(BaseCommand):
     def command(self):
@@ -79,6 +82,13 @@ class Command(BaseCommand):
         manufacturer = ''
         model = ''
         root = ET.fromstring(xml)
+        is_model_postscript = False
+        for driver in root.iter('id'):
+            is_driver_postscript = postscript_re.search(driver.text) is not None
+            is_model_postscript =  is_model_postscript or is_driver_postscript
+        if not is_model_postscript:
+            return None, None
+
         for m in root.findall('make'):
             manufacturer = m.text.capitalize()
         for m in root.findall('model'):
