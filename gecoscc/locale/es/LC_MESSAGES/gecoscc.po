@@ -813,7 +813,7 @@ msgstr ""
 
 #: gecoscc/templates/bb-repository.html:43
 msgid "Key server"
-msgstr "Clave del servidor"
+msgstr "Servidor de claves"
 
 #: gecoscc/templates/bb-repository.html:51
 msgid "Components"
