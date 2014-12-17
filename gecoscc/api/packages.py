@@ -1,3 +1,14 @@
+#
+# Copyright 2013, Junta de Andalucia
+# http://www.juntadeandalucia.es/
+#
+# Authors:
+#   Alberto Beiztegui <albertobeiz@gmail.com>
+#
+# All rights reserved - EUPL License V 1.1
+# https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+#
+
 from cornice.resource import resource
 
 from gecoscc.api import ResourcePaginatedReadOnly

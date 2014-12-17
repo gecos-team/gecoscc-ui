@@ -1,3 +1,14 @@
+#
+# Copyright 2013, Junta de Andalucia
+# http://www.juntadeandalucia.es/
+#
+# Authors:
+#   Pablo Martin <goinnn@gmail.com>
+#
+# All rights reserved - EUPL License V 1.1
+# https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+#
+
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.security import forget

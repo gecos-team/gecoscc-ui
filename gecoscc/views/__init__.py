@@ -1,3 +1,14 @@
+#
+# Copyright 2013, Junta de Andalucia
+# http://www.juntadeandalucia.es/
+#
+# Authors:
+#   Antonio Perez-Aranda <ant30tx@gmail.com>
+#
+# All rights reserved - EUPL License V 1.1
+# https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+#
+
 from pyramid.i18n import get_localizer
 
 

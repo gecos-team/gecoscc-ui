@@ -1,3 +1,15 @@
+#
+# Copyright 2013, Junta de Andalucia
+# http://www.juntadeandalucia.es/
+#
+# Authors:
+#   Antonio Perez-Aranda <ant30tx@gmail.com>
+#   Pablo Martin <goinnn@gmail.com>
+#
+# All rights reserved - EUPL License V 1.1
+# https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+#
+
 import pymongo
 
 from cornice.resource import resource

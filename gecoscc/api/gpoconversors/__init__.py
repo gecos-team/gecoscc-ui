@@ -1,7 +1,17 @@
 # -*- coding: utf-8 -*-
-"""
-Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
-"""
+
+#
+# Copyright 2013, Junta de Andalucia
+# http://www.juntadeandalucia.es/
+#
+# Authors:
+#   Jose Luis Salvador <salvador.joseluis@gmail.com>
+#   Pablo Martin <goinnn@gmail.com>
+#
+# All rights reserved - EUPL License V 1.1
+# https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+#
+
 from copy import deepcopy
 
 from gecoscc.utils import get_domain
