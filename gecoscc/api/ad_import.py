@@ -2,7 +2,7 @@
 """
 Copyright (c) 2013 Junta de Andalucia <http://www.juntadeandalucia.es> Licensed under the EUPL V.1.1
 """
-
+import json
 import logging
 import re
 import random
@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import (OU_ORDER, OrganisationalUnit, Group, User,
-                            Computer, Printer, Storage)
+                            Computer, Printer, Storage, Repository)
 from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
@@ -311,7 +311,52 @@ class ADImport(BaseAPI):
                 }
             ],
             'staticAttributes': []
-        }
+        },
+        {
+            'adName': 'Repository',
+            'mongoType': 'repository',
+            'serializeModel': Repository,
+            'attributes': [
+                {
+                    'ad': 'ObjectGUID',
+                    'mongo': 'adObjectGUID'
+                },
+                {
+                    'ad': 'DistinguishedName',
+                    'mongo': 'adDistinguishedName'
+                },
+                {
+                    'ad': 'Name',
+                    'mongo': 'name'
+                },
+                {
+                    'ad': 'Description',
+                    'mongo': 'extra'
+                },
+                {
+                    'ad': 'Components',
+                    'mongo': 'components',
+                    'json': True
+                },
+                {
+                    'ad': 'Distribution',
+                    'mongo': 'distribution'
+                },
+                {
+                    'ad': 'RepoKey',
+                    'mongo': 'repo_key'
+                },
+                {
+                    'ad': 'KeyServer',
+                    'mongo': 'key_server'
+                },
+                {
+                    'ad': 'Uri',
+                    'mongo': 'uri'
+                }
+            ],
+            'staticAttributes': []
+        },
     ]
 
     def _fixDuplicateName(self, mongoObjects, mongoType, newObj, domain):
@@ -369,6 +414,8 @@ class ADImport(BaseAPI):
                 if attrib['mongo'] != 'name':  # TODO: Proper update the object name
                     if adObj.hasAttribute(attrib['ad']):
                         mongoObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                        if attrib.get('json', False) and mongoObj[attrib['mongo']]:
+                            mongoObj[attrib['mongo']] = json.loads(mongoObj[attrib['mongo']])
                     else:
                         elements = adObj.getElementsByTagName(attrib['ad'])
                         if elements.length > 0:
@@ -392,6 +439,8 @@ class ADImport(BaseAPI):
             for attrib in objSchema['attributes']:
                 if adObj.hasAttribute(attrib['ad']):
                     newObj[attrib['mongo']] = adObj.attributes[attrib['ad']].value
+                    if attrib.get('json', False) and mongoObj[attrib['mongo']]:
+                        mongoObj[attrib['mongo']] = json.loads(mongoObj[attrib['mongo']])
                 else:
                     elements = adObj.getElementsByTagName(attrib['ad'])
                     if elements.length > 0:
