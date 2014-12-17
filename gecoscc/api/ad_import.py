@@ -205,7 +205,7 @@ class ADImport(BaseAPI):
                 {
                     'ad': 'Family',
                     'mongo': 'family'
-                }
+                },
             ],
             'staticAttributes': [
                 {

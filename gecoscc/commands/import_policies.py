@@ -194,12 +194,11 @@ class Command(BaseCommand):
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
                 title = value['title']
-
                 titles = {}
                 for lan in languages:
                     titles[lan] = value['title_' + lan]
 
-                value = {'properties': value['properties']['users']['patternProperties']['.*']['properties']}
+                value = value['properties']['users']['patternProperties']['.*']
                 if 'updated_by' in value.get('properties', {}):
                     del value['properties']['updated_by']
                 value['title'] = title
