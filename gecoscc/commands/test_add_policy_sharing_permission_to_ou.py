@@ -10,6 +10,7 @@
 #
 
 from gecoscc.tests_utils import PolicyAddCommand
+from gecoscc.rules import get_username_chef_format
 
 
 class Command(PolicyAddCommand):
@@ -25,7 +26,7 @@ class Command(PolicyAddCommand):
     policy_data = {"can_share": True}
 
     def get_policy_attr_to_check(self, policy, user):
-        return '%s.users.%s.can_share' % (policy['path'], user['name'])
+        return '%s.users.%s.can_share' % (policy['path'], get_username_chef_format(user))
 
     def check_node(self, policy_attr_to_check, node):
         return node.attributes.get_dotted(policy_attr_to_check) is True
