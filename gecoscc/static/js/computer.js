@@ -101,7 +101,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 ohai = this.model.get("ohai"),
                 lastConnection,
                 interval,
-                intervalDelta,
                 chef_client;
 
             this.model.set("iconClass", "info-icon-success");
@@ -149,18 +148,17 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.showAlert(
                     "error",
                     gettext("This workstation is not working properly:"),
-                    "<br/> - " + gettext("Last chef client had problems during its execution.")
+                    "<br/> - " + gettext("Last synchronization had problems during its execution.")
                 );
                 return;
             }
 
-            interval = ohai.chef_client.interval / 60;
-            intervalDelta = 10;
-            now.setMinutes(now.getMinutes() - interval - intervalDelta);
+            interval = App.update_error_interval || 24;
+            now.setHours(now.getHours() - interval);
             if (lastConnection < now) {
                 this.alertWarning(
                     gettext("This workstation is not working properly:"),
-                    "<br/> - " + gettext("Chef client is not being executed on time.")
+                    "<br/> - " + gettext("Synchronization is not being executed on time.")
                 );
             }
         },

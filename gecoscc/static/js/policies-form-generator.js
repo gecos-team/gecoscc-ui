@@ -60,7 +60,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             policyData.resource = this.resource;
             policyData.name = policyData["name_" + App.language] || policyData.name;
 
-            if (this.model.get('slug').slice(0, -4) === '_res') {
+            if (this.model.get('slug').slice(-4) === '_res') {
                 policyData.slug = this.model.get('slug').slice(0, -4);
             }
 
