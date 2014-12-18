@@ -29,3 +29,5 @@ class PackagesResource(ResourcePaginatedReadOnly):
     mongo_filter = {}
 
     collection_name = objtype
+
+    order_field = 'name'
