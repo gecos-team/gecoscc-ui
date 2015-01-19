@@ -49,6 +49,7 @@ class Command(BaseCommand):
                 res = requests.get(url)
             except requests.exceptions.RequestException:
                 print 'Error downloading file:', url
+                continue
 
             temp = tempfile.NamedTemporaryFile(suffix='.tar.gz')
             temp.write(StringIO(res.content).read())
@@ -94,7 +95,7 @@ class Command(BaseCommand):
         model = ''
         root = ET.fromstring(xml)
         is_model_postscript = False
-        for driver in root.iter('id'):
+        for driver in root.getiterator('id'):
             is_driver_postscript = postscript_re.search(driver.text) is not None
             is_model_postscript =  is_model_postscript or is_driver_postscript
         if not is_model_postscript:
