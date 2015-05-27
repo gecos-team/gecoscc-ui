@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-27 12:29+0200\n"
+"POT-Creation-Date: 2015-05-27 14:18+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -398,10 +398,18 @@ msgid "Reload"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:27
+msgid "Manufacturer and model"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:29
+msgid "IP address"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:31
 msgid "Users that have logged in"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:28
+#: gecoscc/templates/bb-computer.html:32
 #: gecoscc/templates/bb-groups-members.html:26
 #: gecoscc/templates/bb-groups-widget.html:3
 #: gecoscc/templates/bb-tree-selection.html:13
@@ -409,20 +417,12 @@ msgstr ""
 msgid "None"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:29
-msgid "Uptime"
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:31
-msgid "Manufacturer and model"
-msgstr ""
-
 #: gecoscc/templates/bb-computer.html:37
 msgid "Gecos cc id"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:39 gecoscc/views/reports.py:97
-msgid "Node chef id"
+#: gecoscc/templates/bb-computer.html:39
+msgid "Uptime"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:41
@@ -461,7 +461,7 @@ msgstr ""
 msgid "John's laptop"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-computer.html:146
+#: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-computer.html:156
 #: gecoscc/templates/bb-printer.html:67 gecoscc/views/reports.py:94
 msgid "Type"
 msgstr ""
@@ -503,44 +503,48 @@ msgstr ""
 msgid "Workstation specifications (Ohai)"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:121
-msgid "CPU"
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:125
-msgid "RAM"
+#: gecoscc/templates/bb-computer.html:121 gecoscc/views/reports.py:97
+msgid "Node chef id"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:131
+msgid "CPU"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:135
+msgid "RAM"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:141
 #: gecoscc/templates/bb-repository.html:23
 msgid "Distribution"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:135
+#: gecoscc/templates/bb-computer.html:145
 msgid "Kernel"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:141
+#: gecoscc/templates/bb-computer.html:151
 msgid "File system"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:145
+#: gecoscc/templates/bb-computer.html:155
 msgid "Device"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:147
+#: gecoscc/templates/bb-computer.html:157
 msgid "Mount point"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:148
+#: gecoscc/templates/bb-computer.html:158
 msgid "Used"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:166
+#: gecoscc/templates/bb-computer.html:176
 msgid "Data retrieved from workstation"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:184
+#: gecoscc/templates/bb-computer.html:194
 #: gecoscc/templates/bb-groups-form.html:48 gecoscc/templates/bb-ou.html:73
 #: gecoscc/templates/bb-user.html:95
 msgid "Policies list"

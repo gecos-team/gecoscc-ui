@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-05-27 12:29+0200\n"
+"POT-Creation-Date: 2015-05-27 14:18+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -137,52 +137,52 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:115
+#: gecoscc/static/js/computer.js:118
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:116
+#: gecoscc/static/js/computer.js:119
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:124
+#: gecoscc/static/js/computer.js:127
 msgid "This workstation is not linked."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:125
+#: gecoscc/static/js/computer.js:128
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:132
+#: gecoscc/static/js/computer.js:135
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:140 gecoscc/static/js/computer.js:150
-#: gecoscc/static/js/computer.js:160
+#: gecoscc/static/js/computer.js:143 gecoscc/static/js/computer.js:153
+#: gecoscc/static/js/computer.js:163
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:141
+#: gecoscc/static/js/computer.js:144
 msgid "There were errors while saving this node in Chef"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:151
+#: gecoscc/static/js/computer.js:154
 msgid "Last synchronization had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:161
+#: gecoscc/static/js/computer.js:164
 msgid "Synchronization is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:201
+#: gecoscc/static/js/computer.js:204
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:201
+#: gecoscc/static/js/computer.js:204
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:201
+#: gecoscc/static/js/computer.js:204
 msgid "Minutes"
 msgstr ""
 

@@ -24,20 +24,20 @@
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
-                                            <dt>{{ gettext('Users that have logged in') }}</dt>
-                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd>
-                                            <dt>{{ gettext('Uptime') }}</dt>
-                                            <dd><%= uptime %></dd>
                                             <dt>{{ gettext('Manufacturer and model') }}</dt>
                                             <dd><%= manufacturer %> <%= product_name %></dd>
+                                            <dt>{{ gettext('IP address') }}</dt>
+                                            <dd><%= ipaddress %></dd>
+                                            <dt>{{ gettext('Users that have logged in') }}</dt>
+                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd>
                                         </dl>
                                     </div>
                                     <div class="col-sm-5">
                                         <dl>
                                             <dt>{{ gettext('Gecos cc id') }}</dt>
                                             <dd><%= _id %></dd>
-                                            <dt>{{ gettext('Node chef id') }}</dt>
-                                            <dd><% if (typeof(node_chef_id) !== "undefined" && node_chef_id !== "") { %> <%= node_chef_id %> <% } else { %>-<% } %></dd>
+                                            <dt>{{ gettext('Uptime') }}</dt>
+                                            <dd><%= uptime %></dd>
                                             <dt>{{ gettext('Last connection') }}</dt>
                                             <dd class="label connection-label <%= labelClass %>"><%= last_connection %></dd>
                                         </dl>
@@ -116,6 +116,16 @@
                 </div>
                 <div class="bootstrap-admin-panel-content dashboard">
                     <form role="form">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
+                                <label>{{ gettext('Node chef id') }}</label>
+                                <p class="form-control-static">
+									<% if (typeof(node_chef_id) !== "undefined" && node_chef_id !== "") { %> <%= node_chef_id %> <% } else { %>-<% } %>
+								</p>
+                            </div></div>
+                            <div class="col-xs-12 col-sm-6"><div class="form-group">
+                            </div></div>
+                        </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-6"><div class="form-group">
                                 <label>{{ gettext('CPU') }}</label>
