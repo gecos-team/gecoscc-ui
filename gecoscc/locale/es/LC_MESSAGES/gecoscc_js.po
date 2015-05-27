@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: ablanco@yaco.es\n"
-"POT-Creation-Date: 2014-12-17 14:05+0100\n"
+"POT-Creation-Date: 2015-05-27 12:29+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -140,52 +140,54 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:116
+#: gecoscc/static/js/computer.js:115
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:117
+#: gecoscc/static/js/computer.js:116
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:125
+#: gecoscc/static/js/computer.js:124
 msgid "This workstation is not linked."
 msgstr "Esta estación de trabajo no está enlazada:"
 
-#: gecoscc/static/js/computer.js:126
+#: gecoscc/static/js/computer.js:125
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
-#: gecoscc/static/js/computer.js:133
+#: gecoscc/static/js/computer.js:132
 msgid "This workstation has incomplete Ohai information."
 msgstr "El Ohai de esta estación de trabajo está incompleto."
 
-#: gecoscc/static/js/computer.js:141 gecoscc/static/js/computer.js:151
-#: gecoscc/static/js/computer.js:162
+#: gecoscc/static/js/computer.js:140 gecoscc/static/js/computer.js:150
+#: gecoscc/static/js/computer.js:160
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:142
+#: gecoscc/static/js/computer.js:141
 msgid "There were errors while saving this node in Chef"
 msgstr "Se produjeron errores mientras se guardaba este nodo en Chef"
 
-#: gecoscc/static/js/computer.js:152
+#: gecoscc/static/js/computer.js:151
 msgid "Last synchronization had problems during its execution."
 msgstr "La última sincronización tuvo problemas durante su ejecución."
 
-#: gecoscc/static/js/computer.js:163
+#: gecoscc/static/js/computer.js:161
 msgid "Synchronization is not being executed on time."
-msgstr "La sincronización no se está ejecutando en el intervalo de tiempo definido."
+msgstr ""
+"La sincronización no se está ejecutando en el intervalo de tiempo "
+"definido."
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:201
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:201
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:201
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -243,12 +245,12 @@ msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:22
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid "Package not found in server repositories"
 msgstr "Este paquete no se encuentra en los repositorios del servidor"
 
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:965
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:22
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid ""
 "contains items that are outside your scope, please consult a global "
 "administrator if you need more information."

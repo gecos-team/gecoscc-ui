@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2014-12-17 14:05+0100\n"
+"POT-Creation-Date: 2015-05-27 12:29+0200\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -48,212 +48,212 @@ msgstr "Variables actualizadas con éxito"
 msgid "There is some object with this value: ${val}"
 msgstr "Hay algún objeto con este valor: ${val}"
 
-#: gecoscc/models.py:139
+#: gecoscc/models.py:140
 msgid "Only lowercase letters or numbers"
 msgstr "Solo letras minúsculas o números"
 
-#: gecoscc/models.py:160
+#: gecoscc/models.py:161
 msgid "The passwords do not match"
 msgstr "Las contraseñas con coinciden"
 
-#: gecoscc/models.py:213 gecoscc/templates/bb-user.html:40
+#: gecoscc/models.py:214 gecoscc/templates/bb-user.html:40
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr "Nombre"
 
-#: gecoscc/models.py:217 gecoscc/templates/bb-user.html:44
+#: gecoscc/models.py:218 gecoscc/templates/bb-user.html:44
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr "Apellidos"
 
-#: gecoscc/models.py:307 gecoscc/templates/bb-user.html:36
+#: gecoscc/models.py:308 gecoscc/templates/bb-user.html:36
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr "Nombre de usuario"
 
-#: gecoscc/models.py:313 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:314 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr "Contraseña"
 
-#: gecoscc/models.py:318
+#: gecoscc/models.py:319
 msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
-#: gecoscc/models.py:322 gecoscc/templates/bb-user.html:50
+#: gecoscc/models.py:323 gecoscc/templates/bb-user.html:50
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: gecoscc/models.py:329
+#: gecoscc/models.py:330
 msgid "There is a user with this email: ${val}"
 msgstr "Hay un usuario con este correo electrónico: ${val}"
 
-#: gecoscc/models.py:330
+#: gecoscc/models.py:331
 msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
-#: gecoscc/models.py:335
+#: gecoscc/models.py:336
 msgid "This user can register workstation under these Organitation Units"
 msgstr ""
 "Este usuario puede registrar estaciones de trabajo bajo estas unidades "
 "organizativas"
 
-#: gecoscc/models.py:338
+#: gecoscc/models.py:339
 msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 "Unidades organizativas disponibles para que este usuario pueda registrar "
 "estaciones de trabajo"
 
-#: gecoscc/models.py:348
+#: gecoscc/models.py:349
 msgid "uri"
 msgstr "uri"
 
-#: gecoscc/models.py:351
+#: gecoscc/models.py:352
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:354
+#: gecoscc/models.py:355
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:357
+#: gecoscc/models.py:358
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:360
+#: gecoscc/models.py:361
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:366
+#: gecoscc/models.py:367
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:368
+#: gecoscc/models.py:369
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:374
+#: gecoscc/models.py:375
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:377
+#: gecoscc/models.py:378
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:380
+#: gecoscc/models.py:381
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:383
+#: gecoscc/models.py:384
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:392
+#: gecoscc/models.py:393
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:394
+#: gecoscc/models.py:395
 msgid "Auth type"
 msgstr "Tipo de autenticación"
 
-#: gecoscc/models.py:398
+#: gecoscc/models.py:399
 msgid "Specific conf"
 msgstr "Configuración específica"
 
-#: gecoscc/models.py:400
+#: gecoscc/models.py:401
 msgid "Auth LDAP"
 msgstr "Autenticación LDAP"
 
-#: gecoscc/models.py:401 gecoscc/models.py:402
+#: gecoscc/models.py:402 gecoscc/models.py:403
 msgid "Auth Active directory"
 msgstr "Autenticación Active directory"
 
-#: gecoscc/models.py:442 gecoscc/templates/bb-computer.html:59
+#: gecoscc/models.py:443 gecoscc/templates/bb-computer.html:59
 msgid "Desktop"
 msgstr "Sobremesa"
 
-#: gecoscc/models.py:443 gecoscc/templates/bb-computer.html:60
+#: gecoscc/models.py:444 gecoscc/templates/bb-computer.html:60
 msgid "Laptop"
 msgstr "Portátil"
 
-#: gecoscc/models.py:444 gecoscc/templates/bb-computer.html:61
+#: gecoscc/models.py:445 gecoscc/templates/bb-computer.html:61
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:445 gecoscc/templates/bb-computer.html:62
+#: gecoscc/models.py:446 gecoscc/templates/bb-computer.html:62
 msgid "Tablet"
 msgstr "Tableta"
 
-#: gecoscc/models.py:478 gecoscc/templates/bb-printer.html:69
+#: gecoscc/models.py:479 gecoscc/templates/bb-printer.html:69
 msgid "Laser"
 msgstr "Láser"
 
-#: gecoscc/models.py:479 gecoscc/templates/bb-printer.html:70
+#: gecoscc/models.py:480 gecoscc/templates/bb-printer.html:70
 msgid "Ink"
 msgstr "Tinta"
 
-#: gecoscc/models.py:480 gecoscc/templates/bb-printer.html:71
+#: gecoscc/models.py:481 gecoscc/templates/bb-printer.html:71
 msgid "Dot matrix"
 msgstr "Matricial"
 
-#: gecoscc/models.py:484 gecoscc/templates/bb-printer.html:35
+#: gecoscc/models.py:485 gecoscc/templates/bb-printer.html:35
 msgid "Network"
 msgstr "En red"
 
-#: gecoscc/models.py:485 gecoscc/templates/bb-printer.html:36
+#: gecoscc/models.py:486 gecoscc/templates/bb-printer.html:36
 msgid "Local"
 msgstr "Local"
 
-#: gecoscc/models.py:489 gecoscc/templates/bb-printer.html:52
+#: gecoscc/models.py:490 gecoscc/templates/bb-printer.html:52
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:490 gecoscc/templates/bb-printer.html:53
+#: gecoscc/models.py:491 gecoscc/templates/bb-printer.html:53
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:535
+#: gecoscc/models.py:536
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:536
+#: gecoscc/models.py:537
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:537
+#: gecoscc/models.py:538
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:538
+#: gecoscc/models.py:539
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:539
+#: gecoscc/models.py:540
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:543
+#: gecoscc/models.py:544
 msgid "System mounts (fstab)"
 msgstr "En el arranque del sistema (fstab)"
 
-#: gecoscc/models.py:544
+#: gecoscc/models.py:545
 msgid "User space mounts (gvfs)"
 msgstr "En espacio de usuario (gvfs)"
 
-#: gecoscc/models.py:575
+#: gecoscc/models.py:576
 msgid "Processing"
 msgstr "Procesando"
 
-#: gecoscc/models.py:578
+#: gecoscc/models.py:579
 msgid "Applying changes"
 msgstr "Aplicando cambios"
 
-#: gecoscc/models.py:581
+#: gecoscc/models.py:582
 msgid "Changes applied"
 msgstr "Cambios aplicados"
 
-#: gecoscc/models.py:584 gecoscc/models.py:587
+#: gecoscc/models.py:585 gecoscc/models.py:588
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
@@ -294,7 +294,7 @@ msgstr "Recargar página"
 msgid "Redis server is stopped, please contact an administrator."
 msgstr "El servidor Redis está parado, por favor contacta con un administrador."
 
-#: gecoscc/templates/base.jinja2:115
+#: gecoscc/templates/base.jinja2:116
 msgid "Add new root OU"
 msgstr "Añadir nueva UO raíz"
 
@@ -542,8 +542,8 @@ msgid "Used"
 msgstr "Usado"
 
 #: gecoscc/templates/bb-computer.html:166
-msgid "Complete JSON returned by Ohai"
-msgstr "JSON completo devuelto por Ohai"
+msgid "Data retrieved from workstation"
+msgstr "Datos extraidos del puesto"
 
 #: gecoscc/templates/bb-computer.html:184
 #: gecoscc/templates/bb-groups-form.html:48 gecoscc/templates/bb-ou.html:73
@@ -1007,11 +1007,11 @@ msgstr "Usuario borrado insatisfactoriamente de chef"
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
-#: gecoscc/views/portal.py:50 gecoscc/views/portal.py:56
+#: gecoscc/views/portal.py:54 gecoscc/views/portal.py:60
 msgid "Please enter the correct username and password"
 msgstr "Por favor, introduzca el nombre de usuario y contraseña correctos"
 
-#: gecoscc/views/portal.py:61
+#: gecoscc/views/portal.py:65
 msgid "Welcome ${username}"
 msgstr "Bienvenido ${username}"
 
@@ -1022,176 +1022,4 @@ msgstr "Identificador"
 #: gecoscc/views/reports.py:83
 msgid "Phone"
 msgstr "Teléfono"
-
-#~ msgid "Automatic installation"
-#~ msgstr "Instalación automática"
-
-#~ msgid "Manual installation"
-#~ msgstr "Instalación manual"
-
-#~ msgid "Low"
-#~ msgstr "Ahorro"
-
-#~ msgid "Medium"
-#~ msgstr "Media"
-
-#~ msgid "High"
-#~ msgstr "Alta"
-
-#~ msgid "Very high"
-#~ msgstr "Muy alta"
-
-#~ msgid "Reports"
-#~ msgstr "Informes"
-
-#~ msgid "Change password"
-#~ msgstr "Cambiar contraseña"
-
-#~ msgid "Filter"
-#~ msgstr "Filtrar"
-
-#~ msgid "Users"
-#~ msgstr "Usuarios"
-
-#~ msgid "Anything"
-#~ msgstr "Cualquier cosa"
-
-#~ msgid "Last execution"
-#~ msgstr "Última ejecución"
-
-#~ msgid "Identifier"
-#~ msgstr "Identificador"
-
-#~ msgid "IP"
-#~ msgstr ""
-
-#~ msgid "MAC"
-#~ msgstr ""
-
-#~ msgid "Graphics card"
-#~ msgstr "Tarjeta gráfica"
-
-#~ msgid "Hard disk"
-#~ msgstr "Disco duro"
-
-#~ msgid "Running"
-#~ msgstr "Corriendo"
-
-#~ msgid "Down"
-#~ msgstr "No responde"
-
-#~ msgid "Failed tasks (26 out of 200)"
-#~ msgstr "Tareas fallidas (26 de 200)"
-
-#~ msgid "Completed tasks (166 out of 200)"
-#~ msgstr "Tareas completadas (166 de 200)"
-
-#~ msgid "Inventory"
-#~ msgstr "Inventario"
-
-#~ msgid "Controller"
-#~ msgstr "Controlador"
-
-#~ msgid ""
-#~ msgstr ""
-
-#~ msgid "Clear the selected file"
-#~ msgstr "Limpiar el fichero seleccionado"
-
-#~ msgid "Clear"
-#~ msgstr "Limpiar"
-
-#~ msgid "Default preferences"
-#~ msgstr "Preferencias por defecto"
-
-#~ msgid "Paper size"
-#~ msgstr "Tamaño del papel"
-
-#~ msgid "Print quality"
-#~ msgstr "Calidad de impresión"
-
-#~ msgid "Paper tray"
-#~ msgstr "Bandeja de papel"
-
-#~ msgid "Duplex mode"
-#~ msgstr "Modo doble cara"
-
-#~ msgid "Duplex printing"
-#~ msgstr "Impresión a doble cara"
-
-#~ msgid "The main Linux Mint repository"
-#~ msgstr "El repositorio principal de Linux Mint"
-
-#~ msgid "Connection string"
-#~ msgstr "Cadena de conexión"
-
-#~ msgid "Port"
-#~ msgstr "Puerto"
-
-#~ msgid "Extra options"
-#~ msgstr "Opciones extra"
-
-#~ msgid "Connection protocol"
-#~ msgstr "Protocolo de conexión"
-
-#~ msgid "Mount"
-#~ msgstr "Montaje"
-
-#~ msgid "When booting (fstab)"
-#~ msgstr "En el arranque del sistema (fstab)"
-
-#~ msgid "In user space (gvfs)"
-#~ msgstr "En espacio de usuario (gvfs)"
-
-#~ msgid "Authentication Required"
-#~ msgstr ""
-
-#~ msgid "You need to enter your credentials to access the requested resource."
-#~ msgstr ""
-
-#~ msgid "Computer"
-#~ msgstr "Puesto de trabajo"
-
-#~ msgid "OU managed by this user"
-#~ msgstr "Unidades organizativas administradas por este usuario"
-
-#~ msgid "Administrator"
-#~ msgstr "Administrador"
-
-#~ msgid "Events and queue"
-#~ msgstr "Eventos y cola"
-
-#~ msgid "Another administrator has changed the following nodes:"
-#~ msgstr ""
-
-#~ msgid "Your changes are lost. Please make your changes again."
-#~ msgstr ""
-
-# | msgid "First name"
-#~ msgid "first name"
-#~ msgstr "Nombre"
-
-# | msgid "Last name"
-#~ msgid "last name"
-#~ msgstr "Apellidos"
-
-# | msgid "Email"
-#~ msgid "email"
-#~ msgstr "Correo electrónico"
-
-# | msgid "Address"
-#~ msgid "address"
-#~ msgstr "Dirección"
-
-#~ msgid "Registry"
-#~ msgstr "Número de registro"
-
-#~ msgid "Serial"
-#~ msgstr "Número de Serie"
-
-#~ msgid "Invalid URL"
-#~ msgstr "URL invalida"
-
-#~ msgid "Execute changes"
-#~ msgstr "Encolar cambios"
 
