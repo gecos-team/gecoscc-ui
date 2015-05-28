@@ -29,6 +29,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             family: "",
             users: "",
             uptime: "-",
+            ipaddress: "",
             product_name: "",
             manufacturer: "-",
             cpu: "",
