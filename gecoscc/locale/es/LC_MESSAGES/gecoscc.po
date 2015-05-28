@@ -407,8 +407,6 @@ msgid "Manufacturer and model"
 msgstr "Marca y modelo"
 
 #: gecoscc/templates/bb-computer.html:29
-#, fuzzy
-#| msgid "Address"
 msgid "IP address"
 msgstr "Dirección IP"
 
