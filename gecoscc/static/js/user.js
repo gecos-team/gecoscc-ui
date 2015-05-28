@@ -29,6 +29,7 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
             address: "",
             phone: "",
             email: "",
+            commentaries: "",			
             policyCollection: new App.Policies.Models.PolicyCollection(),
             isEditable: undefined,
             computer_names: []
@@ -118,7 +119,8 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 email: "#email",
                 first_name: "#firstname",
                 last_name: "#lastname",
-                address: "#address"
+                address: "#address",
+				commentaries: "#commentaries"				
             });
         }
     });
