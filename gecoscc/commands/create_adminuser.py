@@ -18,6 +18,7 @@ import random
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
+from gecoscc.utils import sanitize
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -90,7 +91,7 @@ class Command(BaseCommand):
 
         try:
             self.pyramid.userdb.create_user(
-                self.options.username,
+                sanitize(self.options.username),
                 password,
                 self.options.email,
                 {'is_superuser': self.options.is_superuser}

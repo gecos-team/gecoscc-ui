@@ -22,7 +22,7 @@ from gecoscc.utils import get_chef_api
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import to_deep_dict
+from gecoscc.utils import to_deep_dict, sanitize
 
 
 @resource(collection_path='/api/computers/',
@@ -51,7 +51,7 @@ class ComputerResource(TreeLeafResourcePaginated):
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
             result.update({'ohai': ohai,
-                           'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
+                           'users': ','.join([sanitize(i['username']) for i in ohai.get('ohai_gecos', {}).get('users', [])]),
                            'uptime': ohai.get('uptime', ''),
                            'ipaddress': ohai.get('ipaddress', ''),
                            'cpu': '%s %s' % (cpu.get('vendor_id', ''), cpu.get('model_name', '')),

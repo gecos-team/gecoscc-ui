@@ -24,7 +24,7 @@ from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
-
+from gecoscc.utils import sanitize
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class LoginViews(BaseView):
     @view_config(route_name='login', renderer='templates/login.jinja2')
     def login(self):
         if self.request.POST:
-            username = self.request.POST.get('username')
+            username = sanitize(self.request.POST.get('username'))
             password = self.request.POST.get('password')
             try:
                 user = self.request.userdb.login(username, password)

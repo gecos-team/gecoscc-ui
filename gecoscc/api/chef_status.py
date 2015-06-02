@@ -25,7 +25,7 @@ from gecoscc.models import Job
 from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            apply_policies_to_user, remove_policies_of_computer,
-                           reserve_node_or_raise, save_node_and_free)
+                           reserve_node_or_raise, save_node_and_free, sanitize)
 from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_user, update_tree
 
 
@@ -49,7 +49,7 @@ class ChefStatusResource(BaseAPI):
 
     def put(self):
         node_id = self.request.POST.get('node_id')
-        username = self.request.POST.get('gcc_username')
+        username = sanitize(self.request.POST.get('gcc_username'))
         if not node_id:
             return {'ok': False,
                     'message': 'Please set a node id (node_id)'}
@@ -113,7 +113,7 @@ class ChefStatusResource(BaseAPI):
         users_recalculate_policies = []
         reload_clients = False
         for chef_user in users:
-            username = chef_user['username']
+            username = sanitize(chef_user['username'])
             if chef_user in users_old or chef_user.get('sudo', False):
                 continue
             user = node_collection.find_one({'name': username,
@@ -144,7 +144,7 @@ class ChefStatusResource(BaseAPI):
         users_remove_policies = []
 
         for chef_user in users_old:
-            username = chef_user['username']
+            username = sanitize(chef_user['username'])
             if chef_user in users or chef_user.get('sudo', False):
                 continue
             user = node_collection.find_one({'name': username,

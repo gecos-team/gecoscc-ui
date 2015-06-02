@@ -16,6 +16,7 @@ import pytz
 import random
 import string
 import time
+import re
 
 from bson import ObjectId, json_util
 from copy import deepcopy
@@ -592,3 +593,11 @@ def is_local_user(user, collection_nodes):
         is_local = _is_local_user(mongo_user)
 
     return is_local
+
+# Sanitize username eliminating all the characters
+# that may cause Chef fail.
+#
+def sanitize(username):
+    name = re.sub("[^a-z0-9\-\._]", "", username.lower())
+    return name.replace('.', '_')
+

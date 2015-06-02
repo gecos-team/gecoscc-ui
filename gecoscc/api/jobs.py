@@ -18,6 +18,7 @@ from cornice.resource import resource
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Job, Jobs
 from gecoscc.permissions import api_login_required
+from gecoscc.utils import sanitize
 
 
 @resource(collection_path='/api/jobs/',
@@ -40,7 +41,7 @@ class JobResource(ResourcePaginatedReadOnly):
 
     def get_objects_filter(self):
         filters = super(JobResource, self).get_objects_filter()
-        administrator_username = self.request.user['username']
+        administrator_username = sanitize(self.request.user['username'])
         filters.append({'administrator_username': administrator_username})
         status = self.request.GET.get('status', '')
         if status:

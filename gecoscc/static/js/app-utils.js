@@ -16,7 +16,7 @@
 (function (App, Backbone, $, _) {
     "use strict";
 
-    var AlertView, ChangesAlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex, urlExtendRegex;
+    var AlertView, ChangesAlertView, numericRegex, emailRegex, ipRegex, urlRegex, applyRegex, urlExtendRegex, usernameRegex;
 
     /*
     * Regular expressions taken from:
@@ -42,6 +42,7 @@
 //         numericDashRegex = /^[\d\-\s]+$/,
     urlRegex = /^((http|https):\/\/(\w+:{0,1}\w*@)?(\S+)|)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?$/;
     urlExtendRegex = /^(https?|ftp|file):\/\/[\-A-Za-z0-9+&@#\/%?=~_|!:,.;]+[\-A-Za-z0-9+&@#\/%=~_|]$/;
+    usernameRegex = /^([a-z0-9\-_])*$/;
 
     /*
     * End - validate.js
@@ -251,6 +252,8 @@
                     valid = valid && applyRegex(ipRegex, $el);
                 } else if ($el.is(".urlExtend")) {
                     valid = valid && applyRegex(urlExtendRegex, $el);
+                } else if ($el.is("#username")) {
+                    valid = valid && applyRegex(usernameRegex, $el);
                 }
             });
 
@@ -506,9 +509,14 @@
     App.getDomainModel = function (id) {
         var model, path, domain;
         model = App.instances.tree.findNodeById(id);
-        path = model.path || model.get("path");
-        domain = path.split(',').length === 2 ? id : path.split(',')[2];
-        domain = new App.OU.Models.OUModel({ id: domain });
+        if (model === undefined) {
+            domain = false;
+        }
+        else {
+            path = model.path || model.get("path");
+            domain = path.split(',').length === 2 ? id : path.split(',')[2];
+            domain = new App.OU.Models.OUModel({ id: domain });
+        }
         return domain;
     };
 

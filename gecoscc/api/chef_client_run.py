@@ -15,7 +15,7 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Computer, Computers
-from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it
+from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it, sanitize
 
 
 @resource(path='/chef-client/run/',
@@ -33,7 +33,7 @@ class ChefClientRunResource(BaseAPI):
 
     def put(self):
         node_id = self.request.POST.get('node_id')
-        username = self.request.POST.get('gcc_username')
+        username = sanitize(self.request.POST.get('gcc_username'))
         if not node_id:
             return {'ok': False,
                     'message': 'Please set a node id (node_id)'}
