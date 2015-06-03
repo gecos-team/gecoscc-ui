@@ -137,8 +137,8 @@ class PrinterManufacturerValidator(object):
 
 
 class LowerAlphaNumeric(object):
-    err_msg = _('Only lowercase letters or numbers')
-    regex = re.compile(r'^([a-z]|[0-9])*$')
+    err_msg = _('Only lowercase letters, numbers or dots')
+    regex = re.compile(r'^([a-z0-9\.])*$')
 
     def __call__(self, node, value):
         if not self.regex.match(value):
