@@ -21,7 +21,7 @@ from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariable
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage
 from gecoscc.pagination import create_pagination_mongo_collection
-from gecoscc.utils import delete_chef_admin_user, get_chef_api, sanitize
+from gecoscc.utils import delete_chef_admin_user, get_chef_api
 
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
@@ -40,7 +40,7 @@ def admins(context, request):
 
 @view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='is_superuser')
 def admins_superuser(context, request):
-    username = sanitize(request.matchdict['username'])
+    username = request.matchdict['username']
     if '_superuser' in request.POST:
         is_superuser = True
         message = _('Now the user is a super user')
@@ -48,7 +48,7 @@ def admins_superuser(context, request):
         is_superuser = False
         message = _('Now the user is not a super user')
         message.translate('es')
-    request.userdb.collection.update({'username': sanitize(username)}, {'$set': {'is_superuser': is_superuser}})
+    request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
     messages.created_msg(request, message, 'success')
     return HTTPFound(location=request.route_url('admins'))
 
@@ -58,7 +58,7 @@ def admins_superuser(context, request):
 def admins_ou_manage(context, request):
     ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou', 'path': 'root'})]
     ou_choices = [('', 'Select an Organisational Unit')] + ou_choices
-    username = sanitize(request.matchdict['username'])
+    username = request.matchdict['username']
     schema = AdminUserOUManage().bind(ou_choices=ou_choices)
     form = AdminUserOUManageForm(schema=schema,
                                  collection=request.db['adminusers'],
@@ -112,13 +112,13 @@ def admin_add(context, request):
              permission='is_superuser_or_my_profile')
 def admin_edit(context, request):
     return _admin_edit(request, AdminUserEditForm,
-                       username=sanitize(request.matchdict['username']))
+                       username=request.matchdict['username'])
 
 
 @view_config(route_name='admins_set_variables', renderer='templates/admins/variables.jinja2',
              permission='is_superuser_or_my_profile')
 def admins_set_variables(context, request):
-    username = sanitize(request.matchdict['username'])
+    username = request.matchdict['username']
     schema = AdminUserVariables()
     form = AdminUserVariablesForm(schema=schema,
                                   collection=request.db['adminusers'],
@@ -146,7 +146,7 @@ def admins_set_variables(context, request):
 def admin_delete(context, request):
     if request.method != 'DELETE':
         raise HTTPMethodNotAllowed("Only delete mthod is accepted")
-    username = sanitize(request.GET.get('username'))
+    username = request.GET.get('username')
     if request.session['auth.userid'] == username:
         forget(request)
     settings = get_current_registry().settings

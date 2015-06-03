@@ -1,5 +1,4 @@
 #
-#
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
 #

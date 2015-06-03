@@ -16,7 +16,6 @@ from bson import ObjectId
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import User, Users
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import sanitize
 
 
 @resource(collection_path='/api/users/',
@@ -33,14 +32,6 @@ class UserResource(TreeLeafResourcePaginated):
         'type': objtype,
     }
     collection_name = 'nodes'
-
-
-    def pre_save(self, obj, old_obj=None):
-        if old_obj and 'name' in old_obj:
-            old_obj['name'] = sanitize(old_obj['name'])
-        if obj and 'name' in obj:
-            obj['name'] = sanitize(obj['name'])
-        return super(UserResource, self).pre_save(obj, old_obj)
 
     def get(self):
         result = super(UserResource, self).get()

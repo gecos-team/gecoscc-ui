@@ -20,7 +20,7 @@ from chef.node import NodeAttributes
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import get_chef_api
-from gecoscc.tests_utils import waiting_to_celery, sanitize
+from gecoscc.tests_utils import waiting_to_celery
 
 
 class Command(BaseCommand):
@@ -104,7 +104,7 @@ class Command(BaseCommand):
         if policies != {}:
             print 'Error this computer should not have any policies'
             return
-        admin = db.adminusers.find_one({'username': sanitize(self.options.gcc_username)})
+        admin = db.adminusers.find_one({'username': self.options.gcc_username})
         if not admin:
             print 'Error this admin does not exists'
             return
@@ -125,13 +125,13 @@ class Command(BaseCommand):
                         automatic_dict['ohai_gecos']['pclabel'] = new_node_name
                         user1 = 'user.name-%s-1' % new_node_name
                         user2 = 'user.name-%s-2' % new_node_name
-                        automatic_dict['ohai_gecos']['users'] = [{'username': sanitize(user1),
-                                                                  'home': '/home/%s' % sanitize(user1),
+                        automatic_dict['ohai_gecos']['users'] = [{'username': user1,
+                                                                  'home': '/home/%s' % user1,
                                                                   'gid': 1000,
                                                                   'sudo': False,
                                                                   'uid': 1000},
-                                                                 {'username': sanitize(user2),
-                                                                  'home': '/home/%s' % sanitize(user2),
+                                                                 {'username': user2,
+                                                                  'home': '/home/%s' % user2,
                                                                   'gid': 1000,
                                                                   'sudo': False,
                                                                   'uid': 1001}]
@@ -146,7 +146,7 @@ class Command(BaseCommand):
             print 'Created %s at chef' % new_node_name
             res = requests.post('%s/register/computer/' % self.options.gcc_url,
                                 {'ou_id': self.options.ou_id, 'node_id': new_node_name},
-                                auth=(sanitize(self.options.gcc_username), self.options.gcc_password))
+                                auth=(self.options.gcc_username, self.options.gcc_password))
             if res.ok and res.json()['ok']:
                 print 'Created %s at gcc' % new_node_name
             elif res.ok and not res.json()['ok']:
@@ -157,7 +157,7 @@ class Command(BaseCommand):
 
             res = requests.put('%s/chef/status/' % self.options.gcc_url,
                                {'node_id': new_node_name,
-                                'gcc_username': sanitize(self.options.gcc_username)})
+                                'gcc_username': self.options.gcc_username})
 
             if res.ok and res.json()['ok']:
                 print 'Chef client %s' % new_node_name

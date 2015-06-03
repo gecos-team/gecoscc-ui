@@ -18,7 +18,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.api import BaseAPI
 from gecoscc.models import AdminUserVariables
 from gecoscc.permissions import http_basic_login_required
-from gecoscc.utils import get_pem_for_username, sanitize
+from gecoscc.utils import get_pem_for_username
 
 
 @resource(path='/auth/config/',
@@ -34,17 +34,15 @@ class AdminUserResource(BaseAPI):
         variables = self.parse_item(user.get('variables', {}))
         settings = get_current_registry().settings
 
-        username = sanitize(user['username'])
-
         chef = {}
         chef['chef_server_uri'] = settings.get('chef.url')
         chef['chef_link'] = True
-        chef['chef_validation'] = get_pem_for_username(settings, username, 'chef_client.pem')
+        chef['chef_validation'] = get_pem_for_username(settings, user['username'], 'chef_client.pem')
 
         gcc = {}
         gcc['gcc_link'] = True
         gcc['uri_gcc'] = self.request.host_url
-        gcc['gcc_username'] = username
+        gcc['gcc_username'] = self.request.user['username']
 
         auth_type = variables.get('auth_type', 'LDAP')
         if auth_type == 'LDAP':
@@ -55,7 +53,7 @@ class AdminUserResource(BaseAPI):
                                    'ad_properties': variables['auth_ad']}
             else:
                 schema = self.schema_detail()
-                conf_files = schema.get_config_files('r', username)
+                conf_files = schema.get_config_files('r', user['username'])
                 auth_properties = {'specific_conf': True}
                 ad_properties = {}
                 for conf_file in conf_files:

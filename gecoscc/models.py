@@ -136,17 +136,13 @@ class PrinterManufacturerValidator(object):
             node.raise_invalid(self.err_msg)
 
 
-class UsernameValidator(object):
-    err_msg = 'Only lowercase letters, numbers, hyphen and underscore'
-    regex = re.compile(r'^([a-z0-9\-_])*$')
+class LowerAlphaNumeric(object):
+    err_msg = _('Only lowercase letters or numbers')
+    regex = re.compile(r'^([a-z]|[0-9])*$')
 
     def __call__(self, node, value):
         if not self.regex.match(value):
             node.raise_invalid(self.err_msg)
-
-
-class AdminUsernameValidator(UsernameValidator):
-    err_msg = _('Only lowercase letters, numbers, hyphen and underscore')
 
 
 class URLExtend(object):
@@ -177,7 +173,6 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
-    
 
 
 class Nodes(colander.SequenceSchema):
@@ -238,14 +233,12 @@ class User(Node, BaseUser):
                                   missing='')
     commentaries = colander.SchemaNode(colander.String(),
                                  default='',
-                                 missing='')
+                                 missing='')								 								  
     memberof = ObjectIdList(missing=[], default=[])
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
     computers = ObjectIdList(missing=[], default=[])
-    name = colander.SchemaNode(colander.String(),
-                                   validator=UsernameValidator())
 
 
 class Users(colander.SequenceSchema):
@@ -319,7 +312,7 @@ class AdminUser(BaseUser):
                                    validator=colander.All(
                                        Unique('adminusers',
                                               'There is a user with this username: ${val}'),
-                                       AdminUsernameValidator()))
+                                       LowerAlphaNumeric()))
     password = colander.SchemaNode(colander.String(),
                                    title=_('Password'),
                                    widget=deform.widget.PasswordWidget(),

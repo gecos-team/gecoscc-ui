@@ -14,7 +14,6 @@ from uuid import uuid4
 import pymongo
 
 from pyramid.security import authenticated_userid
-from gecoscc.utils import sanitize
 
 
 ## MongoDB User Document structure
@@ -68,7 +67,7 @@ class MongoUserDB(object):
         ], unique=True)
 
     def get_user(self, username):
-        user = self.collection.find_one({'username': sanitize(username)})
+        user = self.collection.find_one({'username': username})
         if not user:
             raise UserDoesNotExist()
         return user
@@ -80,7 +79,7 @@ class MongoUserDB(object):
         return user
 
     def login(self, username, password):
-        user = self.get_user(sanitize(username))
+        user = self.get_user(username)
         password_dict = user.get('password', None)
         if password_dict is None:
             return False
@@ -90,7 +89,7 @@ class MongoUserDB(object):
             return False
 
     def change_password(self, username, password):
-        user = self.get_user(sanitize(username))
+        user = self.get_user(username)
         password_hash = create_password(password)
         self.collection.update({
             '_id': user['_id']
@@ -102,7 +101,7 @@ class MongoUserDB(object):
 
     def create_user(self, username, password, email, extradata={}):
         # Test if the username was not registered before
-        user = self.collection.find_one({'username': sanitize(username)})
+        user = self.collection.find_one({'username': username})
         if user is not None:
             raise UserAlreadyExists()
 
@@ -114,7 +113,7 @@ class MongoUserDB(object):
         user = extradata
 
         user.update({
-            'username': sanitize(username),
+            'username': username,
             'email': email,
             'password': create_password(password),
             'apikey': [self.create_unique_apikey()],
@@ -132,7 +131,7 @@ class MongoUserDB(object):
 
     def add_apikey(self, username, apikey):
         self.collection.update({
-            'username': sanitize(username)
+            'username': username
         }, {
             '$push': {
                 'apikey': self.create_unique_apikey()

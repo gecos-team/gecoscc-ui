@@ -17,7 +17,6 @@ import random
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserDoesNotExist
-from gecoscc.utils import sanitize
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -77,7 +76,7 @@ class Command(BaseCommand):
 
         try:
             self.pyramid.userdb.change_password(
-                sanitize(self.options.username),
+                self.options.username,
                 password
             )
         except UserDoesNotExist:

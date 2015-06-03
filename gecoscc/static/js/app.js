@@ -311,8 +311,6 @@ var App;
 
             newItemDashboard: function (containerid) {
                 var domain = App.getDomainModel(containerid);
-                if (!domain)
-                    return;
                 domain.fetch().done(function () {
                     App.instances.newElementView.containerId = containerid;
                     App.instances.newElementView.isGecosMaster = domain.get("master") === "gecos";
@@ -385,8 +383,6 @@ var App;
 
                 //check if master is gecoss
                 domain =  App.getDomainModel(containerid);
-                if (!domain)
-                     return;
                 domain.fetch().done(function () {
 
                     //if not gecos only users can be added
