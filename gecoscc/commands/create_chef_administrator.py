@@ -19,7 +19,7 @@ from optparse import make_option
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator
+from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
 
 
 class Command(BaseCommand):
@@ -81,7 +81,7 @@ class Command(BaseCommand):
 
     def get_pem_for_username(self, username):
         first_boot_media = self.settings.get('firstboot_api.media')
-        user_media = os.path.join(first_boot_media, username)
+        user_media = os.path.join(first_boot_media, toChefUsername(username))
         if not os.path.exists(user_media):
             os.makedirs(user_media)
         return os.path.join(user_media, 'chef_user.pem')
@@ -108,11 +108,11 @@ class Command(BaseCommand):
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
-                            self.options.chef_username,
+                            toChefUsername(self.options.chef_username),
                             self.options.chef_pem)
         try:
-            api['/users/%s' % self.options.username]
-            print "The username %s already exists in the chef sever" % self.options.username
+            api['/users/%s' % toChefUsername(self.options.username)]
+            print "The username %s already exists in the chef sever" % toChefUsername(self.options.username)
             sys.exit(1)
         except ChefServerNotFoundError:
             pass
@@ -120,12 +120,12 @@ class Command(BaseCommand):
         chef_password = self.create_password("Insert the chef password, the spaces will be stripped",
                                              "The generated password to chef server is: {0}")
         try:
-            create_chef_admin_user(api, self.settings, self.options.username, chef_password)
+            create_chef_admin_user(api, self.settings, toChefUsername(self.options.username), chef_password)
         except ChefServerError, e:
             print "User not created in chef, error was: %s" % e
             sys.exit(1)
 
-        print "User %s created in chef server" % self.options.username
+        print "User %s created in chef server" % toChefUsername(self.options.username)
 
         gcc_password = self.create_password("Insert the GCC password, the spaces will be stripped",
                                             "The generated password to GCC is: {0}")
