@@ -231,6 +231,9 @@ class User(Node, BaseUser):
     address = colander.SchemaNode(colander.String(),
                                   default='',
                                   missing='')
+    commentaries = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')								 								  
     memberof = ObjectIdList(missing=[], default=[])
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
@@ -459,6 +462,9 @@ class Computer(Node):
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
+    commentaries = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')								 
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})

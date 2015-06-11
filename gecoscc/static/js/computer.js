@@ -29,6 +29,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             family: "",
             users: "",
             uptime: "-",
+            ipaddress: "",
+            commentaries: "",
             product_name: "",
             manufacturer: "-",
             cpu: "",
@@ -241,7 +243,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 memberof: _.bind(this.groupsWidget.getChecked, this.groupsWidget),
                 name: "#name",
                 family: "#family option:selected",
-                registry: "#registry"
+                registry: "#registry",
+				commentaries: "#commentaries"
             });
         }
     });
