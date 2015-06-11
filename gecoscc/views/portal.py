@@ -19,11 +19,13 @@ from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.threadlocal import get_current_registry
 
+
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
+from gecoscc.command_util import get_setting
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +36,7 @@ logger = logging.getLogger(__name__)
 def home(context, request):
     return {
         'websockets_enabled': json.dumps(is_websockets_enabled()),
-        'update_error_interval': get_current_registry().settings['update_error_interval']
+        'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db)
     }
 
 

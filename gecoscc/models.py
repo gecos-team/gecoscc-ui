@@ -209,6 +209,21 @@ class Groups(colander.SequenceSchema):
     groups = Group()
 
 
+class Setting(colander.MappingSchema):
+    _id = colander.SchemaNode(ObjectIdField())
+    key = colander.SchemaNode(colander.String(),
+                                     title=_('Key'),
+                                     default='',
+                                     missing='')
+    value = colander.SchemaNode(colander.String(),
+                                    title=_('Value'),
+                                    default='',
+                                    missing='')
+    type = colander.SchemaNode(colander.String(),
+                                    title=_('Type'),
+                                    default='',
+                                    missing='')
+
 class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
                                      title=_('First name'),
