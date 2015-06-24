@@ -27,7 +27,6 @@ from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
-
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
@@ -592,3 +591,4 @@ def is_local_user(user, collection_nodes):
         is_local = _is_local_user(mongo_user)
 
     return is_local
+

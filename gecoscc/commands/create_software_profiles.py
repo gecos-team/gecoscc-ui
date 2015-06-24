@@ -13,19 +13,19 @@ import json
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import SoftwareProfile
+from gecoscc.command_util import get_setting
+
 
 class Command(BaseCommand):
     def command(self):
-        profiles = json.loads(self.settings.get('software_profiles'))
+        profiles = json.loads(get_setting('software_profiles', self.settings, self.db))
         collection = self.db.software_profiles
 
         profile_model = SoftwareProfile()
 
-        for name in profiles:
-            new_profile = profile_model.serialize({'name': name, 'packages': profiles[name]})
+        for new_profile in profiles:
+            name = new_profile['name']
             db_profile = collection.find_one({'name': name})
-
-            del new_profile['_id']
 
             if not db_profile:
                 collection.insert(new_profile)
