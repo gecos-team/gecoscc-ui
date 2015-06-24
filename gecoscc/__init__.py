@@ -15,6 +15,7 @@ import colander
 import json
 import os
 import pymongo
+import sys
 
 from ConfigParser import ConfigParser
 
@@ -195,6 +196,10 @@ def main(global_config, **settings):
     settings = dict(settings)
     config = Configurator(root_factory=get_root, settings=settings)
 
+    # Set Unicode as default encoding
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
+    
     database_config(config)
     userdb_config(config)
     auth_config(config)
