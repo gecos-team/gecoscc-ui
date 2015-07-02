@@ -174,23 +174,6 @@
     
     <script>
     
-        function updateReadonlyFields() {
-            // Set the readonly where needed
-            var textFields = $( "[type='text']" );
-            for (var i=0; i<textFields.length; i++) {
-                var textField = textFields[i];
-                
-                // set "software_profiles[x].name" input fields as readonly
-                if (textField.name.match(/software_profiles\[[0-9]+\]\.name/g)) {
-                    textField.readOnly = true;
-                    // Remove the "-" sign
-                    var li = textField.parentNode.parentNode.parentNode.parentNode.parentNode;
-                    if (li.firstChild.nodeName == "A")
-                        li.removeChild(li.firstChild);
-                }
-            }        
-        }
-    
         $(document).ready(function () {
             var settings = JSON.parse($('#settings_json').text());
             var values = JSON.parse($('#values_json').text());
@@ -207,12 +190,7 @@
                     "update_error_interval",
                     "printers___urls",
                     "repositories",
-                        {
-                          "key": "software_profiles",
-                          "onChange": function (evt) {
-                            updateReadonlyFields();
-                          }
-                        }
+                    "software_profiles"
                 ],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: function (values) {
@@ -236,8 +214,6 @@
             options.value = values;
             options.validate = jjv();
             $("#form").jsonForm(options);            
-            
-            updateReadonlyFields();
         });
     </script>
     {% block morejs %}{% endblock %}

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2015-06-11 14:17+0200\n"
+"POT-Creation-Date: 2015-06-30 11:16+0200\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -1063,7 +1063,16 @@ msgstr "Identificador"
 msgid "Phone"
 msgstr "Teléfono"
 
-#: gecoscc/views/settings.py:153
+#: gecoscc/views/settings.py:156
+msgid "Software Profiles policy not found"
+msgstr "No se encuentra la política de Perfiles de Software"
+
+#: gecoscc/views/settings.py:181
+#, python-format
+msgid "Software Profile in use: %s"
+msgstr "Perfil de Software en uso: %s"
+
+#: gecoscc/views/settings.py:187
 msgid "Settings modified successfully"
 msgstr "Configuración modificada con éxito"
 

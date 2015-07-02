@@ -144,12 +144,46 @@ def settings_save(context, request):
                     
                     if not db_profile:
                         collection.insert(new_profile)
-                        print "Imported profile: %s" % name
+                        logger.debug("Created profile: %s" % name)
 
                     elif new_profile['packages'] != db_profile['packages']:
                         collection.update({'name': name}, new_profile)
-                        print "Updated profile: %s" % name
+                        logger.debug("Updated profile: %s" % name)
 
+                # Check if the user is trying to delete a software profile
+                sp_policy = request.db.policies.find_one({"slug" : "package_profile_res"})
+                if not sp_policy:
+                    messages.created_msg(request, _('Software Profiles policy not found'), 'warning')
+                    response.write('SUCCESS')
+                    return response
+                    
+                db_profiles = collection.find()
+                for profile in db_profiles:
+                    profile_found = False
+                    for new_profile in data[key]:
+                        if new_profile['name'] == profile['name']:
+                            profile_found = True
+                            
+                    if not profile_found:
+                        # Check if we can delete the software profile
+                        # (the software profile is not in use)
+                        logger.debug("Try to delete: %s - %s"%(str(profile['_id']), profile['name']))
+                        obj_related_list = "policies.%s.object_related_list"%(str(sp_policy['_id']))
+                        profile_id = str(profile['_id'])
+                        nnodes = request.db.nodes.find({obj_related_list : profile_id}).count()
+                        logger.debug("Found %s nodes"%(nnodes))
+                        
+                        if nnodes == 0:
+                            # It it's not used we can delete it
+                            collection.remove({"_id": profile['_id']})
+                        else:
+                            # It's used, so we can't delete it
+                            messages.created_msg(request, _('Software Profile in use: %s')%(profile['name']), 'warning')
+                            response.write('SUCCESS')
+                            return response
+                        
+                        
+                        
     messages.created_msg(request, _('Settings modified successfully'), 'success')
     response.write('SUCCESS')
     return response
