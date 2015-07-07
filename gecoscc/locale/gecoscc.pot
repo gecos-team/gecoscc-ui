@@ -7,7 +7,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.10\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
 "POT-Creation-Date: 2015-06-30 11:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -51,7 +51,7 @@ msgid "There is some object with this value: ${val}"
 msgstr ""
 
 #: gecoscc/models.py:140
-msgid "Only lowercase letters or numbers"
+msgid "Only lowercase letters, numbers or dots"
 msgstr ""
 
 #: gecoscc/models.py:161
