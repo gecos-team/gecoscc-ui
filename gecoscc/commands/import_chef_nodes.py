@@ -16,7 +16,7 @@ from chef import Node as ChefNode
 from pymongo.errors import DuplicateKeyError
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node, SOURCE_DEFAULT
+from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node, SOURCE_DEFAULT, toChefUsername
 
 
 class Command(BaseCommand):
@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
-                            self.options.chef_username,
+                            toChefUsername(self.options.chef_username),
                             self.options.chef_pem)
         ou_name = 'ou_0'
         ou = self.create_root_ou(ou_name)

@@ -149,10 +149,10 @@ def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
 
 
 def get_chef_api(settings, user):
-    username = user['username']
+    username = toChefUsername(user['username'])
     chef_url = settings.get('chef.url')
-    chef_client_pem = get_pem_path_for_username(settings, user['username'], 'chef_client.pem')
-    chef_user_pem = get_pem_path_for_username(settings, user['username'], 'chef_user.pem')
+    chef_client_pem = get_pem_path_for_username(settings, username, 'chef_client.pem')
+    chef_user_pem = get_pem_path_for_username(settings, username, 'chef_user.pem')
     if os.path.exists(chef_client_pem):
         chef_pem = chef_client_pem
     else:
@@ -168,7 +168,8 @@ def _get_chef_api(chef_url, username, chef_pem):
     return api
 
 
-def create_chef_admin_user(api, settings, username, password=None):
+def create_chef_admin_user(api, settings, usrname, password=None):
+    username = toChefUsername(usrname)
     if password is None:
         password = password_generator()
     data = {'name': username, 'password': password, 'admin': True}
@@ -182,7 +183,8 @@ def create_chef_admin_user(api, settings, username, password=None):
         save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
 
-def delete_chef_admin_user(api, settings, username):
+def delete_chef_admin_user(api, settings, usrname):
+    username = toChefUsername(usrname)
     try:
         api.api_request('DELETE', '/users/%s/' % username)
         api.api_request('DELETE', '/clients/%s/' % username)
@@ -458,7 +460,7 @@ def remove_policies_of_computer(user, computer, auth_user):
 
 
 def get_pem_for_username(settings, username, pem_name):
-    return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
+    return open(get_pem_path_for_username(settings, toChefUsername(username), pem_name), 'r').read().encode('base64')
 
 
 def get_pem_path_for_username(settings, username, pem_name):
@@ -591,4 +593,17 @@ def is_local_user(user, collection_nodes):
         is_local = _is_local_user(mongo_user)
 
     return is_local
+
+# Transform an username into a Chef username
+# by replacing the dots by "___"
+#
+def toChefUsername(username):
+    return username.replace('.', '___')
+
+# Transforms back a Chef username into a regular username
+# by replacing the "___" by dots
+#
+def fromChefUsername(username):
+    return username.replace('___', '.')
+
 
