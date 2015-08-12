@@ -1,0 +1,48 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
+
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Servers') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Servers') }}</li>
+        </ol>
+    {% endblock %}
+    <div class="row" id="users">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Name') }}</th>
+                        <th>{{ gettext('IP Address') }}</th>
+                        <th>{{ gettext('CPU') }}</th>
+                        <th>{{ gettext('CPU Load') }}</th>
+                        <th>{{ gettext('RAM Load') }}</th>
+                        <th>{{ gettext('Actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for status in server_status %}
+                        <tr>
+                            <td>{{ status.name }}</td>
+                            <td>{{ status.address }}</td>
+                            <td>{{ status.cpu.name }} x{{ status.cpu.ncores }}</td>
+                            <td>{{ status.cpu.load|round(1, 'floor') }}%</td>
+                            <td>{{ (status.ram.used/1024)|round|int }}M / {{ (status.ram.total/1024)|round|int }}M</td>
+                            <td>
+                                {% if  status.cpu.load==0 and status.ram.used==0 %}
+                                    <a href="{{ request.route_url('server_status') }}?delete={{ status.name }}" class="btn btn-primary"><span class="fa fa-trash"></span> {{ gettext('Delete') }}</a>
+                                {% else %}
+                                    <a href="{{ request.route_url('server_log') }}" class="btn btn-primary"><span class="fa fa-file-text-o"></span> {{ gettext('Log') }}</a>
+                                {% endif %}                            
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
