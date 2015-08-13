@@ -64,7 +64,6 @@ def route_config(config):
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
     config.add_route('internal_server_status', '/server/internal_status', factory=SuperUserFactory)
     config.add_route('server_log', '/server/log', factory=SuperUserFactory)
-    config.add_route('internal_server_log', '/server/internal_log', factory=SuperUserFactory)
 
     
 

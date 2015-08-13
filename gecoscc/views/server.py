@@ -14,6 +14,8 @@ import time
 import httplib
 import urllib2
 import json
+import sys
+import traceback
 
 
 from pyramid.view import view_config
@@ -26,6 +28,7 @@ from deform import ValidationFailure
 from gecoscc import messages
 from gecoscc.i18n import gettext as _
 
+from xmlrpclib import ServerProxy, ProtocolError
 
 logger = logging.getLogger(__name__)
 
@@ -177,6 +180,26 @@ def getJSON(url):
 def getServerStatus(ip_address):
     return getJSON('http://%s/server/internal_status'%(ip_address))
     
+def get_supervisord_url(ip_address):
+    settings = get_current_registry().settings
+    port = settings.get('supervisord.port')
+    user = settings.get('supervisord.user')
+    password = settings.get('supervisord.password')
+    
+    if port is None:
+        logger.error("server_log: Bad configuration, please set supervisord.port in gecoscc.ini")
+        return None        
+
+    if user is None:
+        logger.error("server_log: Bad configuration, please set supervisord.user in gecoscc.ini")
+        return None        
+
+    if password is None:
+        logger.error("server_log: Bad configuration, please set supervisord.password in gecoscc.ini")
+        return None        
+        
+    
+    return 'http://%s:%s@%s:%s/RPC2'%(user, password, ip_address, port)
 
 @view_config(route_name='internal_server_status', renderer='json')
 def internal_server_status(context, request):
@@ -230,4 +253,123 @@ def server_status(context, request):
 
     return {'server_status': server_status}
 
+
+@view_config(route_name='server_log', renderer='templates/server/log.jinja2', permission='is_superuser')
+def server_log(context, request):
+    # Get the name of the server
+    server_name = request.GET.get('server', None)
+    if server_name is None:
+        logger.error("server_log: server name is mandatory")
+        return None
+        
+    server = request.db.servers.find_one({'name': server_name})
+    if server is None:
+        logger.error("server_log: can't find server by server name: %s"%(server_name))
+        return None
+        
+    ip_address = server['address']
+        
+    # Get the process name and number of bytes
+    process_name = request.GET.get('process', None)
+    nbytes = request.GET.get('bytes', 0)
+    
+    # Get the process list and status of that server
+    supervisor_url = get_supervisord_url(ip_address)
+    if supervisor_url is None:
+        # Bad configuration
+        return { 'server_name': 'BAD CONFIGURATION!', 
+            'process_name': 'BAD CONFIGURATION!', 
+            'nbytes': 0, 
+            'process_info': [], 
+            'log_data': 'BAD CONFIGURATION!' }
+        
+    supervisord = ServerProxy(supervisor_url)
+
+    process_info = None
+    try:
+        process_info = supervisord.supervisor.getAllProcessInfo()
+    except IOError as e:
+        logger.error("server_log: error getting process info: %s"%(str(e)))
+        # Connection error?
+        return { 'server_name': 'ERROR(%s) %s'%(e.errno, e.strerror), 
+            'process_name': 'ERROR(%s) %s'%(e.errno, e.strerror), 
+            'nbytes': 0, 
+            'process_info': [], 
+            'log_data': 'ERROR(%s) %s'%(e.errno, e.strerror) }
+
+    except ProtocolError as e:
+        logger.error("server_log: error getting process info: %s"%(str(e)))
+        # Connection error?
+        return { 'server_name': 'ERROR(%s) %s'%(e.errcode, e.errmsg), 
+            'process_name': 'ERROR(%s) %s'%(e.errcode, e.errmsg), 
+            'nbytes': 0, 
+            'process_info': [], 
+            'log_data': 'ERROR(%s) %s'%(e.errcode, e.errmsg) }
+            
+    except: # catch *all* exceptions
+        e = sys.exc_info()[0]
+        logger.error("server_log: error getting process info: %s"%(str(e)))
+        logger.error("Traceback: %s"%(traceback.format_exc()))
+        
+        # Unknown error?
+        return { 'server_name': 'ERROR: %s'%(str(e)), 
+            'process_name': 'ERROR: %s'%(str(e)), 
+            'nbytes': 0, 
+            'process_info': [], 
+            'log_data': 'ERROR: %s'%(str(e)) }
+    
+    # Check if the process_name is in the list of processes
+    if process_name is not None:
+        if ":" in process_name:
+            parts = process_name.split(':')
+            found = False
+            for p in process_info:
+                if p['name'] == parts[1] and p['group'] == parts[0]:
+                    found = True
+                    break
+                    
+            if not found:
+                logger.warning("server_log: Invalid process_name! (%s)"%(process_name))
+                process_name = None
+                
+        else:
+            process_name = None
+    
+    log_data = ''
+    if process_name is not None:
+        # Get the log of that process
+        logger.debug("server_log: process_name: %s"%(process_name))
+        try:
+            log_data = supervisord.supervisor.readProcessStdoutLog(process_name, -int(nbytes), 0)
+        except: # catch *all* exceptions
+            e = sys.exc_info()[0]
+            logger.error("server_log: error getting process log: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
+            
+            # Unknown error?
+            return { 'server_name': 'ERROR: %s'%(str(e)), 
+                'process_name': 'ERROR: %s'%(str(e)), 
+                'nbytes': 0, 
+                'process_info': [], 
+                'log_data': 'ERROR: %s'%(str(e)) }            
+    else:
+        logger.debug("server_log: NO process_name!")
+        process_name = 'supervisord'
+        # Get the main supervisor log
+        try:
+            log_data = supervisord.supervisor.readMainLog(-int(nbytes), 0)
+        except: # catch *all* exceptions
+            e = sys.exc_info()[0]
+            logger.error("server_log: error getting the main log: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
+            
+            # Unknown error?
+            return { 'server_name': 'ERROR: %s'%(str(e)), 
+                'process_name': 'ERROR: %s'%(str(e)), 
+                'nbytes': 0, 
+                'process_info': [], 
+                'log_data': 'ERROR: %s'%(str(e)) }            
+
+    
+    return { 'server_name': server_name, 'process_name':process_name, 'nbytes':nbytes, 'process_info': process_info, 'log_data': log_data }
 

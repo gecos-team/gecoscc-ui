@@ -36,7 +36,7 @@
                                 {% if  status.cpu.load==0 and status.ram.used==0 %}
                                     <a href="{{ request.route_url('server_status') }}?delete={{ status.name }}" class="btn btn-primary"><span class="fa fa-trash"></span> {{ gettext('Delete') }}</a>
                                 {% else %}
-                                    <a href="{{ request.route_url('server_log') }}" class="btn btn-primary"><span class="fa fa-file-text-o"></span> {{ gettext('Log') }}</a>
+                                    <a href="{{ request.route_url('server_log') }}?server={{ status.name }}" class="btn btn-primary"><span class="fa fa-file-text-o"></span> {{ gettext('Log') }}</a>
                                 {% endif %}                            
                             </td>
                         </tr>
