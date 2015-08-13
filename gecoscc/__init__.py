@@ -29,7 +29,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage
-from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory
+from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
 from gecoscc.socks import socketio_service
 
 
@@ -62,7 +62,9 @@ def route_config(config):
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
     
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
-    config.add_route('internal_server_status', '/server/internal_status', factory=SuperUserFactory)
+    config.add_route('internal_server_status', '/internal/server/status', factory=InternalAccessFactory)
+    config.add_route('server_connections', '/server/connections', factory=SuperUserFactory)
+    config.add_route('internal_server_connections', '/internal/server/connections', factory=InternalAccessFactory)
     config.add_route('server_log', '/server/log', factory=SuperUserFactory)
 
     
