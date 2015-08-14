@@ -86,8 +86,8 @@ def forbidden_view(context, request):
             reason = context.explanation
         except AttributeError:
             reason = 'unknown'
-        logger.debug("User {!r} tripped Forbidden view, request {!r}, "
-                     "reason {!r}".format(user, request, reason))
+        logger.debug("User %s tripped Forbidden view, request %s, "
+                     "reason %s"%(str(user), str(request), str(reason)))
         response = Response(render('templates/forbidden.jinja2', {}))
         response.status_int = 403
         return response
@@ -96,5 +96,6 @@ def forbidden_view(context, request):
         response.status_int = 403
         return response
 
+    logger.debug("No user and forbidden access! --> redirect to login")        
     loginurl = request.route_url('login', _query=(('next', request.path),))
     return HTTPFound(location=loginurl)

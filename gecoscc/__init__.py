@@ -15,6 +15,7 @@ import colander
 import json
 import os
 import pymongo
+import subprocess
 
 from ConfigParser import ConfigParser
 
@@ -28,7 +29,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage
-from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory
+from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
 from gecoscc.socks import socketio_service
 
 
@@ -59,6 +60,14 @@ def route_config(config):
     config.add_route('logout', 'logout/')
     config.add_route('forbidden-view', '/error403/')
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
+    
+    config.add_route('server_status', '/server/status', factory=SuperUserFactory)
+    config.add_route('internal_server_status', '/internal/server/status', factory=InternalAccessFactory)
+    config.add_route('server_connections', '/server/connections', factory=SuperUserFactory)
+    config.add_route('internal_server_connections', '/internal/server/connections', factory=InternalAccessFactory)
+    config.add_route('server_log', '/server/log', factory=SuperUserFactory)
+
+    
 
 
 def sockjs_config(config, global_config):
@@ -99,7 +108,38 @@ def database_config(config):
 
     config.set_request_property(get_db, 'db', reify=True)
 
+def check_server_list(config):
+    settings = config.registry.settings
+    server_name = read_setting_from_env(settings, 'server_name', None)
+    if not server_name:
+        # Try to get the server name from "hostname" command
+        p = subprocess.Popen('hostname', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        server_name, err = p.communicate()
 
+    if not server_name:
+        raise ConfigurationError("The server_name option is required")
+
+    server_ip = read_setting_from_env(settings, 'server_ip', None)
+    if not server_ip:
+        # Try to get the server IP from "ifconfig" command
+        p = subprocess.Popen('/sbin/ifconfig eth0 | grep "inet addr" | awk -F: \'{print $2}\' | awk \'{print $1}\'', 
+            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        server_ip, err = p.communicate()
+    
+    if not server_ip:
+        raise ConfigurationError("The server_ip option is required")
+    
+    db = config.registry.settings['mongodb'].get_database()
+        
+    # Check if this server is in the collection
+    server = db.servers.find_one({'name': server_name.strip()})
+    if server is None:
+        db.servers.insert({'name': server_name.strip(), 'address':server_ip.strip()})
+    else:
+        server['address'] = server_ip.strip()
+        db.servers.update({'name': server_name.strip()}, server, new=False)
+        
+    
 def userdb_config(config):
     # TODO
     # * Support LDAP Users
@@ -198,6 +238,8 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
     locale_config(config)
+    
+    check_server_list(config)
 
     config.add_translation_dirs('gecoscc:locale/')
 

@@ -60,6 +60,14 @@
                             </div>
                         </div>
                     </div>
+					<div class="row">
+						<div class="col-md-12 col-xs-12">
+							<div class="form-group">
+								<label for="commentaries">{{ gettext('Commentaries') }}</label>
+								<textarea class="form-control" id="commentaries" name="commentaries" rows="3" placeholder="{{ gettext('Write commentaries about the user here...') }}"><%= commentaries %></textarea>
+							</div>
+						</div>
+					</div>
                     <% if (typeof id !== 'undefined') { %>
                     <div id="groups-widget">
                         <p style="font-size: 1.5em;">

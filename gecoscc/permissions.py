@@ -19,6 +19,9 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 def is_logged(request):
     return authenticated_userid(request) is not None
@@ -175,6 +178,45 @@ class LoggedFactory(object):
     def get_groups(self, userid, request):
         return []
 
+        
+class InternalAccessFactory(object):
+
+    def __acl__(self):
+        # Get the remote address
+        remote_addr = self.request.remote_addr
+        header = 'remote_addr'
+        if 'X-Real-IP' in self.request.headers:
+            remote_addr = self.request.headers['X-Real-IP']
+            header = 'X-Real-IP'
+        if 'X-Forwarded-For' in self.request.headers:
+            remote_addr = self.request.headers['X-Forwarded-For']
+            header = 'X-Forwarded-For'
+        
+        logger.debug('InternalAccessFactory: remote_addr=%s header=%s (%s)'%(remote_addr, header, str(self.request.headers.items())))
+        
+        # Check if the remote IP address is localhost
+        if remote_addr == '127.0.0.1' or remote_addr == '::1':
+            logger.debug('InternalAccessFactory: access allowed for localhost: %s'%(remote_addr))
+            remember(self.request, 'localhost_access')
+            return  [(Allow, Everyone, 'view')]
+        
+        server_list = self.request.db.servers.find()
+        
+        # Check if the remote IP address belongs to a GECOSCC server
+        for server in server_list:
+            if server['address'] == remote_addr:
+                logger.debug('InternalAccessFactory: access allowed for GECOS CC server: %s'%(server['name']))
+                remember(self.request, server['name'])
+                return [(Allow, Everyone, 'view')]      
+                
+        logger.debug('InternalAccessFactory: forbidden access for %s'%(remote_addr))
+        raise HTTPForbidden('Internal access only')
+        
+
+    def __init__(self, request):
+        self.request = request
+
+        
 
 class SuperUserFactory(LoggedFactory):
 
