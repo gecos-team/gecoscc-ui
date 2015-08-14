@@ -17,6 +17,7 @@ import json
 import sys
 import traceback
 import socket
+import os
 
 
 from pyramid.view import view_config
@@ -102,7 +103,7 @@ def _getMeminfo():
         lines = fd.readlines()
         fd.close()
     except Exception, e:
-        Logger.error("_getMeminfo %s"%(str(e)))
+        logger.error("_getMeminfo %s"%(str(e)))
         return {}
     
     infos = {}
@@ -208,6 +209,47 @@ def get_supervisord_url(ip_address):
     
     return 'http://%s:%s@%s:%s/RPC2'%(user, password, ip_address, port)
 
+def get_mountpoints():
+    try:
+        fd = file("/proc/mounts", "r")
+        lines = fd.readlines()
+        fd.close()
+    except Exception, e:
+        logger.error("get_mountpoints %s"%(str(e)))
+        return {}
+    
+    mps = []
+    for line in lines:
+        line = line.strip()
+        if (line.startswith('proc') or line.startswith('/proc/') or 
+            line.startswith('devtmpfs') or  line.startswith('tmpfs') or 
+            line.startswith('rootfs') or  line.startswith('devpts') or 
+            line.startswith('none') or line.startswith('sysfs')):
+            continue
+
+        device,mountpoint,fstype,options,uid,gid = line.split(' ')
+        
+        data = {}
+        data['device'] = device
+        data['mountpoint'] = mountpoint
+        data['fstype'] = fstype
+        data['options'] = options
+        data['uid'] = uid
+        data['gid'] = gid
+        
+        mps.append(data)
+    
+    return mps
+    
+def get_disk_status(path):
+    status = None
+    try:
+        status = os.statvfs(path)
+    except (OSError, IOError):
+        logger.error('get_disk_status: ERROR getting status of %s'%(path))    
+        
+    return status
+    
 @view_config(route_name='internal_server_status', renderer='json', permission='view')
 def internal_server_status(context, request):
     # Get the status of this server
@@ -222,6 +264,37 @@ def internal_server_status(context, request):
     server_status['ram']['total'] = getRAMTotal()
     server_status['ram']['used'] = getRAMUsed()
     
+    # Get information about mounted disks
+    total_disk_size = 0
+    used_disk_size = 0
+    server_status['disk'] = {}
+    server_status['disk']['mountpoints'] = []
+    
+    mps = get_mountpoints()
+    for mp in mps:
+        status = get_disk_status(mp['mountpoint'])
+        if status is not None:
+            fs_blocksize = status.f_bsize
+            if fs_blocksize == 0:
+                fs_blocksize = status.f_frsize
+            free = status.f_bfree
+            size = status.f_blocks
+            used = size-free
+            
+            mp['size'] = size * fs_blocksize
+            mp['used'] = used * fs_blocksize
+            total_disk_size += mp['size']
+            used_disk_size += mp['used']
+            
+        else:
+            mp['size'] = 'Unknown'
+            mp['used'] = 'Unknown'
+            
+        server_status['disk']['mountpoints'].append(mp)  
+        
+    server_status['disk']['total'] = total_disk_size
+    server_status['disk']['used'] = used_disk_size
+            
     
 
     return server_status
@@ -346,6 +419,34 @@ def server_status(context, request):
             status['ram'] = {}
             status['ram']['total'] = 0
             status['ram']['used'] = 0
+            
+            status['disk'] = {}
+            status['disk']['mountpoints'] = []
+            status['disk']['total'] = 0
+            status['disk']['used'] = 0
+        else:
+            for mpt in status['disk']['mountpoints']:
+                factor = 1
+                factor_text = 'byte'
+                
+                if int(mpt['size']) > 1024:
+                    factor = 1024
+                    factor_text = 'Kbyte'
+                    
+                if int(mpt['size']) > (1024*1024):
+                    factor = (1024*1024)
+                    factor_text = 'Mbyte'
+
+                if int(mpt['size']) > (1024*1024*1024):
+                    factor = (1024*1024*1024)
+                    factor_text = 'Gbyte'
+                    
+                if int(mpt['size']) > (1024*1024*1024*1024):
+                    factor = (1024*1024*1024*1024)
+                    factor_text = 'Tbyte'
+                    
+                mpt['factor'] = factor
+                mpt['factor_text'] = factor_text
             
         status['name'] = server['name']
         status['address'] = server['address']
