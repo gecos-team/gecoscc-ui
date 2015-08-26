@@ -38,6 +38,12 @@ requires = [
     'BeautifulSoup==3.2.1'
 ]
 
+test_requires = requires + [
+    'mock==1.3.0',
+    'nose==1.3.7',
+    'coverage==3.7.1',
+]
+
 
 def get_version():
     with open('gecoscc/version.py') as f:
@@ -68,7 +74,7 @@ setup(name='gecoscc',
           'static': ['*.js', '*.css', '*.jpg', '*.png'],
       },
       install_requires=requires,
-      tests_require=requires,
+      tests_require=test_requires,
       test_suite="gecoscc",
       entry_points="""\
       [paste.app_factory]
