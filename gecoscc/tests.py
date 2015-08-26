@@ -299,7 +299,7 @@ class GecosTestCase(unittest.TestCase):
         get_cookbook_method.side_effect = get_cookbook_mock
         argv_bc = sys.argv
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
-                    '-a', 'test', '-k', 'gecoscc/test_resources/test.pem']
+                    '-a', 'test', '-k', 'gecoscc/test_resources/media/users/test/chef_client.pem']
         command = ImportPoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
