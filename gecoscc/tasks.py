@@ -29,8 +29,8 @@ from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format
 from gecoscc.socks import invalidate_jobs
 # It is necessary import here: apply_policies_to_computer and apply_policies_to_user
-from gecoscc.utils import (get_chef_api,
-                           get_cookbook, get_filter_nodes_belonging_ou,
+from gecoscc.utils import (get_chef_api, get_cookbook,
+                           get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
@@ -47,9 +47,14 @@ class ChefTask(Task):
     abstract = True
 
     def __init__(self):
-        self.db = self.app.conf.get('mongodb').get_database()
         self.init_jobid()
         self.logger = self.get_logger()
+
+    @property
+    def db(self):
+        if hasattr(self, '_db'):
+            return self._db
+        return self.app.conf.get('mongodb').get_database()
 
     def log(self, messagetype, message):
         assert messagetype in ('debug', 'info', 'warning', 'error', 'critical')
@@ -57,7 +62,7 @@ class ChefTask(Task):
         op('[{0}] {1}'.format(self.jid, message))
 
     def init_jobid(self):
-        if self.request is not None:
+        if getattr(self, 'request', None) is not None:
             self.jid = self.request.id
         else:
             self.jid = unicode(ObjectId())
