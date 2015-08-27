@@ -1,0 +1,63 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
+
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Servers') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Server log') }} {{ server_name }}</li>
+        </ol>
+    {% endblock %}
+    
+    
+    <div class="row" id="log">
+        <div class="col-sm-12">
+            <form name="log_form" id="log_form" method="GET" action="{{ request.route_url('server_log') }}">
+            <input type="hidden" name="server" value="{{ server_name }}" />
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Process') }}</th>
+                        <th>{{ gettext('Number of bytes') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                        <tr>
+                            <td valign="bottom">
+                                <select name="process" id="process">
+                                    <option value="" {% if process_name == 'supervisord' %} selected="selected" {% endif %}>supervisord</option>
+                                {% for info in process_info %}
+                                    <option value="{{ info.group + ':' + info.name }}" {% if process_name == info.group +':'+ info.name %} selected="selected" {% endif %}>{{ info.group }}:{{ info.name }}</option>
+                                {% endfor %}
+                                </select>
+                            
+                            </td>
+                            <td valign="bottom">
+                                <select name="bytes" id="bytes">
+                                    <option value="5000" {% if nbytes == '5000' %} selected="selected" {% endif %}>5000</option>
+                                    <option value="10000" {% if nbytes == '10000' %} selected="selected" {% endif %}>10000</option>
+                                    <option value="15000" {% if nbytes == '15000' %} selected="selected" {% endif %}>15000</option>
+                                    <option value="20000" {% if nbytes == '20000' %} selected="selected" {% endif %}>20000</option>
+                                </select>
+                            </td>
+                            <td valign="bottom">
+                                <input id="submit" type="submit" class="btn btn-primary" value="{{ gettext('Log') }}"/>
+                            </td>
+                        </tr>
+                </tbody>
+            </table>
+            </form>
+        </div>
+        
+        <div class="col-sm-12">
+<pre>
+{{ log_data }}
+</pre>
+        </div>
+    </div>    
+    
+{% endblock %}

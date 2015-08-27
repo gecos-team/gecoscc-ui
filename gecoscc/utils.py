@@ -16,6 +16,7 @@ import pytz
 import random
 import string
 import time
+import re
 
 from bson import ObjectId, json_util
 from copy import deepcopy
@@ -606,4 +607,28 @@ def toChefUsername(username):
 def fromChefUsername(username):
     return username.replace('___', '.')
 
-
+# Get the components of a URL
+#
+def getURLComponents(url):
+    components = {}
+    
+    url_re = r"(?P<protocol>(http[s]?|ftp|mongodb))://((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host_name>[^:/]+)(:(?P<port>[0-9]+))?(?P<path>[a-zA-Z0-9\/]+)?"
+    m = re.match(url_re, url)
+    components['protocol'] = m.group('protocol')
+    components['host_name'] = m.group('host_name')
+    components['port'] = m.group('port')
+    components['path'] = m.group('path')
+    components['user'] = m.group('user')
+    components['password'] = m.group('password')
+  
+    if components['port'] is None:
+        if components['protocol'] == 'ftp':
+            components['port'] = '21'
+        elif components['protocol'] == 'http':
+            components['port'] = '80'
+        elif components['protocol'] == 'https':
+            components['port'] = '443'
+        elif components['protocol'] == 'mongodb':
+            components['port'] = '27017'
+    
+    return components

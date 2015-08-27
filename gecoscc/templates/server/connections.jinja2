@@ -1,0 +1,45 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
+
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Servers') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Server connections') }} {{ server_name }}</li>
+        </ol>
+    {% endblock %}
+    
+    
+    <div class="row" id="connections">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Service') }}</th>
+                        <th>{{ gettext('Local IP address') }}</th>
+                        <th>{{ gettext('Local port') }}</th>
+                        <th>{{ gettext('Remote IP address') }}</th>
+                        <th>{{ gettext('Remote port') }}</th>
+                        <th>{{ gettext('Status') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for connection in connections %}
+                        <tr>
+                            <td>{{ connection.remote_service }}</td>
+                            <td>{{ connection.local_host }}</td>
+                            <td>{{ connection.local_port }}</td>
+                            <td>{{ connection.remote_host }}</td>
+                            <td>{{ connection.remote_port }}</td>
+                            <td>{{ connection.state }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>    
+    
+{% endblock %}
