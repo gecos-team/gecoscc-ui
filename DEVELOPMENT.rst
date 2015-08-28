@@ -2,6 +2,24 @@
 DEVELOPMENT
 ===========
 
+Dependences
+===========
+
+Ubuntu dependeces, in another distro the names can change
+
+::
+
+
+    sudo apt-get install git
+    sudo apt-get install python-setuptools
+    sudo apt-get install python-dev
+    sudo apt-get install libssl-dev
+    sudo apt-get install mongodb
+
+    sudo easy_install pip
+    sudo pip install virtualenv
+
+
 Install
 =======
 
@@ -56,6 +74,14 @@ admin.pem file is the pem of the chef administrator, you should get it from the 
     pmanage config-templates/development.ini create_software_profiles
 
 
+Run server
+==========  
+
+::
+
+    source vgecoscc-ui/bin/activate
+    pserve config-templates/development.ini
+
 
 Run test
 ========
@@ -73,8 +99,7 @@ Run test (with coverage)
 ::
 
     source vgecoscc-ui/bin/activate
-    pip install mock==1.3.0
-    pip install nose==1.3.7
-    pip install coverage==3.7.1
+    python setup.py develop
+    pip install -r test_requirements.txt
     vgecoscc-ui/bin/nosetests   --cover-html --cover-html-dir=/tmp/report
 
