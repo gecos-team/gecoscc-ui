@@ -431,26 +431,27 @@ class GecosTestCase(unittest.TestCase):
 
 class BasicTests(GecosTestCase):
 
-    def create_printer(self):
+    def create_an_object(self, data, type_object):
+
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
 
-        data = {'connection': 'network',
-                'manufacturer': 'Calcomp',
-                'model': 'Artisan 1023 penplotter',
-                'name': 'Printer tests',
-                'oppolicy': 'default',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'printtype': 'laser',
-                'source': 'gecos',
-                'type': 'printer',
-                'uri': 'http://test.example.com'}
+        data.update({'path': '%s,%s' % (ou_1['path'], ou_1['_id'])})
 
-        request_post = self.get_dummy_json_post_request(data, PrinterResource.schema_detail)
-        printer_api = PrinterResource(request_post)
-        printer_new = printer_api.collection_post()
+        request_post = self.get_dummy_json_post_request(data, type_object.schema_detail)
+        object_api = type_object(request_post)
+        object_new = object_api.collection_post()
 
-        return {'data': data, 'printer_new': printer_new}
+        return {'data': data, 'object_new': object_new}
+
+    def modify_an_object(self, obj, field, new_value, type_object):
+        obj[field] = new_value
+        request_put = self.get_dummy_json_put_request(obj, type_object.schema_detail)
+        request_put.matchdict['oid'] = obj['_id']
+        obj_api = type_object(request_put)
+        obj_updated = obj_api.put()
+
+        return {'obj_api': obj_api, 'obj_updated': obj_updated}
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
@@ -468,40 +469,29 @@ class BasicTests(GecosTestCase):
         self.assertIsInstance(printers['pagesize'], int)
         self.assertEqual(printers['page'], 1)
 
-        printer_new = self.create_printer()
-        self.assertEqualsObjects(printer_new['data'], printer_new['printer_new'])
-        self.assertNoErrorJobs()
+        data = {'connection': 'network',
+                'manufacturer': 'Calcomp',
+                'model': 'Artisan 1023 penplotter',
+                'name': 'Printer tests',
+                'oppolicy': 'default',
+                'printtype': 'laser',
+                'source': 'gecos',
+                'type': 'printer',
+                'uri': 'http://test.example.com'}
 
-        printer = printer_new['printer_new']
-        printer['description'] = u"Test"
-        request_put = self.get_dummy_json_put_request(printer, PrinterResource.schema_detail)
-        request_put.matchdict['oid'] = printer['_id']
-        printer_api = PrinterResource(request_put)
-        printer_updated = printer_api.put()
-        self.assertEqualsObjects(printer, printer_updated)
+        printer_new = self.create_an_object(data, PrinterResource)
+        self.assertEqualsObjects(printer_new['data'], printer_new['object_new'])
+        self.assertNoErrorJobs()
+        printer_updated = self.modify_an_object(obj=printer_new['object_new'], field='description',
+                                                new_value=u'Test', type_object=PrinterResource)
+        self.assertEqualsObjects(printer_new['object_new'], printer_updated['obj_updated'])
 
         db = self.get_db()
 
-        printer_api.delete()
+        printer_updated['obj_api'].delete()
         printer_deleted = db.nodes.find_one({'name': 'Printer tests'})
         self.assertIsNone(printer_deleted)
         self.assertNoErrorJobs()
-
-    def create_folder(self):
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data = {'name': 'Folder',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'type': 'storage',
-                'source': 'gecos',
-                'uri': 'http://test.folder.com'}
-
-        request_post = self.get_dummy_json_post_request(data, StorageResource.schema_detail)
-        folder_api = StorageResource(request_post)
-        folder_new = folder_api.collection_post()
-
-        return {'data': data, 'folder_new': folder_new}
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
@@ -519,42 +509,24 @@ class BasicTests(GecosTestCase):
         self.assertIsInstance(folders['pagesize'], int)
         self.assertEqual(folders['page'], 1)
 
-        folder_new = self.create_folder()
-        self.assertEqualsObjects(folder_new['data'], folder_new['folder_new'])
-        self.assertNoErrorJobs()
+        data = {'name': 'Folder',
+                'type': 'storage',
+                'source': 'gecos',
+                'uri': 'http://test.folder.com'}
 
-        folder = folder_new['folder_new']
-        folder['uri'] = u"Test"
-        request_put = self.get_dummy_json_put_request(folder, StorageResource.schema_detail)
-        request_put.matchdict['oid'] = folder['_id']
-        folder_api = StorageResource(request_put)
-        folder_updated = folder_api.put()
-        self.assertEqualsObjects(folder, folder_updated)
+        folder_new = self.create_an_object(data, StorageResource)
+        self.assertEqualsObjects(folder_new['data'], folder_new['object_new'])
+        self.assertNoErrorJobs()
+        folder_updated = self.modify_an_object(obj=folder_new['object_new'], field='uri', new_value=u'Test',
+                                               type_object=StorageResource)
+        self.assertEqualsObjects(folder_new['object_new'], folder_updated['obj_updated'])
 
         db = self.get_db()
 
-        folder_api.delete()
+        folder_updated['obj_api'].delete()
         folder_deleted = db.nodes.find_one({'name': 'Folder tests'})
         self.assertIsNone(folder_deleted)
         self.assertNoErrorJobs()
-
-    def create_repository(self):
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data = {'name': 'Repo',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'repo_key': 'CJAER23',
-                'key_server': 'keyring.repository.com',
-                'type': 'repository',
-                'source': 'gecos',
-                'uri': 'http://test.repository.com'}
-
-        request_post = self.get_dummy_json_post_request(data, RepositoryResource.schema_detail)
-        repository_api = RepositoryResource(request_post)
-        repository_new = repository_api.collection_post()
-
-        return {'data': data, 'repository_new': repository_new}
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
@@ -572,41 +544,26 @@ class BasicTests(GecosTestCase):
         self.assertIsInstance(repositories['pagesize'], int)
         self.assertEqual(repositories['page'], 1)
 
-        repository_new = self.create_repository()
-        self.assertEqualsObjects(repository_new['data'], repository_new['repository_new'])
-        self.assertNoErrorJobs()
+        data = {'name': 'Repo',
+                'repo_key': 'CJAER23',
+                'key_server': 'keyring.repository.com',
+                'type': 'repository',
+                'source': 'gecos',
+                'uri': 'http://test.repository.com'}
 
-        repository = repository_new['repository_new']
-        repository['uri'] = u"Test"
-        request_put = self.get_dummy_json_put_request(repository, RepositoryResource.schema_detail)
-        request_put.matchdict['oid'] = repository['_id']
-        repository_api = RepositoryResource(request_put)
-        repository_updated = repository_api.put()
-        self.assertEqualsObjects(repository, repository_updated)
+        repository_new = self.create_an_object(data, RepositoryResource)
+        self.assertEqualsObjects(repository_new['data'], repository_new['object_new'])
+        self.assertNoErrorJobs()
+        repository_update = self.modify_an_object(obj=repository_new['object_new'], field='uri', new_value=u'Test',
+                                                  type_object=RepositoryResource)
+        self.assertEqualsObjects(repository_new['object_new'], repository_update['obj_updated'])
 
         db = self.get_db()
 
-        repository_api.delete()
+        repository_update['obj_api'].delete()
         repository_deleted = db.nodes.find_one({'name': 'Repo'})
         self.assertIsNone(repository_deleted)
         self.assertNoErrorJobs()
-
-    def create_user(self):
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data = {'name': 'User',
-                'first_name': 'test name',
-                'email': 'email@gecos.com',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'type': 'user',
-                'source': 'gecos'}
-
-        request_post = self.get_dummy_json_post_request(data, UserResource.schema_detail)
-        user_api = UserResource(request_post)
-        user_new = user_api.collection_post()
-
-        return {'data': data, 'user_new': user_new}
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
@@ -624,39 +581,25 @@ class BasicTests(GecosTestCase):
         self.assertIsInstance(users['pagesize'], int)
         self.assertEqual(users['page'], 1)
 
-        user_new = self.create_user()
-        self.assertEqualsObjects(user_new['data'], user_new['user_new'])
-        self.assertNoErrorJobs()
+        data = {'name': 'User',
+                'first_name': 'test name',
+                'email': 'email@gecos.com',
+                'type': 'user',
+                'source': 'gecos'}
 
-        user = user_new['user_new']
-        user['first_name'] = u"Another name"
-        request_put = self.get_dummy_json_put_request(user, UserResource.schema_detail)
-        request_put.matchdict['oid'] = user['_id']
-        user_api = UserResource(request_put)
-        user_updated = user_api.put()
-        self.assertEqualsObjects(user, user_updated)
+        user_new = self.create_an_object(data, UserResource)
+        self.assertEqualsObjects(user_new['data'], user_new['object_new'])
+        self.assertNoErrorJobs()
+        user_updated = self.modify_an_object(obj=user_new['object_new'], field='first_name',
+                                             new_value=u'Another name', type_object=UserResource)
+        self.assertEqualsObjects(user_new['object_new'], user_updated['obj_updated'])
 
         db = self.get_db()
 
-        user_api.delete()
+        user_updated['obj_api'].delete()
         user_deleted = db.nodes.find_one({'name': 'User'})
         self.assertIsNone(user_deleted)
         self.assertNoErrorJobs()
-
-    def create_group(self):
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data = {'name': 'Group',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'type': 'group',
-                'source': 'gecos'}
-
-        request_post = self.get_dummy_json_post_request(data, GroupResource.schema_detail)
-        group_api = GroupResource(request_post)
-        group_new = group_api.collection_post()
-
-        return {'data': data, 'group_new': group_new}
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
@@ -674,15 +617,18 @@ class BasicTests(GecosTestCase):
         self.assertIsInstance(groups['pagesize'], int)
         self.assertEqual(groups['page'], 1)
 
-        group_new = self.create_group()
-        self.assertEqualsObjects(group_new['data'], group_new['group_new'])
+        data = {'name': 'Group',
+                'type': 'group',
+                'source': 'gecos'}
+
+        group_new = self.create_an_object(data, GroupResource)
+        self.assertEqualsObjects(group_new['data'], group_new['object_new'])
         self.assertNoErrorJobs()
 
-        group_new = group_new['group_new']
+        group_new = group_new['object_new']
         request_put = self.get_dummy_json_put_request(group_new, GroupResource.schema_detail)
         request_put.matchdict['oid'] = group_new['_id']
         group_api = GroupResource(request_put)
-        group_updated = group_api.put()
 
         db = self.get_db()
 
@@ -690,21 +636,6 @@ class BasicTests(GecosTestCase):
         group_deleted = db.nodes.find_one({'name': 'group'})
         self.assertIsNone(group_deleted)
         self.assertNoErrorJobs()
-
-    def create_computer(self):
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data = {'name': 'computer',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
-                'type': 'computer',
-                'source': 'gecos'}
-
-        request_post = self.get_dummy_json_post_request(data, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request_post)
-        computer_new = computer_api.collection_post()
-
-        return {'data': data, 'computer_new': computer_new}
 
     @mock.patch('gecoscc.utils.isinstance')
     @mock.patch('chef.Node')
@@ -736,18 +667,15 @@ class BasicTests(GecosTestCase):
 
         computer = ComputerResource(request)
         computer = computer.collection_get()
-        computer['nodes'][0]['family'] = 'laptop'
-        request_put = self.get_dummy_json_put_request(computer['nodes'][0], ComputerResource.schema_detail)
-        request_put.matchdict['oid'] = computer['nodes'][0]['_id']
-        computer_api = ComputerResource(request_put)
-        computer_updated = computer_api.put()
-        self.assertEqualsObjects(computer['nodes'][0], computer_updated)
-        self.assertNoErrorJobs()
+
+        computer_updated = self.modify_an_object(obj=computer['nodes'][0], field='family',
+                                                 new_value=u'laptop', type_object=ComputerResource)
+        self.assertEqualsObjects(computer['nodes'][0], computer_updated['obj_updated'])
 
         db = self.get_db()
 
         computer_response.delete()
-        computer_api.delete()
+        computer_updated['obj_api'].delete()
         computer_deleted = db.nodes.find_one({'name': 'testing'})
         self.assertIsNone(computer_deleted)
-        #self.assertNoErrorJobs()
+#          self.assertNoErrorJobs()
