@@ -65,6 +65,17 @@ def isinstance_mock(instance, klass):
 
 NODES = {}
 
+class ClientMock(object):
+    '''
+    ClientMock emulates Client <chef.node.Client>
+    With this class client are emulated
+    '''
+    def __init__(self, node_id, api):
+        super(ClientMock, self).__init__()
+
+    def delete(self):
+        pass
+
 
 class NodeAttributesMock(object):
     '''
@@ -131,7 +142,7 @@ class NodeAttributesMock(object):
 class NodeMock(object):
     '''
     NodeMock emulates NodeAttributes <chef.node.Node>
-    With this class and the previous class the chef client and chef server are emulated
+    With this class and the two previous classes the chef client and chef server are emulated
     '''
     def __init__(self, node_id, api):
         super(NodeMock, self).__init__()
@@ -154,8 +165,11 @@ class NodeMock(object):
     def save(self):
         NODES[self.name] = self.attributes.data
 
+    def delete(self):
+        del NODES[self.name]
 
-class GecosTestCase(unittest.TestCase):
+
+class BaseGecosTestCase(unittest.TestCase):
 
     def setUp(self):
         '''
@@ -248,6 +262,15 @@ class GecosTestCase(unittest.TestCase):
         request.path = '/api/%ss/%s/' % (data['type'], data['_id'])
         return request
 
+    def get_dummy_delete_request(self, data, schema=None):
+        '''
+        Useful method, returns a typical put request
+        '''
+        request = self.get_dummy_request()
+        request.method = 'DELETE'
+        request.path = '/api/%ss/%s/' % (data['type'], data['_id'])
+        return request
+
     def assertNoErrorJobs(self):
         '''
         Useful method, check there are not any job with error (or even success)
@@ -317,6 +340,58 @@ class GecosTestCase(unittest.TestCase):
         for field_name, field_value in data.items():
             self.assertEqual(field_value, data_new[field_name])
 
+    def assertDeleted(self, field_name, field_value):
+        '''
+        Useful method, check if a element has been deleted
+        '''
+        printer_deleted = self.get_db().nodes.find_one({field_name: field_value})
+        self.assertIsNone(printer_deleted)
+
+    def assertIsGeneralInstance(self, data):
+        '''
+        Useful method. check if data is a paginated collcetion
+        '''
+        self.assertIsInstance(data['nodes'], list)
+        self.assertIsInstance(data['pages'], int)
+        self.assertIsInstance(data['pagesize'], int)
+
+    def create_node(self, data, api_class, ou_name='OU 1'):
+        '''
+        Useful method, create a node
+        '''
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': ou_name})
+
+        data.update({'path': '%s,%s' % (ou_1['path'], ou_1['_id'])})
+
+        request_post = self.get_dummy_json_post_request(data, api_class.schema_detail)
+        object_api = api_class(request_post)
+
+        return (data, object_api.collection_post())
+
+    def update_node(self, obj, field_name, field_value, api_class):
+        '''
+        Useful method, update a node
+        '''
+        obj[field_name] = field_value
+        request_put = self.get_dummy_json_put_request(obj, api_class.schema_detail)
+        request_put.matchdict['oid'] = obj['_id']
+        api = api_class(request_put)
+
+        return api.put()
+
+    def delete_node(self, obj, api_class):
+        '''
+        Useful method, delete a node
+        '''
+        request_delete = self.get_dummy_delete_request(obj, api_class.schema_detail)
+        request_delete.matchdict['oid'] = obj['_id']
+        api = api_class(request_delete)
+        return api.delete()
+
+
+class BasicTests(BaseGecosTestCase):
+
     def test_1_home(self):
         '''
         Test 1: Check the home works
@@ -331,49 +406,205 @@ class GecosTestCase(unittest.TestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_2_printers(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 2: Check the printer creation work
+        Test 2: Creation, modify and delete a printer
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         printer_api = PrinterResource(request)
-        printers = printer_api.collection_get()
-        self.assertIsInstance(printers['nodes'], list)
-        self.assertIsInstance(printers['pages'], int)
-        self.assertIsInstance(printers['pagesize'], int)
-        self.assertEqual(printers['page'], 1)
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        self.assertIsGeneralInstance(data=printer_api.collection_get())
 
         data = {'connection': 'network',
                 'manufacturer': 'Calcomp',
                 'model': 'Artisan 1023 penplotter',
                 'name': 'Printer tests',
                 'oppolicy': 'default',
-                'path': '%s,%s' % (ou_1['path'], ou_1['_id']),
                 'printtype': 'laser',
                 'source': 'gecos',
                 'type': 'printer',
                 'uri': 'http://test.example.com'}
 
-        request_post = self.get_dummy_json_post_request(data, PrinterResource.schema_detail)
-        printer_api = PrinterResource(request_post)
-        printer_new = printer_api.collection_post()
-        self.assertEqualsObjects(data, printer_new)
+        data, new_printer = self.create_node(data, PrinterResource)
+        self.assertEqualsObjects(data, new_printer)
+
+        printer_updated = self.update_node(obj=new_printer, field_name='description',
+                                           field_value=u'Test', api_class=PrinterResource)
+        self.assertEqualsObjects(new_printer, printer_updated)
+
+        self.delete_node(printer_updated, PrinterResource)
+        self.assertDeleted(field_name='name', field_value='Printer tests')
+
         self.assertNoErrorJobs()
 
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test__3_shared_folder(self, get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 3: Creation, modify and delete a shared folder
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        request = self.get_dummy_request()
+        folder_api = StorageResource(request)
+        self.assertIsGeneralInstance(data=folder_api.collection_get())
+
+        data = {'name': 'Folder',
+                'type': 'storage',
+                'source': 'gecos',
+                'uri': 'http://test.folder.com'}
+
+        data, new_folder = self.create_node(data, StorageResource)
+        self.assertEqualsObjects(data, new_folder)
+
+        folder_updated = self.update_node(obj=new_folder, field_name='uri', field_value=u'Test',
+                                          api_class=StorageResource)
+        self.assertEqualsObjects(new_folder, folder_updated)
+
+        self.delete_node(folder_updated, StorageResource)
+        self.assertDeleted(field_name='name', field_value='Folder tests')
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_4_repository(self, get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 4: Creation, modify and delete a repository
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        request = self.get_dummy_request()
+        repository_api = RepositoryResource(request)
+        self.assertIsGeneralInstance(data=repository_api.collection_get())
+
+        data = {'name': 'Repo',
+                'repo_key': 'CJAER23',
+                'key_server': 'keyring.repository.com',
+                'type': 'repository',
+                'source': 'gecos',
+                'uri': 'http://test.repository.com'}
+
+        data, new_repository = self.create_node(data, RepositoryResource)
+        self.assertEqualsObjects(data, new_repository)
+
+        repository_update = self.update_node(obj=new_repository, field_name='uri',
+                                             field_value=u'Test', api_class=RepositoryResource)
+        self.assertEqualsObjects(new_repository, repository_update)
+
+        self.delete_node(repository_update, RepositoryResource)
+        self.assertDeleted(field_name='name', field_value='Repo')
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_5_user(self, get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 5: Creation, modify and delete a user
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsGeneralInstance(data=user_api.collection_get())
+
+        data = {'name': 'User',
+                'first_name': 'test name',
+                'email': 'email@gecos.com',
+                'type': 'user',
+                'source': 'gecos'}
+        data, new_user = self.create_node(data, UserResource)
+        self.assertEqualsObjects(data, new_user)
+
+        user_updated = self.update_node(obj=new_user, field_name='first_name',
+                                        field_value=u'Another name', api_class=UserResource)
+        self.assertEqualsObjects(new_user, user_updated)
+
+        self.delete_node(user_updated, UserResource)
+        self.assertDeleted(field_name='first_name', field_value='Another name')
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_6_group(self, get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 6: Creation and delete a group
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        request = self.get_dummy_request()
+        group_api = GroupResource(request)
+        self.assertIsGeneralInstance(data=group_api.collection_get())
+
+        data = {'name': 'Group',
+                'type': 'group',
+                'source': 'gecos'}
+        data, new_group = self.create_node(data, GroupResource)
+        self.assertEqualsObjects(data, new_group)
+
+        self.delete_node(new_group, GroupResource)
+        self.assertDeleted(field_name='name', field_value='group')
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_7_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, TaskNodeClass, ClientClass, isinstance_method):
+        '''
+        Test 7: Creation, modify and delete a computer
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        TaskNodeClass.side_effect = NodeMock
+        ClientClass.side_effect = ClientMock
+        isinstance_method.side_effect = isinstance_mock
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+
+        request = self.get_dummy_request()
+        request.POST = data
+        computer_response = RegisterComputerResource(request)
+
+        response = computer_response.post()
+        self.assertEqual(response['ok'], True)
+        self.assertNoErrorJobs()
+
+        computer_api = ComputerResource(request)
+        computer = computer_api.collection_get()
+
+        computer_updated = self.update_node(obj=computer['nodes'][0], field_name='family',
+                                            field_value=u'laptop', api_class=ComputerResource)
+        self.assertEqualsObjects(computer['nodes'][0], computer_updated)
+
+        self.delete_node(computer_updated, ComputerResource)
+        self.assertDeleted(field_name='name', field_value='testing')
+
+        self.assertNoErrorJobs()
+
+
+class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.isinstance')
     @mock.patch('chef.Node')
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_3_priority_ous(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method):
+    def test_1_priority_ous(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method):
         '''
-        Test 3:
-        1. Check the registration work station work
+        Test 1:
+        1. Check the registration work station works
         2. Check the policies pripority works (with organisational unit)
         '''
-
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         NodeClass.side_effect = NodeMock
@@ -427,255 +658,3 @@ class GecosTestCase(unittest.TestCase):
         package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
         self.assertEquals(package_list, ['libreoffice'])
         self.assertNoErrorJobs()
-
-
-class BasicTests(GecosTestCase):
-
-    def create_an_object(self, data, type_object):
-
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
-        data.update({'path': '%s,%s' % (ou_1['path'], ou_1['_id'])})
-
-        request_post = self.get_dummy_json_post_request(data, type_object.schema_detail)
-        object_api = type_object(request_post)
-        object_new = object_api.collection_post()
-
-        return {'data': data, 'object_new': object_new}
-
-    def modify_an_object(self, obj, field, new_value, type_object):
-        obj[field] = new_value
-        request_put = self.get_dummy_json_put_request(obj, type_object.schema_detail)
-        request_put.matchdict['oid'] = obj['_id']
-        obj_api = type_object(request_put)
-        obj_updated = obj_api.put()
-
-        return {'obj_api': obj_api, 'obj_updated': obj_updated}
-
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_1_printers(self, get_cookbook_method, get_cookbook_method_tasks):
-        '''
-        Test 1: Creation, modify and delete a printer
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        printer_api = PrinterResource(request)
-        printers = printer_api.collection_get()
-        self.assertIsInstance(printers['nodes'], list)
-        self.assertIsInstance(printers['pages'], int)
-        self.assertIsInstance(printers['pagesize'], int)
-        self.assertEqual(printers['page'], 1)
-
-        data = {'connection': 'network',
-                'manufacturer': 'Calcomp',
-                'model': 'Artisan 1023 penplotter',
-                'name': 'Printer tests',
-                'oppolicy': 'default',
-                'printtype': 'laser',
-                'source': 'gecos',
-                'type': 'printer',
-                'uri': 'http://test.example.com'}
-
-        printer_new = self.create_an_object(data, PrinterResource)
-        self.assertEqualsObjects(printer_new['data'], printer_new['object_new'])
-        self.assertNoErrorJobs()
-        printer_updated = self.modify_an_object(obj=printer_new['object_new'], field='description',
-                                                new_value=u'Test', type_object=PrinterResource)
-        self.assertEqualsObjects(printer_new['object_new'], printer_updated['obj_updated'])
-
-        db = self.get_db()
-
-        printer_updated['obj_api'].delete()
-        printer_deleted = db.nodes.find_one({'name': 'Printer tests'})
-        self.assertIsNone(printer_deleted)
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_2_shared_folder(self, get_cookbook_method, get_cookbook_method_tasks):
-        '''
-        Test 2: Creation, modify and delete a shared folder
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        folder_api = StorageResource(request)
-        folders = folder_api.collection_get()
-        self.assertIsInstance(folders['nodes'], list)
-        self.assertIsInstance(folders['pages'], int)
-        self.assertIsInstance(folders['pagesize'], int)
-        self.assertEqual(folders['page'], 1)
-
-        data = {'name': 'Folder',
-                'type': 'storage',
-                'source': 'gecos',
-                'uri': 'http://test.folder.com'}
-
-        folder_new = self.create_an_object(data, StorageResource)
-        self.assertEqualsObjects(folder_new['data'], folder_new['object_new'])
-        self.assertNoErrorJobs()
-        folder_updated = self.modify_an_object(obj=folder_new['object_new'], field='uri', new_value=u'Test',
-                                               type_object=StorageResource)
-        self.assertEqualsObjects(folder_new['object_new'], folder_updated['obj_updated'])
-
-        db = self.get_db()
-
-        folder_updated['obj_api'].delete()
-        folder_deleted = db.nodes.find_one({'name': 'Folder tests'})
-        self.assertIsNone(folder_deleted)
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_3_repository(self, get_cookbook_method, get_cookbook_method_tasks):
-        '''
-        Test 3: Creation, modify and delete a repository
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        repository_api = RepositoryResource(request)
-        repositories = repository_api.collection_get()
-        self.assertIsInstance(repositories['nodes'], list)
-        self.assertIsInstance(repositories['pages'], int)
-        self.assertIsInstance(repositories['pagesize'], int)
-        self.assertEqual(repositories['page'], 1)
-
-        data = {'name': 'Repo',
-                'repo_key': 'CJAER23',
-                'key_server': 'keyring.repository.com',
-                'type': 'repository',
-                'source': 'gecos',
-                'uri': 'http://test.repository.com'}
-
-        repository_new = self.create_an_object(data, RepositoryResource)
-        self.assertEqualsObjects(repository_new['data'], repository_new['object_new'])
-        self.assertNoErrorJobs()
-        repository_update = self.modify_an_object(obj=repository_new['object_new'], field='uri', new_value=u'Test',
-                                                  type_object=RepositoryResource)
-        self.assertEqualsObjects(repository_new['object_new'], repository_update['obj_updated'])
-
-        db = self.get_db()
-
-        repository_update['obj_api'].delete()
-        repository_deleted = db.nodes.find_one({'name': 'Repo'})
-        self.assertIsNone(repository_deleted)
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_4_user(self, get_cookbook_method, get_cookbook_method_tasks):
-        '''
-        Test 4: Creation, modify and delete a user
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        users = user_api.collection_get()
-        self.assertIsInstance(users['nodes'], list)
-        self.assertIsInstance(users['pages'], int)
-        self.assertIsInstance(users['pagesize'], int)
-        self.assertEqual(users['page'], 1)
-
-        data = {'name': 'User',
-                'first_name': 'test name',
-                'email': 'email@gecos.com',
-                'type': 'user',
-                'source': 'gecos'}
-
-        user_new = self.create_an_object(data, UserResource)
-        self.assertEqualsObjects(user_new['data'], user_new['object_new'])
-        self.assertNoErrorJobs()
-        user_updated = self.modify_an_object(obj=user_new['object_new'], field='first_name',
-                                             new_value=u'Another name', type_object=UserResource)
-        self.assertEqualsObjects(user_new['object_new'], user_updated['obj_updated'])
-
-        db = self.get_db()
-
-        user_updated['obj_api'].delete()
-        user_deleted = db.nodes.find_one({'name': 'User'})
-        self.assertIsNone(user_deleted)
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_5_group(self, get_cookbook_method, get_cookbook_method_tasks):
-        '''
-        Test 5: Creation and delete a group
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        group_api = GroupResource(request)
-        groups = group_api.collection_get()
-        self.assertIsInstance(groups['nodes'], list)
-        self.assertIsInstance(groups['pages'], int)
-        self.assertIsInstance(groups['pagesize'], int)
-        self.assertEqual(groups['page'], 1)
-
-        data = {'name': 'Group',
-                'type': 'group',
-                'source': 'gecos'}
-
-        group_new = self.create_an_object(data, GroupResource)
-        self.assertEqualsObjects(group_new['data'], group_new['object_new'])
-        self.assertNoErrorJobs()
-
-        group_new = group_new['object_new']
-        request_put = self.get_dummy_json_put_request(group_new, GroupResource.schema_detail)
-        request_put.matchdict['oid'] = group_new['_id']
-        group_api = GroupResource(request_put)
-
-        db = self.get_db()
-
-        group_api.delete()
-        group_deleted = db.nodes.find_one({'name': 'group'})
-        self.assertIsNone(group_deleted)
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.utils.isinstance')
-    @mock.patch('chef.Node')
-    @mock.patch('gecoscc.utils.ChefNode')
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_6_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method):
-        '''
-        Test 6: Creation, modify and delete a computer
-        '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-
-        request = self.get_dummy_request()
-        request.POST = data
-        computer_response = RegisterComputerResource(request)
-
-        response = computer_response.post()
-        self.assertEqual(response['ok'], True)
-        self.assertNoErrorJobs()
-
-        computer = ComputerResource(request)
-        computer = computer.collection_get()
-
-        computer_updated = self.modify_an_object(obj=computer['nodes'][0], field='family',
-                                                 new_value=u'laptop', type_object=ComputerResource)
-        self.assertEqualsObjects(computer['nodes'][0], computer_updated['obj_updated'])
-
-        db = self.get_db()
-
-        computer_response.delete()
-        computer_updated['obj_api'].delete()
-        computer_deleted = db.nodes.find_one({'name': 'testing'})
-        self.assertIsNone(computer_deleted)
-#          self.assertNoErrorJobs()
