@@ -65,6 +65,7 @@ def isinstance_mock(instance, klass):
 
 NODES = {}
 
+
 class ClientMock(object):
     '''
     ClientMock emulates Client <chef.node.Client>
@@ -362,7 +363,7 @@ class BaseGecosTestCase(unittest.TestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': ou_name})
 
-        data.update({'path': '%s,%s' % (ou_1['path'], ou_1['_id'])})
+        data['path'] = '%s,%s' % (ou_1['path'], ou_1['_id'])
 
         request_post = self.get_dummy_json_post_request(data, api_class.schema_detail)
         object_api = api_class(request_post)
@@ -406,7 +407,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_2_printers(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 2: Creation, modify and delete a printer
+        Test 2: Create, update and delete a printer
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -438,9 +439,9 @@ class BasicTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test__3_shared_folder(self, get_cookbook_method, get_cookbook_method_tasks):
+    def test_3_shared_folder(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 3: Creation, modify and delete a shared folder
+        Test 3: Create, update and delete a shared folder
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -469,7 +470,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_4_repository(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 4: Creation, modify and delete a repository
+        Test 4: Create, update and delete a repository
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -500,7 +501,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_5_user(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 5: Creation, modify and delete a user
+        Test 5: Create, update and delete a user
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -557,7 +558,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_7_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, TaskNodeClass, ClientClass, isinstance_method):
         '''
-        Test 7: Creation, modify and delete a computer
+        Test 7: Create, update and delete a computer
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -599,7 +600,7 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_1_priority_ous(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method):
+    def test_1_priority_ous_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method):
         '''
         Test 1:
         1. Check the registration work station works
