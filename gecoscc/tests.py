@@ -15,7 +15,7 @@ import sys
 
 import mock
 
-from copy import copy
+from copy import copy, deepcopy
 
 from bson import ObjectId
 from celery import current_app
@@ -26,6 +26,7 @@ from pymongo import Connection
 from pyramid import testing
 
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
+from gecoscc.api.chef_status import ChefStatusResource
 from gecoscc.api.computers import ComputerResource
 from gecoscc.api.groups import GroupResource
 from gecoscc.api.printers import PrinterResource
@@ -36,12 +37,21 @@ from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
-from gecoscc.permissions import LoggedFactory
+from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
+from gecoscc.views.admins import admin_add
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
 CHEF_URL = 'https://CHEF_URL/'
+
+
+def create_chef_admin_user_mock(api, settings, username, password=None):
+    pass
+
+
+def gettext_mock(string, *args, **kwargs):
+    return string
 
 
 def get_cookbook_mock(api, cookbook_name):
@@ -67,10 +77,12 @@ NODES = {}
 
 
 class ClientMock(object):
+
     '''
     ClientMock emulates Client <chef.node.Client>
     With this class client are emulated
     '''
+
     def __init__(self, node_id, api):
         super(ClientMock, self).__init__()
 
@@ -79,6 +91,7 @@ class ClientMock(object):
 
 
 class NodeAttributesMock(object):
+
     '''
     NodeAttributesMock emulates NodeAttributes <chef.node.NodeAttributes>
     '''
@@ -126,7 +139,7 @@ class NodeAttributesMock(object):
         key_splitted = key.split('.')
         for k in key_splitted[:-1]:
             if k not in data:
-                raise KeyError(key)
+                data[k] = {}
             data = data[k]
         data[key_splitted[-1]] = value
 
@@ -139,12 +152,17 @@ class NodeAttributesMock(object):
     def __delitem__(self, key):
         return self.data.__delitem__(key)
 
+    def __nonzero__(self):
+        return bool(self.data)
+
 
 class NodeMock(object):
+
     '''
     NodeMock emulates NodeAttributes <chef.node.Node>
     With this class and the two previous classes the chef client and chef server are emulated
     '''
+
     def __init__(self, node_id, api):
         super(NodeMock, self).__init__()
         self.name = node_id
@@ -154,10 +172,12 @@ class NodeMock(object):
 
         if node_id in NODES:
             self.attributes = NodeAttributesMock(copy(NODES[node_id]), self)
+            self.normal = self.attributes
         else:
             node_attributes_json = open('gecoscc/test_resources/node_attributes.json').read().replace(
                 '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', node_id)
             self.attributes = NodeAttributesMock(json.loads(node_attributes_json), self)
+            self.normal = self.attributes
             NODES[self.name] = copy(self.attributes.data)
 
     def get(self, key, default=None):
@@ -256,11 +276,19 @@ class BaseGecosTestCase(unittest.TestCase):
         if schema:
             if isinstance(data['_id'], basestring):
                 data['_id'] = ObjectId(data['_id'])
-            request.validated = schema().serialize(data)
+            serialize_data = schema().serialize(data)
+            request.validated = deepcopy(serialize_data)
+            request.matchdict['oid'] = request.validated['_id']
             request.validated['_id'] = ObjectId(request.validated['_id'])
-        data['_id'] = unicode(data['_id'])
-        request.json = json.dumps(data)
-        request.path = '/api/%ss/%s/' % (data['type'], data['_id'])
+
+            node_type = data.get('type', '')
+            data_validated_hook = getattr(self, 'data_validated_hook_%s' % node_type, None)
+
+            if data_validated_hook:
+                data_validated_hook(request.validated)
+
+        request.json = json.dumps(serialize_data)
+        request.path = '/api/%ss/%s/' % (serialize_data['type'], serialize_data['_id'])
         return request
 
     def get_dummy_delete_request(self, data, schema=None):
@@ -268,9 +296,17 @@ class BaseGecosTestCase(unittest.TestCase):
         Useful method, returns a typical put request
         '''
         request = self.get_dummy_request()
+        if schema:
+            request.matchdict['oid'] = data['_id']
         request.method = 'DELETE'
         request.path = '/api/%ss/%s/' % (data['type'], data['_id'])
         return request
+
+    def data_validated_hook_user(self, data):
+        for i, comp in enumerate(data.get('computers', [])):
+            comp_id = data['computers'][i]
+            if isinstance(comp_id, basestring):
+                data['computers'][i] = ObjectId(comp_id)
 
     def assertNoErrorJobs(self):
         '''
@@ -333,13 +369,17 @@ class BaseGecosTestCase(unittest.TestCase):
         command.command()
         sys.argv = argv_bc
 
-    def assertEqualsObjects(self, data, data_new):
+    def assertEqualsObjects(self, data, new_data, schema_data=None, schema_new_data=None):
         '''
         Useful method, check the second dictionary has the same values than
         the first. The second dictionary could have other attrs
         '''
+        if schema_data:
+            data = schema_data().serialize(data)
+        if schema_new_data:
+            new_data = schema_new_data().serialize(new_data)
         for field_name, field_value in data.items():
-            self.assertEqual(field_value, data_new[field_name])
+            self.assertEqual(field_value, new_data[field_name])
 
     def assertDeleted(self, field_name, field_value):
         '''
@@ -376,7 +416,6 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         obj[field_name] = field_value
         request_put = self.get_dummy_json_put_request(obj, api_class.schema_detail)
-        request_put.matchdict['oid'] = obj['_id']
         api = api_class(request_put)
 
         return api.put()
@@ -386,7 +425,6 @@ class BaseGecosTestCase(unittest.TestCase):
         Useful method, delete a node
         '''
         request_delete = self.get_dummy_delete_request(obj, api_class.schema_detail)
-        request_delete.matchdict['oid'] = obj['_id']
         api = api_class(request_delete)
         return api.delete()
 
@@ -430,7 +468,7 @@ class BasicTests(BaseGecosTestCase):
 
         printer_updated = self.update_node(obj=new_printer, field_name='description',
                                            field_value=u'Test', api_class=PrinterResource)
-        self.assertEqualsObjects(new_printer, printer_updated)
+        self.assertEqualsObjects(new_printer, printer_updated, PrinterResource.schema_detail)
 
         self.delete_node(printer_updated, PrinterResource)
         self.assertDeleted(field_name='name', field_value='Printer tests')
@@ -459,7 +497,7 @@ class BasicTests(BaseGecosTestCase):
 
         folder_updated = self.update_node(obj=new_folder, field_name='uri', field_value=u'Test',
                                           api_class=StorageResource)
-        self.assertEqualsObjects(new_folder, folder_updated)
+        self.assertEqualsObjects(new_folder, folder_updated, StorageResource.schema_detail)
 
         self.delete_node(folder_updated, StorageResource)
         self.assertDeleted(field_name='name', field_value='Folder tests')
@@ -490,7 +528,7 @@ class BasicTests(BaseGecosTestCase):
 
         repository_update = self.update_node(obj=new_repository, field_name='uri',
                                              field_value=u'Test', api_class=RepositoryResource)
-        self.assertEqualsObjects(new_repository, repository_update)
+        self.assertEqualsObjects(new_repository, repository_update, RepositoryResource.schema_detail)
 
         self.delete_node(repository_update, RepositoryResource)
         self.assertDeleted(field_name='name', field_value='Repo')
@@ -501,7 +539,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_5_user(self, get_cookbook_method, get_cookbook_method_tasks):
         '''
-        Test 5: Create, update and delete a user
+        Test 5: Create, update and delete an user
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -519,7 +557,7 @@ class BasicTests(BaseGecosTestCase):
 
         user_updated = self.update_node(obj=new_user, field_name='first_name',
                                         field_value=u'Another name', api_class=UserResource)
-        self.assertEqualsObjects(new_user, user_updated)
+        self.assertEqualsObjects(new_user, user_updated, UserResource.schema_detail)
 
         self.delete_node(user_updated, UserResource)
         self.assertDeleted(field_name='first_name', field_value='Another name')
@@ -586,7 +624,7 @@ class BasicTests(BaseGecosTestCase):
 
         computer_updated = self.update_node(obj=computer['nodes'][0], field_name='family',
                                             field_value=u'laptop', api_class=ComputerResource)
-        self.assertEqualsObjects(computer['nodes'][0], computer_updated)
+        self.assertEqualsObjects(computer['nodes'][0], computer_updated, ComputerResource.schema_detail)
 
         self.delete_node(computer_updated, ComputerResource)
         self.assertDeleted(field_name='name', field_value='testing')
@@ -595,6 +633,7 @@ class BasicTests(BaseGecosTestCase):
 
 
 class AdvancedTests(BaseGecosTestCase):
+
     @mock.patch('gecoscc.utils.isinstance')
     @mock.patch('chef.Node')
     @mock.patch('gecoscc.utils.ChefNode')
@@ -628,10 +667,9 @@ class AdvancedTests(BaseGecosTestCase):
         package_res_policy = db.policies.find_one({'slug': 'package_res'})
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
-        request_put.matchdict['oid'] = ou_1['_id']
         ou_api = OrganisationalUnitResource(request_put)
         ou_1_updated = ou_api.put()
-        self.assertEqualsObjects(ou_1, ou_1_updated)
+        self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
         self.assertEquals(package_list, ['gimp'])
@@ -640,10 +678,9 @@ class AdvancedTests(BaseGecosTestCase):
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         request_put = self.get_dummy_json_put_request(domain_1, OrganisationalUnitResource.schema_detail)
-        request_put.matchdict['oid'] = domain_1['_id']
         ou_api = OrganisationalUnitResource(request_put)
         domain_1_updated = ou_api.put()
-        self.assertEqualsObjects(domain_1, domain_1_updated)
+        self.assertEqualsObjects(domain_1, domain_1_updated, OrganisationalUnitResource.schema_detail)
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
         self.assertEquals(package_list, ['gimp'])
@@ -651,11 +688,119 @@ class AdvancedTests(BaseGecosTestCase):
 
         ou_1['policies'] = {}
         request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
-        request_put.matchdict['oid'] = ou_1['_id']
         ou_api = OrganisationalUnitResource(request_put)
         ou_1_updated = ou_api.put()
-        self.assertEqualsObjects(ou_1, ou_1_updated)
+        self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
         self.assertEquals(package_list, ['libreoffice'])
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_2_priority_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 1:
+        1. Check the registration work station works
+        2. Check the policies pripority works (with organisational unit)
+        '''
+
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsGeneralInstance(data=user_api.collection_get())
+
+        data = {'name': 'User',
+                'first_name': 'test name',
+                'email': 'email@gecos.com',
+                'type': 'user',
+                'source': 'gecos'}
+        data, new_user = self.create_node(data, UserResource)
+        self.assertEqualsObjects(data, new_user)
+
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+
+        request = self.get_dummy_request()
+        request.POST = data
+        computer_response = RegisterComputerResource(request)
+        response = computer_response.post()
+        self.assertEqual(response['ok'], True)
+
+        node = NodeMock(node_id, None)
+
+        from api.chef_status import USERS_OHAI
+        node.attributes.set_dotted(USERS_OHAI,
+                                   [{'gid': 1000,
+                                     'home': '/home/admin',
+                                     'sudo': True,
+                                     'uid': 1000,
+                                     'username': 'admin'},
+                                    {'gid': 1000,
+                                     'home': '/home/peep',
+                                     'sudo': False,
+                                     'uid': 1000,
+                                     'username': 'peep'}])
+        node.save()
+
+        data = {'node_id': node_id,
+                'gcc_username': 'peep'}
+
+        u_data = {'username': 'peep',
+                  'first_name': '',
+                  'last_name': '',
+                  'password': '123123',
+                  'repeat_password': '123123',
+                  'email': 'peep@example.com',
+                  '_submit': '_submit',
+                  '_charset_': 'UTF-8',
+                  '__formid__': 'deform'}
+
+        request = self.get_dummy_request()
+        request.POST = u_data
+        context = SuperUserFactory(request)
+        response = admin_add(context, request)
+
+        request = self.get_dummy_request()
+        request.POST = data
+        user_response = ChefStatusResource(request)
+        response_user = user_response.put()
+        self.assertEqual(response_user['ok'], True)
+
+        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
+        request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request_put)
+        ou_1_updated = ou_api.put()
+        self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
+        node = NodeMock(node_id, None)
+        launchers = node.attributes.get_dotted('gecos_ws_mgmt.users_mgmt.user_launchers_res.users.peep.launchers')
+        self.assertEquals(launchers, ['OUsLauncher'])
+
+        user_policy = db.nodes.find_one({'name': 'peep'})
+        user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
+        request_put = self.get_dummy_json_put_request(user_policy, UserResource.schema_detail)
+        user_policy_api = UserResource(request_put)
+        user_policy_updated = user_policy_api.put()
+        self.assertEqualsObjects(user_policy, user_policy_updated, UserResource.schema_detail)
+        launchers = node.attributes.get_dotted('gecos_ws_mgmt.users_mgmt.user_launchers_res.users.peep.launchers')
+        self.assertEquals(launchers, ['UserLauncher'])
         self.assertNoErrorJobs()
