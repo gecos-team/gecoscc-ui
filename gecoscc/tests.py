@@ -25,6 +25,7 @@ from paste.deploy import loadapp
 from pymongo import Connection
 from pyramid import testing
 
+from api.chef_status import USERS_OHAI
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
 from gecoscc.api.chef_status import ChefStatusResource
 from gecoscc.api.computers import ComputerResource
@@ -317,6 +318,33 @@ class BaseGecosTestCase(unittest.TestCase):
         self.assertEqual(db.jobs.find({'status': {'$ne': 'processing'}}).count(),
                          0)
 
+    def assertEqualsObjects(self, data, new_data, schema_data=None, schema_new_data=None):
+        '''
+        Useful method, check the second dictionary has the same values than
+        the first. The second dictionary could have other attrs
+        '''
+        if schema_data:
+            data = schema_data().serialize(data)
+        if schema_new_data:
+            new_data = schema_new_data().serialize(new_data)
+        for field_name, field_value in data.items():
+            self.assertEqual(field_value, new_data[field_name])
+
+    def assertDeleted(self, field_name, field_value):
+        '''
+        Useful method, check if a element has been deleted
+        '''
+        printer_deleted = self.get_db().nodes.find_one({field_name: field_value})
+        self.assertIsNone(printer_deleted)
+
+    def assertIsPaginatedCollection(self, data):
+        '''
+        Useful method. check if data is a paginated collection
+        '''
+        self.assertIsInstance(data['nodes'], list)
+        self.assertIsInstance(data['pages'], int)
+        self.assertIsInstance(data['pagesize'], int)
+
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def create_basic_structure(self, get_cookbook_method, get_cookbook_method_tasks):
@@ -369,32 +397,15 @@ class BaseGecosTestCase(unittest.TestCase):
         command.command()
         sys.argv = argv_bc
 
-    def assertEqualsObjects(self, data, new_data, schema_data=None, schema_new_data=None):
+    def create_user(self, username, api_class):
         '''
-        Useful method, check the second dictionary has the same values than
-        the first. The second dictionary could have other attrs
+        Useful method, create an User
         '''
-        if schema_data:
-            data = schema_data().serialize(data)
-        if schema_new_data:
-            new_data = schema_new_data().serialize(new_data)
-        for field_name, field_value in data.items():
-            self.assertEqual(field_value, new_data[field_name])
-
-    def assertDeleted(self, field_name, field_value):
-        '''
-        Useful method, check if a element has been deleted
-        '''
-        printer_deleted = self.get_db().nodes.find_one({field_name: field_value})
-        self.assertIsNone(printer_deleted)
-
-    def assertIsGeneralInstance(self, data):
-        '''
-        Useful method. check if data is a paginated collcetion
-        '''
-        self.assertIsInstance(data['nodes'], list)
-        self.assertIsInstance(data['pages'], int)
-        self.assertIsInstance(data['pagesize'], int)
+        data = {'name': username,
+                'email': '%s@example.com' % username,
+                'type': 'user',
+                'source': 'gecos'}
+        return self.create_node(data, api_class)
 
     def create_node(self, data, api_class, ou_name='OU 1'):
         '''
@@ -428,6 +439,56 @@ class BaseGecosTestCase(unittest.TestCase):
         api = api_class(request_delete)
         return api.delete()
 
+    def register_a_computer(self, data):
+        request = self.get_dummy_request()
+        request.POST = data
+        computer_response = RegisterComputerResource(request)
+        response = computer_response.post()
+        self.assertEqual(response['ok'], True)
+
+    def add_admin_user(self, username):
+        data = {'username': username,
+                'first_name': '',
+                'last_name': '',
+                'password': '123123',
+                'repeat_password': '123123',
+                'email': '%s@example.com' % username,
+                '_submit': '_submit',
+                '_charset_': 'UTF-8',
+                '__formid__': 'deform'}
+        request = self.get_dummy_request()
+        request.POST = data
+        context = SuperUserFactory(request)
+        admin_add(context, request)
+
+    def assign_user_to_node(self, gcc_superusername, node_id, username):
+        node = NodeMock(node_id, None)
+        users = copy(node.attributes.get_dotted(USERS_OHAI))
+        users.append({'gid': 1000,
+                      'home': '/home/%s' % username,
+                      'sudo': False,
+                      'uid': 1000,
+                      'username': username})
+        node.attributes.set_dotted(USERS_OHAI, users)
+        node.save()
+        request = self.get_dummy_request()
+        data = {'gcc_username': gcc_superusername,
+                'node_id': node.name}
+        request.POST = data
+        user_response = ChefStatusResource(request)
+        response_user = user_response.put()
+        self.assertEqual(response_user['ok'], True)
+
+    def add_policy(self, node, node_id, api_class, policy_dir=None):
+        request_put = self.get_dummy_json_put_request(node, api_class.schema_detail)
+        node_api = api_class(request_put)
+        node_update = node_api.put()
+        self.assertEqualsObjects(node, node_update, api_class.schema_detail)
+        node = NodeMock(node_id, None)
+        if policy_dir is not None:
+            launchers = node.attributes.get_dotted('gecos_ws_mgmt.' + policy_dir)
+            return launchers
+
 
 class BasicTests(BaseGecosTestCase):
 
@@ -451,7 +512,7 @@ class BasicTests(BaseGecosTestCase):
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         printer_api = PrinterResource(request)
-        self.assertIsGeneralInstance(data=printer_api.collection_get())
+        self.assertIsPaginatedCollection(data=printer_api.collection_get())
 
         data = {'connection': 'network',
                 'manufacturer': 'Calcomp',
@@ -485,7 +546,7 @@ class BasicTests(BaseGecosTestCase):
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         folder_api = StorageResource(request)
-        self.assertIsGeneralInstance(data=folder_api.collection_get())
+        self.assertIsPaginatedCollection(data=folder_api.collection_get())
 
         data = {'name': 'Folder',
                 'type': 'storage',
@@ -514,7 +575,7 @@ class BasicTests(BaseGecosTestCase):
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         repository_api = RepositoryResource(request)
-        self.assertIsGeneralInstance(data=repository_api.collection_get())
+        self.assertIsPaginatedCollection(data=repository_api.collection_get())
 
         data = {'name': 'Repo',
                 'repo_key': 'CJAER23',
@@ -545,14 +606,9 @@ class BasicTests(BaseGecosTestCase):
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         user_api = UserResource(request)
-        self.assertIsGeneralInstance(data=user_api.collection_get())
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
 
-        data = {'name': 'User',
-                'first_name': 'test name',
-                'email': 'email@gecos.com',
-                'type': 'user',
-                'source': 'gecos'}
-        data, new_user = self.create_node(data, UserResource)
+        data, new_user = self.create_user('adiaz', UserResource)
         self.assertEqualsObjects(data, new_user)
 
         user_updated = self.update_node(obj=new_user, field_name='first_name',
@@ -574,7 +630,7 @@ class BasicTests(BaseGecosTestCase):
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         request = self.get_dummy_request()
         group_api = GroupResource(request)
-        self.assertIsGeneralInstance(data=group_api.collection_get())
+        self.assertIsPaginatedCollection(data=group_api.collection_get())
 
         data = {'name': 'Group',
                 'type': 'group',
@@ -650,42 +706,28 @@ class AdvancedTests(BaseGecosTestCase):
         NodeClass.side_effect = NodeMock
         ChefNodeClass.side_effect = NodeMock
         isinstance_method.side_effect = isinstance_mock
+
+        # Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
         node_id = '36e13492663860e631f53a00afcdd92d'
         data = {'ou_id': ou_1['_id'],
                 'node_id': node_id}
+        self.register_a_computer(data)
 
-        request = self.get_dummy_request()
-        request.POST = data
-        computer_response = RegisterComputerResource(request)
-        response = computer_response.post()
-        self.assertEqual(response['ok'], True)
-        self.assertNoErrorJobs()
-
+        # Add policy in OU and check if this policy is applied in chef node
         package_res_policy = db.policies.find_one({'slug': 'package_res'})
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
-        request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request_put)
-        ou_1_updated = ou_api.put()
-        self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
-        self.assertEquals(package_list, ['gimp'])
-        self.assertNoErrorJobs()
+        launchers = self.add_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir='software_mgmt.package_res.package_list')
+        self.assertEquals(launchers, ['gimp'])
 
+        # Add policy in domain and check if this policy is applied in chef node
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
-        request_put = self.get_dummy_json_put_request(domain_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request_put)
-        domain_1_updated = ou_api.put()
-        self.assertEqualsObjects(domain_1, domain_1_updated, OrganisationalUnitResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.package_res.package_list')
-        self.assertEquals(package_list, ['gimp'])
-        self.assertNoErrorJobs()
+        launchers = self.add_policy(node=domain_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir='software_mgmt.package_res.package_list')
+        self.assertEquals(launchers, ['gimp'])
 
+        # Remove policy in OU and check if this policy is applied in chef node
         ou_1['policies'] = {}
         request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_put)
@@ -706,9 +748,9 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_2_priority_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
         '''
-        Test 1:
+        Test 2:
         1. Check the registration work station works
-        2. Check the policies pripority works (with organisational unit)
+        2. Check the policies pripority works (with organisational unit and user)
         '''
 
         get_cookbook_method.side_effect = get_cookbook_mock
@@ -722,85 +764,60 @@ class AdvancedTests(BaseGecosTestCase):
 
         request = self.get_dummy_request()
         user_api = UserResource(request)
-        self.assertIsGeneralInstance(data=user_api.collection_get())
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
 
-        data = {'name': 'User',
-                'first_name': 'test name',
-                'email': 'email@gecos.com',
-                'type': 'user',
-                'source': 'gecos'}
-        data, new_user = self.create_node(data, UserResource)
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Create a node user
+        data, new_user = self.create_user('testuser', UserResource)
         self.assertEqualsObjects(data, new_user)
 
+        # Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-
         node_id = '36e13492663860e631f53a00afcdd92d'
         data = {'ou_id': ou_1['_id'],
                 'node_id': node_id}
+        self.register_a_computer(data)
 
-        request = self.get_dummy_request()
-        request.POST = data
-        computer_response = RegisterComputerResource(request)
-        response = computer_response.post()
-        self.assertEqual(response['ok'], True)
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='testuser')
 
-        node = NodeMock(node_id, None)
-
-        from api.chef_status import USERS_OHAI
-        node.attributes.set_dotted(USERS_OHAI,
-                                   [{'gid': 1000,
-                                     'home': '/home/admin',
-                                     'sudo': True,
-                                     'uid': 1000,
-                                     'username': 'admin'},
-                                    {'gid': 1000,
-                                     'home': '/home/peep',
-                                     'sudo': False,
-                                     'uid': 1000,
-                                     'username': 'peep'}])
-        node.save()
-
-        data = {'node_id': node_id,
-                'gcc_username': 'peep'}
-
-        u_data = {'username': 'peep',
-                  'first_name': '',
-                  'last_name': '',
-                  'password': '123123',
-                  'repeat_password': '123123',
-                  'email': 'peep@example.com',
-                  '_submit': '_submit',
-                  '_charset_': 'UTF-8',
-                  '__formid__': 'deform'}
-
-        request = self.get_dummy_request()
-        request.POST = u_data
-        context = SuperUserFactory(request)
-        response = admin_add(context, request)
-
-        request = self.get_dummy_request()
-        request.POST = data
-        user_response = ChefStatusResource(request)
-        response_user = user_response.put()
-        self.assertEqual(response_user['ok'], True)
-
+        # Add policy in OU and check if this policy is applied in chef node
         user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
+        launchers = self.add_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir='users_mgmt.user_launchers_res.users.testuser.launchers')
+        self.assertEquals(launchers, ['OUsLauncher'])
+
+        # Add policy in user and check if this policy is applied in chef node
+        user_policy = db.nodes.find_one({'name': 'testuser'})
+        user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
+        launchers = self.add_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir='users_mgmt.user_launchers_res.users.testuser.launchers')
+        self.assertEquals(launchers, ['UserLauncher'])
+
+        # Remove policy in OU and check if this policy is applied in chef node
+        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': []}}
         request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_put)
         ou_1_updated = ou_api.put()
         self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
-        node = NodeMock(node_id, None)
-        launchers = node.attributes.get_dotted('gecos_ws_mgmt.users_mgmt.user_launchers_res.users.peep.launchers')
-        self.assertEquals(launchers, ['OUsLauncher'])
 
-        user_policy = db.nodes.find_one({'name': 'peep'})
-        user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
-        request_put = self.get_dummy_json_put_request(user_policy, UserResource.schema_detail)
-        user_policy_api = UserResource(request_put)
-        user_policy_updated = user_policy_api.put()
-        self.assertEqualsObjects(user_policy, user_policy_updated, UserResource.schema_detail)
-        launchers = node.attributes.get_dotted('gecos_ws_mgmt.users_mgmt.user_launchers_res.users.peep.launchers')
-        self.assertEquals(launchers, ['UserLauncher'])
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='usertest')
+
+        # Add policy in user and check if this policy is applied in chef node
+        user_policy = db.nodes.find_one({'name': 'usertest'})
+        user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncherWithoutComputer']}}
+        launchers = self.add_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir='users_mgmt.user_launchers_res.users.usertest.launchers')
+        self.assertEquals(launchers, ['UserLauncherWithoutComputer'])
+
+        # Add policy in OU and check if this policy is applied in chef node
+        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
+        launchers = self.add_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir='users_mgmt.user_launchers_res.users.usertest.launchers')
+        self.assertEquals(launchers, ['UserLauncherWithoutComputer'])
+
         self.assertNoErrorJobs()
