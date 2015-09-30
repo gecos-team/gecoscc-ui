@@ -1,0 +1,423 @@
+{
+    "logrotate": {
+        "global": {
+            "/var/log/btmp": {
+                "monthly": true, 
+                "create": "0660 root utmp", 
+                "rotate": 1, 
+                "missingok": true
+            }, 
+            "create": "", 
+            "/var/log/wtmp": {
+                "monthly": true, 
+                "create": "0664 root utmp", 
+                "rotate": 1, 
+                "missingok": true
+            }, 
+            "rotate": 4, 
+            "weekly": true
+        }
+    }, 
+    "ohai": {
+        "disabled_plugins": [], 
+        "plugin_path": "/etc/chef/ohai_plugins"
+    }, 
+    "chef_client": {
+        "bin": "/usr/bin/chef-client", 
+        "cron": {
+            "mailto": null, 
+            "use_cron_d": false, 
+            "hour": "*/4", 
+            "environment_variables": null, 
+            "path": null, 
+            "log_file": "/dev/null", 
+            "minute": "0"
+        }, 
+        "daemon_options": [], 
+        "conf_dir": "/etc/chef", 
+        "backup_path": "/var/lib/chef", 
+        "load_gems": {}, 
+        "interval": "1800", 
+        "cache_path": "/var/cache/chef", 
+        "logrotate": {
+            "rotate": 12, 
+            "frequency": "weekly"
+        }, 
+        "splay": "300", 
+        "init_style": "init", 
+        "log_dir": "/var/log/chef", 
+        "log_file": null, 
+        "config": {
+            "validation_client_name": "administrador", 
+            "chef_server_url": "%(chef_url)s", 
+            "node_name": "%(node_name)s"
+        }, 
+        "run_path": "/var/run/chef"
+    }, 
+    "apt": {
+        "cacher_interface": null, 
+        "periodic_update_min_delay": 86400, 
+        "launchpad_api_version": "1.0", 
+        "cacher_dir": "/var/cache/apt-cacher-ng", 
+        "compiletime": false, 
+        "cache_bypass": {}, 
+        "compile_time_update": false, 
+        "cacher_ssl_support": false, 
+        "unattended_upgrades": {
+            "enable": false, 
+            "remove_unused_dependencies": false, 
+            "update_package_lists": true, 
+            "dl_limit": null, 
+            "automatic_reboot": false, 
+            "package_blacklist": [], 
+            "install_on_shutdown": false, 
+            "minimal_steps": false, 
+            "mail_only_on_error": true, 
+            "mail": null, 
+            "auto_fix_interrupted_dpkg": false, 
+            "allowed_origins": [
+                "Ubuntu trusty"
+            ], 
+            "automatic_reboot_time": "now"
+        }, 
+        "key_proxy": "", 
+        "cacher_port": 3142, 
+        "cacher-client": {
+            "restrict_environment": false
+        }, 
+        "caching_server": false
+    }, 
+    "gecos_ws_mgmt": {
+        "printers_mgmt": {
+            "printers_res": {
+                "printers_list": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}
+            }
+        }, 
+        "software_mgmt": {
+            "package_res": {
+                "pkgs_to_remove": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite", 
+                    "Ubuntu 14.04.1 LTS"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}, 
+                "package_list": []
+            }, 
+            "package_profile_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite", 
+                    "Ubuntu 14.04.1 LTS"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}, 
+                "package_list": []
+            }, 
+            "app_config_res": {
+                "updated_by": {}, 
+                "firefox_config": {}, 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "java_config": {}, 
+                "loffice_config": {}, 
+                "thunderbird_config": {}, 
+                "citrix_config": {}, 
+                "job_ids": []
+            }, 
+            "software_sources_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "repo_list": [], 
+                "updated_by": {}
+            }
+        }, 
+        "misc_mgmt": {
+            "cert_res": {
+                "java_keystores": [
+                    "/etc/java/cacerts-gcj"
+                ], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "ca_root_certs": [], 
+                "updated_by": {}
+            }, 
+            "auto_updates_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "auto_updates_rules": {
+                    "date": {}, 
+                    "onstart_update": false, 
+                    "onstop_update": false, 
+                    "days": []
+                }, 
+                "job_ids": [], 
+                "updated_by": {}
+            }, 
+            "local_users_res": {
+                "users_list": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}
+            }, 
+            "local_admin_users_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "local_admin_list": [], 
+                "job_ids": [], 
+                "updated_by": {}
+            }, 
+            "chef_conf_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ]
+            }, 
+            "tz_date_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}, 
+                "server": ""
+            }, 
+            "gcc_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ]
+            }, 
+            "scripts_launch_res": {
+                "on_shutdown": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}, 
+                "on_startup": []
+            }, 
+            "local_groups_res": {
+                "groups_list": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}
+            }, 
+            "local_file_res": {
+                "copy_files": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "delete_files": [], 
+                "updated_by": {}, 
+                "job_ids": []
+            }, 
+            "power_conf_res": {
+                "updated_by": {}, 
+                "usb_autosuspend": "", 
+                "auto_shutdown": {}, 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "cpu_freq_gov": "", 
+                "job_ids": []
+            }, 
+            "remote_shutdown_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "shutdown_mode": "", 
+                "job_ids": []
+            }
+        }, 
+        "network_mgmt": {
+            "network_res": {
+                "connections": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": []
+            }, 
+            "sssd_res": {
+                "auth_type": "", 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "enabled": false, 
+                "job_ids": [], 
+                "updated_by": {}
+            }, 
+            "forticlientvpn_res": {
+                "proxyport": "", 
+                "proxyuser": "", 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "connections": [], 
+                "proxyserver": "", 
+                "proxypasswd": "", 
+                "autostart": false, 
+                "job_ids": [], 
+                "keepalive": 0
+            }, 
+            "mobile_broadband_res": {
+                "connections": [], 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": []
+            }
+        }, 
+        "users_mgmt": {
+            "folder_sharing_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_shared_folders_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_launchers_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "file_browser_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "desktop_menu_res": {
+                "support_os": [], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_alerts_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_mount_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "web_browser_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "desktop_control_res": {
+                "support_os": [], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "desktop_background_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_modify_nm_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "email_client_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "user_apps_autostart_res": {
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "screensaver_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "shutdown_options_res": {
+                "systemlock": false, 
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "systemset": false, 
+                "users": {}, 
+                "job_ids": []
+            }, 
+            "folder_sync_res": {
+                "support_os": [
+                    "GECOS V2"
+                ], 
+                "users": {}, 
+                "job_ids": []
+            }
+        }
+    }
+}
