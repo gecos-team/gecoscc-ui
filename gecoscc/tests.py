@@ -299,7 +299,6 @@ class BaseGecosTestCase(unittest.TestCase):
 
             node_type = data.get('type', '')
             data_validated_hook = getattr(self, 'data_validated_hook_%s' % node_type, None)
-
             if data_validated_hook:
                 data_validated_hook(request.validated)
 
@@ -323,6 +322,18 @@ class BaseGecosTestCase(unittest.TestCase):
             comp_id = data['computers'][i]
             if isinstance(comp_id, basestring):
                 data['computers'][i] = ObjectId(comp_id)
+
+    def data_validated_hook_computer(self, data):
+        for i, member in enumerate(data.get('memberof', [])):
+            member_id = data['memberof'][i]
+            if isinstance(member_id, basestring):
+                data['memberof'][i] = ObjectId(member_id)
+
+    def data_validated_hook_group(self, data):
+        for i, comp in enumerate(data.get('members', [])):
+            comp_id = data['members'][i]
+            if isinstance(comp_id, basestring):
+                data['members'][i] = ObjectId(comp_id)
 
     def assertNoErrorJobs(self):
         '''
@@ -478,10 +489,12 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         Useful method, update a node
         '''
-        obj[field_name] = field_value
+        if isinstance(obj[field_name], list):
+            obj[field_name].append(field_value)
+        else:
+            obj[field_name] = field_value
         request_put = self.get_dummy_json_put_request(obj, api_class.schema_detail)
         api = api_class(request_put)
-
         return api.put()
 
     def delete_node(self, obj, api_class):
@@ -928,7 +941,6 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works (with organisational unit and user)
         '''
-
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         NodeClass.side_effect = NodeMock
@@ -997,5 +1009,180 @@ class AdvancedTests(BaseGecosTestCase):
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
         self.assertEquals(ou_policy, ['UserLauncherWithoutComputer'])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_5_priority_workstation_ous_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 5:
+        1. Check the registration work station works
+        2. Check the policies priority works (with organisational unit and user)
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # Create a workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        update_computer = self.update_node(obj=computer,
+                                           field_name='memberof',
+                                           field_value=id_group,
+                                           api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Add policy in OU and check if this policy is applied in chef node
+        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        policy_dir = package_res_policy['path'] + '.package_list'
+        ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
+        package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+        self.assertEquals(package_res_ou_policy, ['gimp'])
+
+        # Add policy in Group and check if this policy is applied in chef node
+        policy_dir = package_res_policy['path'] + '.package_list'
+        group['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
+        package_res_ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+        self.assertEquals(package_res_ou_policy, ['libreoffice'])
+
+        # Remove policy in Group and check if this policy is applied in chef node
+        group['policies'] = {}
+        request_put = self.get_dummy_json_put_request(group, GroupResource.schema_detail)
+        group_api = GroupResource(request_put)
+        group_updated = group_api.put()
+        self.assertEqualsObjects(group, group_updated, GroupResource.schema_detail)
+        node = NodeMock(node_id, None)
+        package_list = node.attributes.get_dotted(policy_dir)
+        self.assertEquals(package_list, ['gimp'])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_6_priority_workstation_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 5:
+        1. Check the registration work station works
+        2. Check the policies priority works (with organisational unit and user)
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group_a = self.create_group('group_A')
+
+        # Create a group
+        data, new_group_b = self.create_group('group_B')
+
+        # Create a workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Assign groupA and groupB to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group_a = new_group_a['_id']
+        id_group_a = ObjectId(id_group_a)
+
+        update_computer = self.update_node(obj=computer,
+                                           field_name='memberof',
+                                           field_value=id_group_a,
+                                           api_class=ComputerResource)
+
+        id_group_b = new_group_b['_id']
+        id_group_b= ObjectId(id_group_b)
+        update_computer = self.update_node(obj=computer,
+                                           field_name='memberof',
+                                           field_value=id_group_b,
+                                           api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group_a = db.nodes.find_one({'name': 'group_A'})
+        self.assertEqual(group_a['members'][0], computer['_id'])
+        group_b = db.nodes.find_one({'name': 'group_B'})
+        self.assertEqual(group_b['members'][0], computer['_id'])
+
+        # Add policy in A group and check if this policy is applied in chef node
+        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        policy_dir = package_res_policy['path'] + '.package_list'
+        group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
+        package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+        self.assertEquals(package_res_group_policy, ['libreoffice'])
+
+        # Add policy in B group and check if this policy is applied in chef node
+        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        policy_dir = package_res_policy['path'] + '.package_list'
+        group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
+        package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+        self.assertEquals(package_res_group_policy, ['libreoffice'])
+
+        # Remove policy in A group and check if this policy is applied in chef node
+        group_a['policies'] = {}
+        request_put = self.get_dummy_json_put_request(group_a, GroupResource.schema_detail)
+        group_api = GroupResource(request_put)
+        group_updated = group_api.put()
+        self.assertEqualsObjects(group_a, group_updated, GroupResource.schema_detail)
+        node = NodeMock(node_id, None)
+        package_list = node.attributes.get_dotted(policy_dir)
+        self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
