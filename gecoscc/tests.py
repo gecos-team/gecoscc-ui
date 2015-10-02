@@ -502,6 +502,19 @@ class BaseGecosTestCase(unittest.TestCase):
 
         return (data, object_api.collection_post())
 
+    def create_ou(self, ou_name, domain_name='Domain 1'):
+        '''
+        Useful method, create an OU
+        '''
+        db = self.get_db()
+        domain = db.nodes.find_one({'name': domain_name})
+
+        data = {'name': ou_name,
+                'type': 'ou',
+                'path': '%s,%s' % (domain['path'], domain['_id']),
+                'source': 'gecos'}
+        return self.create_node(data, OrganisationalUnitResource, ou_name='Domain 1')
+
     def update_node(self, obj, field_name, field_value, api_class):
         '''
         Useful method, update a node
@@ -760,6 +773,32 @@ class BasicTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_08_OU(self, get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 8: Create, update and delete a OU
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        request = self.get_dummy_request()
+        folder_api = StorageResource(request)
+        self.assertIsPaginatedCollection(data=folder_api.collection_get())
+
+        data, new_ou = self.create_ou('OU 2')
+        self.assertEqualsObjects(data, new_ou)
+
+        ou_updated = self.update_node(obj=new_ou,
+                                      field_name='extra',
+                                      field_value=u'Test',
+                                      api_class=OrganisationalUnitResource)
+        self.assertEqualsObjects(new_ou, ou_updated, OrganisationalUnitResource.schema_detail)
+
+        self.delete_node(ou_updated, OrganisationalUnitResource)
+        self.assertDeleted(field_name='extra', field_value='Test')
+
+        self.assertNoErrorJobs()
+
 
 class AdvancedTests(BaseGecosTestCase):
 
@@ -904,7 +943,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 3:
         1. Check the registration work station works
-        2. Check the policies pripority works (with organisational unit)
+        2. Check the policies pripority works using organisational unit
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -956,7 +995,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 4:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using organisational unit and user
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1041,7 +1080,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 5:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using organisational unit and groups
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1122,7 +1161,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 6:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using workstation and groups
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1216,7 +1255,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 7:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using groups in differents OUs
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1254,7 +1293,7 @@ class AdvancedTests(BaseGecosTestCase):
         id_group_a = new_group_a['_id']
         id_group_a = ObjectId(id_group_a)
 
-        update_computer = self.update_node(obj=computer,
+        self.update_node(obj=computer,
                                            field_name='memberof',
                                            field_value=id_group_a,
                                            api_class=ComputerResource)
@@ -1310,7 +1349,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 8:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using groups and OUs
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1400,7 +1439,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 9:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using groups in the same OU
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1506,7 +1545,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 10:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works using groups in differents OUs
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1612,7 +1651,7 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         Test 11:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
@@ -1677,9 +1716,9 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_12_move_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
         '''
-        Test 11:
+        Test 12:
         1. Check the registration work station works
-        2. Check the policies priority works (with organisational unit and user)
+        2. Check the policies priority works
         '''
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
