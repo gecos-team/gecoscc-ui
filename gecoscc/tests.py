@@ -195,13 +195,12 @@ class NodeMock(object):
                 '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', node_id)
             self.attributes = NodeAttributesMock(json.loads(node_attributes_json), self)
             self.normal = self.attributes
-            NODES[self.name] = copy(self.attributes.data)
 
     def get(self, key, default=None):
         return self.attributes.get(key, default)
 
     def save(self):
-        NODES[self.name] = self.attributes.data
+        NODES[self.name] = copy(self.attributes.data)
 
     def delete(self):
         del NODES[self.name]
@@ -478,7 +477,7 @@ class BaseGecosTestCase(unittest.TestCase):
                 'uri': 'http://%s.storage.com' % storage_name}
         return self.create_node(data, StorageResource)
 
-    def create_user(self, username):
+    def create_user(self, username, ou_name='OU 1'):
         '''
         Useful method, create an User
         '''
@@ -486,7 +485,7 @@ class BaseGecosTestCase(unittest.TestCase):
                 'email': '%s@example.com' % username,
                 'type': 'user',
                 'source': 'gecos'}
-        return self.create_node(data, UserResource)
+        return self.create_node(data, UserResource, ou_name)
 
     def create_node(self, data, api_class, ou_name='OU 1'):
         '''
@@ -1779,5 +1778,374 @@ class AdvancedTests(BaseGecosTestCase):
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted(policy_dir)
         self.assertEquals(package_list, ['DomainLauncher'])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def _test_13_group_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 13:
+        1. Check the registration work station works
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group in OU
+        data, new_group = self.create_group('group_test')
+
+        # Create a workstation in Domain
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': domain_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='testuser')
+
+        # Assign group to user
+        user = db.nodes.find_one({'name': 'testuser'})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_user = new_group['_id']
+        id_user = ObjectId(id_user)
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+        self.update_node(obj=user,
+                         field_name='memberof',
+                         field_value=id_user,
+                         api_class=UserResource)
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_17_delete_ou_with_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 17:
+        1. Check the registration work station works
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='testuser')
+        user = db.nodes.find_one({'name': 'testuser'})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Delete OU
+        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request)
+        ou_1 = ou_api.get()
+        self.delete_node(ou_1, OrganisationalUnitResource)
+        self.assertDeleted(field_name='extra', field_value='Test')
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        user = db.nodes.find_one({'name': 'testuser'})
+        computer = db.nodes.find_one({'name': 'testing'})
+
+        self.assertIsNone(ou_1)
+        self.assertIsNone(user)
+        self.assertIsNone(computer)
+        self.assertIsNone(NODES)
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_18_delete_ou_with_workstation_and_user_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 18:
+        1. Check the registration work station works
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in domain
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        data, new_user = self.create_user('piglesias', domain_1['name'])
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='piglesias')
+        user = db.nodes.find_one({'name': 'piglesias'})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Delete OU
+        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request)
+        ou_1 = ou_api.get()
+        self.delete_node(ou_1, OrganisationalUnitResource)
+        self.assertDeleted(field_name='extra', field_value='Test')
+
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertIsNone(ou_1)
+        self.assertIsNone(computer)
+
+        user = db.nodes.find_one({'name': 'piglesias'})
+        self.assertIsNone(NODES)
+        self.assertEqual(user['computers'], [])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_19_delete_ou_with_user_and_workstation_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 19:
+        1. Check the registration work station works
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Create a workstation in Domain
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': domain_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        data, new_user = self.create_user('piglesias')
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='piglesias')
+        user = db.nodes.find_one({'name': 'piglesias'})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Add policy in user and check if this policy is applied in chef node
+        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        policy_dir = user_launcher_policy['path'] + '.users.piglesias.launchers'
+        user_policy = db.nodes.find_one({'name': 'piglesias'})
+        user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
+        user_policy = self.add_and_get_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir=policy_dir)
+        self.assertEquals(user_policy, ['UserLauncher'])
+
+        # Delete OU
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request)
+        ou_1 = ou_api.get()
+        self.delete_node(ou_1, OrganisationalUnitResource)
+        self.assertDeleted(field_name='extra', field_value='Test')
+
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        user = db.nodes.find_one({'name': 'piglesias'})
+        self.assertIsNone(ou_1)
+        self.assertIsNone(user)
+
+        node = NodeMock(node_id, None)
+        try:
+            package_list = node.attributes.get_dotted(policy_dir)
+        except KeyError:
+            package_list = None
+
+        self.assertIsNone(package_list)
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_20_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 20:
+        1. Check the registration work station works
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        data, new_user = self.create_user('piglesias')
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username='piglesias')
+        user = db.nodes.find_one({'name': 'piglesias'})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        self.update_node(obj=computer,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Delete OU
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request)
+        ou_1 = ou_api.get()
+        self.delete_node(ou_1, OrganisationalUnitResource)
+        self.assertDeleted(field_name='extra', field_value='Test')
+
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        user = db.nodes.find_one({'name': 'piglesias'})
+        group = db.nodes.find_one({'name': 'testgroup'})
+        workstation = db.nodes.find_one({'name': 'testing'})
+        self.assertIsNone(ou_1)
+        self.assertIsNone(user)
+        self.assertIsNone(group)
+        self.assertIsNone(workstation)
+        self.assertIsNone(NODES)
 
         self.assertNoErrorJobs()
