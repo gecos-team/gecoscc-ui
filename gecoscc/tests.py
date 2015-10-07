@@ -537,11 +537,15 @@ class BaseGecosTestCase(unittest.TestCase):
         api = api_class(request_put)
         return api.put()
 
-    def delete_node(self, obj, api_class):
+    def delete_node(self, node, api_class):
         '''
         Useful method, delete a node
         '''
-        request_delete = self.get_dummy_delete_request(obj, api_class.schema_detail)
+        request = self.dummy_get_request(node, api_class.schema_detail)
+        node_api = api_class(request)
+        node = node_api.get()
+
+        request_delete = self.get_dummy_delete_request(node, api_class.schema_detail)
         api = api_class(request_delete)
         return api.delete()
 
@@ -1880,9 +1884,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Delete OU
-        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request)
-        ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value='OU 1')
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
@@ -1937,9 +1938,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Delete OU
-        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request)
-        ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value='OU 1')
 
@@ -2006,9 +2004,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Delete OU
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request)
-        ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value='OU 1')
 
@@ -2036,7 +2031,9 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_20_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+    def test_20_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass,
+                                     TaskNodeClass, TaskClientClass):
         '''
         Test 20:
         1. Check the registration work station works
@@ -2076,10 +2073,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Delete OU
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        request = self.dummy_get_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request)
-        ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value='OU 1')
 
@@ -2166,9 +2159,6 @@ class AdvancedTests(BaseGecosTestCase):
         group = db.nodes.find_one({'name': 'testgroup'})
 
         # Delete group
-        request = self.dummy_get_request(group, GroupResource.schema_detail)
-        group_api = GroupResource(request)
-        group = group_api.get()
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value='testgroup')
 
@@ -2257,9 +2247,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
         # Delete group
-        request = self.dummy_get_request(group, GroupResource.schema_detail)
-        group_api = GroupResource(request)
-        group = group_api.get()
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value='testgroup')
 
@@ -2337,9 +2324,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
         # Delete group
-        request = self.dummy_get_request(group, GroupResource.schema_detail)
-        group_api = GroupResource(request)
-        group = group_api.get()
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value='testgroup')
 
