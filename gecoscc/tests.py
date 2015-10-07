@@ -634,6 +634,18 @@ class BaseGecosTestCase(unittest.TestCase):
             node_policy = node.attributes.get_dotted(policy_dir)
             return node_policy
 
+    def remove_policy_and_get_dotted(self, node, node_id, api_class, policy_dir):
+        '''
+        Useful method, remove policy from node and return dotted
+        '''
+        node['policies'] = {}
+        request_put = self.get_dummy_json_put_request(node, api_class.schema_detail)
+        node_api = api_class(request_put)
+        node_updated = node_api.put()
+        self.assertEqualsObjects(node, node_updated, api_class.schema_detail)
+        node = NodeMock(node_id, None)
+        return node.attributes.get_dotted(policy_dir)
+
     def apply_mocks(self, get_cookbook_method=None, get_cookbook_method_tasks=None, NodeClass=None,
                     ChefNodeClass=None, isinstance_method=None, gettext=None, create_chef_admin_user_method=None,
                     ChefNodeStatusClass=None, TaskNodeClass=None, TaskClientClass=None, ClientClass=None):
@@ -1009,13 +1021,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_domain_policy, ['gimp'])
 
         # Remove policy in OU and check if domain_1's policy is applied in chef node
-        ou_1['policies'] = {}
-        request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request_put)
-        ou_1_updated = ou_api.put()
-        self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(ou_1, node_id, OrganisationalUnitResource, policy_dir)
         self.assertEquals(package_list, ['libreoffice'])
         self.assertNoErrorJobs()
 
@@ -1132,19 +1138,12 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_ou_policy, ['gimp'])
 
         # Add policy in Group and check if this policy is applied in chef node
-        policy_dir = package_res_policy['path'] + '.package_list'
         group['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(package_res_ou_policy, ['libreoffice'])
 
         # Remove policy in Group and check if the OU's policy is applied in chef node
-        group['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1201,13 +1200,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Remove policy in A group and check if the B group's policy is applied in chef node
-        group_a['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group_a, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group_a, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1265,13 +1258,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Remove policy in A group and check if the B group's policy is applied in chef node
-        group_a['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group_a, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group_a, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1331,13 +1318,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_group_policy, ['gimp'])
 
         # Remove policy in group and check if the OU's policy is applied in chef node
-        group['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['libreoffice'])
 
         self.assertNoErrorJobs()
@@ -1402,13 +1383,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Remove policy in A group and check if the B group's policy is applied in chef node
-        group_a['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group_a, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group_a, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1473,13 +1448,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Remove policy in A group and check if the B group's policy is applied in chef node
-        group_a['policies'] = {}
-        request_put = self.get_dummy_json_put_request(group_a, GroupResource.schema_detail)
-        group_api = GroupResource(request_put)
-        group_updated = group_api.put()
-        self.assertEqualsObjects(group_a, group_updated, GroupResource.schema_detail)
-        node = NodeMock(node_id, None)
-        package_list = node.attributes.get_dotted(policy_dir)
+        package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
