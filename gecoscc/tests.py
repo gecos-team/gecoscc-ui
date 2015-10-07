@@ -594,6 +594,29 @@ class BaseGecosTestCase(unittest.TestCase):
         chef_status_response = chef_status_api.put()
         self.assertEqual(chef_status_response['ok'], True)
 
+    def assign_group_to_node(self, node_name, api_class, group):
+        '''
+        Useful method, assign group to node (user or workstation)
+        '''
+        node = self.get_db().nodes.find_one({'name': node_name})
+        request = self.dummy_get_request(node, api_class.schema_detail)
+        node_api = api_class(request)
+        node = node_api.get()
+
+        id_group = group['_id']
+        id_group = ObjectId(id_group)
+        if node['type'] == 'user':
+            id_computer = node['computers']
+            node['computers'] = [ObjectId(id_computer[0])]
+        if node['memberof'] != []:
+            id_grupo = node['memberof']
+            node['memberof'] = [ObjectId(id_grupo[0])]
+
+        self.update_node(obj=node,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=api_class)
+
     def add_and_get_policy(self, node, node_id, api_class, policy_dir=None):
         '''
         Useful method, add policy to node and return this policy
@@ -875,6 +898,7 @@ class AdvancedTests(BaseGecosTestCase):
         # Register user in chef node
         username = 'usertest'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+
         # Add storage to user and check if it is applied in chef node
         user = db.nodes.find_one({'name': username})
         request = self.dummy_get_request(user, UserResource.schema_detail)
@@ -1106,20 +1130,10 @@ class AdvancedTests(BaseGecosTestCase):
         data = {'ou_id': ou_1['_id'],
                 'node_id': node_id}
         self.register_computer(data)
+        computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -1179,27 +1193,11 @@ class AdvancedTests(BaseGecosTestCase):
         data = {'ou_id': ou_1['_id'],
                 'node_id': node_id}
         self.register_computer(data)
+        computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign groupA and groupB to computer
-        computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group_a = new_group_a['_id']
-        id_group_a = ObjectId(id_group_a)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group_a,
-                         api_class=ComputerResource)
-
-        id_group_b = new_group_b['_id']
-        id_group_b = ObjectId(id_group_b)
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group_b,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_a)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
         group_a = db.nodes.find_one({'name': 'group_A'})
@@ -1261,27 +1259,11 @@ class AdvancedTests(BaseGecosTestCase):
         data = {'ou_id': ou_1['_id'],
                 'node_id': node_id}
         self.register_computer(data)
+        computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign groupA and groupB to computer
-        computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group_a = new_group_a['_id']
-        id_group_a = ObjectId(id_group_a)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group_a,
-                         api_class=ComputerResource)
-
-        id_group_b = new_group_b['_id']
-        id_group_b = ObjectId(id_group_b)
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group_b,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_a)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
         group_a = db.nodes.find_one({'name': 'group_A'})
@@ -1351,19 +1333,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'group_test'})
@@ -1434,29 +1404,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign A group and B group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group_a['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
-
-        id_user = new_group_b['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_a)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
         group_a = db.nodes.find_one({'name': 'group_A'})
@@ -1529,29 +1478,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign A group and B group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group_a['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
-
-        id_user = new_group_b['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_a)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
         group_a = db.nodes.find_one({'name': 'group_A'})
@@ -1743,18 +1671,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        user = db.nodes.find_one({'name': username})
         self.assertNotEqual(user['memberof'][0], ObjectId(new_group['_id']))
 
         # Create group in Domain
@@ -1815,17 +1733,9 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        computer = db.nodes.find_one({'name': computer['name']})
         group = db.nodes.find_one({'name': 'group_test'})
         self.assertEqual(group['members'][0], computer['_id'])
 
@@ -1902,19 +1812,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=UserResource)
         group = db.nodes.find_one({'name': 'group_test'})
         self.assertEqual(group['members'][0], user['_id'])
 
@@ -1988,19 +1887,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=UserResource)
         group = db.nodes.find_one({'name': 'group_test'})
         self.assertEqual(group['members'][0], user['_id'])
 
@@ -2262,17 +2150,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2343,17 +2221,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2442,17 +2310,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2547,17 +2405,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2565,19 +2413,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2652,17 +2488,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-        computer_api = ComputerResource(request)
-        computer = computer_api.get()
-
-        id_group = new_group['_id']
-        id_group = ObjectId(id_group)
-
-        self.update_node(obj=computer,
-                         field_name='memberof',
-                         field_value=id_group,
-                         api_class=ComputerResource)
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -2670,19 +2496,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
