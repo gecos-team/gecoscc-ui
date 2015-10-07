@@ -637,6 +637,18 @@ class BaseGecosTestCase(unittest.TestCase):
         if ClientClass is not None:
             ClientClass.side_effect = ClientMock
 
+    def get_default_user_policy(self, slug='user_launchers_res'):
+        '''
+        Useful method, get the default user policy
+        '''
+        return self.get_db().policies.find_one({'slug': slug})
+
+    def get_default_ws_policy(self, slug='package_res'):
+        '''
+        Useful method, get the default ou policy
+        '''
+        return self.get_db().policies.find_one({'slug': slug})
+
 
 class BasicTests(BaseGecosTestCase):
 
@@ -971,7 +983,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.register_computer(data)
 
         # Add policy in OU and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -1031,7 +1043,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
         # Add policy in OU and check if this policy is applied in chef node
-        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -1044,7 +1056,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(user_policy, ['UserLauncher'])
 
         # Remove policy in OU
-        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': []}}
         request_put = self.get_dummy_json_put_request(ou_1, OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_put)
@@ -1063,7 +1074,6 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEquals(user_policy, ['UserLauncherWithoutComputer'])
 
         # Add policy in OU and check if the user's policy is applied in chef node
-        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
         self.assertEquals(ou_policy, ['UserLauncherWithoutComputer'])
@@ -1116,7 +1126,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Add policy in OU and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -1198,14 +1208,13 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group_b['members'][0], computer['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Add policy in B group and check if the A group's policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
         policy_dir = package_res_policy['path'] + '.package_list'
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1281,14 +1290,13 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group_b['members'][0], computer['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Add policy in B group and check if the A group's policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
         policy_dir = package_res_policy['path'] + '.package_list'
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1362,7 +1370,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'][0], user['_id'])
 
         # Add policy in OU and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -1457,14 +1465,13 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group_b['members'][0], user['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Add policy in B group and check if the A group's policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
         policy_dir = package_res_policy['path'] + '.package_list'
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1553,14 +1560,13 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group_b['members'][0], user['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
         # Add policy in B group and check if the A group's policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
         policy_dir = package_res_policy['path'] + '.package_list'
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1603,7 +1609,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.register_computer(data)
 
         # Add policy in OU and check if this policy is applied in chef node
-        package_res_policy = db.policies.find_one({'slug': 'package_res'})
+        package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -1667,7 +1673,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
         # Add policy in OU and check if this policy is applied in chef node
-        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
@@ -2181,7 +2187,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Add policy in user and check if this policy is applied in chef node
-        user_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         user_policy = db.nodes.find_one({'name': username})
         user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
@@ -2473,7 +2479,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'][1], user['_id'])
 
         # Add policy in Group and check if this policy is applied in chef node
-        group_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        group_launcher_policy = self.get_default_user_policy()
         policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
         group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -2578,7 +2584,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'][1], user['_id'])
 
         # Add policy in Group and check if this policy is applied in chef node
-        group_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        group_launcher_policy = self.get_default_user_policy()
         policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
         group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
