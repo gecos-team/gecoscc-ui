@@ -378,8 +378,8 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         Useful method, check if a element has been deleted
         '''
-        printer_deleted = self.get_db().nodes.find_one({field_name: field_value})
-        self.assertIsNone(printer_deleted)
+        node_deleted = self.get_db().nodes.find_one({field_name: field_value})
+        self.assertIsNone(node_deleted)
 
     def assertIsPaginatedCollection(self, data):
         '''
@@ -2213,7 +2213,7 @@ class AdvancedTests(BaseGecosTestCase):
         ou_api = OrganisationalUnitResource(request)
         ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='extra', field_value='Test')
+        self.assertDeleted(field_name='name', field_value='OU 1')
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
@@ -2283,7 +2283,7 @@ class AdvancedTests(BaseGecosTestCase):
         ou_api = OrganisationalUnitResource(request)
         ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='extra', field_value='Test')
+        self.assertDeleted(field_name='name', field_value='OU 1')
 
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         computer = db.nodes.find_one({'name': 'testing'})
@@ -2362,7 +2362,7 @@ class AdvancedTests(BaseGecosTestCase):
         ou_api = OrganisationalUnitResource(request)
         ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='extra', field_value='Test')
+        self.assertDeleted(field_name='name', field_value='OU 1')
 
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         user = db.nodes.find_one({'name': username})
@@ -2457,7 +2457,7 @@ class AdvancedTests(BaseGecosTestCase):
         ou_api = OrganisationalUnitResource(request)
         ou_1 = ou_api.get()
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='extra', field_value='Test')
+        self.assertDeleted(field_name='name', field_value='OU 1')
 
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         user = db.nodes.find_one({'name': username})
@@ -2468,5 +2468,457 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertIsNone(group)
         self.assertIsNone(workstation)
         self.assertIsNone(NODES)
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_21_delete_group_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 21:
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        self.update_node(obj=computer,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Assign group to user
+        user = db.nodes.find_one({'name': username})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_user = new_group['_id']
+        id_user = ObjectId(id_user)
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+
+        self.update_node(obj=user,
+                         field_name='memberof',
+                         field_value=id_user,
+                         api_class=UserResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][1], user['_id'])
+
+        group = db.nodes.find_one({'name': 'testgroup'})
+
+        # Delete group
+        request = self.dummy_get_request(group, GroupResource.schema_detail)
+        group_api = GroupResource(request)
+        group = group_api.get()
+        self.delete_node(group, GroupResource)
+        self.assertDeleted(field_name='name', field_value='testgroup')
+
+        user = db.nodes.find_one({'name': username})
+        group = db.nodes.find_one({'name': 'testgroup'})
+        workstation = db.nodes.find_one({'name': 'testing'})
+        self.assertIsNone(group)
+        self.assertEqual(workstation['memberof'], [])
+        self.assertEqual(user['memberof'], [])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_22_delete_group_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 22:
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        self.update_node(obj=computer,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Assign group to user
+        user = db.nodes.find_one({'name': username})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_user = new_group['_id']
+        id_user = ObjectId(id_user)
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+
+        self.update_node(obj=user,
+                         field_name='memberof',
+                         field_value=id_user,
+                         api_class=UserResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][1], user['_id'])
+
+        # Add policy in Group and check if this policy is applied in chef node
+        group_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
+        group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
+        ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+        self.assertEquals(ou_policy, ['OUsLauncher'])
+
+        # Delete group
+        request = self.dummy_get_request(group, GroupResource.schema_detail)
+        group_api = GroupResource(request)
+        group = group_api.get()
+        self.delete_node(group, GroupResource)
+        self.assertDeleted(field_name='name', field_value='testgroup')
+
+        node = NodeMock(node_id, None)
+        try:
+            launchers = node.attributes.get_dotted(policy_dir)
+        except KeyError:
+            launchers = None
+
+        self.assertIsNone(launchers)
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_23_delete_group_in_domain_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 23:
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup', ou_name='Domain 1')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        self.update_node(obj=computer,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Assign group to user
+        user = db.nodes.find_one({'name': username})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_user = new_group['_id']
+        id_user = ObjectId(id_user)
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+
+        self.update_node(obj=user,
+                         field_name='memberof',
+                         field_value=id_user,
+                         api_class=UserResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][1], user['_id'])
+
+        # Add policy in Group and check if this policy is applied in chef node
+        group_launcher_policy = db.policies.find_one({'slug': 'user_launchers_res'})
+        policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
+        group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
+        ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+        self.assertEquals(ou_policy, ['OUsLauncher'])
+
+        # Delete group
+        request = self.dummy_get_request(group, GroupResource.schema_detail)
+        group_api = GroupResource(request)
+        group = group_api.get()
+        self.delete_node(group, GroupResource)
+        self.assertDeleted(field_name='name', field_value='testgroup')
+
+        node = NodeMock(node_id, None)
+        try:
+            launchers = node.attributes.get_dotted(policy_dir)
+        except KeyError:
+            launchers = None
+
+        self.assertIsNone(launchers)
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_24_delete_group_in_domain_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 24:
+        2. Check the policies priority works
+        '''
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        NodeClass.side_effect = NodeMock
+        ChefNodeClass.side_effect = NodeMock
+        ChefNodeStatusClass.side_effect = NodeMock
+        isinstance_method.side_effect = isinstance_mock
+        gettext.side_effect = gettext_mock
+        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        TaskNodeClass.side_effect = NodeMock
+        TaskClientClass.side_effect = ClientMock
+        request = self.get_dummy_request()
+        user_api = UserResource(request)
+        self.assertIsPaginatedCollection(data=user_api.collection_get())
+
+        # Create a group
+        data, new_group = self.create_group('testgroup', ou_name='Domain 1')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcdd92d'
+        data = {'ou_id': ou_1['_id'],
+                'node_id': node_id}
+        self.register_computer(data)
+
+        # Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Assign group to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        id_group = new_group['_id']
+        id_group = ObjectId(id_group)
+
+        self.update_node(obj=computer,
+                         field_name='memberof',
+                         field_value=id_group,
+                         api_class=ComputerResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # Assign group to user
+        user = db.nodes.find_one({'name': username})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_user = new_group['_id']
+        id_user = ObjectId(id_user)
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+
+        self.update_node(obj=user,
+                         field_name='memberof',
+                         field_value=id_user,
+                         api_class=UserResource)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][1], user['_id'])
+
+        group = db.nodes.find_one({'name': 'testgroup'})
+
+        # Delete group
+        request = self.dummy_get_request(group, GroupResource.schema_detail)
+        group_api = GroupResource(request)
+        group = group_api.get()
+        self.delete_node(group, GroupResource)
+        self.assertDeleted(field_name='name', field_value='testgroup')
+
+        user = db.nodes.find_one({'name': username})
+        group = db.nodes.find_one({'name': 'testgroup'})
+        workstation = db.nodes.find_one({'name': 'testing'})
+        self.assertIsNone(group)
+        self.assertEqual(workstation['memberof'], [])
+        self.assertEqual(user['memberof'], [])
 
         self.assertNoErrorJobs()
