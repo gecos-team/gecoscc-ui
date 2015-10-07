@@ -831,7 +831,7 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_07_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, 
+    def test_07_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass,
                          ChefNodeClass, TaskNodeClass, ClientClass, isinstance_method):
         '''
         Test 7: Create, update and delete a computer
@@ -1673,7 +1673,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create a workstation in OU
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
         self.register_computer()
 
@@ -1812,7 +1811,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create a workstation in OU
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
         self.register_computer()
 
