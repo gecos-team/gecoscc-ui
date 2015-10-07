@@ -22,6 +22,11 @@
                         <li class="{% block nav_bar_admins %}{% endblock %}">
                             <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
                         </li>
+                        <li class="{% block nav_bar_settings %}{% endblock %}">
+                            <a href="{{ request.route_url('settings') }}">{{ gettext('Settings') }}</a>
+                        <li class="{% block nav_bar_status %}{% endblock %}">
+                            <a href="{{ request.route_url('server_status') }}">{{ gettext('Status') }}</a>
+                        </li>
                         <li class="{% block nav_bar_reports %}{% endblock %}">
                             <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
                         </li>

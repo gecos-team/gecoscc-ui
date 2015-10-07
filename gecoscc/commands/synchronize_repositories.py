@@ -23,6 +23,7 @@ except ImportError:
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import Package
+from gecoscc.command_util import get_setting
 
 PACKAGES_FILE = 'Packages.gz'
 PACKAGE_NAME_TOKEN = 'Package'
@@ -31,7 +32,7 @@ class Command(BaseCommand):
     def command(self):
         packages = []
         packages_urls = []
-        repositories = json.loads(self.settings.get('repositories'))
+        repositories = json.loads(get_setting('repositories', self.settings, self.db))
         num_packages = 0
 
         for repo in repositories:

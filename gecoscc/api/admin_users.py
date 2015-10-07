@@ -14,6 +14,7 @@ import os
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
+from gecoscc.command_util import get_setting
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import AdminUserVariables
@@ -62,9 +63,10 @@ class AdminUserResource(BaseAPI):
                 auth_properties['ad_properties'] = ad_properties
         auth = {'auth_properties': auth_properties,
                 'auth_type': auth_type}
-        return {'version': settings.get('firstboot_api.version'),
-                'organization': settings.get('firstboot_api.organization_name'),
-                'gem_repo': settings.get('firstboot_api.gem_repo'),
+        return {'version': get_setting('firstboot_api.version', settings, self.request.db),
+                'organization': get_setting('firstboot_api.organization_name', settings, self.request.db),
+                'notes': get_setting('firstboot_api.comments', settings, self.request.db),
+                'gem_repo': get_setting('firstboot_api.gem_repo', settings, self.request.db),
                 'uri_ntp': variables.get('uri_ntp', ''),
                 'auth': auth,
                 'chef': chef,

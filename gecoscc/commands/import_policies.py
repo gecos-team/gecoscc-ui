@@ -18,7 +18,7 @@ from optparse import make_option
 
 from gecoscc.management import BaseCommand
 from gecoscc.rules import EXCLUDE_GENERIC_ATTRS, is_user_policy
-from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug
+from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug, toChefUsername
 
 
 DEFAULT_TARGETS = ['ou', 'computer', 'group']
@@ -158,7 +158,7 @@ class Command(BaseCommand):
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
-                            self.options.chef_username,
+                            toChefUsername(self.options.chef_username),
                             self.options.chef_pem)
         cookbook_name = self.settings['chef.cookbook_name']
 

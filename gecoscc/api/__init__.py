@@ -29,6 +29,11 @@ from gecoscc.tasks import object_created, object_changed, object_deleted, object
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain)
 
+from gecoscc.i18n import gettext as _
+                           
+import logging
+logger = logging.getLogger(__name__)
+                           
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
 SCHEMA_METHODS = ('POST', 'PUT', )
@@ -196,6 +201,45 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
     def pre_save(self, obj, old_obj=None):
         if old_obj and 'name' in old_obj:
             obj['name'] = old_obj['name']
+        
+        # Check he policies "object_related_list" attribute
+        if 'policies' in obj:
+            policies = obj['policies']
+            for policy in policies:
+                # Get the policy
+                policyobj = self.request.db.policies.find_one({"_id": ObjectId(str(policy))})
+                if policyobj is None:
+                    logger.warning("Unknown policy: %s"%(str(policy)))
+                else:
+                    # Get the related object collection 
+                    ro_collection = None
+                    if policyobj['slug'] == 'printer_can_view':
+                        ro_collection = self.request.db.nodes
+                    elif policyobj['slug'] == 'repository_can_view':
+                        ro_collection = None
+                    elif policyobj['slug'] == 'storage_can_view':
+                        ro_collection = self.request.db.nodes
+                    elif policyobj['slug'] == 'local_users_res':
+                        ro_collection = None
+                    elif policyobj['slug'] == 'package_profile_res':
+                        ro_collection = self.request.db.software_profiles
+                    else:
+                        logger.warning("Unrecognized slug: %s"%(str(policyobj['slug'])))
+                        
+                    # Check the related objects
+                    if ro_collection is not None:
+                        ro_list = policies[str(policy)]['object_related_list']
+                        for ro_id in ro_list:
+                            ro_obj = ro_collection.find_one({"_id": ObjectId(str(ro_id))})
+                            if ro_obj is None:
+                                logger.error("Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
+                                self.request.errors.add('body', 'object', "Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
+                                return None
+                        
+                
+        else:
+            logger.debug("No policies in this object")
+            
         return obj
 
     def post_save(self, obj, old_obj=None):
@@ -225,6 +269,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             del obj[self.key]
 
         obj = self.pre_save(obj)
+        if obj is None:
+            return
 
         try:
             obj_id = self.collection.insert(obj)
@@ -279,6 +325,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
 
         obj = self.pre_save(obj, old_obj=old_obj)
+        if obj is None:
+            return
 
         real_obj.update(obj)
         try:
@@ -311,6 +359,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         old_obj = deepcopy(obj)
 
         obj = self.pre_save(obj)
+        if obj is None:
+            return
         obj = self.pre_delete(obj)
 
         status = self.collection.remove(filters)
