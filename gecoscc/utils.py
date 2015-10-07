@@ -202,7 +202,7 @@ def remove_chef_computer_data(computer, api):
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
-            for mgmt in cookbook:
+            for mgmt in cookbook.keys():
                 if mgmt == USER_MGMT:
                     continue
                 cookbook.pop(mgmt)
