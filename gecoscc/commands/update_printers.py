@@ -26,6 +26,7 @@ except ImportError:
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import PrinterModel
+from gecoscc.command_util import get_setting
 
 PPD = 'PPD'
 PRINTER = 'printer'
@@ -34,7 +35,7 @@ postscript_re = re.compile(u'Postscript', re.IGNORECASE)
 
 class Command(BaseCommand):
     def command(self):
-        urls = json.loads(self.settings.get('printers.urls'))
+        urls = json.loads(get_setting('printers.urls', self.settings, self.db))
 
         collection = self.db.printer_models
         printer_model = PrinterModel()

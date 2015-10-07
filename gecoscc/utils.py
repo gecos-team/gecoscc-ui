@@ -16,6 +16,7 @@ import pytz
 import random
 import string
 import time
+import re
 
 from bson import ObjectId, json_util
 from copy import deepcopy
@@ -26,7 +27,6 @@ from chef.exceptions import ChefError
 from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
-
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
@@ -150,10 +150,10 @@ def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
 
 
 def get_chef_api(settings, user):
-    username = user['username']
+    username = toChefUsername(user['username'])
     chef_url = settings.get('chef.url')
-    chef_client_pem = get_pem_path_for_username(settings, user['username'], 'chef_client.pem')
-    chef_user_pem = get_pem_path_for_username(settings, user['username'], 'chef_user.pem')
+    chef_client_pem = get_pem_path_for_username(settings, username, 'chef_client.pem')
+    chef_user_pem = get_pem_path_for_username(settings, username, 'chef_user.pem')
     if os.path.exists(chef_client_pem):
         chef_pem = chef_client_pem
     else:
@@ -169,7 +169,8 @@ def _get_chef_api(chef_url, username, chef_pem):
     return api
 
 
-def create_chef_admin_user(api, settings, username, password=None):
+def create_chef_admin_user(api, settings, usrname, password=None):
+    username = toChefUsername(usrname)
     if password is None:
         password = password_generator()
     data = {'name': username, 'password': password, 'admin': True}
@@ -183,7 +184,8 @@ def create_chef_admin_user(api, settings, username, password=None):
         save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
 
-def delete_chef_admin_user(api, settings, username):
+def delete_chef_admin_user(api, settings, usrname):
+    username = toChefUsername(usrname)
     try:
         api.api_request('DELETE', '/users/%s/' % username)
         api.api_request('DELETE', '/clients/%s/' % username)
@@ -459,7 +461,7 @@ def remove_policies_of_computer(user, computer, auth_user):
 
 
 def get_pem_for_username(settings, username, pem_name):
-    return open(get_pem_path_for_username(settings, username, pem_name), 'r').read().encode('base64')
+    return open(get_pem_path_for_username(settings, toChefUsername(username), pem_name), 'r').read().encode('base64')
 
 
 def get_pem_path_for_username(settings, username, pem_name):
@@ -592,3 +594,41 @@ def is_local_user(user, collection_nodes):
         is_local = _is_local_user(mongo_user)
 
     return is_local
+
+# Transform an username into a Chef username
+# by replacing the dots by "___"
+#
+def toChefUsername(username):
+    return username.replace('.', '___')
+
+# Transforms back a Chef username into a regular username
+# by replacing the "___" by dots
+#
+def fromChefUsername(username):
+    return username.replace('___', '.')
+
+# Get the components of a URL
+#
+def getURLComponents(url):
+    components = {}
+    
+    url_re = r"(?P<protocol>(http[s]?|ftp|mongodb))://((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host_name>[^:/]+)(:(?P<port>[0-9]+))?(?P<path>[a-zA-Z0-9\/]+)?"
+    m = re.match(url_re, url)
+    components['protocol'] = m.group('protocol')
+    components['host_name'] = m.group('host_name')
+    components['port'] = m.group('port')
+    components['path'] = m.group('path')
+    components['user'] = m.group('user')
+    components['password'] = m.group('password')
+  
+    if components['port'] is None:
+        if components['protocol'] == 'ftp':
+            components['port'] = '21'
+        elif components['protocol'] == 'http':
+            components['port'] = '80'
+        elif components['protocol'] == 'https':
+            components['port'] = '443'
+        elif components['protocol'] == 'mongodb':
+            components['port'] = '27017'
+    
+    return components

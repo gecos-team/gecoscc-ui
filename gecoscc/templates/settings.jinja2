@@ -1,0 +1,220 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_settings %}active{% endblock %}
+
+{% block extraheader %}
+<!-- Tree CSS -->
+<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
+<link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
+<link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/select2.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/select2-bootstrap.css" rel="stylesheet">
+
+
+<style>
+.form-group:after {
+  content:"";
+  display:table;
+  clear:both;
+}
+
+</style>
+
+{% block moreheader %}{% endblock %}
+{% endblock %}
+
+{% block inner_content %}
+
+    <script type="application/json" id="settings_json">
+     {
+        "title_es": "Valores de configuración",
+         "required": [
+        {% for setting in settings %}
+        {% if loop.last %}
+            "{{ setting.key|replace(".", "___") }}"
+        {% else %}
+            "{{ setting.key|replace(".", "___") }}",
+        {% endif %}            
+        {% endfor %}             
+         ],
+         "type": "object",
+         "properties": {
+
+
+        {% for setting in settings %}
+            "{{ setting.key|replace(".", "___") }}": {
+                "title": "{{ setting.key|replace("firstboot_api.", "") }}",
+                "required": true,
+                {% if setting.type == "URLs" %}
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+                {% elif setting.type == "Profiles" %}
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "title": "{{ gettext('Name') }}"
+                      },
+                      "packages": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "title": "{{ gettext('Packages') }}"
+                        }
+                      }
+                    }
+                }
+                {% else %}
+                "type": "{{ setting.type }}"
+                {% endif %}            
+                
+        {% if loop.last %}
+            }
+        {% else %}
+            },
+        {% endif %}            
+        
+        {% endfor %}     
+
+         
+         },
+        "title": "Settings values"     
+     
+     }
+    </script>    
+    
+    <script type="application/json" id="values_json">
+     {
+        {% for setting in settings %}
+        "{{ setting.key|replace(".", "___") }}":
+            {% if setting.type == "URLs" %}
+            {{ setting.value|safe }}
+            {% elif setting.type == "Profiles" %}
+            {{ setting.value|safe }}
+            {% else %}
+            "{{ setting.value }}"
+            {% endif %}            
+        
+        {% if not loop.last %}
+            ,
+        {% endif %}            
+        
+        {% endfor %}     
+     }
+    </script>
+
+<div class="container">
+    <div class="row"><div class="col-sm-12">
+        <h1>{{ gettext('Settings') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Settings') }}</li>
+        </ol>
+    {% endblock %}        
+    </div></div>
+
+    <div class="row" id="settings">
+        <form id="form" method="POST" accept-charset="utf-8" role="form" action="{{ request.route_url('settings_save') }}">
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <input type="submit" class="btn btn-primary" value="{{ gettext('Submit') }}" />
+                </div>
+            </div>
+        </form>
+     </div>
+    <div class="row">
+        <!-- empty space at the bottom -->
+        <br /> <br/>
+    </div>
+</div>    
+    
+        <div id="saving-error-modal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header alert alert-danger">
+                        <h4 class="modal-title">{{ gettext('Saving problems') }}</h4>
+                    </div>
+                    <div class="modal-body"><p>{{ gettext('There was a problem saving the data') }}</p></div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="javascript:window.location.reload()" class="btn btn-default" data-dismiss="modal">{{ gettext('Reload page') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+   
+{% endblock %}
+
+{% block extrajs %}
+    <script src="{{request.application_url}}/static/js/libs/backbone-1.1.2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone.paginator-0.8.1.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone-marionette-1.7.3.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/TreeModel-0.4.0.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/jquery.easy-pie-chart-1.0.1.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/jquery.dataTables-1.9.4.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/DT_bootstrap.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/chosen.jquery-0.13.0.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/jsonform-b3-1.0.0.js"></script>
+    <!-- script src="{{request.application_url}}/static/js/libs/jsonform-b3-1.0.0.min.js"></script -->
+    <script src="{{request.application_url}}/static/js/libs/jjv.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/socket.io.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/select2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/select2_locale_{{ request.locale_name }}.js"></script>
+    <script src="{{request.application_url}}/static/js/sock.js"></script>
+    
+    <script src="{{request.application_url}}/static/js/app.js"></script>
+    <script src="{{request.application_url}}/static/js/app-utils.js"></script>
+
+    
+    <script>
+    
+        $(document).ready(function () {
+            var settings = JSON.parse($('#settings_json').text());
+            var values = JSON.parse($('#values_json').text());
+            
+            var options = {
+                // Object that describes the data model
+                schema: settings,
+                // Array that describes the layout of the form
+                //form: ["*"],
+                "form": [
+                    "firstboot_api___comments",
+                    "firstboot_api___organization_name",
+                    "firstboot_api___version",
+                    "update_error_interval",
+                    "printers___urls",
+                    "repositories",
+                    "software_profiles"
+                ],
+                // Callback function called upon form submission when values are valid
+                onSubmitValid: function (values) {
+                    //console.log("Send data: "+JSON.stringify(values));
+                    $.ajax({
+                      type: 'POST',
+                      url: "{{ request.route_url('settings_save') }}",
+                      data: "data="+JSON.stringify(values),
+                      success: function(data){
+                         location.reload();
+                      },
+                      error: function(xhr, textStatus, error){
+                          console.log(xhr.statusText);
+                          console.log(textStatus);
+                          console.log(error);
+                          $('#saving-error-modal').modal();
+                      }
+                    });
+                }
+            };
+            options.value = values;
+            options.validate = jjv();
+            $("#form").jsonForm(options);            
+        });
+    </script>
+    {% block morejs %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
+
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Servers') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Servers') }}</li>
+        </ol>
+    {% endblock %}
+    
+    {% for status in server_status %}
+     <!-- Modal -->
+    <div id="disk_{{ status.name }}" class="modal fade" role="dialog">
+      <div class="modal-dialog"  style="width: 1024px">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">{{ gettext('Disk usage detail') }}</h4>
+          </div>
+          <div class="modal-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Device') }}</th>
+                        <th>{{ gettext('Mount point') }}</th>
+                        <th>{{ gettext('Size') }}</th>
+                        <th>{{ gettext('Used') }}</th>
+                        <th>{{ gettext('FS Type') }}</th>
+                        <th>{{ gettext('Options') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mpt in status.disk.mountpoints %}
+                        <tr>
+                            <td>{{ mpt.device }}</td>
+                            <td>{{ mpt.mountpoint }}</td>
+                            <td> {{ (mpt.size/mpt.factor)|round(1, 'floor') }} {{ mpt.factor_text }}</td>
+                            <td> {{ (mpt.used/mpt.factor)|round(1, 'floor') }} {{ mpt.factor_text }}</td>
+                            <td>{{ mpt.fstype }}</td>
+                            <td>{{ mpt.options|replace(",", " ") }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Close') }}</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+   {% endfor %}
+    
+    
+    <div class="row" id="users">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Name') }}</th>
+                        <th>{{ gettext('IP Address') }}</th>
+                        <th>{{ gettext('CPU') }}</th>
+                        <th>{{ gettext('CPU Load') }}</th>
+                        <th>{{ gettext('RAM Load') }}</th>
+                        <th>{{ gettext('Disk usage') }}</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for status in server_status %}
+                        <tr>
+                            <td>{{ status.name }}</td>
+                            <td>{{ status.address }}</td>
+                            <td>{{ status.cpu.name }} x{{ status.cpu.ncores }}</td>
+                            <td>{{ status.cpu.load|round(1, 'floor') }}%</td>
+                            <td>{{ (status.ram.used/1024)|round|int }}M / {{ (status.ram.total/1024)|round|int }}M</td>
+                            <td>
+                                {% if  status.disk.total==0 %}
+                                    {{ gettext('Unknown') }}
+                                {% else %}
+                                    <a href="#" data-toggle="modal" data-target="#disk_{{ status.name }}">{{ (status.disk.used*100/status.disk.total)|round(1, 'floor') }}%</a>
+                                {% endif %}                            
+                            </td>
+                            <td>
+                                {% if  status.cpu.load==0 and status.ram.used==0 %}
+                                    <a href="{{ request.route_url('server_status') }}?delete={{ status.name }}" class="btn btn-primary"><span class="fa fa-trash"></span> {{ gettext('Delete') }}</a>
+                                {% else %}
+                                    <a href="{{ request.route_url('server_log') }}?server={{ status.name }}" class="btn btn-primary"><span class="fa fa-file-text-o"></span> {{ gettext('Log') }}</a>
+                                    <a href="{{ request.route_url('server_connections') }}?server={{ status.name }}" class="btn btn-primary"><span class="fa fa-exchange"></span> {{ gettext('Connections') }}</a>
+                                {% endif %}                            
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

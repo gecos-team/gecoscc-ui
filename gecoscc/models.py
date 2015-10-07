@@ -137,8 +137,8 @@ class PrinterManufacturerValidator(object):
 
 
 class LowerAlphaNumeric(object):
-    err_msg = _('Only lowercase letters or numbers')
-    regex = re.compile(r'^([a-z]|[0-9])*$')
+    err_msg = _('Only lowercase letters, numbers or dots')
+    regex = re.compile(r'^([a-z0-9\.])*$')
 
     def __call__(self, node, value):
         if not self.regex.match(value):
@@ -209,6 +209,21 @@ class Groups(colander.SequenceSchema):
     groups = Group()
 
 
+class Setting(colander.MappingSchema):
+    _id = colander.SchemaNode(ObjectIdField())
+    key = colander.SchemaNode(colander.String(),
+                                     title=_('Key'),
+                                     default='',
+                                     missing='')
+    value = colander.SchemaNode(colander.String('UTF-8'),
+                                    title=_('Value'),
+                                    default='',
+                                    missing='')
+    type = colander.SchemaNode(colander.String(),
+                                    title=_('Type'),
+                                    default='',
+                                    missing='')
+
 class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
                                      title=_('First name'),
@@ -231,6 +246,9 @@ class User(Node, BaseUser):
     address = colander.SchemaNode(colander.String(),
                                   default='',
                                   missing='')
+    commentaries = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')								 								  
     memberof = ObjectIdList(missing=[], default=[])
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
@@ -459,6 +477,9 @@ class Computer(Node):
     serial = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
+    commentaries = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')								 
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
