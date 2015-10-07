@@ -545,10 +545,13 @@ class BaseGecosTestCase(unittest.TestCase):
         api = api_class(request_delete)
         return api.delete()
 
-    def register_computer(self, data):
+    def register_computer(self, ou_name='OU 1'):
         '''
         Useful method, register a computer
         '''
+        ou = self.get_db().nodes.find_one({'name': ou_name})
+        data = {'ou_id': ou['_id'],
+                'node_id': '36e13492663860e631f53a00afcdd92d'}
         request = self.get_dummy_request()
         request.POST = data
         computer_response = RegisterComputerResource(request)
@@ -818,13 +821,7 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
 
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-
-        self.register_computer(data)
+        self.register_computer()
 
         request = self.get_dummy_request()
         computer_api = ComputerResource(request)
@@ -882,14 +879,11 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create a storage
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         data, new_storage = self.create_storage('carpeta')
 
         # Register workstation
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register admin
         admin_username = 'superuser'
@@ -941,14 +935,11 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create printer
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         data, new_printer = self.create_printer('printer test')
 
         # Register workstation
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         computer = db.nodes.find_one({'name': 'testing'})
         request = self.dummy_get_request(computer, ComputerResource.schema_detail)
@@ -1002,9 +993,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Add policy in OU and check if this policy is applied in chef node
         package_res_policy = self.get_default_ws_policy()
@@ -1059,9 +1048,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
@@ -1127,9 +1114,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign group to computer
@@ -1188,11 +1173,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create a workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign groupA and groupB to computer
@@ -1256,9 +1238,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
         # Assign groupA and groupB to computer
@@ -1319,9 +1299,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
@@ -1392,11 +1370,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register user in chef node
         username = 'testuser'
@@ -1466,11 +1441,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register user in chef node
         username = 'testuser'
@@ -1532,9 +1504,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Add policy in OU and check if this policy is applied in chef node
         package_res_policy = self.get_default_ws_policy()
@@ -1588,9 +1558,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
@@ -1657,9 +1625,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': domain_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer(ou_name=domain_1['name'])
 
         # Register administrator
         admin_username = 'superuser'
@@ -1727,9 +1693,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
@@ -1793,11 +1757,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Create a workstation in OU
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
@@ -1870,9 +1831,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
@@ -1942,9 +1901,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Register user in chef node
         username = 'testuser'
@@ -1997,9 +1954,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in domain
         username = 'usertest'
@@ -2060,9 +2015,7 @@ class AdvancedTests(BaseGecosTestCase):
         db = self.get_db()
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': domain_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer(ou_name=domain_1['name'])
 
         # Create user in OU
         username = 'testuser'
@@ -2129,14 +2082,11 @@ class AdvancedTests(BaseGecosTestCase):
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
-
         # Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in OU
         username = 'usertest'
@@ -2203,11 +2153,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in OU
         username = 'usertest'
@@ -2292,11 +2239,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in OU
         username = 'usertest'
@@ -2387,11 +2331,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in OU
         username = 'usertest'
@@ -2470,11 +2411,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register workstation
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
-        data = {'ou_id': ou_1['_id'],
-                'node_id': node_id}
-        self.register_computer(data)
+        self.register_computer()
 
         # Create user in OU
         username = 'usertest'
