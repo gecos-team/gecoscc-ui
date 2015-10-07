@@ -381,10 +381,13 @@ class BaseGecosTestCase(unittest.TestCase):
         node_deleted = self.get_db().nodes.find_one({field_name: field_value})
         self.assertIsNone(node_deleted)
 
-    def assertIsPaginatedCollection(self, data):
+    def assertIsPaginatedCollection(self, api_class):
         '''
         Useful method. check if data is a paginated collection
         '''
+        request = self.get_dummy_request()
+        node_api = api_class(request)
+        data = node_api.collection_get()
         self.assertIsInstance(data['nodes'], list)
         self.assertIsInstance(data['pages'], int)
         self.assertIsInstance(data['pagesize'], int)
@@ -408,24 +411,8 @@ class BaseGecosTestCase(unittest.TestCase):
         ou_api = OrganisationalUnitResource(request_post)
         flag_new = ou_api.collection_post()
 
-        data = {'name': 'Domain 1',
-                'type': 'ou',
-                'path': '%s,%s' % (flag_new['path'], flag_new['_id']),
-                'master': 'gecos',
-                'source': 'gecos'}
-
-        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request_post)
-        domain_new = ou_api.collection_post()
-
-        data = {'name': 'OU 1',
-                'type': 'ou',
-                'path': '%s,%s' % (domain_new['path'], domain_new['_id']),
-                'source': 'gecos'}
-
-        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
-        ou_api = OrganisationalUnitResource(request_post)
-        domain_new = ou_api.collection_post()
+        data, domain = self.create_domain('Domain 1', flag_new)
+        data, ou = self.create_ou('OU 1')
 
     @mock.patch('gecoscc.commands.import_policies.get_cookbook')
     def import_policies(self, get_cookbook_method):
@@ -500,6 +487,30 @@ class BaseGecosTestCase(unittest.TestCase):
                 'source': 'gecos'}
         return self.create_node(data, UserResource, ou_name)
 
+    def create_ou(self, ou_name, domain_name='Domain 1'):
+        '''
+        Useful method, create an OU
+        '''
+        db = self.get_db()
+        domain = db.nodes.find_one({'name': domain_name})
+
+        data = {'name': ou_name,
+                'type': 'ou',
+                'path': '%s,%s' % (domain['path'], domain['_id']),
+                'source': 'gecos'}
+        return self.create_node(data, OrganisationalUnitResource, ou_name='Domain 1')
+
+    def create_domain(self, ou_name, flag):
+        '''
+        Useful method, create a Domain
+        '''
+        data = {'name': 'Domain 1',
+                'type': 'ou',
+                'path': '%s,%s' % (flag['path'], flag['_id']),
+                'master': 'gecos',
+                'source': 'gecos'}
+        return self.create_node(data, OrganisationalUnitResource, ou_name=flag['name'])
+
     def create_node(self, data, api_class, ou_name='OU 1'):
         '''
         Useful method, create a node
@@ -513,19 +524,6 @@ class BaseGecosTestCase(unittest.TestCase):
         object_api = api_class(request_post)
 
         return (data, object_api.collection_post())
-
-    def create_ou(self, ou_name, domain_name='Domain 1'):
-        '''
-        Useful method, create an OU
-        '''
-        db = self.get_db()
-        domain = db.nodes.find_one({'name': domain_name})
-
-        data = {'name': ou_name,
-                'type': 'ou',
-                'path': '%s,%s' % (domain['path'], domain['_id']),
-                'source': 'gecos'}
-        return self.create_node(data, OrganisationalUnitResource, ou_name='Domain 1')
 
     def update_node(self, obj, field_name, field_value, api_class):
         '''
@@ -610,6 +608,35 @@ class BaseGecosTestCase(unittest.TestCase):
             node_policy = node.attributes.get_dotted(policy_dir)
             return node_policy
 
+    def apply_mocks(self, get_cookbook_method=None, get_cookbook_method_tasks=None, NodeClass=None,
+                    ChefNodeClass=None, isinstance_method=None, gettext=None, create_chef_admin_user_method=None,
+                    ChefNodeStatusClass=None, TaskNodeClass=None, TaskClientClass=None, ClientClass=None):
+        '''
+        mocks
+        '''
+        if get_cookbook_method is not None:
+            get_cookbook_method.side_effect = get_cookbook_mock
+        if get_cookbook_method_tasks is not None:
+            get_cookbook_method_tasks.side_effect = get_cookbook_mock
+        if NodeClass is not None:
+            NodeClass.side_effect = NodeMock
+        if ChefNodeClass is not None:
+            ChefNodeClass.side_effect = NodeMock
+        if isinstance_method is not None:
+            isinstance_method.side_effect = isinstance_mock
+        if gettext is not None:
+            gettext.side_effect = gettext_mock
+        if create_chef_admin_user_method is not None:
+            create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        if ChefNodeStatusClass is not None:
+            ChefNodeStatusClass.side_effect = NodeMock
+        if TaskNodeClass is not None:
+            TaskNodeClass.side_effect = NodeMock
+        if TaskClientClass is not None:
+            TaskClientClass.side_effect = ClientMock
+        if ClientClass is not None:
+            ClientClass.side_effect = ClientMock
+
 
 class BasicTests(BaseGecosTestCase):
 
@@ -617,9 +644,11 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 1: Check the home works
         '''
+        # 1 - Create request access to home view's
         request = self.get_dummy_request()
         context = LoggedFactory(request)
         response = home(context, request)
+        # 2 - Check if the response is valid
         self.assertEqual(json.loads(response['websockets_enabled']), False)
         self.assertNoErrorJobs()
 
@@ -629,20 +658,26 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 2: Create, update and delete a printer
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        printer_api = PrinterResource(request)
-        self.assertIsPaginatedCollection(data=printer_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=PrinterResource)
 
+        # 1 - Create printer
         data, new_printer = self.create_printer('Testprinter')
+
+        # 2 - Verification that the printers has been created successfully
         self.assertEqualsObjects(data, new_printer)
 
+        # 3 - Update printer's description
         printer_updated = self.update_node(obj=new_printer, field_name='description',
                                            field_value=u'Test', api_class=PrinterResource)
+
+        # 4 - Verification that printer's description has been updated successfully
         self.assertEqualsObjects(new_printer, printer_updated, PrinterResource.schema_detail)
 
+        # 5 - Delete printer
         self.delete_node(printer_updated, PrinterResource)
+
+        # 6 - Verification that the printers has been deleted successfully
         self.assertDeleted(field_name='name', field_value='Printer tests')
 
         self.assertNoErrorJobs()
@@ -653,20 +688,25 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 3: Create, update and delete a shared folder
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        folder_api = StorageResource(request)
-        self.assertIsPaginatedCollection(data=folder_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=StorageResource)
 
+        # 1 - Create shared folder
         data, new_folder = self.create_storage('test_storage')
+
+        # 2 - Verification that the shared folder has been created successfully
         self.assertEqualsObjects(data, new_folder)
 
+        # 3 - Update shared folder's URI
         folder_updated = self.update_node(obj=new_folder, field_name='uri', field_value=u'Test',
                                           api_class=StorageResource)
+        # 4 - Verification that shared folder's URI has been updated successfully
         self.assertEqualsObjects(new_folder, folder_updated, StorageResource.schema_detail)
 
+        # 5 - Delete shared folder
         self.delete_node(folder_updated, StorageResource)
+
+        # 6 - Verification that the shared folder has been deleted successfully
         self.assertDeleted(field_name='name', field_value='Folder tests')
 
         self.assertNoErrorJobs()
@@ -677,11 +717,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 4: Create, update and delete a repository
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        repository_api = RepositoryResource(request)
-        self.assertIsPaginatedCollection(data=repository_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=RepositoryResource)
 
         data, new_repository = self.create_repository('Repo')
         self.assertEqualsObjects(data, new_repository)
@@ -701,11 +738,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 5: Create, update and delete an user
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=UserResource)
 
         data, new_user = self.create_user('adiaz')
         self.assertEqualsObjects(data, new_user)
@@ -725,11 +759,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 6: Creation and delete a group
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        group_api = GroupResource(request)
-        self.assertIsPaginatedCollection(data=group_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=GroupResource)
 
         data, new_group = self.create_group('testgroup')
         self.assertEqualsObjects(data, new_group)
@@ -750,13 +781,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 7: Create, update and delete a computer
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        TaskNodeClass.side_effect = NodeMock
-        ClientClass.side_effect = ClientMock
-        isinstance_method.side_effect = isinstance_mock
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
+
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcdd92d'
@@ -784,11 +810,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         Test 8: Create, update and delete a OU
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        request = self.get_dummy_request()
-        folder_api = StorageResource(request)
-        self.assertIsPaginatedCollection(data=folder_api.collection_get())
+        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.assertIsPaginatedCollection(api_class=OrganisationalUnitResource)
 
         data, new_ou = self.create_ou('OU 2')
         self.assertEqualsObjects(data, new_ou)
@@ -820,14 +843,7 @@ class AdvancedTests(BaseGecosTestCase):
         Test 1:
         1. Check the shared_folder policy works using users
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a storage
         db = self.get_db()
@@ -885,14 +901,7 @@ class AdvancedTests(BaseGecosTestCase):
         Test 2:
         1. Check the printer policy works using workstation
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create printer
         db = self.get_db()
@@ -951,11 +960,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies pripority works using organisational unit
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
 
         # Register workstation
         db = self.get_db()
@@ -1003,18 +1008,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using organisational unit and user
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Register administrator
         admin_username = 'superuser'
@@ -1090,18 +1084,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using organisational unit and groups
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup')
@@ -1171,18 +1154,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using workstation and groups
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group_a = self.create_group('group_A')
@@ -1265,18 +1237,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using groups in differents OUs
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group_a = self.create_group('group_A')
@@ -1359,18 +1320,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using groups and OUs
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group = self.create_group('group_test')
@@ -1450,18 +1400,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using groups in the same OU
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group_a = self.create_group('group_A')
@@ -1557,18 +1496,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works using groups in differents OUs
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group
         data, new_group_a = self.create_group('group_A')
@@ -1664,18 +1592,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Register workstation
         db = self.get_db()
@@ -1731,18 +1648,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Register workstation
         db = self.get_db()
@@ -1808,18 +1714,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -1892,18 +1787,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -1979,18 +1863,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -2076,18 +1949,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
         # Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -2175,19 +2037,8 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method,
+                         ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Register administrator
         admin_username = 'superuser'
@@ -2241,19 +2092,8 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Register administrator
         admin_username = 'superuser'
@@ -2312,19 +2152,11 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+
         TaskNodeClass.side_effect = NodeMock
         TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
 
         # Register administrator
         admin_username = 'superuser'
@@ -2394,19 +2226,8 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup')
@@ -2486,19 +2307,8 @@ class AdvancedTests(BaseGecosTestCase):
         Test 21:
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup')
@@ -2596,19 +2406,8 @@ class AdvancedTests(BaseGecosTestCase):
         Test 22:
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup')
@@ -2712,19 +2511,8 @@ class AdvancedTests(BaseGecosTestCase):
         Test 23:
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
@@ -2828,19 +2616,8 @@ class AdvancedTests(BaseGecosTestCase):
         Test 24:
         2. Check the policies priority works
         '''
-        get_cookbook_method.side_effect = get_cookbook_mock
-        get_cookbook_method_tasks.side_effect = get_cookbook_mock
-        NodeClass.side_effect = NodeMock
-        ChefNodeClass.side_effect = NodeMock
-        ChefNodeStatusClass.side_effect = NodeMock
-        isinstance_method.side_effect = isinstance_mock
-        gettext.side_effect = gettext_mock
-        create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
-        TaskNodeClass.side_effect = NodeMock
-        TaskClientClass.side_effect = ClientMock
-        request = self.get_dummy_request()
-        user_api = UserResource(request)
-        self.assertIsPaginatedCollection(data=user_api.collection_get())
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
         # Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
