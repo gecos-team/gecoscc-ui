@@ -4,6 +4,7 @@
 #
 # Authors:
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -1249,9 +1250,9 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
-        group_a = db.nodes.find_one({'name': 'group_A'})
+        group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], computer['_id'])
-        group_b = db.nodes.find_one({'name': 'group_B'})
+        group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], computer['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
@@ -1311,7 +1312,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'group_test'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
         # Add policy in OU and check if this policy is applied in chef node
@@ -1374,9 +1375,9 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
-        group_a = db.nodes.find_one({'name': 'group_A'})
+        group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], user['_id'])
-        group_b = db.nodes.find_one({'name': 'group_B'})
+        group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], user['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
@@ -1439,9 +1440,9 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
-        group_a = db.nodes.find_one({'name': 'group_A'})
+        group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], user['_id'])
-        group_b = db.nodes.find_one({'name': 'group_B'})
+        group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], user['_id'])
 
         # Add policy in A group and check if this policy is applied in chef node
@@ -1626,21 +1627,9 @@ class AdvancedTests(BaseGecosTestCase):
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
         # Assign group to user
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group_b['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-        user['memberof'][0] = ObjectId(user['memberof'][0])
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
-        self.assertEqual(user['memberof'][1], ObjectId(new_group_b['_id']))
+        self.assertNotEqual(user['memberof'][0], ObjectId(new_group_b['_id']))
 
         self.assertNoErrorJobs()
 
@@ -1681,7 +1670,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         computer = db.nodes.find_one({'name': computer['name']})
-        group = db.nodes.find_one({'name': 'group_test'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Add printer to group and check if it is applied in chef node
@@ -1735,7 +1724,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqualsObjects(data, new_ou)
 
         # Create a storage
-        data, new_storage = self.create_storage('shared folder', 'OU 2')
+        data, new_storage = self.create_storage('shared folder', new_ou['name'])
 
         # Create a workstation in OU
         db = self.get_db()
@@ -1757,7 +1746,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        group = db.nodes.find_one({'name': 'group_test'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
         # Add printer to group and check if it is applied in chef node
@@ -1807,7 +1796,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqualsObjects(data, new_ou)
 
         # Create a repository
-        data, new_repository = self.create_repository('repo_ou2', 'OU 2')
+        data, new_repository = self.create_repository('repo_ou2', new_ou['name'])
 
         # Create a workstation in OU
         db = self.get_db()
@@ -1897,10 +1886,10 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Delete OU
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='name', field_value='OU 1')
+        self.assertDeleted(field_name='name', field_value=ou_1['name'])
 
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        computer = db.nodes.find_one({'name': 'testing'})
+        ou_1 = db.nodes.find_one({'name': ou_1['name']})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(ou_1)
         self.assertIsNone(computer)
 
@@ -1964,9 +1953,9 @@ class AdvancedTests(BaseGecosTestCase):
         # Delete OU
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='name', field_value='OU 1')
+        self.assertDeleted(field_name='name', field_value=ou_1['name'])
 
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        ou_1 = db.nodes.find_one({'name': ou_1['name']})
         user = db.nodes.find_one({'name': username})
         self.assertIsNone(ou_1)
         self.assertIsNone(user)
@@ -2024,11 +2013,11 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Delete OU
@@ -2037,8 +2026,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         user = db.nodes.find_one({'name': username})
-        group = db.nodes.find_one({'name': 'testgroup'})
-        workstation = db.nodes.find_one({'name': 'testing'})
+        group = db.nodes.find_one({'name': new_group['name']})
+        workstation = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(ou_1)
         self.assertIsNone(user)
         self.assertIsNone(group)
@@ -2089,42 +2078,30 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][1], user['_id'])
 
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
 
         # Delete group
         self.delete_node(group, GroupResource)
-        self.assertDeleted(field_name='name', field_value='testgroup')
+        self.assertDeleted(field_name='name', field_value=new_group['name'])
 
         user = db.nodes.find_one({'name': username})
-        group = db.nodes.find_one({'name': 'testgroup'})
-        workstation = db.nodes.find_one({'name': 'testing'})
+        group = db.nodes.find_one({'name': new_group['name']})
+        workstation = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(group)
         self.assertEqual(workstation['memberof'], [])
         self.assertEqual(user['memberof'], [])
@@ -2173,31 +2150,19 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        request = self.dummy_get_request(user, UserResource.schema_detail)
-        user_api = UserResource(request)
-        user = user_api.get()
-
-        id_user = new_group['_id']
-        id_user = ObjectId(id_user)
-        id_computer = user['computers']
-        user['computers'] = [ObjectId(id_computer[0])]
-
-        self.update_node(obj=user,
-                         field_name='memberof',
-                         field_value=id_user,
-                         api_class=UserResource)
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][1], user['_id'])
 
         # Add policy in Group and check if this policy is applied in chef node
@@ -2209,7 +2174,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Delete group
         self.delete_node(group, GroupResource)
-        self.assertDeleted(field_name='name', field_value='testgroup')
+        self.assertDeleted(field_name='name', field_value=new_group['name'])
 
         node = NodeMock(node_id, None)
         try:
@@ -2263,11 +2228,11 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Assign group to user
@@ -2275,7 +2240,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][1], user['_id'])
 
         # Add policy in Group and check if this policy is applied in chef node
@@ -2287,7 +2252,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Delete group
         self.delete_node(group, GroupResource)
-        self.assertDeleted(field_name='name', field_value='testgroup')
+        self.assertDeleted(field_name='name', field_value=new_group['name'])
 
         node = NodeMock(node_id, None)
         try:
@@ -2341,11 +2306,11 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to computer
-        computer = db.nodes.find_one({'name': 'testing'})
+        computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
         # Assign group to user
@@ -2353,21 +2318,21 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][1], user['_id'])
 
-        group = db.nodes.find_one({'name': 'testgroup'})
+        group = db.nodes.find_one({'name': new_group['name']})
 
         # Delete group
         request = self.dummy_get_request(group, GroupResource.schema_detail)
         group_api = GroupResource(request)
         group = group_api.get()
         self.delete_node(group, GroupResource)
-        self.assertDeleted(field_name='name', field_value='testgroup')
+        self.assertDeleted(field_name='name', field_value=new_group['name'])
 
         user = db.nodes.find_one({'name': username})
-        group = db.nodes.find_one({'name': 'testgroup'})
-        workstation = db.nodes.find_one({'name': 'testing'})
+        group = db.nodes.find_one({'name': new_group['name']})
+        workstation = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(group)
         self.assertEqual(workstation['memberof'], [])
         self.assertEqual(user['memberof'], [])
