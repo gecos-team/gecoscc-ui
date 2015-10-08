@@ -1864,61 +1864,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_17_delete_ou_with_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
-        '''
-        Test 17:
-        1. Check the registration work station works
-        2. Check the policies priority works
-        '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method,
-                         ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
-
-        # Register administrator
-        admin_username = 'superuser'
-        self.add_admin_user(admin_username)
-
-        # Register workstation
-        db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
-        self.register_computer()
-
-        # Register user in chef node
-        username = 'testuser'
-        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
-        user = db.nodes.find_one({'name': username})
-        computer = db.nodes.find_one({'name': 'testing'})
-        self.assertEqual(user['computers'][0], computer['_id'])
-
-        # Delete OU
-        self.delete_node(ou_1, OrganisationalUnitResource)
-        self.assertDeleted(field_name='name', field_value='OU 1')
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        user = db.nodes.find_one({'name': username})
-        computer = db.nodes.find_one({'name': 'testing'})
-
-        self.assertIsNone(ou_1)
-        self.assertIsNone(user)
-        self.assertIsNone(computer)
-        self.assertIsNone(NODES)
-
-        self.assertNoErrorJobs()
-
-    @mock.patch('gecoscc.tasks.Client')
-    @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
-    @mock.patch('gecoscc.forms.create_chef_admin_user')
-    @mock.patch('gecoscc.forms._')
-    @mock.patch('gecoscc.utils.isinstance')
-    @mock.patch('chef.Node')
-    @mock.patch('gecoscc.utils.ChefNode')
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_18_delete_ou_with_workstation_and_user_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+    def test_17_delete_ou_with_workstation_and_user_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                                               gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 18:
+        Test 17:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
@@ -1971,10 +1920,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_19_delete_ou_with_user_and_workstation_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+    def test_18_delete_ou_with_user_and_workstation_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                                               gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 19:
+        Test 18:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
@@ -2041,11 +1990,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_20_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+    def test_19_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
                                      isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass,
                                      TaskNodeClass, TaskClientClass):
         '''
-        Test 20:
+        Test 19:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
@@ -2108,10 +2057,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_21_delete_group_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+    def test_20_delete_group_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                                        gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 21:
+        Test 20:
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
@@ -2192,10 +2141,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_22_delete_group_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext,
+    def test_21_delete_group_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext,
                                           create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 22:
+        Test 21:
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
@@ -2282,10 +2231,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_23_delete_group_in_domain_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+    def test_22_delete_group_in_domain_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                                     gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 23:
+        Test 22:
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
@@ -2360,10 +2309,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_24_delete_group_in_domain_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+    def test_23_delete_group_in_domain_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                                                  gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
-        Test 24:
+        Test 23:
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
