@@ -46,6 +46,7 @@ from gecoscc.views.admins import admin_add
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
 CHEF_URL = 'https://CHEF_URL/'
+NODE_ID = '36e13492663860e631f53a00afcdd92d'
 
 
 def create_chef_admin_user_mock(api, settings, username, password=None):
@@ -194,8 +195,23 @@ class NodeMock(object):
         else:
             node_attributes_json = open('gecoscc/test_resources/node_attributes.json').read().replace(
                 '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', node_id)
-            self.attributes = NodeAttributesMock(json.loads(node_attributes_json), self)
+
+            node_attributes_json = json.loads(node_attributes_json)
+            self.check_no_exists_name(node_attributes_json)
+            self.attributes = NodeAttributesMock(node_attributes_json, self)
             self.normal = self.attributes
+
+    def check_no_exists_name(self, node_attributes_json):
+        name = node_attributes_json['ohai_gecos']['pclabel']
+        db = BaseGecosTestCase.get_db()
+        exists = db.nodes.find_one({'name': name})
+        i = 0
+        while exists:
+            name = '%s-%s' % (name, i)
+            i = i + 1
+            exists = db.nodes.find_one({'name': name})
+        node_attributes_json['ohai_gecos']['pclabel'] = name
+        return node_attributes_json
 
     def get(self, key, default=None):
         return self.attributes.get(key, default)
@@ -234,6 +250,7 @@ class BaseGecosTestCase(unittest.TestCase):
     def tearDown(self):
         testing.tearDown()
 
+    @classmethod
     def get_db(self):
         '''
         Useful method, returns a database connection
@@ -550,13 +567,14 @@ class BaseGecosTestCase(unittest.TestCase):
         api = api_class(request_delete)
         return api.delete()
 
-    def register_computer(self, ou_name='OU 1'):
+    def register_computer(self, ou_name='OU 1', node_id=None):
         '''
         Useful method, register a computer
         '''
         ou = self.get_db().nodes.find_one({'name': ou_name})
+        node_id = node_id or NODE_ID
         data = {'ou_id': ou['_id'],
-                'node_id': '36e13492663860e631f53a00afcdd92d'}
+                'node_id': node_id}
         request = self.get_dummy_request()
         request.POST = data
         computer_response = RegisterComputerResource(request)
@@ -774,15 +792,23 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.assertIsPaginatedCollection(api_class=RepositoryResource)
-
+        # 1 - Create repository
         data, new_repository = self.create_repository('Repo')
+
+        # 2 - Verification that the repository has been created successfully
         self.assertEqualsObjects(data, new_repository)
 
+        # 3 - Update repository's URI
         repository_update = self.update_node(obj=new_repository, field_name='uri',
                                              field_value=u'Test', api_class=RepositoryResource)
+
+        # 4 - Verification that shared folder's URI has been updated successfully
         self.assertEqualsObjects(new_repository, repository_update, RepositoryResource.schema_detail)
 
+        # 5 - Delete repository
         self.delete_node(repository_update, RepositoryResource)
+
+        # 6 - Verification that the repository has been deleted successfully
         self.assertDeleted(field_name='name', field_value='Repo')
 
         self.assertNoErrorJobs()
@@ -795,15 +821,23 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.assertIsPaginatedCollection(api_class=UserResource)
+        # 1 - Create user
+        data, new_user = self.create_user('testuser')
 
-        data, new_user = self.create_user('adiaz')
+        # 2 - Verification that the user has been created successfully
         self.assertEqualsObjects(data, new_user)
 
+        # 3 - Update user's first name
         user_updated = self.update_node(obj=new_user, field_name='first_name',
                                         field_value=u'Another name', api_class=UserResource)
+
+        # 4 - Verification that user's first name has been updated successfully
         self.assertEqualsObjects(new_user, user_updated, UserResource.schema_detail)
 
+        # 5 - Delete user
         self.delete_node(user_updated, UserResource)
+
+        # 6 - Verification that the user has been deleted successfully
         self.assertDeleted(field_name='first_name', field_value='Another name')
 
         self.assertNoErrorJobs()
@@ -816,11 +850,16 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.assertIsPaginatedCollection(api_class=GroupResource)
-
+        # 1 - Create group
         data, new_group = self.create_group('testgroup')
+
+        # 2 - Verification that the group has been created successfully
         self.assertEqualsObjects(data, new_group)
 
+        # 3 - Delete group
         self.delete_node(new_group, GroupResource)
+
+        # 4 - Verification that the group has been deleted successfully
         self.assertDeleted(field_name='name', field_value='group')
 
         self.assertNoErrorJobs()
@@ -839,17 +878,26 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
 
+        # 1 - Register workstation
         self.register_computer()
 
+        # 2  Verification that the workstation has been registered successfully
+        computer = self.get_db().nodes.find_one({'name': 'testing'})
+
+        # 3 Update workstation's type
         request = self.get_dummy_request()
         computer_api = ComputerResource(request)
         computer = computer_api.collection_get()
-
         computer_updated = self.update_node(obj=computer['nodes'][0], field_name='family',
                                             field_value=u'laptop', api_class=ComputerResource)
+
+        # 4 - Verification that the workstation's type has been udpated successfully
         self.assertEqualsObjects(computer['nodes'][0], computer_updated, ComputerResource.schema_detail)
 
+        # 5 - Delete workstation
         self.delete_node(computer_updated, ComputerResource)
+
+        # 6 - Verification that the workstation has been deleted successfully
         self.assertDeleted(field_name='name', field_value='testing')
 
         self.assertNoErrorJobs()
@@ -862,17 +910,25 @@ class BasicTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.assertIsPaginatedCollection(api_class=OrganisationalUnitResource)
-
+        # 1 - Create OU
         data, new_ou = self.create_ou('OU 2')
+
+        # 2 - Verification that the OU has been created successfully
         self.assertEqualsObjects(data, new_ou)
 
+        # 3 - Update OU's extra
         ou_updated = self.update_node(obj=new_ou,
                                       field_name='extra',
                                       field_value=u'Test',
                                       api_class=OrganisationalUnitResource)
+
+        # 4 - Verification that OU has been updated successfully
         self.assertEqualsObjects(new_ou, ou_updated, OrganisationalUnitResource.schema_detail)
 
+        # 5 - Delete OU
         self.delete_node(ou_updated, OrganisationalUnitResource)
+
+        # 6 - Verification that the OU has been deleted successfully
         self.assertDeleted(field_name='extra', field_value='Test')
 
         self.assertNoErrorJobs()
@@ -896,23 +952,23 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a storage
+        # 1 - Create storage
         db = self.get_db()
         data, new_storage = self.create_storage('shared folder')
 
-        # Register workstation
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        # 2 - Register workstation in OU
+        node_id = NODE_ID
         self.register_computer()
 
         # Register admin
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register user in chef node
+        # 3, 4 - Create and register user in chef node
         username = 'usertest'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Add storage to user and check if it is applied in chef node
+        # 5 - Add storage to user and check if it is applied in chef node
         user = db.nodes.find_one({'name': username})
         request = self.dummy_get_request(user, UserResource.schema_detail)
         user_api = UserResource(request)
@@ -926,15 +982,25 @@ class AdvancedTests(BaseGecosTestCase):
         user['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
         policy_dir = storage_policy['path'] + '.' + username + '.gtkbookmarks'
         storage_policy = self.add_and_get_policy(node=user, node_id=node_id, api_class=UserResource, policy_dir=policy_dir)
+
+        # 6 - Verification if the storage is applied to user in chef node
         self.assertEqualsObjects(storage_policy[0], new_storage, fields=('name',
                                                                          'uri'))
-        # Modify storage and check if is applied in chef node
+
+        # 7 - Update storage's URI
         storage_update = self.update_node(obj=new_storage, field_name='uri',
                                           field_value='http://modify.storage.com', api_class=StorageResource)
         node = NodeMock(node_id, None)
+
+        # 8 - Verification that the storage has been updated successfully in chef node
         storage_policy = node.attributes.get_dotted(policy_dir)
         self.assertEqualsObjects(storage_policy[0], storage_update, fields=('name',
                                                                             'uri'))
+
+        # 9 - Delete storage and verification that the repository has beed deleted successfully in chef node
+        storage_policy = self.remove_policy_and_get_dotted(user, node_id, UserResource, policy_dir)
+        self.assertEquals(storage_policy, [])
+
         self.assertNoErrorJobs()
 
     @mock.patch('gecoscc.api.chef_status.Node')
@@ -953,42 +1019,46 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create printer
+        # 1 - Create printer
         db = self.get_db()
         data, new_printer = self.create_printer('printer test')
 
-        # Register workstation
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        # 2 - Register workstation
+        node_id = NODE_ID
         self.register_computer()
 
+        # 3 - Add printer to workstation and check if it is applied in chef node
         computer = db.nodes.find_one({'name': 'testing'})
         request = self.dummy_get_request(computer, ComputerResource.schema_detail)
         computer_api = ComputerResource(request)
         computer = computer_api.get()
 
-        # Add printer to workstation and check if it is applied in chef node
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
         computer['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
         policy_dir = printer_policy['path']
         printer_policy = self.add_and_get_policy(node=computer, node_id=node_id, api_class=ComputerResource, policy_dir=policy_dir)
+
+        # 4 - Verification if the printer is applied to workstation in chef node
         self.assertEqualsObjects(printer_policy[0], new_printer, fields=('oppolicy',
                                                                          'model',
                                                                          'uri',
                                                                          'name',
                                                                          'manufacturer'))
 
-        # Modify printer and check if is applied in chef node
+        # 5 - Modify printer's URI and check if is applied in chef node
         node = NodeMock(node_id, None)
         printer_update = self.update_node(obj=new_printer, field_name='uri',
                                           field_value='http://modifiy.example.com', api_class=PrinterResource)
         printer_policy = node.attributes.get_dotted(policy_dir)
+
+        # 6 - Verification that the printer's URI has been updated successfully in chef node
         self.assertEqualsObjects(printer_policy[0], printer_update, fields=('oppolicy',
                                                                             'model',
                                                                             'uri',
                                                                             'name',
                                                                             'manufacturer'))
 
-        # Delete printer and check if it appears in chef node
+        # 7 - Delete printer and check if the chef node has been updated
         self.delete_node(printer_update, PrinterResource)
         self.assertDeleted(field_name='name', field_value='printer test')
         printer_policy = node.attributes.get_dotted(policy_dir)
@@ -1010,28 +1080,60 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
 
-        # Register workstation
+        # 1 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 2 - Add policy in OU
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 3 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_ou_policy, ['gimp'])
 
-        # Add policy in domain and check if OU's policy is applied in chef node
+        # 4 - Add policy in domain
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_domain_policy = self.add_and_get_policy(node=domain_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 5 - Verification if OU's policy is applied in chef node
         self.assertEquals(package_res_domain_policy, ['gimp'])
 
-        # Remove policy in OU and check if domain_1's policy is applied in chef node
+        # 6 - Remove policy in OU and check if domain_1's policy is applied in chef node
         package_list = self.remove_policy_and_get_dotted(ou_1, node_id, OrganisationalUnitResource, policy_dir)
         self.assertEquals(package_list, ['libreoffice'])
+        self.assertNoErrorJobs()
+
+        # 7 - Remove policy in domain and check if domain_1's policy isn't applied in chef node
+        package_list = self.remove_policy_and_get_dotted(domain_1, node_id, OrganisationalUnitResource, policy_dir)
+        self.assertEquals(package_list, [])
+
+        # 8, 9 - Add policy to workstation and verification if ws's policy has been applied successfully
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
+        package_res_computer_policy = self.add_and_get_policy(node=computer, node_id=node_id, api_class=ComputerResource, policy_dir=policy_dir)
+        self.assertEquals(package_res_computer_policy, ['gimp'])
+
+        # 10 - Add policy in OU
+        package_res_policy = self.get_default_ws_policy()
+        policy_dir = package_res_policy['path'] + '.package_list'
+        ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['2ping'], 'pkgs_to_remove': []}}
+        package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 10 - Create workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        node_id = '36e13492663860e631f53a00afcsi29f'
+        self.register_computer(node_id=node_id)
+
+        # 11 - Verification that the OU's policy has been applied successfully
+        node = NodeMock(node_id, None)
+        ou_policy = node.attributes.get_dotted(policy_dir)
+        self.assertEquals(ou_policy, ['2ping'])
         self.assertNoErrorJobs()
 
     @mock.patch('gecoscc.api.chef_status.Node')
@@ -1055,31 +1157,35 @@ class AdvancedTests(BaseGecosTestCase):
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Create a node user
+        # 1 - Create user
         username = 'testuser'
         data, new_user = self.create_user(username)
         self.assertEqualsObjects(data, new_user)
 
-        # Register workstation
+        # 2 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Register user in chef node
+        # 3 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 4 - Add policy in OU
         user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 5 - Verification if this policy has been applied successfully
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
-        # Add policy in user and check if this policy is applied in chef node
+        # 6 - Add policy in user
         user_policy = db.nodes.find_one({'name': username})
         user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncher']}}
         user_policy = self.add_and_get_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir=policy_dir)
+
+        # 7 - Verification if this policy has been applied successfully
         self.assertEquals(user_policy, ['UserLauncher'])
 
         # Remove policy in OU
@@ -1089,20 +1195,26 @@ class AdvancedTests(BaseGecosTestCase):
         ou_1_updated = ou_api.put()
         self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
 
-        # Register user in chef node
+        # 8 - Create user
         username = 'usertest'
+
+        # 9 - Assign user to workstation
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Add policy in user and check if this policy is applied in chef node
+        # 10 - Add policy in user
         user_policy = db.nodes.find_one({'name': username})
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         user_policy['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['UserLauncherWithoutComputer']}}
         user_policy = self.add_and_get_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir=policy_dir)
+
+        # 11 - Verification if this policy has been applied successfully
         self.assertEquals(user_policy, ['UserLauncherWithoutComputer'])
 
-        # Add policy in OU and check if the user's policy is applied in chef node
+        # 12 - Add policy in OU
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 13 - Verification if the user's policy is applied in chef node
         self.assertEquals(ou_policy, ['UserLauncherWithoutComputer'])
 
         self.assertNoErrorJobs()
@@ -1124,37 +1236,43 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1- Create a group
         data, new_group = self.create_group('testgroup')
 
-        # Create a workstation
+        # 2 - Register a workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
-        # Assign group to computer
+        # 3 - Assign group to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
         self.assertEqual(group['members'][0], computer['_id'])
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 4 - Add policy in OU
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 5 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_ou_policy, ['gimp'])
 
-        # Add policy in Group and check if this policy is applied in chef node
+        # 6 - Add policy in Group
         group['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 7 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_ou_policy, ['libreoffice'])
 
-        # Remove policy in Group and check if the OU's policy is applied in chef node
+        # 8 - Remove policy in Group
         package_list = self.remove_policy_and_get_dotted(group, node_id, GroupResource, policy_dir)
+
+        # 9 - Verification if the OU's policy is applied in chef node
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1176,20 +1294,22 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
 
-        # Create a group
+        # 2 - Create B group
         data, new_group_b = self.create_group('group_B')
 
-        # Create a workstation
+        # 3 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
-        # Assign groupA and groupB to computer
+        # 4 - Assign groupA to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_a)
+
+        # 5 - Assign groupB to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
@@ -1198,20 +1318,26 @@ class AdvancedTests(BaseGecosTestCase):
         group_b = db.nodes.find_one({'name': 'group_B'})
         self.assertEqual(group_b['members'][0], computer['_id'])
 
-        # Add policy in A group and check if this policy is applied in chef node
+        # 6 - Add policy in A group
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 7 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Add policy in B group and check if the A group's policy is applied in chef node
+        # 8 - Add policy in B group
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 9 - Verification if the A group's policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Remove policy in A group and check if the B group's policy is applied in chef node
+        # 10 - Remove policy in A group
         package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
+
+        # 11 - Verification if the B group's policy is applied in chef node
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1233,20 +1359,22 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
 
-        # Create a group
+        # 2 - Create B group
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
-        # Create a workstation
+        # 3 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
         computer = db.nodes.find_one({'name': 'testing'})
 
-        # Assign groupA and groupB to computer
+        # 4 - Assign groupA to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_a)
+
+        # 5 - Assign groupB to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
@@ -1255,20 +1383,26 @@ class AdvancedTests(BaseGecosTestCase):
         group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], computer['_id'])
 
-        # Add policy in A group and check if this policy is applied in chef node
+        # 6 - Add policy in A group
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 7 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Add policy in B group and check if the A group's policy is applied in chef node
+        # 8 - Add policy in B group
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 9 - Verification if the A group's policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Remove policy in A group and check if the B group's policy is applied in chef node
+        # 10 - Remove policy in A group
         package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
+
+        # 11 - Verifiction if the B group's policy is applied in chef node
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1290,24 +1424,26 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('group_test')
 
-        # Create a workstation
+        # 2 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register user in chef node
+        # 3 - Register user in chef node
         username = 'testuser'
+
+        # 4 - Assign user to computer
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Assign group to user
+        # 5 - Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
@@ -1315,20 +1451,26 @@ class AdvancedTests(BaseGecosTestCase):
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 6 - Add policy in OU
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 7 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_ou_policy, ['libreoffice'])
 
-        # Add policy in group and check if this policy is applied in chef node
+        # 8 - Add policy in group
         group['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 9 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['gimp'])
 
-        # Remove policy in group and check if the OU's policy is applied in chef node
+        # 10 - Remove policy in group
         package_list = self.remove_policy_and_get_dotted(group, node_id, GroupResource, policy_dir)
+
+        # 11 - Verification if the OU's policy is applied in chef node
         self.assertEquals(package_list, ['libreoffice'])
 
         self.assertNoErrorJobs()
@@ -1350,28 +1492,30 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
 
-        # Create a group
+        # 2 - Create B group
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 3 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Register user in chef node
+        # 4, 5 - Register user in chef node
         username = 'testuser'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Assign A group and B group to user
+        # 6 - Assign A group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_a)
+
+        # 7 - Assign B group to user
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
@@ -1380,20 +1524,26 @@ class AdvancedTests(BaseGecosTestCase):
         group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], user['_id'])
 
-        # Add policy in A group and check if this policy is applied in chef node
+        # 8 - Add policy in A group
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 9 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Add policy in B group and check if the A group's policy is applied in chef node
+        # 10 -  Add policy in B group
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 11 - Verification if the A group's policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Remove policy in A group and check if the B group's policy is applied in chef node
+        # 12 - Remove policy in A group
         package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
+
+        # 13 - Verification if the B group's policy is applied in chef node
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1415,28 +1565,30 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group
+        # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
 
-        # Create a group
+        # 1 - Create B group
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 3 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Register user in chef node
+        # 4, 5 - Register user in chef node
         username = 'testuser'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Assign A group and B group to user
+        # 6 - Assign A group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_a)
+
+        # 7  - Assign B group to user
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
         # Check if group's node is update in node chef
@@ -1445,20 +1597,26 @@ class AdvancedTests(BaseGecosTestCase):
         group_b = db.nodes.find_one({'name': new_group_b['name']})
         self.assertEqual(group_b['members'][0], user['_id'])
 
-        # Add policy in A group and check if this policy is applied in chef node
+        # 8 - Add policy in A group
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         group_a['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_a, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 9 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Add policy in B group and check if the A group's policy is applied in chef node
+        # 10 - Add policy in B group
         group_b['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_group_policy = self.add_and_get_policy(node=group_b, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
+
+        # 11 - Verification if the A group's policy is applied in chef node
         self.assertEquals(package_res_group_policy, ['libreoffice'])
 
-        # Remove policy in A group and check if the B group's policy is applied in chef node
+        # 12 - Remove policy in A group
         package_list = self.remove_policy_and_get_dotted(group_a, node_id, GroupResource, policy_dir)
+
+        # 13 - Verification if the B group's policy is applied in chef node
         self.assertEquals(package_list, ['gimp'])
 
         self.assertNoErrorJobs()
@@ -1480,27 +1638,30 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Register workstation
+        # 1 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 2 - Add policy in OU
         package_res_policy = self.get_default_ws_policy()
         policy_dir = package_res_policy['path'] + '.package_list'
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 3 - Verification if this policy is applied in chef node
         self.assertEquals(package_res_ou_policy, ['gimp'])
 
-        # Add policy in domain and check if the OU's policy is applied in chef node
+        # 4 - Add policy in domain
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
         package_res_domain_policy = self.add_and_get_policy(node=domain_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
 
+        # 5 - Verification if the OU's policy is applied in chef node
         self.assertEquals(package_res_domain_policy, ['gimp'])
 
-        # Move workstation to domain_1
+        # 6 - Move workstation to domain_1
         computer = db.nodes.find_one({'name': 'testing'})
         request = self.dummy_get_request(computer, ComputerResource.schema_detail)
         computer_api = ComputerResource(request)
@@ -1511,7 +1672,7 @@ class AdvancedTests(BaseGecosTestCase):
                          field_value=ou_1['path'],
                          api_class=ComputerResource)
 
-        # check if domain_1's policy is applied in chef node
+        # 7 - Verification if domain_1's policy is applied in chef node
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted(policy_dir)
         self.assertEquals(package_list, ['libreoffice'])
@@ -1535,34 +1696,38 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Register workstation
+        # 1 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register user in chef node
+        # 2, 3 - Register user in chef node
         username = 'testuser'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Add policy in OU and check if this policy is applied in chef node
+        # 4 - Add policy in OU
         user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         ou_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 5 - Verification if this policy is applied in chef node
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
-        # Add policy in domain and check if the OU's policy is applied in chef node
+        # 6 - Add policy in domain
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {unicode(user_launcher_policy['_id']): {'launchers': ['DomainLauncher']}}
         self.add_and_get_policy(node=domain_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
+
+        # 7 - Verification if the OU's policy is applied in chef node
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
-        # Move user to domain_1
+        # 8 - Move user to domain_1
         user = db.nodes.find_one({'name': username})
         request = self.dummy_get_request(user, UserResource.schema_detail)
         user_api = UserResource(request)
@@ -1576,7 +1741,7 @@ class AdvancedTests(BaseGecosTestCase):
                          field_value=ou_1['path'],
                          api_class=UserResource)
 
-        # check if domain_1's policy is applied in chef node
+        # 9 - Verification if domain_1's policy is applied in chef node
         node = NodeMock(node_id, None)
         package_list = node.attributes.get_dotted(policy_dir)
         self.assertEquals(package_list, ['DomainLauncher'])
@@ -1600,35 +1765,39 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group in OU
+        # 1 - Create group in OU
         data, new_group = self.create_group('group_test')
 
         # Create a workstation in Domain
         db = self.get_db()
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer(ou_name=domain_1['name'])
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register user in chef node
+        # 2 - Register user in chef node
         username = 'testuser'
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
-        # Assign group to user
+        # 3 -Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
         user = db.nodes.find_one({'name': username})
+
+        # 4 - Verification that the user can't be assigned to group
         self.assertNotEqual(user['memberof'][0], ObjectId(new_group['_id']))
 
-        # Create group in Domain
+        # 5 - Create group in Domain
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
-        # Assign group to user
+        # 6 - Assign group to user
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
         user = db.nodes.find_one({'name': username})
+
+        # 7 - Verification that the user has been assigned to user successfully
         self.assertNotEqual(user['memberof'][0], ObjectId(new_group_b['_id']))
 
         self.assertNoErrorJobs()
@@ -1650,19 +1819,17 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group in OU
+        # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
 
-        # Create new OU
+        # Create printer in other OU
         data, new_ou = self.create_ou('OU 2')
         self.assertEqualsObjects(data, new_ou)
-
-        # Create printer
         data, new_printer = self.create_printer('printer test', 'Domain 1')
 
         # Create a workstation in OU
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
         # Assign group to computer
@@ -1673,17 +1840,17 @@ class AdvancedTests(BaseGecosTestCase):
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
-        # Add printer to group and check if it is applied in chef node
+        # 3, 4 - Add printer to group and check if it is applied in chef node
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
         group['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
         policy_dir = printer_policy['path']
         printer_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertNotEqual(printer_policy[0]['name'], new_printer['name'])
 
-        # Create printer
+        # 5 - Create printer
         data, new_printer_ou = self.create_printer('printer OU')
 
-        # Add printer to group and check if it is applied in chef node
+        # 6, 7 - Add printer to group and check if it is applied in chef node
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
         group['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer_ou['_id']]}}
         policy_dir = printer_policy['path']
@@ -1716,19 +1883,19 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group in OU
+        # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
 
         # Create new OU
         data, new_ou = self.create_ou('OU 2')
         self.assertEqualsObjects(data, new_ou)
 
-        # Create a storage
+        # 2 - Create a storage
         data, new_storage = self.create_storage('shared folder', new_ou['name'])
 
         # Create a workstation in OU
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
         # Register administrator
@@ -1749,17 +1916,17 @@ class AdvancedTests(BaseGecosTestCase):
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
-        # Add printer to group and check if it is applied in chef node
+        # 3, 4 - Add printer to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
         policy_dir = storage_policy['path'] + '.' + username + '.gtkbookmarks'
         storage_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertNotEqual(storage_policy[0]['name'], new_storage['name'])
 
-        # Create a storage
+        # 5 - Create a storage
         data, new_storage_ou = self.create_storage('shared_folder_ou')
 
-        # Add printer to group and check if it is applied in chef node
+        # 6,7 - dd printer to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage_ou['_id']]}}
         storage_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1788,19 +1955,19 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
 
-        # Create a group in OU
+        # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
 
         # Create new OU
         data, new_ou = self.create_ou('OU 2')
         self.assertEqualsObjects(data, new_ou)
 
-        # Create a repository
+        # 2 - Create a repository
         data, new_repository = self.create_repository('repo_ou2', new_ou['name'])
 
         # Create a workstation in OU
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
         # Register administrator
@@ -1821,17 +1988,17 @@ class AdvancedTests(BaseGecosTestCase):
         group = db.nodes.find_one({'name': 'group_test'})
         self.assertEqual(group['members'][0], user['_id'])
 
-        # Add repository to group and check if it is applied in chef node
+        # 3, 4 - Add repository to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'repository_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_repository['_id']]}}
         policy_dir = storage_policy['path']
         storage_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertNotEqual(storage_policy[0]['key_server'], new_repository['key_server'])
 
-        # Create a repository
+        # 5 - Create a repository
         data, new_repository_ou = self.create_repository('repo_ou')
 
-        # Add repository to group and check if it is applied in chef node
+        # 6, 7 - Add repository to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'repository_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_repository_ou['_id']]}}
         storage_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
@@ -1867,32 +2034,36 @@ class AdvancedTests(BaseGecosTestCase):
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 1 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in domain
+        # 2 - Create user in domain
         username = 'usertest'
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         data, new_user = self.create_user(username, domain_1['name'])
 
-        # Register user in chef node
+        # 3 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
+
+        # 4 - Verification that the user has been registered successfully
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Delete OU
+        # 5 - Delete OU
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value=ou_1['name'])
 
+        # 6, 7 - Verification that the OU and worskstation have been deleted successfully
         ou_1 = db.nodes.find_one({'name': ou_1['name']})
         computer = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(ou_1)
         self.assertIsNone(computer)
 
+        # 8 - Verification that the workstation has been deleted from user
         user = db.nodes.find_one({'name': username})
         self.assertIsNone(NODES)
         self.assertEqual(user['computers'], [])
@@ -1926,23 +2097,23 @@ class AdvancedTests(BaseGecosTestCase):
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Create a workstation in Domain
+        # 1 - Create a workstation in Domain
         db = self.get_db()
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer(ou_name=domain_1['name'])
 
-        # Create user in OU
+        # 2 - Create user in OU
         username = 'testuser'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 3, 4 - Register user in chef node and verify it
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Add policy in user and check if this policy is applied in chef node
+        # 5 - Add policy in user and check if this policy is applied in chef node
         user_launcher_policy = self.get_default_user_policy()
         policy_dir = user_launcher_policy['path'] + '.users.' + username + '.launchers'
         user_policy = db.nodes.find_one({'name': username})
@@ -1950,16 +2121,20 @@ class AdvancedTests(BaseGecosTestCase):
         user_policy = self.add_and_get_policy(node=user_policy, node_id=node_id, api_class=UserResource, policy_dir=policy_dir)
         self.assertEquals(user_policy, ['UserLauncher'])
 
-        # Delete OU
+        # 6 - Delete OU
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         self.delete_node(ou_1, OrganisationalUnitResource)
+
+        # 7 - Verification if the OU has been deleted successfully
         self.assertDeleted(field_name='name', field_value=ou_1['name'])
 
+        # 8 - Verification if the user has been deleted successfully
         ou_1 = db.nodes.find_one({'name': ou_1['name']})
         user = db.nodes.find_one({'name': username})
         self.assertIsNone(ou_1)
         self.assertIsNone(user)
 
+        # 9 - Verification if the policy has been deleted from node chef
         node = NodeMock(node_id, None)
         try:
             package_list = node.attributes.get_dotted(policy_dir)
@@ -1990,40 +2165,42 @@ class AdvancedTests(BaseGecosTestCase):
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('testgroup')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
-        # Register workstation
+
+        # 2 - Register workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in OU
+        # 3 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 4 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Assign group to computer
+        # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # 6 - Verification if the group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
-        # Delete OU
+        # 7 - Delete OU
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value='OU 1')
 
+        # 8, 9 - Verification if the OU, workstation, group and user have been deleted successfully
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         user = db.nodes.find_one({'name': username})
         group = db.nodes.find_one({'name': new_group['name']})
@@ -2055,50 +2232,46 @@ class AdvancedTests(BaseGecosTestCase):
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('testgroup')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 2 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in OU
+        # 3 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 4 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Assign group to computer
+        # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': new_group['name']})
-        self.assertEqual(group['members'][0], computer['_id'])
-
-        # Assign group to user
+        # 6 - Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # 7 - Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
 
-        group = db.nodes.find_one({'name': new_group['name']})
-
-        # Delete group
+        # 8 - Delete group
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value=new_group['name'])
 
+        # 9 - Verification if the groups has been deleted successfully from chef node, user and workstation.
         user = db.nodes.find_one({'name': username})
         group = db.nodes.find_one({'name': new_group['name']})
         workstation = db.nodes.find_one({'name': computer['name']})
@@ -2127,55 +2300,53 @@ class AdvancedTests(BaseGecosTestCase):
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('testgroup')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 2 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in OU
+        # 3 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 4 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Assign group to computer
+        # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': new_group['name']})
-        self.assertEqual(group['members'][0], computer['_id'])
-
-        # Assign group to user
+        # 6 - Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
 
-        # Add policy in Group and check if this policy is applied in chef node
+        # 7, 8 - Add policy in Group and check if this policy is applied in chef node
         group_launcher_policy = self.get_default_user_policy()
         policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
         group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
-        # Delete group
+        # 9 - Delete group
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value=new_group['name'])
 
+        # 10 - Verification if the policy has been deleted from chef node
         node = NodeMock(node_id, None)
         try:
             launchers = node.attributes.get_dotted(policy_dir)
@@ -2205,55 +2376,53 @@ class AdvancedTests(BaseGecosTestCase):
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 2 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in OU
+        # 3 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 4 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Assign group to computer
+        # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': new_group['name']})
-        self.assertEqual(group['members'][0], computer['_id'])
-
-        # Assign group to user
+        # 6 - Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
 
-        # Add policy in Group and check if this policy is applied in chef node
+        # 7, 8 - Add policy in Group and check if this policy is applied in chef node
         group_launcher_policy = self.get_default_user_policy()
         policy_dir = group_launcher_policy['path'] + '.users.' + username + '.launchers'
         group['policies'] = {unicode(group_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
         ou_policy = self.add_and_get_policy(node=group, node_id=node_id, api_class=GroupResource, policy_dir=policy_dir)
         self.assertEquals(ou_policy, ['OUsLauncher'])
 
-        # Delete group
+        # 9 - Delete group
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value=new_group['name'])
 
+        # 10 - Verification if the policy has been deleted from chef node
         node = NodeMock(node_id, None)
         try:
             launchers = node.attributes.get_dotted(policy_dir)
@@ -2283,53 +2452,49 @@ class AdvancedTests(BaseGecosTestCase):
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
 
-        # Create a group
+        # 1 - Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
 
         # Register administrator
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # Register workstation
+        # 2 - Register workstation
         db = self.get_db()
-        node_id = '36e13492663860e631f53a00afcdd92d'
+        node_id = NODE_ID
         self.register_computer()
 
-        # Create user in OU
+        # 3 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # Register user in chef node
+        # 4 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # Assign group to computer
+        # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
-        group = db.nodes.find_one({'name': new_group['name']})
-        self.assertEqual(group['members'][0], computer['_id'])
-
-        # Assign group to user
+        # 6 - Assign group to user
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # 7 - Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
 
-        group = db.nodes.find_one({'name': new_group['name']})
-
-        # Delete group
+        # 8 - Delete group
         request = self.dummy_get_request(group, GroupResource.schema_detail)
         group_api = GroupResource(request)
         group = group_api.get()
         self.delete_node(group, GroupResource)
-        self.assertDeleted(field_name='name', field_value=new_group['name'])
 
+        # 9 - Verification that the group has been delete from chef node, user and workstation
+        self.assertDeleted(field_name='name', field_value=new_group['name'])
         user = db.nodes.find_one({'name': username})
         group = db.nodes.find_one({'name': new_group['name']})
         workstation = db.nodes.find_one({'name': computer['name']})
