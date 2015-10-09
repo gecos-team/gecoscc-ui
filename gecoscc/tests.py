@@ -1124,13 +1124,13 @@ class AdvancedTests(BaseGecosTestCase):
         ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['2ping'], 'pkgs_to_remove': []}}
         package_res_ou_policy = self.add_and_get_policy(node=ou_1, node_id=node_id, api_class=OrganisationalUnitResource, policy_dir=policy_dir)
 
-        # 10 - Create workstation
+        # 11 - Create workstation
         db = self.get_db()
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         node_id = '36e13492663860e631f53a00afcsi29f'
         self.register_computer(node_id=node_id)
 
-        # 11 - Verification that the OU's policy has been applied successfully
+        # 12 - Verification that the OU's policy has been applied successfully
         node = NodeMock(node_id, None)
         ou_policy = node.attributes.get_dotted(policy_dir)
         self.assertEquals(ou_policy, ['2ping'])
@@ -1195,10 +1195,8 @@ class AdvancedTests(BaseGecosTestCase):
         ou_1_updated = ou_api.put()
         self.assertEqualsObjects(ou_1, ou_1_updated, OrganisationalUnitResource.schema_detail)
 
-        # 8 - Create user
+        # 8, 9 - Create user Assign user to workstation
         username = 'usertest'
-
-        # 9 - Assign user to workstation
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
         # 10 - Add policy in user
@@ -1437,10 +1435,8 @@ class AdvancedTests(BaseGecosTestCase):
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # 3 - Register user in chef node
+        # 3, 4 - Register user in chef node and register user in chef node
         username = 'testuser'
-
-        # 4 - Assign user to computer
         self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
 
         # 5 - Assign group to user
