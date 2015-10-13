@@ -582,6 +582,7 @@ class ChefTask(Task):
         self.log_action('moved', 'Computer', objnew)
 
     def computer_deleted(self, user, obj, computers=None):
+        # 1 - Delete computer from chef server
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
@@ -589,6 +590,11 @@ class ChefTask(Task):
             node.delete()
             client = Client(node_chef_id, api=api)
             client.delete()
+        # 2 - Disassociate computer from its users
+        users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
+        for u in users:
+            u['computers'].remove(obj['_id'])
+            self.db.nodes.update({'_id': u['_id']}, {'$set': {'computers': u['computers']}})
         self.log_action('deleted', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
