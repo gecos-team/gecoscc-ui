@@ -27,7 +27,8 @@ from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
-                           oids_filter, check_unique_node_name_by_type_at_domain)
+                           oids_filter, check_unique_node_name_by_type_at_domain,
+                           visibility_object_related, visibility_group)
 
 from gecoscc.i18n import gettext as _
                            
@@ -147,7 +148,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
 
         if objects_filter:
             mongo_query = {
-                '$and':  objects_filter,
+                '$and': objects_filter,
             }
         else:
             mongo_query = {}
@@ -428,10 +429,14 @@ class TreeResourcePaginated(ResourcePaginated):
 class TreeLeafResourcePaginated(TreeResourcePaginated):
 
     def check_memberof_integrity(self, obj):
-        """ Check if memberof ids already exists"""
+        """ Check if memberof ids already exists or if the group is out of scope"""
         if 'memberof' not in obj:
             return True
-
+        obj_validated = visibility_group(self.request.db, obj)
+        if obj != obj_validated:
+            self.request.errors.add(unicode(obj[self.key]), 'memberof',
+                                    "There is a group out of scope.")
+            return False
         for group_id in obj['memberof']:
             group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
@@ -439,13 +444,25 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     unicode(obj[self.key]), 'memberof',
                     "The group {0} doesn't exist".format(unicode(group_id)))
                 return False
+        return True
 
+    def check_policies_integrity(self, obj):
+        """
+        Check if the policie is out of scope
+        """
+        obj_original = deepcopy(obj)
+        visibility_object_related(self.request.db, obj)
+        if obj != obj_original:
+            self.request.errors.add(unicode(obj[self.key]), 'policies',
+                                    "The related object is out of scope")
+            return False
         return True
 
     def integrity_validation(self, obj, real_obj=None):
         result = super(TreeLeafResourcePaginated, self).integrity_validation(
             obj, real_obj)
         result = result and self.check_memberof_integrity(obj)
+        result = result and self.check_policies_integrity(obj)
         result = result and self.check_unique_node_name_by_type_at_domain(obj)
         return result
 
