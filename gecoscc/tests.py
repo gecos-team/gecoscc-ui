@@ -2223,7 +2223,7 @@ class AdvancedTests(BaseGecosTestCase):
                                                        gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
         Test 20:
-        2. Check the policies priority works
+        1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
@@ -2291,7 +2291,7 @@ class AdvancedTests(BaseGecosTestCase):
                                           create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
         Test 21:
-        2. Check the policies priority works
+        1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
@@ -2367,7 +2367,7 @@ class AdvancedTests(BaseGecosTestCase):
                                                     gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
         Test 22:
-        2. Check the policies priority works
+        1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
@@ -2443,7 +2443,7 @@ class AdvancedTests(BaseGecosTestCase):
                                                                  gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
         '''
         Test 23:
-        2. Check the policies priority works
+        1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
@@ -2497,5 +2497,69 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertIsNone(group)
         self.assertEqual(workstation['memberof'], [])
         self.assertEqual(user['memberof'], [])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_24_delete_OU_without_group_inside(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext,
+                                               create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 24:
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+
+        # 1 - Create a group in domain
+        data, new_group = self.create_group('test_group', ou_name='Domain 1')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # 2 - Register workstation
+        db = self.get_db()
+        node_id = NODE_ID
+        self.register_computer()
+
+        # 3 - Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # 4 - Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # 5 - Assign group to computer
+        computer = db.nodes.find_one({'name': computer['name']})
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+
+        # 6 - Assign group to user
+        user = db.nodes.find_one({'name': username})
+        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+
+        # 7 - Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'][0], computer['_id'])
+        self.assertEqual(group['members'][1], user['_id'])
+
+        # 8 - Delete ou
+        ou = db.nodes.find_one({'name': 'OU 1'})
+        self.delete_node(ou, OrganisationalUnitResource)
+        self.assertDeleted(field_name='name', field_value=ou['name'])
+
+        # 10 - Verification if the user and computer have been disassociate from group
+        group = db.nodes.find_one({'name': new_group['name']})
+        self.assertEqual(group['members'], [])
 
         self.assertNoErrorJobs()
