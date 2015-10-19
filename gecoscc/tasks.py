@@ -607,8 +607,13 @@ class ChefTask(Task):
             # 2 - Disassociate computer from its users
             users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
             for u in users:
-                u['computers'].remove(obj['_id'])
-                self.db.nodes.update({'_id': u['_id']}, {'$set': {'computers': u['computers']}})
+                self.db.nodes.update({
+                    '_id': u['_id']
+                }, {
+                    '$pull': {
+                        'computers': obj['_id']
+                    }
+                }, multi=False)
             # 3 - Disassociate computers from its groups
             self.disassociate_object_from_group(obj)
         self.log_action('deleted', 'Computer', obj)
