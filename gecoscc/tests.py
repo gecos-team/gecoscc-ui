@@ -2565,3 +2565,41 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqual(group['members'], [])
 
         self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_25_priority_grouped_ous_workstation(self, get_cookbook_method, get_cookbook_method_tasks,
+                                                 NodeClass, ChefNodeClass, isinstance_method):
+        '''
+        Test 25:
+        1. Check the policies pripority works using organisational unit
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
+
+        # 1 - Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 2 - Add policy in OU
+        package_res_policy = self.get_default_ws_policy()
+        policy_path = package_res_policy['path'] + '.package_list'
+        ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
+        package_res_ou_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        # 3 - Verification if this policy is applied in chef node
+        self.assertEquals(package_res_ou_policy, ['gimp'])
+
+        # 4 - Add policy in domain
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        domain_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['libreoffice'], 'pkgs_to_remove': []}}
+        package_res_domain_policy = self.add_and_get_policy(node=domain_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        # 5 - Verification if OU's policy is applied in chef node
+        self.assertEquals(package_res_domain_policy, ['gimp', 'libreoffice'])
+
+        self.assertNoErrorJobs()
