@@ -4083,7 +4083,6 @@
                                             "title": "Web Browser"
                                         }, 
                                         "user_apps_autostart_res": {
-                                            "is_mergeable": true, 
                                             "title_es": "Aplicaciones que se ejecutar\u00e1n al inicio", 
                                             "required": [
                                                 "users"
@@ -4112,7 +4111,8 @@
                                                             "required": [
                                                                 "desktops"
                                                             ], 
-                                                            "type": "object", 
+                                                            "type": "object",
+                                                            "is_mergeable": true,  
                                                             "properties": {
                                                                 "desktops": {
                                                                     "description": "It is necessary to add .desktop at the end of the application", 
