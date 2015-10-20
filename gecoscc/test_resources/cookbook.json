@@ -1154,7 +1154,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "package_res": {
-                                            "title_es": "Administraci\u00f3n de paquetes", 
+                                            "title_es": "Administraci\u00f3n de paquetes",
+                                            "is_mergeable": true, 
                                             "properties": {
                                                 "pkgs_to_remove": {
                                                     "title": "Package list to remove", 
@@ -1911,6 +1912,7 @@
                                             "title": "Local Administrators"
                                         }, 
                                         "remote_shutdown_res": {
+                                            "is_mergeable": false, 
                                             "title_es": "Apagado remoto", 
                                             "required": [
                                                 "shutdown_mode"
@@ -4081,6 +4083,7 @@
                                             "title": "Web Browser"
                                         }, 
                                         "user_apps_autostart_res": {
+                                            "is_mergeable": true, 
                                             "title_es": "Aplicaciones que se ejecutar\u00e1n al inicio", 
                                             "required": [
                                                 "users"
@@ -4171,7 +4174,8 @@
                                             "title": "Applications that will run at the start of the system"
                                         }, 
                                         "desktop_background_res": {
-                                            "title_es": "Fondo de escritorio", 
+                                            "title_es": "Fondo de escritorio",
+                                            "is_mergeable": false, 
                                             "required": [
                                                 "users"
                                             ], 

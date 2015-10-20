@@ -223,6 +223,8 @@ class Command(BaseCommand):
             else:
                 targets = DEFAULT_TARGETS
 
+            is_mergeable = value.pop('is_mergeable', False)
+
             policy = {
                 'name': value['title'],
                 'slug': key,
@@ -231,6 +233,7 @@ class Command(BaseCommand):
                 'targets': targets,
                 'is_emitter_policy': False,
                 'support_os': support_os,
+                'is_mergeable': is_mergeable,
             }
 
             for lan in languages:
