@@ -244,7 +244,48 @@ class ChefTask(Task):
                         value_field_chef = node.attributes.get_dotted(field_chef)
                     except KeyError:
                         value_field_chef = None
+                    if not is_user_policy(field_chef) and policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
+                        if action == DELETED_POLICY_ACTION:
+                            try:
+                                obj_ui_field = delete_dotted(node.attributes, field_chef)
+                                consulta = node.attributes.get_dotted(policy['path'])
+                                list_ids_nodes = []
+                                for c_id in consulta['updated_by'].items():
+                                    if isinstance(c_id[1], list):
+                                        list_ids_nodes += c_id[1]
+                                    else:
+                                        if c_id is not None:
+                                            list_ids_nodes.append(c_id[1])
+                                for i, c_id in enumerate(list_ids_nodes):
+                                    list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+                                new_policies = []
+                                for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                                    new_policies += p['policies'][unicode(policy['_id'])][field_ui]
+                                node.attributes.set_dotted(field_chef, list(set(new_policies)))
+                                updated = True
+                            except KeyError:
+                                pass
+                        else:
+                            if obj_ui_field != value_field_chef:
+                                obj_ui_field = obj_ui_field + value_field_chef
+                            if obj_ui_field != value_field_chef:
+                                node.attributes.set_dotted(field_chef, list(set(obj_ui_field)))
+                                updated = True
+                    else:
+                        if obj_ui_field != value_field_chef:
+                            node.attributes.set_dotted(field_chef, obj_ui_field)
+                            updated = True
+            elif policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
+                try:
+                    value_field_chef = node.attributes.get_dotted(field_chef)
+                except KeyError:
+                    value_field_chef = None
+                policy_id = unicode(policy['_id'])
+                obj_ui_field = obj[rule_type][policy_id][field_ui]
+                if not is_user_policy(field_chef):
                     if obj_ui_field != value_field_chef:
+                        obj_ui_field = obj_ui_field + value_field_chef
+                        obj_ui_field = list(set(obj_ui_field))
                         node.attributes.set_dotted(field_chef, obj_ui_field)
                         updated = True
             if job_attr not in attributes_jobs_updated:
