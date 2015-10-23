@@ -371,6 +371,17 @@ class ChefTask(Task):
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
 
+    def disassociate_object_from_group(self, obj):
+        groups = self.db.nodes.find({'type': 'group', 'members': obj['_id']})
+        for g in groups:
+            self.db.nodes.update({
+                '_id': g['_id']
+            }, {
+                '$pull': {
+                    'members': obj['_id']
+                }
+            }, multi=False)
+
     def get_policies(self, rule_type, action, obj, objold):
         policies_apply = [(policy_id, action) for policy_id in obj[rule_type].keys()]
         if not objold:
@@ -549,7 +560,7 @@ class ChefTask(Task):
         self.log_action('moved', 'Storage', objnew)
         raise NotImplementedError
 
-    def group_deleted(self, user, obj, computers=None):
+    def group_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Group', obj)
 
@@ -565,7 +576,9 @@ class ChefTask(Task):
         self.object_moved(user, objnew, objold)
         self.log_action('moved', 'User', objnew)
 
-    def user_deleted(self, user, obj, computers=None):
+    def user_deleted(self, user, obj, computers=None, direct_deleted=True):
+        if direct_deleted is False:
+            self.disassociate_object_from_group(obj)
         self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'User', obj)
 
@@ -581,7 +594,7 @@ class ChefTask(Task):
         self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Computer', objnew)
 
-    def computer_deleted(self, user, obj, computers=None):
+    def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
@@ -590,11 +603,14 @@ class ChefTask(Task):
             node.delete()
             client = Client(node_chef_id, api=api)
             client.delete()
-        # 2 - Disassociate computer from its users
-        users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
-        for u in users:
-            u['computers'].remove(obj['_id'])
-            self.db.nodes.update({'_id': u['_id']}, {'$set': {'computers': u['computers']}})
+        if direct_deleted is False:
+            # 2 - Disassociate computer from its users
+            users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
+            for u in users:
+                u['computers'].remove(obj['_id'])
+                self.db.nodes.update({'_id': u['_id']}, {'$set': {'computers': u['computers']}})
+            # 3 - Disassociate computers from its groups
+            self.disassociate_object_from_group(obj)
         self.log_action('deleted', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
@@ -609,7 +625,7 @@ class ChefTask(Task):
         self.log_action('moved', 'OU', objnew)
         raise NotImplementedError
 
-    def ou_deleted(self, user, obj, computers=None):
+    def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
@@ -617,7 +633,7 @@ class ChefTask(Task):
                                                 'type': node_type})
             for node in nodes_by_type:
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
-                node_deleted_function(user, node, computers=computers)
+                node_deleted_function(user, node, computers=computers, direct_deleted=False)
         self.db.nodes.remove({'path': ou_path})
         self.log_action('deleted', 'OU', obj)
 
@@ -633,7 +649,7 @@ class ChefTask(Task):
         self.log_action('moved', 'Printer', objnew)
         raise NotImplementedError
 
-    def printer_deleted(self, user, obj, computers=None):
+    def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Printer', obj)
 
@@ -649,7 +665,7 @@ class ChefTask(Task):
         self.log_action('moved', 'Storage', objnew)
         raise NotImplementedError
 
-    def storage_deleted(self, user, obj, computers=None):
+    def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Storage', obj)
 
@@ -665,7 +681,7 @@ class ChefTask(Task):
         self.log_action('moved', 'Repository', objnew)
         raise NotImplementedError
 
-    def repository_deleted(self, user, obj, computers=None):
+    def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Storage', obj)
 
