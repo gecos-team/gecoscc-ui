@@ -2063,7 +2063,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 8 - Verification that the workstation has been deleted from user
         user = db.nodes.find_one({'name': username})
-        self.assertIsNone(NODES)
+        self.assertEqual(NODES, {})
         self.assertEqual(user['computers'], [])
 
         self.assertNoErrorJobs()
@@ -2207,7 +2207,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertIsNone(user)
         self.assertIsNone(group)
         self.assertIsNone(workstation)
-        self.assertIsNone(NODES)
+        self.assertEqual(NODES, {})
 
         self.assertNoErrorJobs()
 
@@ -2529,7 +2529,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 2 - Register workstation
         db = self.get_db()
-        node_id = NODE_ID
+        chef_node_id = CHEF_NODE_ID
         self.register_computer()
 
         # 3 - Create user in OU
@@ -2537,7 +2537,7 @@ class AdvancedTests(BaseGecosTestCase):
         data, new_user = self.create_user(username)
 
         # 4 - Register user in chef node
-        self.assign_user_to_node(gcc_superusername=admin_username, node_id=node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
