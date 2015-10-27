@@ -182,32 +182,35 @@ def getJSON(url):
     return obj    
 
 def getServerStatus(ip_address):
-    return getJSON('http://%s/internal/server/status'%(ip_address))
+    settings = get_current_registry().settings
+    url_pattern = settings.get('gecos.internal.url.pattern')
+    
+    if url_pattern is None:
+        logger.error("server_log: Bad configuration, please set gecos.internal.url.pattern in gecoscc.ini")
+        return None     
+        
+    return getJSON(url_pattern%(ip_address, 'status'))
 
 def getServerConnections(ip_address):
-    return getJSON('http://%s/internal/server/connections'%(ip_address))
+    settings = get_current_registry().settings
+    url_pattern = settings.get('gecos.internal.url.pattern')
+    
+    if url_pattern is None:
+        logger.error("server_log: Bad configuration, please set gecos.internal.url.pattern in gecoscc.ini")
+        return None     
+        
+    return getJSON(url_pattern%(ip_address, 'connections'))
 
     
 def get_supervisord_url(ip_address):
     settings = get_current_registry().settings
-    port = settings.get('supervisord.port')
-    user = settings.get('supervisord.user')
-    password = settings.get('supervisord.password')
+    url_pattern = settings.get('supervisord.url.pattern')
     
-    if port is None:
-        logger.error("server_log: Bad configuration, please set supervisord.port in gecoscc.ini")
+    if url_pattern is None:
+        logger.error("server_log: Bad configuration, please set supervisord.url.pattern in gecoscc.ini")
         return None        
 
-    if user is None:
-        logger.error("server_log: Bad configuration, please set supervisord.user in gecoscc.ini")
-        return None        
-
-    if password is None:
-        logger.error("server_log: Bad configuration, please set supervisord.password in gecoscc.ini")
-        return None        
-        
-    
-    return 'http://%s:%s@%s:%s/RPC2'%(user, password, ip_address, port)
+    return url_pattern%(ip_address)
 
 def get_mountpoints():
     try:
