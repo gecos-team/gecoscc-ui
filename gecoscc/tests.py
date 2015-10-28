@@ -1206,7 +1206,7 @@ class AdvancedTests(BaseGecosTestCase):
         chef_node_id = CHEF_NODE_ID
         self.register_computer()
 
-        # 3 - Register user in chef node
+        # 3 - Register user in ws
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         policies = self.get_default_policies_user()
@@ -1262,7 +1262,9 @@ class AdvancedTests(BaseGecosTestCase):
             node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path_1)
             if policies[policy]['policy']['is_mergeable']:
                 # 13 - Verification if this policy is applied in chef node
-                self.assertEquals(node_policy, ['sublime'])
+                node = NodeMock(chef_node_id, None)
+                node_policy = node.attributes.get_dotted(policy_path_1)
+                self.assertEquals(node_policy, ['kate', 'sublime'])
             else:
                 # 13 - Verification if this policy is applied in chef node
                 self.assertEquals(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
@@ -1775,7 +1777,7 @@ class AdvancedTests(BaseGecosTestCase):
         package_res_domain_policy = self.add_and_get_policy(node=domain_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
 
         # 5 - Verification if the OU's policy is applied in chef node
-        self.assertEquals(package_res_domain_policy, ['gimp'])
+        self.assertEquals(package_res_domain_policy, ['libreoffice', 'gimp'])
 
         # 6 - Move workstation to domain_1
         computer = db.nodes.find_one({'name': 'testing'})
@@ -1787,7 +1789,6 @@ class AdvancedTests(BaseGecosTestCase):
                          field_name='path',
                          field_value=ou_1['path'],
                          api_class=ComputerResource)
-
         # 7 - Verification if domain_1's policy is applied in chef node
         node = NodeMock(chef_node_id, None)
         package_list = node.attributes.get_dotted(policy_path)
