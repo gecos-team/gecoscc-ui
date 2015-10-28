@@ -207,6 +207,49 @@ class ChefTask(Task):
                     self.get_object_ui(rule_type, obj, node, policy))
         return ValueError("The rule type should be save or policy")
 
+    def update_not_user_mergeable_policy(self, node, field_chef, field_ui, policy):
+        try:
+            value_field_chef = node.attributes.get_dotted(policy['path'])
+            list_ids_nodes = []
+            for c_id in value_field_chef['updated_by'].items():
+                if isinstance(c_id[1], list):
+                    list_ids_nodes += c_id[1]
+                else:
+                    if c_id is not None:
+                        list_ids_nodes.append(c_id[1])
+            for i, c_id in enumerate(list_ids_nodes):
+                list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+            new_policies = []
+            for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                new_policies += p['policies'][unicode(policy['_id'])][field_ui]
+            node.attributes.set_dotted(field_chef, list(set(new_policies)))
+            return True
+        except KeyError:
+            return False
+
+    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui):
+        try:
+            value_field_chef = node.attributes.get_dotted(field_chef)
+            list_ids_nodes = []
+            for c_id in value_field_chef.get(priority_obj['name']).get('updated_by').items():
+                if isinstance(c_id[1], list):
+                    list_ids_nodes += c_id[1]
+                else:
+                    if c_id is not None:
+                        list_ids_nodes.append(c_id[1])
+            for i, c_id in enumerate(list_ids_nodes):
+                list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+            new_policies = []
+            for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                new_policies += p['policies'][unicode(policy['_id'])].get(p['policies'][unicode(policy['_id'])].keys()[0])
+            obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            if obj_ui_field.get(priority_obj['name']):
+                obj_ui_field.get(priority_obj['name'])[policy['schema']['properties'].keys()[0]] = new_policies
+            node.attributes.set_dotted(field_chef, obj_ui_field)
+            return True
+        except KeyError:
+            return False
+
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
         updated = updated_updated_by = False
         attributes_jobs_updated = []
@@ -230,7 +273,6 @@ class ChefTask(Task):
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
                 else:
                     obj_ui_field = priority_obj_ui.get(field_ui, None)
-
                 if obj_ui_field is None and action != DELETED_POLICY_ACTION:
                     continue
                 elif obj_ui_field is None and action == DELETED_POLICY_ACTION:
@@ -244,50 +286,40 @@ class ChefTask(Task):
                         value_field_chef = node.attributes.get_dotted(field_chef)
                     except KeyError:
                         value_field_chef = None
+                    # Mergeable and not user_policy
                     if not is_user_policy(field_chef) and policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
-                        if action == DELETED_POLICY_ACTION:
-                            try:
-                                obj_ui_field = delete_dotted(node.attributes, field_chef)
-                                consulta = node.attributes.get_dotted(policy['path'])
-                                list_ids_nodes = []
-                                for c_id in consulta['updated_by'].items():
-                                    if isinstance(c_id[1], list):
-                                        list_ids_nodes += c_id[1]
-                                    else:
-                                        if c_id is not None:
-                                            list_ids_nodes.append(c_id[1])
-                                for i, c_id in enumerate(list_ids_nodes):
-                                    list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
-                                new_policies = []
-                                for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
-                                    new_policies += p['policies'][unicode(policy['_id'])][field_ui]
-                                node.attributes.set_dotted(field_chef, list(set(new_policies)))
-                                updated = True
-                            except KeyError:
-                                pass
-                        else:
-                            if obj_ui_field != value_field_chef:
-                                obj_ui_field = obj_ui_field + value_field_chef
-                            if obj_ui_field != value_field_chef:
-                                node.attributes.set_dotted(field_chef, list(set(obj_ui_field)))
-                                updated = True
+                        updated = self.update_not_user_mergeable_policy(node, field_chef, field_ui, policy)
+                    # Mergeable and user_policy
+                    elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
+                        updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
                     else:
-                        if obj_ui_field != value_field_chef:
+                        if obj_ui_field != value_field_chef and not updated:
                             node.attributes.set_dotted(field_chef, obj_ui_field)
                             updated = True
             elif policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
-                try:
-                    value_field_chef = node.attributes.get_dotted(field_chef)
-                except KeyError:
-                    value_field_chef = None
                 policy_id = unicode(policy['_id'])
                 obj_ui_field = obj[rule_type][policy_id][field_ui]
                 if not is_user_policy(field_chef):
-                    if obj_ui_field != value_field_chef:
-                        obj_ui_field = obj_ui_field + value_field_chef
-                        obj_ui_field = list(set(obj_ui_field))
-                        node.attributes.set_dotted(field_chef, obj_ui_field)
+                    try:
+                        value_field_chef = node.attributes.get_dotted(policy['path'])
+                        list_ids_nodes = []
+                        for c_id in value_field_chef['updated_by'].items():
+                            if isinstance(c_id[1], list):
+                                list_ids_nodes += c_id[1]
+                            else:
+                                if c_id is not None:
+                                    list_ids_nodes.append(c_id[1])
+                        for i, c_id in enumerate(list_ids_nodes):
+                            list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+                        new_policies = []
+                        for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                            new_policies += p['policies'][unicode(policy['_id'])][field_ui]
+                        node.attributes.set_dotted(field_chef, list(set(new_policies)))
                         updated = True
+                    except KeyError:
+                        pass
+            elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
+                updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
             if job_attr not in attributes_jobs_updated:
                 if updated:
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
