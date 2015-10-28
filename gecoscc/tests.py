@@ -1131,7 +1131,7 @@ class AdvancedTests(BaseGecosTestCase):
 
             if policies[policy]['policy']['is_mergeable']:
                 # 5 - Verification if OU's and Domain's policy is applied in chef node
-                self.assertEquals(domain_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(domain_policy, ['libreoffice', 'gimp'])
                 # 6 - Remove OU's policy and verification if Domain's policy is applied in chef node
                 policy_applied = self.remove_policy_and_get_dotted(ou_1, chef_node_id, OrganisationalUnitResource, policies[policy]['path'])
                 self.assertEquals(policy_applied, ['libreoffice'])
@@ -1230,7 +1230,7 @@ class AdvancedTests(BaseGecosTestCase):
 
             if policies[policy]['policy']['is_mergeable']:
                 # 7 - Verification if this policy is applied in chef node
-                self.assertEquals(node_policy, ['sublime', 'kate'])
+                self.assertEquals(node_policy, ['kate', 'sublime'])
             else:
                 # 7 - Verification if this policy is applied in chef node
                 self.assertEquals(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
@@ -1397,7 +1397,7 @@ class AdvancedTests(BaseGecosTestCase):
             group_b_policy = self.add_and_get_policy(node=group_b, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEquals(group_b_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(group_b_policy, ['libreoffice', 'gimp'])
                 # 10 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
 
@@ -1473,7 +1473,7 @@ class AdvancedTests(BaseGecosTestCase):
             group_b_policy = self.add_and_get_policy(node=group_b, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEquals(group_b_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(group_b_policy, ['libreoffice', 'gimp'])
                 # 10 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
 
@@ -1635,7 +1635,7 @@ class AdvancedTests(BaseGecosTestCase):
             group_b_policy = self.add_and_get_policy(node=group_b, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
             if policies[policy]['policy']['is_mergeable']:
                 # 11 - Verification if the policy is applied in chef node
-                self.assertEquals(group_b_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(group_b_policy, ['libreoffice', 'gimp'])
                 # 12 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
 
@@ -1719,7 +1719,7 @@ class AdvancedTests(BaseGecosTestCase):
             group_b_policy = self.add_and_get_policy(node=group_b, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
             if policies[policy]['policy']['is_mergeable']:
                 # 11 - Verification if the policy is applied in chef node
-                self.assertEquals(group_b_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(group_b_policy, ['libreoffice', 'gimp'])
                 # 12 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
 
@@ -2721,7 +2721,7 @@ class AdvancedTests(BaseGecosTestCase):
 
             if policies[policy]['policy']['is_mergeable']:
                 # 5 - Verification if OU's and Domain's policy is applied in chef node
-                self.assertEquals(domain_policy, ['gimp', 'libreoffice'])
+                self.assertEquals(domain_policy, ['libreoffice', 'gimp'])
             else:
                 # 5  Verification if OU's policy is applied in chef node
                 self.assertEquals(domain_policy, policies[policy]['policy_data_node_1']['shutdown_mode'])
@@ -2791,7 +2791,7 @@ class AdvancedTests(BaseGecosTestCase):
 
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if this policy is applied in chef node
-                self.assertEquals(node_policy, ['kate', 'sublime'])
+                self.assertEquals(node_policy, ['sublime', 'kate'])
                 # 10 - Remove user's policy and verification if group's policy is applied in chef node
                 policy_applied = self.remove_policy_and_get_dotted(user, chef_node_id, UserResource, policy_path_1)
                 self.assertEquals(policy_applied, ['kate'])
