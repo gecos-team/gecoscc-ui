@@ -26,7 +26,7 @@ from jsonschema.exceptions import ValidationError
 
 
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format
+from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
 # It is necessary import here: apply_policies_to_computer and apply_policies_to_user
 from gecoscc.utils import (get_chef_api, get_cookbook,
@@ -250,6 +250,67 @@ class ChefTask(Task):
         except KeyError:
             return False
 
+    def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui):
+        if action == DELETED_POLICY_ACTION:
+            related_objects = obj_ui_field
+        else:
+            if obj_ui['type'] == 'repository':
+                value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.software_sources_res')
+            else:
+                value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.printers_mgmt.printers_res')
+            list_ids_nodes = []
+            for c_id in value_field_chef['updated_by'].items():
+                if isinstance(c_id[1], list):
+                    list_ids_nodes += c_id[1]
+                else:
+                    if c_id is not None:
+                        list_ids_nodes.append(c_id[1])
+            for i, c_id in enumerate(list_ids_nodes):
+                list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+            new_policies = []
+            for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                new_policies += p['policies'][unicode(policy['_id'])]['object_related_list']
+            list_ids = list(set(new_policies))
+            related_objects = []
+            for c_id in list_ids:
+                related_objs = self.db.nodes.find_one({'_id': ObjectId(c_id)})
+                obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
+                related_objects += object_related_list(obj_list)
+        node.attributes.set_dotted(field_chef, related_objects)
+        return True
+
+    def update_user_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui):
+        try:
+            value_field_chef = node.attributes.get_dotted(field_chef)
+            list_ids_nodes = []
+            for user in value_field_chef.keys():
+                for c_id in value_field_chef.get(user).get('updated_by').items():
+                    if isinstance(c_id[1], list):
+                        list_ids_nodes += c_id[1]
+                    else:
+                        if c_id is not None:
+                            list_ids_nodes.append(c_id[1])
+            for i, c_id in enumerate(list_ids_nodes):
+                list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
+            new_policies = []
+            for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
+                new_policies += p['policies'][unicode(policy['_id'])]['object_related_list']
+            list_ids = list(set(new_policies))
+            related_objects = []
+            for c_id in list_ids:
+                related_objs = self.db.nodes.find_one({'_id': ObjectId(c_id)})
+                obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
+                related_objects += object_related_list(obj_list)
+            current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            for user in value_field_chef.keys():
+                for objs in related_objects:
+                    if objs not in current_objs.get(user)[current_objs.get(user).keys()[1]]:
+                        current_objs.get(user)[current_objs.get(user).keys()[1]].append(objs)
+            node.attributes.set_dotted(field_chef, current_objs)
+            return True
+        except KeyError:
+            return False
+
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
         updated = updated_updated_by = False
         attributes_jobs_updated = []
@@ -292,6 +353,10 @@ class ChefTask(Task):
                     # Mergeable and user_policy
                     elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                         updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
+                    elif obj_ui['type'] in ['printer', 'repository'] and field_chef in policy['path']:
+                        updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
+                    elif obj_ui['type'] in ['storage']:
+                        updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
                     else:
                         if obj_ui_field != value_field_chef and not updated:
                             node.attributes.set_dotted(field_chef, obj_ui_field)
@@ -318,8 +383,12 @@ class ChefTask(Task):
                         updated = True
                     except KeyError:
                         pass
+            elif obj_ui['type'] in ['printer', 'repository'] and field_chef in policy['path']:
+                updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
             elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                 updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
+            elif obj_ui['type'] in ['storage']:
+                updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
             if job_attr not in attributes_jobs_updated:
                 if updated:
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
