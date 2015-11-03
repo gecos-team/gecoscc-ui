@@ -335,8 +335,10 @@ class ChefTask(Task):
             if (rule_type == 'policies' or not policy.get('is_emitter_policy', False)) and updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
+
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
+
             if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
@@ -363,9 +365,9 @@ class ChefTask(Task):
                     # Mergeable and user_policy
                     elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                         updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
-                    elif obj_ui['type'] in ['package_profile_res'] or (obj_ui['type']['printer', 'repository'] and field_chef in policy['path']):
+                    elif obj_ui.get('type', None) == 'package_profile_res' or (obj_ui.get('type', None) in ['printer', 'repository'] and field_chef in policy['path']):
                         updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
-                    elif obj_ui['type'] in ['storage']:
+                    elif obj_ui.get('type', None) == 'storage':
                         updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
                     else:
                         if obj_ui_field != value_field_chef and not updated:
@@ -393,12 +395,13 @@ class ChefTask(Task):
                         updated = True
                     except KeyError:
                         pass
-            elif obj_ui['type'] in ['package_profile_res'] or (obj_ui['type']['printer', 'repository'] and field_chef in policy['path']):
+            elif obj_ui.get('type', None) in ['package_profile_res'] or (obj_ui.get('type', None) in ['printer', 'repository'] and field_chef in policy['path']):
                 updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
             elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                 updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
-            elif obj_ui['type'] in ['storage']:
+            elif obj_ui.get('type', None) in ['storage']:
                 updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
+
             if job_attr not in attributes_jobs_updated:
                 if updated:
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
