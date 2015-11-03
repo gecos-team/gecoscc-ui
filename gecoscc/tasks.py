@@ -256,8 +256,10 @@ class ChefTask(Task):
         else:
             if obj_ui['type'] == 'repository':
                 value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.software_sources_res')
-            else:
+            elif obj_ui['type'] == 'printer':
                 value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.printers_mgmt.printers_res')
+            elif obj_ui['type'] == 'package_profile_res':
+                value_field_chef = node.attributes.get_dotted(policy['path'])
             list_ids_nodes = []
             for c_id in value_field_chef['updated_by'].items():
                 if isinstance(c_id[1], list):
@@ -273,8 +275,13 @@ class ChefTask(Task):
             list_ids = list(set(new_policies))
             related_objects = []
             for c_id in list_ids:
-                related_objs = self.db.nodes.find_one({'_id': ObjectId(c_id)})
-                obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
+                if obj_ui['type'] == 'package_profile_res':
+                    related_objs = self.db.software_profiles.find_one({'_id': ObjectId(c_id)})
+                    obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
+                    obj_list['object_related_list'][0].update({'type':'software_profile'})
+                else:
+                    related_objs = self.db.nodes.find_one({'_id': ObjectId(c_id)})
+                    obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
                 related_objects += object_related_list(obj_list)
         node.attributes.set_dotted(field_chef, related_objects)
         return True
@@ -353,7 +360,7 @@ class ChefTask(Task):
                     # Mergeable and user_policy
                     elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                         updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
-                    elif obj_ui['type'] in ['printer', 'repository'] and field_chef in policy['path']:
+                    elif obj_ui['type'] in ['package_profile_res'] or (obj_ui['type']['printer', 'repository'] and field_chef in policy['path']):
                         updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
                     elif obj_ui['type'] in ['storage']:
                         updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
@@ -383,7 +390,7 @@ class ChefTask(Task):
                         updated = True
                     except KeyError:
                         pass
-            elif obj_ui['type'] in ['printer', 'repository'] and field_chef in policy['path']:
+            elif obj_ui['type'] in ['package_profile_res'] or (obj_ui['type']['printer', 'repository'] and field_chef in policy['path']):
                 updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
             elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                 updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
