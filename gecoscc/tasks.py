@@ -281,7 +281,7 @@ class ChefTask(Task):
                 if obj_ui['type'] == 'package_profile_res':
                     related_objs = self.db.software_profiles.find_one({'_id': ObjectId(c_id)})
                     obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
-                    obj_list['object_related_list'][0].update({'type':'software_profile'})
+                    obj_list['object_related_list'][0].update({'type': 'software_profile'})
                 else:
                     related_objs = self.db.nodes.find_one({'_id': ObjectId(c_id)})
                     obj_list = {'object_related_list': [related_objs], 'type': obj_ui['type']}
@@ -314,8 +314,8 @@ class ChefTask(Task):
             current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
             for user in value_field_chef.keys():
                 for objs in related_objects:
-                    if objs not in current_objs.get(user)[current_objs.get(user).keys()[1]]:
-                        current_objs.get(user)[current_objs.get(user).keys()[1]].append(objs)
+                    if objs not in current_objs.get(user).get('gtkbookmarks'):
+                        current_objs.get(user)['gtkbookmarks'].append(objs)
             node.attributes.set_dotted(field_chef, current_objs)
             return True
         except KeyError:
@@ -338,8 +338,7 @@ class ChefTask(Task):
 
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-
-            if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION:
+            if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION or policy.get('is_mergeable', False):
                 if callable(field_ui):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
@@ -359,48 +358,18 @@ class ChefTask(Task):
                         value_field_chef = node.attributes.get_dotted(field_chef)
                     except KeyError:
                         value_field_chef = None
-                    # Mergeable and not user_policy
+
                     if not is_user_policy(field_chef) and policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
                         updated = self.update_not_user_mergeable_policy(node, field_chef, field_ui, policy)
-                    # Mergeable and user_policy
+                    elif obj_ui.get('type', None) == 'storage':
+                        updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
                     elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
                         updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
                     elif obj_ui.get('type', None) == 'package_profile_res' or (obj_ui.get('type', None) in ['printer', 'repository'] and field_chef in policy['path']):
                         updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
-                    elif obj_ui.get('type', None) == 'storage':
-                        updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
-                    else:
-                        if obj_ui_field != value_field_chef and not updated:
-                            node.attributes.set_dotted(field_chef, obj_ui_field)
-                            updated = True
-            elif policy.get('is_mergeable', False) and field_ui in policy['schema']['properties']:
-                policy_id = unicode(policy['_id'])
-                obj_ui_field = obj[rule_type][policy_id][field_ui]
-                if not is_user_policy(field_chef):
-                    try:
-                        value_field_chef = node.attributes.get_dotted(policy['path'])
-                        list_ids_nodes = []
-                        for c_id in value_field_chef['updated_by'].items():
-                            if isinstance(c_id[1], list):
-                                list_ids_nodes += c_id[1]
-                            else:
-                                if c_id is not None:
-                                    list_ids_nodes.append(c_id[1])
-                        for i, c_id in enumerate(list_ids_nodes):
-                            list_ids_nodes[i] = ObjectId(list_ids_nodes[i])
-                        new_policies = []
-                        for p in self.db.nodes.find({"$or": [{'_id': {"$in": list_ids_nodes}}]}):
-                            new_policies += p['policies'][unicode(policy['_id'])][field_ui]
-                        node.attributes.set_dotted(field_chef, list(set(new_policies)))
+                    if obj_ui_field != value_field_chef and not updated:
+                        node.attributes.set_dotted(field_chef, obj_ui_field)
                         updated = True
-                    except KeyError:
-                        pass
-            elif obj_ui.get('type', None) in ['package_profile_res'] or (obj_ui.get('type', None) in ['printer', 'repository'] and field_chef in policy['path']):
-                updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
-            elif is_user_policy(field_chef) and policy.get('is_mergeable', False) and policy['path'] in field_chef:
-                updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
-            elif obj_ui.get('type', None) in ['storage']:
-                updated = self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
 
             if job_attr not in attributes_jobs_updated:
                 if updated:
