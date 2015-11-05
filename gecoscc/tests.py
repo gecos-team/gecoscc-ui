@@ -37,6 +37,7 @@ from gecoscc.api.storages import StorageResource
 from gecoscc.api.users import UserResource
 from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
+from gecoscc.commands.create_software_profiles import Command as ImportSoftwareProfilesCommand
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
@@ -378,6 +379,16 @@ class BaseGecosTestCase(unittest.TestCase):
         self.assertEqual(db.jobs.find({'status': {'$ne': 'processing'}}).count(),
                          0)
 
+    def assertEmitterObjects(self, node_policy, db_emiters, fields):
+        '''
+        Useful method, check if the second list has the same values than the first
+        '''
+        node_policy.sort(key=lambda e: e['uri'])
+        db_emiters.sort(key=lambda e: e['uri'])
+
+        for i, emiter in enumerate(db_emiters):
+            self.assertEqualsObjects(node_policy[i], emiter, fields=fields)
+
     def assertEqualsObjects(self, data, new_data, schema_data=None, schema_new_data=None, fields=None):
         '''
         Useful method, check the second dictionary has the same values than
@@ -443,6 +454,16 @@ class BaseGecosTestCase(unittest.TestCase):
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
                     '-a', 'test', '-k', 'gecoscc/test_resources/media/users/test/chef_client.pem']
         command = ImportPoliciesCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    def import_profile_software(self):
+        '''
+        Useful method, import software software_profiles
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini', 'create_software_profiles']
+        command = ImportSoftwareProfilesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
 
@@ -1006,11 +1027,11 @@ class AdvancedTests(BaseGecosTestCase):
 
         user['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-        storage_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
+        node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
 
         # 6 - Verification if the storage is applied to user in chef node
-        self.assertEqualsObjects(storage_policy[0], new_storage, fields=('name',
-                                                                         'uri'))
+        self.assertEqualsObjects(node_policy[0], new_storage, fields=('name',
+                                                                      'uri'))
 
         # 7 - Update storage's URI
         storage_update = self.update_node(obj=new_storage, field_name='uri',
@@ -1018,13 +1039,25 @@ class AdvancedTests(BaseGecosTestCase):
         node = NodeMock(chef_node_id, None)
 
         # 8 - Verification that the storage has been updated successfully in chef node
-        storage_policy = node.attributes.get_dotted(policy_path)
-        self.assertEqualsObjects(storage_policy[0], storage_update, fields=('name',
-                                                                            'uri'))
+        node_policy = node.attributes.get_dotted(policy_path)
+        self.assertEqualsObjects(node_policy[0], storage_update, fields=('name',
+                                                                         'uri'))
+        # 9 Create stgorage
+        data, new_storage_2 = self.create_storage('shared folder mergeable')
 
-        # 9 - Delete storage and verification that the repository has beed deleted successfully in chef node
-        storage_policy = self.remove_policy_and_get_dotted(user, chef_node_id, UserResource, policy_path)
-        self.assertEquals(storage_policy, [])
+        # 10 Add storage to OU and check if it's applied in chef node
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        ou_1['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage_2['_id']]}}
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        # 11 - Verification if the storage is applied to user in chef node
+        self.assertEmitterObjects(node_policy, [storage_update, new_storage_2], fields=('name',
+                                                                                        'uri'))
+
+        # 12 - Delete storage and verification that the storage has beed deleted successfully in chef node
+        node_policy = self.remove_policy_and_get_dotted(user, chef_node_id, UserResource, policy_path)
+        self.assertEqualsObjects(node_policy[0], new_storage_2, fields=('name',
+                                                                        'uri'))
 
         self.assertNoErrorJobs()
 
@@ -1061,34 +1094,54 @@ class AdvancedTests(BaseGecosTestCase):
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
         computer['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
         policy_path = printer_policy['path']
-        printer_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
 
         # 4 - Verification if the printer is applied to workstation in chef node
-        self.assertEqualsObjects(printer_policy[0], new_printer, fields=('oppolicy',
-                                                                         'model',
-                                                                         'uri',
-                                                                         'name',
-                                                                         'manufacturer'))
+        self.assertEqualsObjects(node_policy[0], new_printer, fields=('oppolicy',
+                                                                      'model',
+                                                                      'uri',
+                                                                      'name',
+                                                                      'manufacturer'))
 
         # 5 - Modify printer's URI and check if is applied in chef node
         node = NodeMock(chef_node_id, None)
         printer_update = self.update_node(obj=new_printer, field_name='uri',
                                           field_value='http://modifiy.example.com', api_class=PrinterResource)
-        printer_policy = node.attributes.get_dotted(policy_path)
+        node_policy = node.attributes.get_dotted(policy_path)
 
         # 6 - Verification that the printer's URI has been updated successfully in chef node
-        self.assertEqualsObjects(printer_policy[0], printer_update, fields=('oppolicy',
-                                                                            'model',
-                                                                            'uri',
-                                                                            'name',
-                                                                            'manufacturer'))
+        self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
+                                                                         'model',
+                                                                         'uri',
+                                                                         'name',
+                                                                         'manufacturer'))
 
-        # 7 - Delete printer and check if the chef node has been updated
+        # 7 - Create printer
+        db = self.get_db()
+        data, new_printer_2 = self.create_printer('printer mergeable')
+
+        # 8 - Add printer to workstation and check if it is applied in chef node
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        ou_1['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer_2['_id']]}}
+        policy_path = printer_policy['path']
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        # 9 - Verification that the printer's URI has been updated successfully in chef node
+        self.assertEmitterObjects(node_policy, [new_printer_2, printer_update], fields=('oppolicy',
+                                                                                        'model',
+                                                                                        'uri',
+                                                                                        'name',
+                                                                                        'manufacturer'))
+
+        # 10 - Delete printer and check if the chef node has been updated
         self.delete_node(printer_update, PrinterResource)
         self.assertDeleted(field_name='name', field_value='printer test')
         printer_policy = node.attributes.get_dotted(policy_path)
-        self.assertEqual(printer_policy, [])
-
+        self.assertEqualsObjects(printer_policy[0], new_printer_2, fields=('oppolicy',
+                                                                           'model',
+                                                                           'uri',
+                                                                           'name',
+                                                                           'manufacturer'))
         self.assertNoErrorJobs()
 
     @mock.patch('gecoscc.utils.isinstance')
@@ -2108,21 +2161,33 @@ class AdvancedTests(BaseGecosTestCase):
         storage_policy = db.policies.find_one({'slug': 'repository_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_repository['_id']]}}
         policy_path = storage_policy['path']
-        storage_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
-        self.assertEqual(storage_policy, [])
+        node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
+        self.assertEqual(node_policy, [])
 
         # 5 - Create a repository
         data, new_repository_ou = self.create_repository('repo_ou')
 
         # 6, 7 - Add repository to group and check if it is applied in chef node
-        storage_policy = db.policies.find_one({'slug': 'repository_can_view'})
         group['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_repository_ou['_id']]}}
-        storage_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
-        self.assertEqualsObjects(storage_policy[0], new_repository_ou, fields=('key_server',
-                                                                               'uri',
-                                                                               'components',
-                                                                               'repo_key',
-                                                                               'deb_src'))
+        node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
+        self.assertEqualsObjects(node_policy[0], new_repository_ou, fields=('key_server',
+                                                                            'uri',
+                                                                            'components',
+                                                                            'repo_key',
+                                                                            'deb_src'))
+        # 8 - Create a repository
+        data, new_repository_ou_2 = self.create_repository('repo_ou_mergeable')
+
+        # 9, 10 - Add repository to group and check if it is applied in chef node
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        ou_1['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_repository_ou_2['_id']]}}
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        self.assertEmitterObjects(node_policy, [new_repository_ou, new_repository_ou_2], fields=('key_server',
+                                                                                                 'uri',
+                                                                                                 'components',
+                                                                                                 'repo_key',
+                                                                                                 'deb_src'))
 
         self.assertNoErrorJobs()
 
@@ -2802,5 +2867,122 @@ class AdvancedTests(BaseGecosTestCase):
                 # 10 - Remove user's policy and verification if group's policy is applied in chef node
                 policy_applied = self.remove_policy_and_get_dotted(user, chef_node_id, UserResource, policy_path_2)
                 self.assertEquals(policy_applied, 'mountain.png')
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_27_profile_software_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+                                        gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 27:
+        1. Check the policies priority works
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+
+        # 1 - Create a group
+        data, new_group = self.create_group('testgroup', ou_name='Domain 1')
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # 1, 2 - Create and register workstation
+        db = self.get_db()
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 3 - Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # 4 - Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # Import profile software
+        self.import_profile_software()
+        painter = db.software_profiles.find_one({'name': 'painter'})
+        vector = db.software_profiles.find_one({'name': 'vector'})
+
+        # 5 - Add policy in OU
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        package_profile_res = db.policies.find_one({'slug': 'package_profile_res'})
+        policy_dir = 'gecos_ws_mgmt.software_mgmt.package_profile_res.package_list'
+        ou_1['policies'] = {unicode(package_profile_res['_id']): {'object_related_list': [unicode(vector['_id'])]}}
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_dir)
+
+        # 6 - Verification if this policy is applied in chef node
+        self.assertEquals(node_policy, [u'inkscape', u'krita'])
+
+        # 7 - Add policy in workstation
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(package_profile_res['_id']): {'object_related_list': [unicode(painter['_id'])]}}
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_dir)
+
+        # 8 - Verification if this policy is applied in chef node
+        self.assertItemsEqual(node_policy, [u'gimp', u'pidgin', u'inkscape', u'krita'])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_28_repositories_are_mergeables(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                            isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 28:
+        1. Check the repositories are mergeables
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1 - Create repository
+        db = self.get_db()
+        data, new_repo1 = self.create_repository('repository_1')
+
+        # 2 - Create repository
+        data, new_repo2 = self.create_repository('repository_2')
+
+        # 3 - Register workstation in OU
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        repository_policy = db.policies.find_one({'slug': 'repository_can_view'})
+        policy_path = repository_policy['path']
+
+        # 4 - Add repository to workstation
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(repository_policy['_id']): {'object_related_list': [new_repo1['_id']]}}
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+
+        # 5 - Add repository 2 to OU
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        ou_1['policies'] = {unicode(repository_policy['_id']): {'object_related_list': [new_repo2['_id']]}}
+
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+
+        # 6 - Verification if the repositories are applied to user in chef node
+        self.assertEmitterObjects(node_policy, [new_repo1, new_repo2], fields=('name',
+                                                                               'uri'))
 
         self.assertNoErrorJobs()
