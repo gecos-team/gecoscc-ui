@@ -201,6 +201,7 @@ class Command(BaseCommand):
             path = value.pop('path')
 
             support_os = value['properties']['support_os']['default']
+            is_mergeable = value.pop('is_mergeable', False)
 
             del value['properties']['support_os']
 
@@ -222,8 +223,6 @@ class Command(BaseCommand):
                 targets = ['computer']
             else:
                 targets = DEFAULT_TARGETS
-
-            is_mergeable = value.pop('is_mergeable', False)
 
             policy = {
                 'name': value['title'],
