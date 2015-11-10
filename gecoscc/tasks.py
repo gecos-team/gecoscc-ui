@@ -250,7 +250,11 @@ class ChefTask(Task):
         for updater_node in updater_nodes:
             new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
 
-        node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
+        try:
+            node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
+        except TypeError:
+            new_field_chef_value = [dict(y) for y in set(tuple(x.items()) for x in new_field_chef_value)]
+            node.attributes.set_dotted(field_chef, new_field_chef_value)
 
     def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path):
         node_updated_by = node.attributes.get_dotted(update_by_path).items()
