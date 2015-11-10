@@ -275,13 +275,10 @@ class ChefTask(Task):
         return True
 
     def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
-        if action == DELETED_POLICY_ACTION:
-            related_objects = obj_ui_field
-        else:
-            node_updated_by = node.attributes.get_dotted(update_by_path).items()
-            nodes_ids = self.get_nodes_ids(node_updated_by)
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
 
-            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
         node.attributes.set_dotted(field_chef, related_objects)
 
@@ -346,8 +343,10 @@ class ChefTask(Task):
 
                 elif is_mergeable:
                     update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
-
-                    if obj_ui.get('type', None) == 'storage':
+                    if action == DELETED_POLICY_ACTION:
+                        node.attributes.set_dotted(field_chef, obj_ui_field)
+                        updated = True
+                    elif obj_ui.get('type', None) == 'storage':
                         self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
                         updated = True
                     elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
