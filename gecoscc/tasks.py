@@ -241,9 +241,8 @@ class ChefTask(Task):
                 nodes_ids.append(ObjectId(updated_by_id))
         return nodes_ids
 
-    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy):
-        value_field_chef = node.attributes.get_dotted(policy['path'])
-        node_updated_by = value_field_chef['updated_by'].items()
+    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path):
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
         nodes_ids = self.get_nodes_ids(node_updated_by)
 
         new_field_chef_value = []
@@ -253,9 +252,8 @@ class ChefTask(Task):
 
         node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
 
-    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui):
-        value_field_chef = node.attributes.get_dotted(field_chef)
-        node_updated_by = value_field_chef.get(priority_obj['name']).get('updated_by').items()
+    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path):
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
         nodes_ids = self.get_nodes_ids(node_updated_by)
 
         new_field_chef_value = {}
@@ -276,39 +274,28 @@ class ChefTask(Task):
         node.attributes.set_dotted(field_chef, obj_ui_field)
         return True
 
-    def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui):
+    def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
         if action == DELETED_POLICY_ACTION:
             related_objects = obj_ui_field
         else:
-            if obj_ui['type'] == 'repository':
-                value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.software_mgmt.software_sources_res')
-            elif obj_ui['type'] == 'printer':
-                value_field_chef = node.attributes.get_dotted('gecos_ws_mgmt.printers_mgmt.printers_res')
-            elif obj_ui['type'] == SOFTWARE_PROFILE_SLUG:
-                value_field_chef = node.attributes.get_dotted(policy['path'])
-
-            node_updated_by = value_field_chef['updated_by'].items()
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
 
             related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
         node.attributes.set_dotted(field_chef, related_objects)
 
-    def update_user_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui):
-        value_field_chef = node.attributes.get_dotted(field_chef)
-        nodes_ids = []
-        for user in value_field_chef.keys():
-            node_updated_by = value_field_chef.get(user).get('updated_by').items()
-            for c_id in node_updated_by:
-                nodes_ids += self.get_nodes_ids(node_updated_by)
+    def update_user_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
 
         related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
         current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-        for user in value_field_chef.keys():
-            for objs in related_objects:
-                if objs not in current_objs.get(user).get('gtkbookmarks'):
-                    current_objs.get(user)['gtkbookmarks'].append(objs)
+
+        for objs in related_objects:
+            if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
+                current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
         node.attributes.set_dotted(field_chef, current_objs)
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
@@ -358,17 +345,19 @@ class ChefTask(Task):
                         updated = True
 
                 elif is_mergeable:
+                    update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
+
                     if obj_ui.get('type', None) == 'storage':
-                        self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui)
+                        self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
                         updated = True
                     elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
-                        self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui)
+                        self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
                         updated = True
                     elif not is_user_policy(field_chef):
-                        self.update_ws_mergeable_policy(node, field_chef, field_ui, policy)
+                        self.update_ws_mergeable_policy(node, field_chef, field_ui, policy, update_by_path)
                         updated = True
                     elif is_user_policy(field_chef):
-                        updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui)
+                        updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path)
 
             if job_attr not in attributes_jobs_updated:
                 if updated:
