@@ -67,6 +67,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     }
                     model.set("support_os", p.support_os);
                     model.set("schema", p.schema);
+                    model.set("is_mergeable", p.is_mergeable);
                 });
                 that.trigger("policiesloaded");
             });
@@ -109,6 +110,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         defaults: {
             name: "",
             name_es: "",
+            is_mergeable: false,
             schema: {},
             values: {}
         },
