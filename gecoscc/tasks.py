@@ -4,6 +4,7 @@
 #
 # Authors:
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -241,63 +242,164 @@ class ChefTask(Task):
                 nodes_ids.append(ObjectId(updated_by_id))
         return nodes_ids
 
-    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path):
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+    def is_updating_ws_policy(self, node, obj_ui, field_ui, field_chef):
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        for obj in obj_ui[field_ui]:
+            if isinstance(field_chef_value, list):
+                if obj not in field_chef_value:
+                    return True
+            elif obj not in field_chef_value['field_ui']:
+                return True
 
-        new_field_chef_value = []
-        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-        for updater_node in updater_nodes:
-            new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
+        return False
 
+    def is_updating_user_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        field_chef_value = node.attributes.get_dotted(field_chef)
         try:
-            node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
-        except TypeError:
-            new_field_chef_value = [dict(y) for y in set(tuple(x.items()) for x in new_field_chef_value)]
-            node.attributes.set_dotted(field_chef, new_field_chef_value)
+            for policy_type in obj_ui.keys():
+                if isinstance(field_chef_value.get(priority_obj['name']).get(policy_type), list) or field_chef_value.get(priority_obj['name']).get(policy_type) is None:
+                    if field_chef_value.get(priority_obj['name']).get(policy_type) is None:
+                        return True
+                    elif obj_ui.get(policy_type) != []:
+                        for obj in obj_ui.get(policy_type):
+                                if obj not in field_chef_value.get(priority_obj['name']).get(policy_type):
+                                    return True
+            return False
+        except:
+            return True
 
-    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path):
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+    def is_updating_ws_related_objects(self, node, obj_ui, field_chef):
+        field_chef_value = node.attributes.get_dotted(field_chef)
 
-        new_field_chef_value = {}
-        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-        for updater_node in updater_nodes:
-            node_policy = updater_node['policies'][unicode(policy['_id'])]
-            for policy_field in node_policy.keys():
-                if policy_field not in new_field_chef_value:
-                    new_field_chef_value[policy_field] = []
-                new_field_chef_value[policy_field] += node_policy[policy_field]
+        if obj_ui.get('object_related_list', False):
+            related_objs = obj_ui['object_related_list']
+            for related_obj in related_objs:
+                if obj_ui['type'] == SOFTWARE_PROFILE_SLUG:
+                    for obj_field in related_obj['packages']:
+                        if obj_field not in field_chef_value:
+                            return True
 
-        obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-        if obj_ui_field.get(priority_obj['name']):
-            for policy_field in policy['schema']['properties'].keys():
-                obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+                elif obj_ui['type'] == 'repository':
+                    if not any(d['repo_name'] == related_obj['name'] for d in field_chef_value):
+                        return True
+
+                elif not any(d['name'] == related_obj['name'] for d in field_chef_value):
+                    return True
+
+            return False
+        else:
+            related_objs = obj_ui
+            if not any(d['name'] == related_objs['name'] for d in field_chef_value):
+                return True
+            else:
+                for field_value in field_chef_value:
+                    if related_objs['name'] == field_value['name']:
+                        for attribute in field_value.keys():
+                            if related_objs[attribute] != field_value[attribute]:
+                                return True
+                return False
+
+    def is_updating_user_related_object(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
+        if obj_ui.get('object_related_list', False):
+            related_objects = obj_ui['object_related_list']
+            if field_chef_value_storage:
+                for obj in related_objects:
+                    if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
+                        return True
+                    else:
+                        for field_value in field_chef_value_storage:
+                            if related_objects['name'] == field_value['name']:
+                                for attribute in field_value.keys():
+                                    if related_objects[attribute] != field_value[attribute]:
+                                        return True
+                return False
+            else:
+                return True
+        else:
+            related_objects = obj_ui
+            if not any(d['name'] == related_objects['name'] for d in field_chef_value_storage):
+                    return True
+            else:
+                for field_value in field_chef_value_storage:
+                    if related_objects['name'] == field_value['name']:
+                        for attribute in field_value.keys():
+                            if related_objects[attribute] != field_value[attribute]:
+                                return True
+            return True
+
+    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path, obj_ui):
+        if self.is_updating_ws_policy(node, obj_ui, field_ui, field_chef) is True:
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            new_field_chef_value = []
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
+
+            try:
+                node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
+            except TypeError:
+                new_field_chef_value = [dict(y) for y in set(tuple(x.items()) for x in new_field_chef_value)]
+                node.attributes.set_dotted(field_chef, new_field_chef_value)
+            return True
         else:
             return False
-        node.attributes.set_dotted(field_chef, obj_ui_field)
-        return True
+
+    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
+        if self.is_updating_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            new_field_chef_value = {}
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                node_policy = updater_node['policies'][unicode(policy['_id'])]
+                for policy_field in node_policy.keys():
+                    if policy_field not in new_field_chef_value:
+                        new_field_chef_value[policy_field] = []
+                    new_field_chef_value[policy_field] += node_policy[policy_field]
+
+            obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            if obj_ui_field.get(priority_obj['name']):
+                for policy_field in policy['schema']['properties'].keys():
+                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+            else:
+                return False
+            node.attributes.set_dotted(field_chef, obj_ui_field)
+            return True
+        else:
+            return False
 
     def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+        if self.is_updating_ws_related_objects(node, obj_ui, field_chef):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
 
-        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
-        node.attributes.set_dotted(field_chef, related_objects)
+            node.attributes.set_dotted(field_chef, related_objects)
+            return True
+        else:
+            return False
 
     def update_user_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+        if self.is_updating_user_related_object(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
 
-        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
-        current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
-        for objs in related_objects:
-            if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
-        node.attributes.set_dotted(field_chef, current_objs)
+            for objs in related_objects:
+                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
+                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+            node.attributes.set_dotted(field_chef, current_objs)
+        else:
+            return False
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
         updated = updated_updated_by = False
@@ -347,6 +449,7 @@ class ChefTask(Task):
 
                 elif is_mergeable:
                     update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
+
                     if action == DELETED_POLICY_ACTION:
                         node.attributes.set_dotted(field_chef, obj_ui_field)
                         updated = True
@@ -354,13 +457,11 @@ class ChefTask(Task):
                         self.update_user_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
                         updated = True
                     elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
-                        self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
-                        updated = True
+                        updated = self.update_ws_related_object_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
                     elif not is_user_policy(field_chef):
-                        self.update_ws_mergeable_policy(node, field_chef, field_ui, policy, update_by_path)
-                        updated = True
+                        updated = self.update_ws_mergeable_policy(node, field_chef, field_ui, policy, update_by_path, obj_ui)
                     elif is_user_policy(field_chef):
-                        updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path)
+                        updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui)
 
             if job_attr not in attributes_jobs_updated:
                 if updated:
