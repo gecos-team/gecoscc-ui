@@ -2986,3 +2986,63 @@ class AdvancedTests(BaseGecosTestCase):
                                                                                'uri'))
 
         self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_29_cert_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+                            gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+        '''
+        Test 29:
+        1. Check the policies priority works
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+
+        # Register administrator
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # 1, 2 - Create and register workstation
+        db = self.get_db()
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 3 - Create user in OU
+        username = 'usertest'
+        data, new_user = self.create_user(username)
+
+        # 4 - Register user in chef node
+        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        user = db.nodes.find_one({'name': username})
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(user['computers'][0], computer['_id'])
+
+        # 5 - Add policy in OU
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        cert_res = db.policies.find_one({'slug': 'cert_res'})
+        policy_dir = 'gecos_ws_mgmt.misc_mgmt.cert_res'
+        ou_1['policies'] = {unicode(cert_res['_id']): {'java_keystores': ["keystore_ou"], 'ca_root_certs': [{'name': "cert_ou", 'uri': "uri_ou"}]}}
+        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_dir)
+
+        # 6 - Verification if this policy is applied in chef node
+        self.assertEquals(node_policy.get('java_keystores'), ['keystore_ou'])
+        self.assertEquals(node_policy.get('ca_root_certs'), [{u'name': u'cert_ou', u'uri': u'uri_ou'}])
+
+        # 7 - Add policy in workstation
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(cert_res['_id']): {'java_keystores': ["keystore_ws"], 'ca_root_certs': [{'name': "cert_ws", 'uri': "uri_ws"}]}}
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_dir)
+
+        # 8 - Verification if this policy is applied in chef node
+        self.assertEquals(node_policy.get('java_keystores'), ['keystore_ou', 'keystore_ws'])
+        self.assertEquals(node_policy.get('ca_root_certs'), [{u'name': u'cert_ou', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws'}])
+
+        self.assertNoErrorJobs()
