@@ -308,13 +308,6 @@ class ChefTask(Task):
                 for obj in related_objects:
                     if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
                         return True
-                    else:
-                        for field_value in field_chef_value_storage:
-                            if related_objects['name'] == field_value['name']:
-                                for attribute in field_value.keys():
-                                    if related_objects[attribute] != field_value[attribute]:
-                                        return True
-                return False
             else:
                 return True
         else:
