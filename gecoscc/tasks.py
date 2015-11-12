@@ -242,7 +242,21 @@ class ChefTask(Task):
                 nodes_ids.append(ObjectId(updated_by_id))
         return nodes_ids
 
+    def set_list_of_dict(self, new_field_chef_value):
+        '''
+        Return a list of dictionary without duplicated dictionaries
+        '''
+        new_field_chef_dict = []
+        for field_value in new_field_chef_value:
+            if field_value not in new_field_chef_dict:
+                new_field_chef_dict.append(field_value)
+
+        return new_field_chef_dict
+
     def is_updating_ws_policy(self, node, obj_ui, field_ui, field_chef):
+        '''
+        Check if a workstation policy is updating the node
+        '''
         field_chef_value = node.attributes.get_dotted(field_chef)
         for obj in obj_ui[field_ui]:
             if isinstance(field_chef_value, list):
@@ -251,6 +265,9 @@ class ChefTask(Task):
         return False
 
     def is_updating_user_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        '''
+        Check if a user policy is updating the node
+        '''
         field_chef_value = node.attributes.get_dotted(field_chef)
         for policy_type in obj_ui.keys():
             if isinstance(field_chef_value.get(priority_obj['name']).get(policy_type), list) or field_chef_value.get(priority_obj['name']).get(policy_type) is None:
@@ -263,6 +280,9 @@ class ChefTask(Task):
         return False
 
     def is_updating_ws_related_objects(self, node, obj_ui, field_chef):
+        '''
+        Check if a workstation policy, which it has objects that are emitters policies, is updating the node
+        '''
         field_chef_value = node.attributes.get_dotted(field_chef)
 
         if obj_ui.get('object_related_list', False):
@@ -290,6 +310,9 @@ class ChefTask(Task):
             return False
 
     def is_updating_user_related_object(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        '''
+        Check if a user policy, which it has objects that are emitters policies, is updating the node
+        '''
         field_chef_value = node.attributes.get_dotted(field_chef)
         field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
         if obj_ui.get('object_related_list', False):
@@ -311,6 +334,9 @@ class ChefTask(Task):
             return False
 
     def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path, obj_ui):
+        '''
+        Update chef node with a workstation policy, which it is mergeable
+        '''
         if self.is_updating_ws_policy(node, obj_ui, field_ui, field_chef) is True:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
@@ -323,13 +349,16 @@ class ChefTask(Task):
             try:
                 node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
             except TypeError:
-                new_field_chef_value = [dict(y) for y in set(tuple(x.items()) for x in new_field_chef_value)]
+                new_field_chef_value = self.set_list_of_dict(new_field_chef_value)
                 node.attributes.set_dotted(field_chef, new_field_chef_value)
             return True
         else:
             return False
 
     def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
+        '''
+        Update chef node with a user policy, which it is mergeable
+        '''
         if self.is_updating_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
@@ -355,6 +384,9 @@ class ChefTask(Task):
             return False
 
     def update_ws_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
+        '''
+        Update chef node with a workstation policy, which it is mergeable and has objects that are emitters policies
+        '''
         if self.is_updating_ws_related_objects(node, obj_ui, field_chef):
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
@@ -367,6 +399,9 @@ class ChefTask(Task):
             return False
 
     def update_user_related_object_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
+        '''
+        Update chef node with a user policy, which it is mergeable and has objects that are emitters policies
+        '''
         if self.is_updating_user_related_object(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
