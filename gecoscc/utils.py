@@ -414,8 +414,46 @@ def visibility_object_related(db, obj):
     return obj
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False):
+def get_job_errors_from_computer(jobs_collection, computer):
+    return jobs_collection.find({'computerid': computer['_id'],
+                                 '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
+
+
+def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user, cookbook_name,
+                         api=None, initialize=True, use_celery=False):
+    job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    node_chef_id = computer.get('node_chef_id', None)
+    if not node_chef_id:
+        return (False, 'The computer %s does not have node_chef_id' % computer['name'])
+
+    node = ChefNode(node_chef_id, api)
+    if not node.exists:
+        return (False, 'Node %s does not exists in chef server' % node_chef_id)
+
+    is_inizialized = node.attributes.get(cookbook_name)
+    if not is_inizialized:
+        return (False, 'Node %s is not inizialized in chef server' % node_chef_id)
+
+    apply_policies_to_computer(nodes_collection, computer, auth_user, api,
+                               initialize=initialize,
+                               use_celery=use_celery)
+    users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
+    for user in users:
+        apply_policies_to_user(nodes_collection, user, auth_user, api,
+                               initialize=initialize,
+                               use_celery=use_celery)
+    new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    if new_job_errors > job_errors:
+        return (False, 'The computer %s had problems while it was updating' % computer['name'])
+    return (True, 'success')
+
+
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True):
     from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+
     if api and initialize:
         computer = visibility_group(nodes_collection.database, computer)
         computer = visibility_object_related(nodes_collection.database, computer)
@@ -424,18 +462,21 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed.delay(auth_user, 'ou', ou, {}, computers=[computer])
+            object_changed(auth_user, 'ou', ou, {}, computers=[computer])
 
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed.delay(auth_user, 'group', group, {}, computers=[computer])
+            object_changed(auth_user, 'group', group, {}, computers=[computer])
 
-    object_created.delay(auth_user, 'computer', computer, computers=[computer])
+    object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True):
     from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
 
     computers = get_computer_of_user(nodes_collection, user)
 
@@ -450,14 +491,14 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed.delay(auth_user, 'ou', ou, {}, computers=computers)
+            object_changed(auth_user, 'ou', ou, {}, computers=computers)
 
     groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed.delay(auth_user, 'group', group, {}, computers=computers)
+            object_changed(auth_user, 'group', group, {}, computers=computers)
 
-    object_created.delay(auth_user, 'user', user, computers=computers)
+    object_created(auth_user, 'user', user, computers=computers)
 
 
 def remove_policies_of_computer(user, computer, auth_user):
@@ -601,23 +642,23 @@ def is_local_user(user, collection_nodes):
 
     return is_local
 
+
 # Transform an username into a Chef username
 # by replacing the dots by "___"
-#
 def toChefUsername(username):
     return username.replace('.', '___')
 
+
 # Transforms back a Chef username into a regular username
 # by replacing the "___" by dots
-#
 def fromChefUsername(username):
     return username.replace('___', '.')
 
+
 # Get the components of a URL
-#
 def getURLComponents(url):
     components = {}
-    
+
     url_re = r"(?P<protocol>(http[s]?|ftp|mongodb))://((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host_name>[^:/]+)(:(?P<port>[0-9]+))?(?P<path>[a-zA-Z0-9\/]+)?"
     m = re.match(url_re, url)
     components['protocol'] = m.group('protocol')
@@ -626,7 +667,7 @@ def getURLComponents(url):
     components['path'] = m.group('path')
     components['user'] = m.group('user')
     components['password'] = m.group('password')
-  
+
     if components['port'] is None:
         if components['protocol'] == 'ftp':
             components['port'] = '21'
@@ -636,5 +677,5 @@ def getURLComponents(url):
             components['port'] = '443'
         elif components['protocol'] == 'mongodb':
             components['port'] = '27017'
-    
+
     return components

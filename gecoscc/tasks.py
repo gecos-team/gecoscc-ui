@@ -735,7 +735,7 @@ class ChefTask(Task):
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
             raise NotImplementedError
-        func(self.db.nodes, objnew, user, api, initialize=True)
+        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False)
 
     def object_emiter_deleted(self, user, obj, computers=None):
         obj_id = unicode(obj['_id'])
