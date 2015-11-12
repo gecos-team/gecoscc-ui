@@ -3010,39 +3010,71 @@ class AdvancedTests(BaseGecosTestCase):
         admin_username = 'superuser'
         self.add_admin_user(admin_username)
 
-        # 1, 2 - Create and register workstation
+        # 1 - Create and register workstation
         db = self.get_db()
         chef_node_id = CHEF_NODE_ID
         self.register_computer()
 
-        # 3 - Create user in OU
+        # 2 - Create user in OU
         username = 'usertest'
         data, new_user = self.create_user(username)
 
-        # 4 - Register user in chef node
+        # 3 - Register user in chef node
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
-        # 5 - Add policy in OU
+        # 4 - Add policy in OU
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         cert_res = db.policies.find_one({'slug': 'cert_res'})
         policy_dir = 'gecos_ws_mgmt.misc_mgmt.cert_res'
         ou_1['policies'] = {unicode(cert_res['_id']): {'java_keystores': ["keystore_ou"], 'ca_root_certs': [{'name': "cert_ou", 'uri': "uri_ou"}]}}
         node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_dir)
 
-        # 6 - Verification if this policy is applied in chef node
+        # 5 - Verification if this policy is applied in chef node
         self.assertEquals(node_policy.get('java_keystores'), ['keystore_ou'])
         self.assertEquals(node_policy.get('ca_root_certs'), [{u'name': u'cert_ou', u'uri': u'uri_ou'}])
 
-        # 7 - Add policy in workstation
+        # 6 - Add policy in workstation
         computer = db.nodes.find_one({'name': 'testing'})
         computer['policies'] = {unicode(cert_res['_id']): {'java_keystores': ["keystore_ws"], 'ca_root_certs': [{'name': "cert_ws", 'uri': "uri_ws"}]}}
         node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_dir)
 
-        # 8 - Verification if this policy is applied in chef node
+        # 7 - Verification if this policy is applied in chef node
         self.assertEquals(node_policy.get('java_keystores'), ['keystore_ou', 'keystore_ws'])
         self.assertEquals(node_policy.get('ca_root_certs'), [{u'name': u'cert_ou', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws'}])
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_30_recalc_command_cert_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+                                           gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+
+        # 1 - 7
+        self.test_29_cert_policy()
+
+        node = NodeMock(CHEF_NODE_ID, None)
+
+        # 8 - Modify the data in chef node
+        policy_path = 'gecos_ws_mgmt.misc_mgmt.cert_res.ca_root_certs'
+        node.attributes.set_dotted(policy_path, [{u'name': u'cert_ou_fake', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
+
+        # 9 - Check if the data has beed modified in chef node
+        node_policy = node.attributes.get_dotted(policy_path)
+        self.assertEquals(node_policy, [{u'name': u'cert_ou_fake', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
+
+        # 10 - Runs recalc command
+
+        # 11 - Check if the data applied in chef node is correct
 
         self.assertNoErrorJobs()
