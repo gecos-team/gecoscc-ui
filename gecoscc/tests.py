@@ -38,6 +38,7 @@ from gecoscc.api.users import UserResource
 from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
 from gecoscc.commands.create_software_profiles import Command as ImportSoftwareProfilesCommand
+from gecoscc.commands.recalc_nodes_policies import Command as RecalcNodePoliciesCommand
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
@@ -193,6 +194,7 @@ class NodeMock(object):
         if chef_node_id in NODES:
             self.attributes = NodeAttributesMock(copy(NODES[chef_node_id]), self)
             self.normal = self.attributes
+            self.exists = True
         else:
             node_attributes_json = open('gecoscc/test_resources/node_attributes.json').read().replace(
                 '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', chef_node_id)
@@ -201,6 +203,7 @@ class NodeMock(object):
             self.check_no_exists_name(node_attributes_json)
             self.attributes = NodeAttributesMock(node_attributes_json, self)
             self.normal = self.attributes
+            self.exists = False
 
     def check_no_exists_name(self, node_attributes_json):
         name = node_attributes_json['ohai_gecos']['pclabel']
@@ -219,6 +222,7 @@ class NodeMock(object):
 
     def save(self):
         NODES[self.name] = copy(self.attributes.data)
+        self.exists = True
 
     def delete(self):
         del NODES[self.name]
@@ -454,6 +458,17 @@ class BaseGecosTestCase(unittest.TestCase):
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
                     '-a', 'test', '-k', 'gecoscc/test_resources/media/users/test/chef_client.pem']
         command = ImportPoliciesCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    def recalc_policies(self):
+        '''
+        Useful method, recalculate policies
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini', 'recalc_nodes_policies',
+                    '-a', 'test']
+        command = RecalcNodePoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
 
@@ -3060,6 +3075,9 @@ class AdvancedTests(BaseGecosTestCase):
     def test_30_recalc_command_cert_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
                                            gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
 
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
+                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+
         # 1 - 7
         self.test_29_cert_policy()
 
@@ -3068,13 +3086,17 @@ class AdvancedTests(BaseGecosTestCase):
         # 8 - Modify the data in chef node
         policy_path = 'gecos_ws_mgmt.misc_mgmt.cert_res.ca_root_certs'
         node.attributes.set_dotted(policy_path, [{u'name': u'cert_ou_fake', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
+        node.save()
 
         # 9 - Check if the data has beed modified in chef node
         node_policy = node.attributes.get_dotted(policy_path)
         self.assertEquals(node_policy, [{u'name': u'cert_ou_fake', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
 
         # 10 - Runs recalc command
+        self.recalc_policies()
 
         # 11 - Check if the data applied in chef node is correct
+        node_policy = node.attributes.get_dotted(policy_path)
+        self.assertEquals(node_policy, [{u'name': u'cert_ou', u'uri': u'uri_ou'}, {u'name': u'cert_ws', u'uri': u'uri_ws'}])
 
         self.assertNoErrorJobs()
