@@ -21,7 +21,7 @@ from gecoscc.utils import get_chef_api, recalc_node_policies, get_filter_this_do
 
 class Command(BaseCommand):
     description = """
-        Recalculate the policies of the seleted nodes
+        Recalculate the policies of the selected nodes
     """
 
     option_list = [
@@ -50,6 +50,9 @@ class Command(BaseCommand):
     required_options = ('administrator',)
 
     def get_computers(self):
+        '''
+        Get the computers from the command arguments.
+        '''
         db = self.pyramid.db
         filters = {'type': 'computer'}
         if self.options.domain:
@@ -61,6 +64,10 @@ class Command(BaseCommand):
         return computers
 
     def command(self):
+        '''
+        This command recalculate the policies of the selected nodes
+        These nodes are receiving as command arguments
+        '''
         db = self.pyramid.db
         computers = self.get_computers()
         admin_user = db.adminusers.find_one({'username': self.options.administrator})
