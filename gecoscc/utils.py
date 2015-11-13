@@ -252,10 +252,17 @@ def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attemp
 
 
 def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
+    '''
+    Check if the node is busy, else try to get it and write in control and expiration date in the field USE_NODE.
+    '''
     settings = get_current_registry().settings
     seconds_block_is_busy = int(settings.get('chef.seconds_block_is_busy'))
     time_to_exp = datetime.timedelta(seconds=seconds_block_is_busy)
+
+    time_get = time.time()
     node = ChefNode(node_id, api)
+    time_get = time.time() - time_get
+
     current_use_node = node.attributes.get(USE_NODE, {})
     current_use_node_control = current_use_node.get('control', None)
     current_use_node_exp_date = current_use_node.get('exp_date', None)
@@ -272,6 +279,11 @@ def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
         node.attributes.set_dotted(USE_NODE, {'control': controller_requestor,
                                               'exp_date': json.dumps(exp_date, default=json_util.default)})
         node.save()
+
+        heuristic_parameter = settings.get('chef.heuristic_parameter', 3)
+        seconds_sleep_is_busy = time_get * int(heuristic_parameter)
+        time.sleep(seconds_sleep_is_busy)
+
         node2 = ChefNode(node.name, api)  # second check
         current_use_node2 = node2.attributes.get(USE_NODE, {})
         current_use_control2 = current_use_node2.get('control', None)
