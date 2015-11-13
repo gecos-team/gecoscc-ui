@@ -280,8 +280,8 @@ def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
                                               'exp_date': json.dumps(exp_date, default=json_util.default)})
         node.save()
 
-        heuristic_parameter = settings.get('chef.heuristic_parameter', 3)
-        seconds_sleep_is_busy = time_get * int(heuristic_parameter)
+        smart_lock_sleep_parameter = settings.get('chef.smart_lock_sleep_factor', 3)
+        seconds_sleep_is_busy = time_get * int(smart_lock_sleep_parameter)
         time.sleep(seconds_sleep_is_busy)
 
         node2 = ChefNode(node.name, api)  # second check
