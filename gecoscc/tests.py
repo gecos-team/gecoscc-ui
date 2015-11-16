@@ -3108,369 +3108,368 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-
-# class MovementsTests(BaseGecosTestCase):
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_01_printers_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                    isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 01:
-#         1. Check the printers movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1 - Create printer
-#         data, new_printer = self.create_printer('Testprinter')
-
-#         # 2 - Register workstation
-#         db = self.get_db()
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         chef_node_id = CHEF_NODE_ID
-#         self.register_computer()
-
-#         # 3 - Add printer to workstation and check if it is applied in chef node
-#         computer = db.nodes.find_one({'name': 'testing'})
-#         request = self.dummy_get_request(computer, ComputerResource.schema_detail)
-#         computer_api = ComputerResource(request)
-#         computer = computer_api.get()
-
-#         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
-#         computer['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
-#         policy_path = printer_policy['path']
-#         node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
-
-#         self.assertEqualsObjects(node_policy[0], new_printer, fields=('oppolicy',
-#                                                                       'model',
-#                                                                       'uri',
-#                                                                       'name',
-#                                                                       'manufacturer'))
-
-#         # 4 - Move printer to the OU path like admin
-#         printer_update = self.update_node(obj=new_printer, field_name='path',
-#                                           field_value=ou_1['path'], api_class=PrinterResource,
-#                                           is_superuser=False)
-
-#         # 5 - Checks if the printer has been moved
-#         self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
-#                                                                          'model',
-#                                                                          'uri',
-#                                                                          'name',
-#                                                                          'manufacturer'))
-#         # 6 - Move printer to the OU path like super admin
-#         printer_update = self.update_node(obj=new_printer, field_name='path',
-#                                           field_value=ou_1['path'], api_class=PrinterResource)
-
-#         # 7 - Checks if the printer has been moved
-#         self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
-#                                                                          'model',
-#                                                                          'uri',
-#                                                                          'name',
-#                                                                          'manufacturer'))
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_02_shared_folder_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                         isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 02:
-#         1. Check the shared folder movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # Register admin
-#         admin_username = 'superuser'
-#         self.add_admin_user(admin_username)
-
-#         # 1 - Create storage
-#         db = self.get_db()
-#         data, new_storage = self.create_storage('shared folder')
-
-#         # 2 - Create OU 2
-#         data, ou_2 = self.create_ou('OU 2')
-
-#         # 3 - Create ws and user
-#         username = 'testuser'
-#         data, new_user = self.create_user(username)
-#         self.assertEqualsObjects(data, new_user)
-
-#         db = self.get_db()
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         chef_node_id = CHEF_NODE_ID
-#         self.register_computer()
-
-#         # 4 - Register user in ws
-#         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
-
-#         # 5 - Add storage to user and check if it is applied in chef node
-#         user = db.nodes.find_one({'name': username})
-#         request = self.dummy_get_request(user, UserResource.schema_detail)
-#         user_api = UserResource(request)
-#         user = user_api.get()
-
-#         id_computer = user['computers']
-#         user['computers'] = [ObjectId(id_computer[0])]
-
-#         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
-
-#         user['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
-#         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-#         node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
-
-#         # 6 - Update storage's URI
-#         storage_update = self.update_node(obj=new_storage, field_name='path',
-#                                           field_value='%s,%s' % (ou_2['path'], ou_2['_id']), api_class=StorageResource,
-#                                           is_superuser=False)
-
-#         # 7- Check if the storage has been moved
-#         # 8 - Move printer to the OU path like admin
-#         storage_policy = self.update_node(obj=new_storage, field_name='path',
-#                                           field_value=ou_1['path'], api_class=StorageResource,
-#                                           is_superuser=True)
-
-#         # 9- Check if the storage has been moved
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_03_repository_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                    isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 03:
-#         1. Check the repository movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1 - Create printer
-#         data, new_repository = self.create_repository('Testrepo')
-
-#         # 2 - Register workstation
-#         db = self.get_db()
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         chef_node_id = CHEF_NODE_ID
-#         self.register_computer()
-
-#         # 3 - Add repository to workstation
-#         repository_policy = db.policies.find_one({'slug': 'repository_can_view'})
-#         policy_path = repository_policy['path']
-#         computer = db.nodes.find_one({'name': 'testing'})
-#         computer['policies'] = {unicode(repository_policy['_id']): {'object_related_list': [new_repository['_id']]}}
-#         node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
-
-#         # 4 - Move repository to the OU path
-#         printer_update = self.update_node(obj=new_repository, field_name='path',
-#                                           field_value=ou_1['path'], api_class=RepositoryResource,
-#                                           is_superuser=False)
-
-#         # 5 - Checks if the repository has been moved
-
-#         # 6 - Move repository to the OU path like super admin
-#         printer_update = self.update_node(obj=new_repository, field_name='path',
-#                                           field_value=ou_1['path'], api_class=RepositoryResource)
-
-#         # 7 - Checks if the repository has been moved
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_04_groups_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                  isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 04:
-#         1. Check the groups movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1- Create a group
-#         data, new_group = self.create_group('testgroup')
-
-#         # 2 - Register a workstation
-#         db = self.get_db()
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         self.register_computer()
-#         computer = db.nodes.find_one({'name': 'testing'})
-
-#         # 3 - Assign group to computer
-#         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
-
-#         # Check if group's node is update in node chef
-#         group = db.nodes.find_one({'name': 'testgroup'})
-#         self.assertEqual(group['members'][0], computer['_id'])
-
-#         # 4 - move group to the OU path
-#         group_update = self.update_node(obj=new_group, field_name='path',
-#                                         field_value=ou_1['path'], api_class=GroupResource,
-#                                         is_superuser=False)
-#         # 5 - Check if the groups has been moved
-
-#         # 6 - move group to the OU path like admin
-#         group_update = self.update_node(obj=new_group, field_name='path',
-#                                         field_value=ou_1['path'], api_class=GroupResource,
-#                                         is_superuser=True)
-
-#         # 7 - Check if the groups has been moved
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_05_groups_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                         isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 05:
-#         1. Check the groups movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1- Create a group
-#         data, new_group = self.create_group('testgroup')
-
-#         # 2 - Register a workstation
-#         db = self.get_db()
-#         self.register_computer()
-#         computer = db.nodes.find_one({'name': 'testing'})
-
-#         # 3 - Assign group to computer
-#         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
-
-#         # Check if group's node is update in node chef
-#         group = db.nodes.find_one({'name': 'testgroup'})
-#         self.assertEqual(group['members'][0], computer['_id'])
-
-#         # 4 - Create domain
-#         data = {'name': 'Flag',
-#                 'type': 'ou',
-#                 'path': 'root',
-#                 'source': 'gecos'}
-
-#         request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
-#         ou_api = OrganisationalUnitResource(request_post)
-#         flag_new = ou_api.collection_post()
-
-#         data, domain = self.create_domain('Domain 2', flag_new)
-
-#         # 5 - move group to the OU path
-#         group_update = self.update_node(obj=new_group, field_name='path',
-#                                         field_value=domain['path'], api_class=GroupResource,
-#                                         is_superuser=True)
-
-#         # 6 - Check if the groups has been moved
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_06_OUs_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                               isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 06:
-#         1. Check the ous movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1- Create OU 2
-#         data, ou_2 = self.create_ou('OU 2', 'OU 1')
-
-#         # 2 - Register a workstation
-#         db = self.get_db()
-#         self.register_computer(ou_name=ou_2['name'])
-
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         # 3 - Move OU 2 to OU 1 path
-#         ou_moved = self.update_node(obj=ou_2, field_name='path',
-#                                     field_value=ou_1['path'], api_class=OrganisationalUnitResource,
-#                                     is_superuser=False)
-
-#         # 7- Check if the storage has been moved
-
-#         # 8 - Move printer to the OU path like admin
-#         ou_moved = self.update_node(obj=ou_2, field_name='path',
-#                                     field_value=ou_1['path'], api_class=OrganisationalUnitResource,
-#                                     is_superuser=True)
-
-#         # 9- Check if the storage has been moved
-
-#         self.assertNoErrorJobs()
-
-#     @mock.patch('gecoscc.api.chef_status.Node')
-#     @mock.patch('gecoscc.forms.create_chef_admin_user')
-#     @mock.patch('gecoscc.forms._')
-#     @mock.patch('gecoscc.utils.isinstance')
-#     @mock.patch('chef.Node')
-#     @mock.patch('gecoscc.utils.ChefNode')
-#     @mock.patch('gecoscc.tasks.get_cookbook')
-#     @mock.patch('gecoscc.utils.get_cookbook')
-#     def test_07_OUs_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-#                                      isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
-#         '''
-#         Test 07:
-#         1. Check the ous movements work
-#         '''
-#         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
-
-#         # 1 - Create domain
-#         data = {'name': 'Flag',
-#                 'type': 'ou',
-#                 'path': 'root',
-#                 'source': 'gecos'}
-
-#         request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
-#         ou_api = OrganisationalUnitResource(request_post)
-#         flag_new = ou_api.collection_post()
-
-#         data, domain = self.create_domain('Domain 2', flag_new)
-
-#         # 2 - Register a workstation
-#         db = self.get_db()
-#         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-#         self.register_computer(ou_name=ou_1['name'])
-
-#         # 3 - Move OU 1 to Domain path
-#         ou_moved = self.update_node(obj=ou_1, field_name='path',
-#                                     field_value=domain['path'], api_class=OrganisationalUnitResource,
-#                                     is_superuser=True)
-
-#         # 9- Check if the storage has been moved
-
-#         self.assertNoErrorJobs()
+class MovementsTests(BaseGecosTestCase):
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_01_printers_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                   isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 01:
+        1. Check the printers movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1 - Create printer
+        data, new_printer = self.create_printer('Testprinter')
+
+        # 2 - Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 3 - Add printer to workstation and check if it is applied in chef node
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
+        computer['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
+        policy_path = printer_policy['path']
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+
+        self.assertEqualsObjects(node_policy[0], new_printer, fields=('oppolicy',
+                                                                      'model',
+                                                                      'uri',
+                                                                      'name',
+                                                                      'manufacturer'))
+
+        # 4 - Move printer to the OU path like admin
+        printer_update = self.update_node(obj=new_printer, field_name='path',
+                                          field_value=ou_1['path'], api_class=PrinterResource,
+                                          is_superuser=False)
+
+        # 5 - Checks if the printer has been moved
+        self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
+                                                                         'model',
+                                                                         'uri',
+                                                                         'name',
+                                                                         'manufacturer'))
+        # 6 - Move printer to the OU path like super admin
+        printer_update = self.update_node(obj=new_printer, field_name='path',
+                                          field_value=ou_1['path'], api_class=PrinterResource)
+
+        # 7 - Checks if the printer has been moved
+        self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
+                                                                         'model',
+                                                                         'uri',
+                                                                         'name',
+                                                                         'manufacturer'))
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_02_shared_folder_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                        isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 02:
+        1. Check the shared folder movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # 1 - Create storage
+        db = self.get_db()
+        data, new_storage = self.create_storage('shared folder')
+
+        # 2 - Create OU 2
+        data, ou_2 = self.create_ou('OU 2')
+
+        # 3 - Create ws and user
+        username = 'testuser'
+        data, new_user = self.create_user(username)
+        self.assertEqualsObjects(data, new_user)
+
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 4 - Register user in ws
+        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+
+        # 5 - Add storage to user and check if it is applied in chef node
+        user = db.nodes.find_one({'name': username})
+        request = self.dummy_get_request(user, UserResource.schema_detail)
+        user_api = UserResource(request)
+        user = user_api.get()
+
+        id_computer = user['computers']
+        user['computers'] = [ObjectId(id_computer[0])]
+
+        storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
+
+        user['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
+        policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
+        node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
+
+        # 6 - Update storage's URI
+        storage_update = self.update_node(obj=new_storage, field_name='path',
+                                          field_value='%s,%s' % (ou_2['path'], ou_2['_id']), api_class=StorageResource,
+                                          is_superuser=False)
+
+        # 7- Check if the storage has been moved
+        # 8 - Move printer to the OU path like admin
+        storage_policy = self.update_node(obj=new_storage, field_name='path',
+                                          field_value=ou_1['path'], api_class=StorageResource,
+                                          is_superuser=True)
+
+        # 9- Check if the storage has been moved
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_03_repository_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                    isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 03:
+        1. Check the repository movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1 - Create printer
+        data, new_repository = self.create_repository('Testrepo')
+
+        # 2 - Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 3 - Add repository to workstation
+        repository_policy = db.policies.find_one({'slug': 'repository_can_view'})
+        policy_path = repository_policy['path']
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(repository_policy['_id']): {'object_related_list': [new_repository['_id']]}}
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+
+        # 4 - Move repository to the OU path
+        printer_update = self.update_node(obj=new_repository, field_name='path',
+                                          field_value=ou_1['path'], api_class=RepositoryResource,
+                                          is_superuser=False)
+
+        # 5 - Checks if the repository has been moved
+
+        # 6 - Move repository to the OU path like super admin
+        printer_update = self.update_node(obj=new_repository, field_name='path',
+                                          field_value=ou_1['path'], api_class=RepositoryResource)
+
+        # 7 - Checks if the repository has been moved
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_04_groups_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                 isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 04:
+        1. Check the groups movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1- Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # 2 - Register a workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        self.register_computer()
+        computer = db.nodes.find_one({'name': 'testing'})
+
+        # 3 - Assign group to computer
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # 4 - move group to the OU path
+        group_update = self.update_node(obj=new_group, field_name='path',
+                                        field_value=ou_1['path'], api_class=GroupResource,
+                                        is_superuser=False)
+        # 5 - Check if the groups has been moved
+
+        # 6 - move group to the OU path like admin
+        group_update = self.update_node(obj=new_group, field_name='path',
+                                        field_value=ou_1['path'], api_class=GroupResource,
+                                        is_superuser=True)
+
+        # 7 - Check if the groups has been moved
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_05_groups_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                        isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 05:
+        1. Check the groups movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1- Create a group
+        data, new_group = self.create_group('testgroup')
+
+        # 2 - Register a workstation
+        db = self.get_db()
+        self.register_computer()
+        computer = db.nodes.find_one({'name': 'testing'})
+
+        # 3 - Assign group to computer
+        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+
+        # Check if group's node is update in node chef
+        group = db.nodes.find_one({'name': 'testgroup'})
+        self.assertEqual(group['members'][0], computer['_id'])
+
+        # 4 - Create domain
+        data = {'name': 'Flag',
+                'type': 'ou',
+                'path': 'root',
+                'source': 'gecos'}
+
+        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request_post)
+        flag_new = ou_api.collection_post()
+
+        data, domain = self.create_domain('Domain 2', flag_new)
+
+        # 5 - move group to the OU path
+        group_update = self.update_node(obj=new_group, field_name='path',
+                                        field_value=domain['path'], api_class=GroupResource,
+                                        is_superuser=True)
+
+        # 6 - Check if the groups has been moved
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_06_OUs_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                              isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 06:
+        1. Check the ous movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1- Create OU 2
+        data, ou_2 = self.create_ou('OU 2', 'OU 1')
+
+        # 2 - Register a workstation
+        db = self.get_db()
+        self.register_computer(ou_name=ou_2['name'])
+
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        # 3 - Move OU 2 to OU 1 path
+        ou_moved = self.update_node(obj=ou_2, field_name='path',
+                                    field_value=ou_1['path'], api_class=OrganisationalUnitResource,
+                                    is_superuser=False)
+
+        # 7- Check if the storage has been moved
+
+        # 8 - Move printer to the OU path like admin
+        ou_moved = self.update_node(obj=ou_2, field_name='path',
+                                    field_value=ou_1['path'], api_class=OrganisationalUnitResource,
+                                    is_superuser=True)
+
+        # 9- Check if the storage has been moved
+
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.api.chef_status.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_07_OUs_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+        '''
+        Test 07:
+        1. Check the ous movements work
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+
+        # 1 - Create domain
+        data = {'name': 'Flag',
+                'type': 'ou',
+                'path': 'root',
+                'source': 'gecos'}
+
+        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
+        ou_api = OrganisationalUnitResource(request_post)
+        flag_new = ou_api.collection_post()
+
+        data, domain = self.create_domain('Domain 2', flag_new)
+
+        # 2 - Register a workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        self.register_computer(ou_name=ou_1['name'])
+
+        # 3 - Move OU 1 to Domain path
+        ou_moved = self.update_node(obj=ou_1, field_name='path',
+                                    field_value=domain['path'], api_class=OrganisationalUnitResource,
+                                    is_superuser=True)
+
+        # 9- Check if the storage has been moved
+
+        self.assertNoErrorJobs()
