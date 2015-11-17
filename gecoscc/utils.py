@@ -460,7 +460,7 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
     return (True, 'success')
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True):
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -484,7 +484,7 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -511,6 +511,41 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
             object_changed(auth_user, 'group', group, {}, computers=computers)
 
     object_created(auth_user, 'user', user, computers=computers)
+
+
+def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    from gecoscc.tasks import object_changed, object_created
+
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+
+    policy_id = policies_collection.find_one({'slug': 'printer_can_view'}).get('_id')
+    policy_id = unicode(policy_id)
+    nodes_with_printer = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(printer['_id'])]}})
+
+    if nodes_with_printer.count() == 0:
+        return
+
+    elif auth_user.get('is_superuser', False):
+        for node in nodes_with_printer:
+            object_related_list = node['policies'][policy_id].get('object_related_list', [])
+            is_visible = nodes_collection.find_one({
+                                                   '_id': ObjectId(printer['_id']),
+                                                   'path': get_filter_nodes_parents_ou(nodes_collection.database,
+                                                                                       node['_id'],
+                                                                                       printer['_id'])})
+            if is_visible is None:
+                object_related_list.remove(unicode(printer['_id']))
+                if not object_related_list:
+                    del node['policies'][policy_id]
+                else:
+                    node['policies'][policy_id]['object_related_list'] = object_related_list
+                nodes_collection.update({'_id': node['_id']}, {'$set': {'policies': node['policies']}})
+
+        object_created(auth_user, 'printer', printer)
+
+    return
 
 
 def remove_policies_of_computer(user, computer, auth_user):

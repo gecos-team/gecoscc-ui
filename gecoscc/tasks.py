@@ -29,13 +29,14 @@ from jsonschema.exceptions import ValidationError
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
-# It is necessary import here: apply_policies_to_computer and apply_policies_to_user
+# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user
 from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
+                           apply_policies_to_printer,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -868,7 +869,7 @@ class ChefTask(Task):
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
             raise NotImplementedError
-        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False)
+        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
     def object_emiter_deleted(self, user, obj, computers=None):
         obj_id = unicode(obj['_id'])
@@ -993,8 +994,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Printer', objnew)
-        raise NotImplementedError
 
     def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
