@@ -29,14 +29,15 @@ from jsonschema.exceptions import ValidationError
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
-# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user
+# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user...
 from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
-                           apply_policies_to_printer,
+                           apply_policies_to_printer, apply_policies_to_storage,
+                           apply_policies_to_repository,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -349,9 +350,16 @@ class ChefTask(Task):
             return False
         related_objs = obj_ui
         for field_value in field_chef_value:
-            if related_objs['name'] == field_value['name']:
+            if obj_ui['type'] == 'repository':
+                field_chef = field_value['repo_name']
+            else:
+                field_chef = field_value['name']
+            if related_objs['name'] == field_chef:
                 for attribute in field_value.keys():
-                    if related_objs[attribute] != field_value[attribute]:
+                    if attribute == 'repo_name':
+                        if related_objs['name'] != field_value[attribute]:
+                            return True
+                    elif related_objs[attribute] != field_value[attribute]:
                         return True
         return False
 
@@ -1010,8 +1018,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
 
     def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
@@ -1019,19 +1027,19 @@ class ChefTask(Task):
 
     def repository_created(self, user, objnew, computers=None):
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Storage', objnew)
+        self.log_action('created', 'Repository', objnew)
 
     def repository_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
-        self.log_action('changed', 'Storage', objnew)
+        self.log_action('changed', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Repository', objnew)
-        raise NotImplementedError
 
     def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Storage', obj)
+        self.log_action('deleted', 'Repository', obj)
 
 
 @task_prerun.connect

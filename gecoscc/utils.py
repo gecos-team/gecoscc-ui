@@ -513,39 +513,74 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     object_created(auth_user, 'user', user, computers=computers)
 
 
-def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, policy_id, api=None, initialize=False, use_celery=True):
+    '''
+    Checks if a emitter object is within the scope of the objects that is related and then update policies
+    '''
     from gecoscc.tasks import object_changed, object_created
 
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
 
-    policy_id = policies_collection.find_one({'slug': 'printer_can_view'}).get('_id')
-    policy_id = unicode(policy_id)
-    nodes_with_printer = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(printer['_id'])]}})
+    nodes_related_with_obj = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
 
-    if nodes_with_printer.count() == 0:
+    if nodes_related_with_obj.count() == 0:
         return
 
     elif auth_user.get('is_superuser', False):
-        for node in nodes_with_printer:
-            object_related_list = node['policies'][policy_id].get('object_related_list', [])
+        for node in nodes_related_with_obj:
             is_visible = nodes_collection.find_one({
-                                                   '_id': ObjectId(printer['_id']),
+                                                   '_id': ObjectId(obj['_id']),
                                                    'path': get_filter_nodes_parents_ou(nodes_collection.database,
                                                                                        node['_id'],
-                                                                                       printer['_id'])})
+                                                                                       obj['_id'])})
             if is_visible is None:
-                object_related_list.remove(unicode(printer['_id']))
+                object_related_list = node['policies'][policy_id].get('object_related_list', [])
+                object_related_list.remove(unicode(obj['_id']))
                 if not object_related_list:
                     del node['policies'][policy_id]
                 else:
                     node['policies'][policy_id]['object_related_list'] = object_related_list
                 nodes_collection.update({'_id': node['_id']}, {'$set': {'policies': node['policies']}})
+                obj = nodes_collection.find_one({'_id': node['_id']})
 
-        object_created(auth_user, 'printer', printer)
+                if obj['type'] == 'computer':
+                    remove_chef_computer_data(obj, api)
+                elif obj['type'] == 'user':
+                    computers = get_computer_of_user(nodes_collection, obj)
+                    remove_chef_user_data(obj, computers, api)
 
-    return
+        object_created(auth_user, obj['type'], obj)
+    else:
+        return
+
+
+def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a printer is within the scope of the objects that is related and then update policies
+    '''
+    policy_id = policies_collection.find_one({'slug': 'printer_can_view'}).get('_id')
+    policy_id = unicode(policy_id)
+    apply_policies_to_emitter_object(nodes_collection, printer, auth_user, policy_id, api, initialize, use_celery)
+
+
+def apply_policies_to_repository(nodes_collection, repository, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a repository is within the scope of the objects that is related and then update policies
+    '''
+    policy_id = policies_collection.find_one({'slug': 'repository_can_view'}).get('_id')
+    policy_id = unicode(policy_id)
+    apply_policies_to_emitter_object(nodes_collection, repository, auth_user, policy_id, api, initialize, use_celery)
+
+
+def apply_policies_to_storage(nodes_collection, storage, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a storage is within the scope of the objects that is related and then update policies
+    '''
+    policy_id = policies_collection.find_one({'slug': 'storage_can_view'}).get('_id')
+    policy_id = unicode(policy_id)
+    apply_policies_to_emitter_object(nodes_collection, storage, auth_user, policy_id, api, initialize, use_celery)
 
 
 def remove_policies_of_computer(user, computer, auth_user):
