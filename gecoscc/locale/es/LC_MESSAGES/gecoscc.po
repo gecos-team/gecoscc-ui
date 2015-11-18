@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2015-11-12 12:25+0100\n"
+"POT-Creation-Date: 2015-11-18 12:08+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -735,14 +735,14 @@ msgstr "Añadir política a"
 #: gecoscc/templates/bb-policies-add.html:25
 #: gecoscc/templates/bb-policies-list.html:18
 #: gecoscc/templates/bb-policy.html:5
-msgid "Mergeable"
-msgstr "Mezclable"
+msgid "Additive"
+msgstr "Aditiva"
 
 #: gecoscc/templates/bb-policies-add.html:27
 #: gecoscc/templates/bb-policies-list.html:20
 #: gecoscc/templates/bb-policy.html:7
-msgid "Unmergeable"
-msgstr "No mezclable"
+msgid "Overriding"
+msgstr "Dominante"
 
 #: gecoscc/templates/bb-policies-add.html:32
 msgid "Add"
@@ -1058,25 +1058,21 @@ msgstr "Selecciona una Unidad Organizativa"
 #: gecoscc/templates/server/status.jinja2:8
 #: gecoscc/templates/server/status.jinja2:11
 #, fuzzy
-#| msgid "Key server"
 msgid "Servers"
 msgstr "Servidor de claves"
 
 #: gecoscc/templates/server/connections.jinja2:11
 #, fuzzy
-#| msgid "Last connection"
 msgid "Server connections"
 msgstr "Última conexión"
 
 #: gecoscc/templates/server/connections.jinja2:21
 #, fuzzy
-#| msgid "Device"
 msgid "Service"
 msgstr "Dispositivo"
 
 #: gecoscc/templates/server/connections.jinja2:22
 #, fuzzy
-#| msgid "IP address"
 msgid "Local IP address"
 msgstr "Dirección IP"
 
@@ -1090,19 +1086,16 @@ msgstr ""
 
 #: gecoscc/templates/server/connections.jinja2:25
 #, fuzzy
-#| msgid "Remote storage"
 msgid "Remote port"
 msgstr "Almacenamiento remoto"
 
 #: gecoscc/templates/server/log.jinja2:11
 #, fuzzy
-#| msgid "Key server"
 msgid "Server log"
 msgstr "Servidor de claves"
 
 #: gecoscc/templates/server/log.jinja2:23
 #, fuzzy
-#| msgid "Processing"
 msgid "Process"
 msgstr "Procesando"
 
@@ -1125,19 +1118,16 @@ msgstr ""
 
 #: gecoscc/templates/server/status.jinja2:34
 #, fuzzy
-#| msgid "Auth type"
 msgid "FS Type"
 msgstr "Tipo de autenticación"
 
 #: gecoscc/templates/server/status.jinja2:35
 #, fuzzy
-#| msgid "User options"
 msgid "Options"
 msgstr "Opciones de usuario"
 
 #: gecoscc/templates/server/status.jinja2:68
 #, fuzzy
-#| msgid "IP address"
 msgid "IP Address"
 msgstr "Dirección IP"
 
@@ -1159,7 +1149,6 @@ msgstr ""
 
 #: gecoscc/templates/server/status.jinja2:96
 #, fuzzy
-#| msgid "Last connection"
 msgid "Connections"
 msgstr "Última conexión"
 
