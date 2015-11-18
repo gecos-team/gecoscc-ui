@@ -13,7 +13,13 @@
             <tr id="<%= policy.id %>" class="
                 <% if (idx % 2 === 0) { print('even'); } else { print('odd'); } %>
             ">
-                <td><%= policy['name_' + App.language] || policy.name %></td>
+                <td>
+                    <% if (policy['is_mergeable']) { %>
+                        <span class="fa fa-random" title="{{ gettext('Additive') }}"></span>
+                    <% } else { %>
+                        <span class="fa fa-long-arrow-right" title="{{ gettext('Overriding') }}"></span>
+                    <% } %>
+                     <%= policy['name_' + App.language] || policy.name %></td>
                 <td>
                     <% if (policy.support_os && policy.support_os.length > 0) { %>
                         <% _.each(policy.support_os, function (os) { %>

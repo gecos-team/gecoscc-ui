@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.10\n"
-"Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2015-06-30 11:16+0200\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2015-11-18 12:08+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,9 +28,9 @@ msgstr ""
 
 #: gecoscc/forms.py:124 gecoscc/templates/bb-computer.html:110
 #: gecoscc/templates/bb-groups-form.html:36 gecoscc/templates/bb-ou.html:61
-#: gecoscc/templates/bb-policy.html:14 gecoscc/templates/bb-printer.html:107
+#: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:107
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
-#: gecoscc/templates/bb-user.html:90
+#: gecoscc/templates/bb-user.html:90 gecoscc/templates/server/status.jinja2:93
 msgid "Delete"
 msgstr ""
 
@@ -279,7 +279,7 @@ msgstr ""
 
 #: gecoscc/templates/base.jinja2:39 gecoscc/templates/bb-computer.html:107
 #: gecoscc/templates/bb-groups-form.html:33 gecoscc/templates/bb-ou.html:58
-#: gecoscc/templates/bb-policies-add.html:47 gecoscc/templates/bb-policy.html:11
+#: gecoscc/templates/bb-policies-add.html:52 gecoscc/templates/bb-policy.html:17
 #: gecoscc/templates/bb-printer.html:104 gecoscc/templates/bb-repository.html:68
 #: gecoscc/templates/bb-storage.html:26 gecoscc/templates/bb-user.html:87
 msgid "Cancel"
@@ -329,28 +329,33 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:29 gecoscc/templates/reports.jinja2:10
+#: gecoscc/templates/base_navbar.jinja2:28
+#: gecoscc/templates/server/connections.jinja2:26
+msgid "Status"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:31 gecoscc/templates/reports.jinja2:10
 msgid "Reports"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:33 gecoscc/templates/bb-policy.html:5
+#: gecoscc/templates/base_navbar.jinja2:35 gecoscc/templates/bb-policy.html:11
 msgid "Help"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:38
+#: gecoscc/templates/base_navbar.jinja2:40
 msgid "User options"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:41
+#: gecoscc/templates/base_navbar.jinja2:43
 msgid "Edit profile"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:46 gecoscc/templates/admins/edit.jinja2:27
+#: gecoscc/templates/base_navbar.jinja2:48 gecoscc/templates/admins/edit.jinja2:27
 #: gecoscc/templates/admins/variables.jinja2:15
 msgid "Set variables"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:52
+#: gecoscc/templates/base_navbar.jinja2:54
 msgid "Log out"
 msgstr ""
 
@@ -383,6 +388,7 @@ msgstr ""
 
 #: gecoscc/templates/bb-change-alert.html:24
 #: gecoscc/templates/bb-staging-report.html:30
+#: gecoscc/templates/server/status.jinja2:53
 msgid "Close"
 msgstr ""
 
@@ -446,7 +452,7 @@ msgstr ""
 #: gecoscc/templates/bb-ou.html:43 gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
 #: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
-#: gecoscc/views/reports.py:93
+#: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
 msgid "Name"
 msgstr ""
 
@@ -499,7 +505,7 @@ msgid "If you want to add any group, please execute the changes"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:108 gecoscc/templates/bb-groups-form.html:34
-#: gecoscc/templates/bb-ou.html:59 gecoscc/templates/bb-policy.html:12
+#: gecoscc/templates/bb-ou.html:59 gecoscc/templates/bb-policy.html:18
 #: gecoscc/templates/bb-printer.html:105 gecoscc/templates/bb-repository.html:69
 #: gecoscc/templates/bb-storage.html:27 gecoscc/templates/bb-tree-selection.html:21
 #: gecoscc/templates/bb-user.html:88
@@ -518,7 +524,7 @@ msgstr ""
 msgid "Node chef id"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:139
+#: gecoscc/templates/bb-computer.html:139 gecoscc/templates/server/status.jinja2:69
 msgid "CPU"
 msgstr ""
 
@@ -538,15 +544,15 @@ msgstr ""
 msgid "File system"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:163
+#: gecoscc/templates/bb-computer.html:163 gecoscc/templates/server/status.jinja2:30
 msgid "Device"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:165
+#: gecoscc/templates/bb-computer.html:165 gecoscc/templates/server/status.jinja2:31
 msgid "Mount point"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:166
+#: gecoscc/templates/bb-computer.html:166 gecoscc/templates/server/status.jinja2:33
 msgid "Used"
 msgstr ""
 
@@ -700,16 +706,26 @@ msgstr ""
 msgid "Add policy to"
 msgstr ""
 
+#: gecoscc/templates/bb-policies-add.html:25
+#: gecoscc/templates/bb-policies-list.html:18 gecoscc/templates/bb-policy.html:5
+msgid "Additive"
+msgstr ""
+
 #: gecoscc/templates/bb-policies-add.html:27
-msgid "Add"
+#: gecoscc/templates/bb-policies-list.html:20 gecoscc/templates/bb-policy.html:7
+msgid "Overriding"
 msgstr ""
 
 #: gecoscc/templates/bb-policies-add.html:32
+msgid "Add"
+msgstr ""
+
+#: gecoscc/templates/bb-policies-add.html:37
 msgid "External"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-add.html:40
-#: gecoscc/templates/bb-policies-list.html:23
+#: gecoscc/templates/bb-policies-add.html:45
+#: gecoscc/templates/bb-policies-list.html:29
 msgid "No supported OS"
 msgstr ""
 
@@ -721,39 +737,39 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:29
+#: gecoscc/templates/bb-policies-list.html:35
 msgid "Remove"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:32
+#: gecoscc/templates/bb-policies-list.html:38
 msgid "Edit"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:36
+#: gecoscc/templates/bb-policies-list.html:42
 msgid "View"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:48
+#: gecoscc/templates/bb-policies-list.html:54
 msgid "Empty!"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:48
+#: gecoscc/templates/bb-policies-list.html:54
 msgid "There are no policies assigned to this resource yet."
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:50
+#: gecoscc/templates/bb-policies-list.html:56
 msgid "If you want to add any policy, please execute the changes"
 msgstr ""
 
-#: gecoscc/templates/bb-policies-list.html:58
+#: gecoscc/templates/bb-policies-list.html:64
 msgid "Add a policy to this resource"
 msgstr ""
 
-#: gecoscc/templates/bb-policy.html:3
+#: gecoscc/templates/bb-policy.html:9
 msgid "Configure policy:"
 msgstr ""
 
-#: gecoscc/templates/bb-policy.html:17
+#: gecoscc/templates/bb-policy.html:23
 msgid "Back"
 msgstr ""
 
@@ -1004,6 +1020,92 @@ msgstr ""
 
 #: gecoscc/templates/admins/ou_manage.jinja2:52
 msgid "Select an Organisational Unit"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:8
+#: gecoscc/templates/server/log.jinja2:8 gecoscc/templates/server/status.jinja2:8
+#: gecoscc/templates/server/status.jinja2:11
+msgid "Servers"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:11
+msgid "Server connections"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:21
+msgid "Service"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:22
+msgid "Local IP address"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:23
+msgid "Local port"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:24
+msgid "Remote IP address"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:25
+msgid "Remote port"
+msgstr ""
+
+#: gecoscc/templates/server/log.jinja2:11
+msgid "Server log"
+msgstr ""
+
+#: gecoscc/templates/server/log.jinja2:23
+msgid "Process"
+msgstr ""
+
+#: gecoscc/templates/server/log.jinja2:24
+msgid "Number of bytes"
+msgstr ""
+
+#: gecoscc/templates/server/log.jinja2:48 gecoscc/templates/server/status.jinja2:95
+msgid "Log"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:24
+msgid "Disk usage detail"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:32
+msgid "Size"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:34
+msgid "FS Type"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:35
+msgid "Options"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:68
+msgid "IP Address"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:70
+msgid "CPU Load"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:71
+msgid "RAM Load"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:72
+msgid "Disk usage"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:86
+msgid "Unknown"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:96
+msgid "Connections"
 msgstr ""
 
 #: gecoscc/views/admins.py:46
