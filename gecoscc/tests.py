@@ -25,6 +25,7 @@ from cornice.errors import Errors
 from paste.deploy import loadapp
 from pymongo import Connection
 from pyramid import testing
+from pyramid.httpexceptions import HTTPForbidden
 
 from api.chef_status import USERS_OHAI
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
@@ -3108,6 +3109,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
+
 class MovementsTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.api.chef_status.Node')
@@ -3144,35 +3146,27 @@ class MovementsTests(BaseGecosTestCase):
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
         computer['policies'] = {unicode(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
         policy_path = printer_policy['path']
-        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
 
-        self.assertEqualsObjects(node_policy[0], new_printer, fields=('oppolicy',
-                                                                      'model',
-                                                                      'uri',
-                                                                      'name',
-                                                                      'manufacturer'))
-
-        # 4 - Move printer to the OU path like admin
-        printer_update = self.update_node(obj=new_printer, field_name='path',
-                                          field_value=ou_1['path'], api_class=PrinterResource,
-                                          is_superuser=False)
+        printer = db.nodes.find_one({'name': 'Testprinter'})
+        # 4 - Move printer to the OU path
+        try:
+            printer_update = self.update_node(obj=new_printer, field_name='path',
+                                              field_value=ou_1['path'], api_class=PrinterResource,
+                                              is_superuser=False)
+        except HTTPForbidden:
+            printer_update = printer
 
         # 5 - Checks if the printer has been moved
-        self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
-                                                                         'model',
-                                                                         'uri',
-                                                                         'name',
-                                                                         'manufacturer'))
+        self.assertEqual(printer_update['path'], printer['path'])
+
         # 6 - Move printer to the OU path like super admin
         printer_update = self.update_node(obj=new_printer, field_name='path',
-                                          field_value=ou_1['path'], api_class=PrinterResource)
+                                          field_value=ou_1['path'], api_class=PrinterResource,
+                                          is_superuser=True)
 
         # 7 - Checks if the printer has been moved
-        self.assertEqualsObjects(node_policy[0], printer_update, fields=('oppolicy',
-                                                                         'model',
-                                                                         'uri',
-                                                                         'name',
-                                                                         'manufacturer'))
+        self.assertNotEqual(printer_update['path'], printer['path'])
 
         self.assertNoErrorJobs()
 
@@ -3202,7 +3196,6 @@ class MovementsTests(BaseGecosTestCase):
 
         # 2 - Create OU 2
         data, ou_2 = self.create_ou('OU 2')
-
         # 3 - Create ws and user
         username = 'testuser'
         data, new_user = self.create_user(username)
@@ -3229,20 +3222,27 @@ class MovementsTests(BaseGecosTestCase):
 
         user['policies'] = {unicode(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-        node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
+        self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
 
-        # 6 - Update storage's URI
-        storage_update = self.update_node(obj=new_storage, field_name='path',
-                                          field_value='%s,%s' % (ou_2['path'], ou_2['_id']), api_class=StorageResource,
-                                          is_superuser=False)
+        storage = db.nodes.find_one({'name': 'shared folder'})
+        # 6 - Move storage
+        try:
+            storage_update = self.update_node(obj=new_storage, field_name='path',
+                                              field_value=ou_2['path'], api_class=StorageResource,
+                                              is_superuser=False)
+        except HTTPForbidden:
+            storage_update = storage
 
         # 7- Check if the storage has been moved
-        # 8 - Move printer to the OU path like admin
-        storage_policy = self.update_node(obj=new_storage, field_name='path',
-                                          field_value=ou_1['path'], api_class=StorageResource,
+        self.assertEqual(storage_update['path'], storage['path'])
+
+        # 8 - Move storage to the OU path like admin
+        storage_update = self.update_node(obj=new_storage, field_name='path',
+                                          field_value=ou_2['path'], api_class=StorageResource,
                                           is_superuser=True)
 
         # 9- Check if the storage has been moved
+        self.assertNotEqual(storage_update['path'], storage['path'])
 
         self.assertNoErrorJobs()
 
@@ -3255,7 +3255,7 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_03_repository_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                    isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
         '''
         Test 03:
         1. Check the repository movements work
@@ -3276,20 +3276,26 @@ class MovementsTests(BaseGecosTestCase):
         policy_path = repository_policy['path']
         computer = db.nodes.find_one({'name': 'testing'})
         computer['policies'] = {unicode(repository_policy['_id']): {'object_related_list': [new_repository['_id']]}}
-        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
 
+        repository = db.nodes.find_one({'name': 'Testrepo'})
         # 4 - Move repository to the OU path
-        printer_update = self.update_node(obj=new_repository, field_name='path',
-                                          field_value=ou_1['path'], api_class=RepositoryResource,
-                                          is_superuser=False)
-
+        try:
+            repository_update = self.update_node(obj=new_repository, field_name='path',
+                                                 field_value=ou_1['path'], api_class=RepositoryResource,
+                                                 is_superuser=False)
+        except HTTPForbidden:
+            repository_update = repository
         # 5 - Checks if the repository has been moved
+        self.assertEqual(repository_update['path'], repository['path'])
 
         # 6 - Move repository to the OU path like super admin
-        printer_update = self.update_node(obj=new_repository, field_name='path',
-                                          field_value=ou_1['path'], api_class=RepositoryResource)
+        repository_update = self.update_node(obj=new_repository, field_name='path',
+                                             field_value=ou_1['path'], api_class=RepositoryResource,
+                                             is_superuser=True)
 
         # 7 - Checks if the repository has been moved
+        self.assertNotEqual(repository_update['path'], repository['path'])
 
         self.assertNoErrorJobs()
 
