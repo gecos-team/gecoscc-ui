@@ -194,7 +194,10 @@ def delete_chef_admin_user(api, settings, usrname):
         return False
 
 
-def remove_chef_computer_data(computer, api):
+def remove_chef_computer_data(computer, api, policy=None):
+    '''
+    Remove computer policies in chef node
+    '''
     node_chef_id = computer.get('node_chef_id', None)
     if node_chef_id:
         node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
@@ -202,14 +205,22 @@ def remove_chef_computer_data(computer, api):
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
-            for mgmt in cookbook.keys():
-                if mgmt == USER_MGMT:
-                    continue
-                cookbook.pop(mgmt)
+            if policy:
+                policy_path = policy[1]
+                policy_field = policy[2]
+                cookbook[policy_path].pop(policy_field)
+            else:
+                for mgmt in cookbook.keys():
+                    if mgmt == USER_MGMT:
+                        continue
+                    cookbook.pop(mgmt)
             save_node_and_free(node)
 
 
-def remove_chef_user_data(user, computers, api):
+def remove_chef_user_data(user, computers, api, policy_field_name=None):
+    '''
+    Remove computer policies in chef node
+    '''
     settings = get_current_registry().settings
     cookbook_name = settings.get('chef.cookbook_name')
     for computer in computers:
@@ -217,19 +228,30 @@ def remove_chef_user_data(user, computers, api):
         if node_chef_id:
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
             if node:
-                try:
-                    user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
-                    for policy in user_mgmt:
-                        try:
-                            users = user_mgmt.get(policy).get('users')
-                            if not users:
-                                continue
-                            users.pop(user['name'])
-                        except KeyError:
+                if policy_field_name:
+                    try:
+                        user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name + '.' + USER_MGMT, policy_field_name))
+                        users = user_mgmt.get('users')
+                        if not users:
                             continue
-                    save_node_and_free(node)
-                except KeyError:
-                    save_node_and_free(node)
+                        users.pop(user['name'])
+                        save_node_and_free(node)
+                    except KeyError:
+                        save_node_and_free(node)
+                else:
+                    try:
+                        user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
+                        for policy in user_mgmt:
+                            try:
+                                users = user_mgmt.get(policy).get('users')
+                                if not users:
+                                    continue
+                                users.pop(user['name'])
+                            except KeyError:
+                                continue
+                        save_node_and_free(node)
+                    except KeyError:
+                        save_node_and_free(node)
 
 
 def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
@@ -407,11 +429,7 @@ def visibility_object_related(db, obj):
                                                                '_id': ObjectId(object_related_id)
                                                                })
                 else:
-                    is_visible = db.nodes.find_one(
-                        {'_id': ObjectId(object_related_id),
-                         'path': get_filter_nodes_parents_ou(db,
-                                                             ou_id,
-                                                             obj_id)})
+                    is_visible = is_visible_query(db.nodes, object_related_id, ou_id, obj_id)
                 if is_visible:
                     object_related_visible.append(object_related_id)
             if object_related_list != object_related_visible:
@@ -421,8 +439,7 @@ def visibility_object_related(db, obj):
                     del policies[unicode(emitter_policy_id)]
                 have_updated = True
     if have_updated:
-        db.nodes.update({'_id': obj_id}, {'$set': {'policies': policies}})
-        obj = db.nodes.find_one({'_id': obj_id})
+        obj = update_collection_and_get_obj(db.nodes, obj_id, policies)
     return obj
 
 
@@ -458,6 +475,21 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
     if new_job_errors > job_errors:
         return (False, 'The computer %s had problems while it was updating' % computer['name'])
     return (True, 'success')
+
+
+def is_visible_query(nodes_collection, object_related_id, ou_id, obj_id):
+    return nodes_collection.find_one({'_id': ObjectId(object_related_id),
+                                      'path': get_filter_nodes_parents_ou(nodes_collection.database,
+                                                                          ou_id,
+                                                                          obj_id)})
+
+
+def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
+    '''
+    Updates the node policy and return the obj
+    '''
+    nodes_collection.update({'_id': obj_id}, {'$set': {'policies': policies_value}})
+    return nodes_collection.find_one({'_id': obj_id})
 
 
 def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
@@ -513,11 +545,14 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     object_created(auth_user, 'user', user, computers=computers)
 
 
-def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, policy_id, api=None, initialize=False, use_celery=True):
+def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a emitter object is within the scope of the objects that is related and then update policies
     '''
     from gecoscc.tasks import object_changed, object_created
+
+    policy = policies_collection.find_one({'slug': slug})
+    policy_id = unicode(policy.get('_id'))
 
     if use_celery:
         object_created = object_created.delay
@@ -528,59 +563,50 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, policy_id
     if nodes_related_with_obj.count() == 0:
         return
 
-    elif auth_user.get('is_superuser', False):
-        for node in nodes_related_with_obj:
-            is_visible = nodes_collection.find_one({
-                                                   '_id': ObjectId(obj['_id']),
-                                                   'path': get_filter_nodes_parents_ou(nodes_collection.database,
-                                                                                       node['_id'],
-                                                                                       obj['_id'])})
-            if is_visible is None:
-                object_related_list = node['policies'][policy_id].get('object_related_list', [])
-                object_related_list.remove(unicode(obj['_id']))
-                if not object_related_list:
-                    del node['policies'][policy_id]
-                else:
-                    node['policies'][policy_id]['object_related_list'] = object_related_list
-                nodes_collection.update({'_id': node['_id']}, {'$set': {'policies': node['policies']}})
-                obj = nodes_collection.find_one({'_id': node['_id']})
+    for node in nodes_related_with_obj:
+        is_visible = is_visible_query(nodes_collection, object_related_id=obj['_id'],
+                                      ou_id=node['path'].split(',')[-1], obj_id=obj['_id'])
 
-                if obj['type'] == 'computer':
-                    remove_chef_computer_data(obj, api)
-                elif obj['type'] == 'user':
-                    computers = get_computer_of_user(nodes_collection, obj)
-                    remove_chef_user_data(obj, computers, api)
+        if is_visible is None:
+            object_related_list = node['policies'][policy_id].get('object_related_list', [])
+            object_related_list.remove(unicode(obj['_id']))
 
-        object_created(auth_user, obj['type'], obj)
-    else:
-        return
+            if not object_related_list:
+                del node['policies'][policy_id]
+            else:
+                node['policies'][policy_id]['object_related_list'] = object_related_list
+            obj = update_collection_and_get_obj(nodes_collection, node['_id'], node['policies'])
+
+            if obj['type'] == 'computer':
+                policy = policy['path'].split('.')[:3]
+                remove_chef_computer_data(obj, api, policy)
+            elif obj['type'] == 'user':
+                computers = get_computer_of_user(nodes_collection, obj)
+                policy_field_name = policy['path'].split('.')[2]
+                remove_chef_user_data(obj, computers, api, policy_field_name)
+
+    object_created(auth_user, obj['type'], obj)
 
 
 def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a printer is within the scope of the objects that is related and then update policies
     '''
-    policy_id = policies_collection.find_one({'slug': 'printer_can_view'}).get('_id')
-    policy_id = unicode(policy_id)
-    apply_policies_to_emitter_object(nodes_collection, printer, auth_user, policy_id, api, initialize, use_celery)
+    apply_policies_to_emitter_object(nodes_collection, printer, auth_user, 'printer_can_view', api, initialize, use_celery, policies_collection)
 
 
 def apply_policies_to_repository(nodes_collection, repository, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a repository is within the scope of the objects that is related and then update policies
     '''
-    policy_id = policies_collection.find_one({'slug': 'repository_can_view'}).get('_id')
-    policy_id = unicode(policy_id)
-    apply_policies_to_emitter_object(nodes_collection, repository, auth_user, policy_id, api, initialize, use_celery)
+    apply_policies_to_emitter_object(nodes_collection, repository, auth_user, 'repository_can_view', api, initialize, use_celery, policies_collection)
 
 
 def apply_policies_to_storage(nodes_collection, storage, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a storage is within the scope of the objects that is related and then update policies
     '''
-    policy_id = policies_collection.find_one({'slug': 'storage_can_view'}).get('_id')
-    policy_id = unicode(policy_id)
-    apply_policies_to_emitter_object(nodes_collection, storage, auth_user, policy_id, api, initialize, use_celery)
+    apply_policies_to_emitter_object(nodes_collection, storage, auth_user, 'storage_can_view', api, initialize, use_celery, policies_collection)
 
 
 def remove_policies_of_computer(user, computer, auth_user):

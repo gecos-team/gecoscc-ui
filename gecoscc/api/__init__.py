@@ -31,10 +31,10 @@ from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            visibility_object_related, visibility_group)
 
 from gecoscc.i18n import gettext as _
-                           
+
 import logging
 logger = logging.getLogger(__name__)
-                           
+
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
 SCHEMA_METHODS = ('POST', 'PUT', )
@@ -202,7 +202,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
     def pre_save(self, obj, old_obj=None):
         if old_obj and 'name' in old_obj:
             obj['name'] = old_obj['name']
-        
+
         # Check he policies "object_related_list" attribute
         if 'policies' in obj:
             policies = obj['policies']
@@ -210,9 +210,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 # Get the policy
                 policyobj = self.request.db.policies.find_one({"_id": ObjectId(str(policy))})
                 if policyobj is None:
-                    logger.warning("Unknown policy: %s"%(str(policy)))
+                    logger.warning("Unknown policy: %s" % (str(policy)))
                 else:
-                    # Get the related object collection 
+                    # Get the related object collection
                     ro_collection = None
                     if policyobj['slug'] == 'printer_can_view':
                         ro_collection = self.request.db.nodes
@@ -225,22 +225,21 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                     elif policyobj['slug'] == 'package_profile_res':
                         ro_collection = self.request.db.software_profiles
                     else:
-                        logger.warning("Unrecognized slug: %s"%(str(policyobj['slug'])))
-                        
+                        logger.warning("Unrecognized slug: %s" % (str(policyobj['slug'])))
+
                     # Check the related objects
                     if ro_collection is not None:
                         ro_list = policies[str(policy)]['object_related_list']
                         for ro_id in ro_list:
                             ro_obj = ro_collection.find_one({"_id": ObjectId(str(ro_id))})
                             if ro_obj is None:
-                                logger.error("Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
-                                self.request.errors.add('body', 'object', "Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
+                                logger.error("Can't find related object: %s:%s" % (str(policyobj['slug']), str(ro_id)))
+                                self.request.errors.add('body', 'object', "Can't find related object: %s:%s" % (str(policyobj['slug']), str(ro_id)))
                                 return None
-                        
-                
+
         else:
             logger.debug("No policies in this object")
-            
+
         return obj
 
     def post_save(self, obj, old_obj=None):
@@ -386,9 +385,8 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_unique_node_name_by_type_at_domain(self, obj):
         unique = check_unique_node_name_by_type_at_domain(self.request.db.nodes, obj)
         if not unique:
-            self.request.errors.add(
-                        'body', 'name',
-                        "Name must be unique in domain.")
+            self.request.errors.add('body', 'name',
+                                    "Name must be unique in domain.")
         return unique
 
     def integrity_validation(self, obj, real_obj=None):
@@ -527,3 +525,30 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
             filters.append({'path': get_filter_nodes_parents_ou(self.request.db,
                                                                 ou_id, item_id)})
         return filters
+
+    def check_obj_is_related(self, obj):
+        '''
+        Check if the emitter object is related with any object
+        '''
+        if obj['type'] == 'printer':
+            slug = 'printer_can_view'
+        elif obj['type'] == 'repository':
+            slug = 'repository_can_view'
+        elif obj['type'] == 'storage':
+            slug == 'storage_can_view'
+
+        policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
+        nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
+                                                            % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
+
+        if nodes_related_with_obj.count() == 0:
+            return True
+
+        return False
+
+    def integrity_validation(self, obj, real_obj=None):
+        result = super(PassiveResourcePaginated, self).integrity_validation(
+            obj, real_obj)
+        result = self.request.user.get('is_superuser', False) or self.check_obj_is_related(obj)
+
+        return result
