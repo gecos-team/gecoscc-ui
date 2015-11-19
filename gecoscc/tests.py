@@ -3202,7 +3202,6 @@ class MovementsTests(BaseGecosTestCase):
         self.assertEqualsObjects(data, new_user)
 
         db = self.get_db()
-        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         chef_node_id = CHEF_NODE_ID
         self.register_computer()
 
@@ -3332,10 +3331,15 @@ class MovementsTests(BaseGecosTestCase):
         self.assertEqual(group['members'][0], computer['_id'])
 
         # 4 - move group to the OU path
-        group_update = self.update_node(obj=new_group, field_name='path',
-                                        field_value=ou_1['path'], api_class=GroupResource,
-                                        is_superuser=False)
+        try:
+            group_update = self.update_node(obj=new_group, field_name='path',
+                                            field_value=ou_1['path'], api_class=GroupResource,
+                                            is_superuser=False)
+        except HTTPForbidden:
+            group_update = group
+
         # 5 - Check if the groups has been moved
+        self.assertEqual(group_update['path'], group['path'])
 
         # 6 - move group to the OU path like admin
         group_update = self.update_node(obj=new_group, field_name='path',
@@ -3343,6 +3347,7 @@ class MovementsTests(BaseGecosTestCase):
                                         is_superuser=True)
 
         # 7 - Check if the groups has been moved
+        self.assertNotEqual(group_update['path'], group['path'])
 
         self.assertNoErrorJobs()
 
@@ -3390,11 +3395,15 @@ class MovementsTests(BaseGecosTestCase):
         data, domain = self.create_domain('Domain 2', flag_new)
 
         # 5 - move group to the OU path
-        group_update = self.update_node(obj=new_group, field_name='path',
-                                        field_value=domain['path'], api_class=GroupResource,
-                                        is_superuser=True)
+        try:
+            group_update = self.update_node(obj=new_group, field_name='path',
+                                            field_value=domain['path'], api_class=GroupResource,
+                                            is_superuser=True)
+        except KeyError:
+            group_update = group
 
         # 6 - Check if the groups has been moved
+        self.assertEqual(group_update['path'], group['path'])
 
         self.assertNoErrorJobs()
 
