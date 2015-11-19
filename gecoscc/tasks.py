@@ -37,7 +37,7 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
                            apply_policies_to_printer, apply_policies_to_storage,
-                           apply_policies_to_repository,
+                           apply_policies_to_repository, apply_policies_to_group,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
                            POLICY_EMITTER_SUBFIX)
 
@@ -908,8 +908,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
-        self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
+        self.object_moved(user, objnew, objold)
+        self.log_action('moved', 'Group', objnew)
 
     def group_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_deleted(user, obj, computers=computers)

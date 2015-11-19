@@ -19,7 +19,7 @@ import time
 import re
 
 from bson import ObjectId, json_util
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
@@ -194,7 +194,7 @@ def delete_chef_admin_user(api, settings, usrname):
         return False
 
 
-def remove_chef_computer_data(computer, api, policy=None):
+def remove_chef_computer_data(computer, api, policies=None):
     '''
     Remove computer policies in chef node
     '''
@@ -205,10 +205,11 @@ def remove_chef_computer_data(computer, api, policy=None):
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
-            if policy:
-                policy_path = policy[1]
-                policy_field = policy[2]
-                cookbook[policy_path].pop(policy_field)
+            if policies:
+                for policy in policies:
+                    policy_path = policy[1]
+                    policy_field = policy[2]
+                    cookbook[policy_path].pop(policy_field)
             else:
                 for mgmt in cookbook.keys():
                     if mgmt == USER_MGMT:
@@ -217,7 +218,7 @@ def remove_chef_computer_data(computer, api, policy=None):
             save_node_and_free(node)
 
 
-def remove_chef_user_data(user, computers, api, policy_field_name=None):
+def remove_chef_user_data(user, computers, api, policy_fields=None):
     '''
     Remove computer policies in chef node
     '''
@@ -228,16 +229,17 @@ def remove_chef_user_data(user, computers, api, policy_field_name=None):
         if node_chef_id:
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
             if node:
-                if policy_field_name:
-                    try:
-                        user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name + '.' + USER_MGMT, policy_field_name))
-                        users = user_mgmt.get('users')
-                        if not users:
-                            continue
-                        users.pop(user['name'])
-                        save_node_and_free(node)
-                    except KeyError:
-                        save_node_and_free(node)
+                if policy_fields:
+                    for policy in policy_fields:
+                        try:
+                            user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name + '.' + USER_MGMT, policy))
+                            users = user_mgmt.get('users')
+                            if not users:
+                                continue
+                            users.pop(user['name'])
+                            save_node_and_free(node)
+                        except KeyError:
+                            save_node_and_free(node)
                 else:
                     try:
                         user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
@@ -565,7 +567,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
 
     for node in nodes_related_with_obj:
         is_visible = is_visible_query(nodes_collection, object_related_id=obj['_id'],
-                                      ou_id=node['path'].split(',')[-1], obj_id=obj['_id'])
+                                      ou_id=node['path'].split(',')[-1], obj_id=node['_id'])
 
         if is_visible is None:
             object_related_list = node['policies'][policy_id].get('object_related_list', [])
@@ -577,15 +579,98 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
                 node['policies'][policy_id]['object_related_list'] = object_related_list
             obj = update_collection_and_get_obj(nodes_collection, node['_id'], node['policies'])
 
-            if obj['type'] == 'computer':
-                policy = policy['path'].split('.')[:3]
-                remove_chef_computer_data(obj, api, policy)
-            elif obj['type'] == 'user':
-                computers = get_computer_of_user(nodes_collection, obj)
-                policy_field_name = policy['path'].split('.')[2]
-                remove_chef_user_data(obj, computers, api, policy_field_name)
+            if obj['type'] in RESOURCES_RECEPTOR_TYPES:
+                try:
+                    func = globals()['update_data_%s' % obj['type']]
+                except KeyError:
+                    raise NotImplementedError
+                func(nodes_collection, obj, policy, api)
 
     object_created(auth_user, obj['type'], obj)
+
+
+def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a group is within the scope of the objects that is related and then update policies
+    '''
+    from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+    policies = group['policies'].keys()
+    members_group = copy(group['members'])
+
+    if not members_group:
+        return
+
+    for member_id in members_group:
+        member = nodes_collection.find_one({'_id': member_id})
+        is_visible = is_visible_group(nodes_collection.database, unicode(group['_id']), member)
+
+        if is_visible is None:
+
+            member['memberof'].remove(group['_id'])
+            user_member_of_groups = member['memberof']
+            group['members'].remove(member['_id'])
+            groups_members = group['members']
+            nodes_collection.update({'_id': member_id, }, {'$set': {'memberof': user_member_of_groups}})
+            nodes_collection.update({'_id': group['_id']}, {'$set': {'members': groups_members}})
+
+            if member['type'] == 'user':
+                update_data_user(nodes_collection, member, policies, api, auth_user)
+            elif member['type'] == 'computer':
+                update_data_computer(nodes_collection, member, policies, api, auth_user)
+
+    object_created(auth_user, group['type'], group)
+
+
+def update_data_ou(nodes_collection, obj, policy, api, auth_user=None):
+    members_path = obj['path'] + ',' + obj[unicode('_id')]
+    members = nodes_collection.find({'path': members_path})
+    for member_id in members:
+        member = nodes_collection.find_one({'_id': member_id})
+        if member['type'] in RESOURCES_RECEPTOR_TYPES:
+            try:
+                func = 'update_data_%s' % obj['type']
+            except KeyError:
+                raise NotImplementedError
+            func(nodes_collection, obj, policy, api)
+
+
+def update_data_group(nodes_collection, obj, policy, api, auth_user=None):
+    for member_id in obj['members']:
+        member = nodes_collection.find_one({'_id': member_id})
+        if member['type'] == 'user':
+            update_data_user(nodes_collection, obj, member, policy, api)
+        elif member['type'] == 'computer':
+            update_data_computer(nodes_collection, member, policy, api)
+
+
+def update_data_user(nodes_collection, obj, policy, api, auth_user=None):
+    from gecoscc.tasks import object_created
+    computers = get_computer_of_user(nodes_collection, obj)
+    if isinstance(policy, list):
+        policy_field_name = []
+        for policy_id in policy:
+            policy = nodes_collection.database.policies.find_one({'_id': policy_id})
+            policy_field_name.append(policy['path'].split('.')[2])
+    else:
+        policy_field_name = [policy['path'].split('.')[2]]
+    remove_chef_user_data(obj, computers, api, policy_field_name)
+    object_created(auth_user, 'user', obj, computers=computers)
+
+
+def update_data_computer(nodes_collection, obj, policy, api, auth_user=None):
+    from gecoscc.tasks import object_created
+    if isinstance(policy, list):
+        policy_field_name = []
+        for policy_id in policy:
+            policy = nodes_collection.database.policies.find_one({'_id': policy_id})
+            policy_field_name.append(policy['path'].split('.')[:3])
+    else:
+        policy_field_name = [policy['path'].split('.')[:3]]
+    remove_chef_computer_data(obj, api, policy_field_name)
+    object_created(auth_user, 'computer', obj, computers=[obj])
 
 
 def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
