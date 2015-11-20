@@ -38,8 +38,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_computer, apply_policies_to_user,
                            apply_policies_to_printer, apply_policies_to_storage,
                            apply_policies_to_repository, apply_policies_to_group,
-                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
-                           POLICY_EMITTER_SUBFIX)
+                           apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
+                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -978,8 +978,8 @@ class ChefTask(Task):
         self.log_action('changed', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'OU', objnew)
-        raise NotImplementedError
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))

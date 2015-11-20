@@ -536,6 +536,11 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
             slug = 'repository_can_view'
         elif obj['type'] == 'storage':
             slug == 'storage_can_view'
+        elif obj['type'] == 'group':
+            members_group = obj['members']
+            if not members_group:
+                return True
+            return False
 
         policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
         nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
@@ -549,6 +554,6 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
     def integrity_validation(self, obj, real_obj=None):
         result = super(PassiveResourcePaginated, self).integrity_validation(
             obj, real_obj)
-        result = self.request.user.get('is_superuser', False) or self.check_obj_is_related(obj)
+        result = result and (self.request.user.get('is_superuser', False) or self.check_obj_is_related(obj))
 
         return result

@@ -584,7 +584,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
                     func = globals()['update_data_%s' % obj['type']]
                 except KeyError:
                     raise NotImplementedError
-                func(nodes_collection, obj, policy, api)
+                func(nodes_collection, obj, policy, api, auth_user)
 
     object_created(auth_user, obj['type'], obj)
 
@@ -624,7 +624,29 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
     object_created(auth_user, group['type'], group)
 
 
-def update_data_ou(nodes_collection, obj, policy, api, auth_user=None):
+def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a group is within the scope of the objects that is related and then update policies
+    '''
+    from gecoscc.tasks import object_changed, object_created, object_moved
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+    children_path = ou['path'] + ',' + unicode(ou['_id'])
+    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}})
+
+    if ou_children.count() == 0:
+        return
+
+    for child in ou_children:
+        child_old = nodes_collection.find_one({'_id': child['_id']})
+        child['path'] = children_path
+        object_moved(auth_user, child['type'], child, child_old)
+
+    object_created(auth_user, 'ou', ou)
+
+
+def update_data_ou(nodes_collection, obj, policy, api, auth_user):
     members_path = obj['path'] + ',' + obj[unicode('_id')]
     members = nodes_collection.find({'path': members_path})
     for member_id in members:
@@ -634,10 +656,10 @@ def update_data_ou(nodes_collection, obj, policy, api, auth_user=None):
                 func = 'update_data_%s' % obj['type']
             except KeyError:
                 raise NotImplementedError
-            func(nodes_collection, obj, policy, api)
+            func(nodes_collection, obj, policy, api, auth_user)
 
 
-def update_data_group(nodes_collection, obj, policy, api, auth_user=None):
+def update_data_group(nodes_collection, obj, policy, api, auth_user):
     for member_id in obj['members']:
         member = nodes_collection.find_one({'_id': member_id})
         if member['type'] == 'user':
@@ -646,7 +668,7 @@ def update_data_group(nodes_collection, obj, policy, api, auth_user=None):
             update_data_computer(nodes_collection, member, policy, api)
 
 
-def update_data_user(nodes_collection, obj, policy, api, auth_user=None):
+def update_data_user(nodes_collection, obj, policy, api, auth_user):
     from gecoscc.tasks import object_created
     computers = get_computer_of_user(nodes_collection, obj)
     if isinstance(policy, list):
@@ -660,7 +682,7 @@ def update_data_user(nodes_collection, obj, policy, api, auth_user=None):
     object_created(auth_user, 'user', obj, computers=computers)
 
 
-def update_data_computer(nodes_collection, obj, policy, api, auth_user=None):
+def update_data_computer(nodes_collection, obj, policy, api, auth_user):
     from gecoscc.tasks import object_created
     if isinstance(policy, list):
         policy_field_name = []
