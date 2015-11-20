@@ -43,8 +43,8 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     def is_ou_empty(self, obj):
         '''
         Check if the Ou contains any object
-       '''
-        ou_children = self.get_db().nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}),count()
+        '''
+        ou_children = self.get_db().nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}).count()
 
         if ou_children == 0:
             return True
