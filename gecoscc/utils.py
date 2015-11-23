@@ -605,7 +605,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
 
     for member_id in members_group:
         member = nodes_collection.find_one({'_id': member_id})
-        is_visible = is_visible_group(nodes_collection.database, unicode(group['_id']), member)
+        is_visible = is_visible_group(nodes_collection.database, group['_id'], member)
 
         if not is_visible:
 
