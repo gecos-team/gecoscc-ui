@@ -431,7 +431,7 @@ def visibility_object_related(db, obj):
                                                                '_id': ObjectId(object_related_id)
                                                                })
                 else:
-                    is_visible = is_visible_query(db.nodes, object_related_id, ou_id, obj_id)
+                    is_visible = is_object_visible(db.nodes, object_related_id, ou_id, obj_id)
                 if is_visible:
                     object_related_visible.append(object_related_id)
             if object_related_list != object_related_visible:
@@ -479,7 +479,7 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
     return (True, 'success')
 
 
-def is_visible_query(nodes_collection, object_related_id, ou_id, obj_id):
+def is_object_visible(nodes_collection, object_related_id, ou_id, obj_id):
     return nodes_collection.find_one({'_id': ObjectId(object_related_id),
                                       'path': get_filter_nodes_parents_ou(nodes_collection.database,
                                                                           ou_id,
@@ -566,10 +566,10 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
         return
 
     for node in nodes_related_with_obj:
-        is_visible = is_visible_query(nodes_collection, object_related_id=obj['_id'],
-                                      ou_id=node['path'].split(',')[-1], obj_id=node['_id'])
+        is_visible = is_object_visible(nodes_collection, object_related_id=obj['_id'],
+                                       ou_id=node['path'].split(',')[-1], obj_id=node['_id'])
 
-        if is_visible is None:
+        if not is_visible:
             object_related_list = node['policies'][policy_id].get('object_related_list', [])
             object_related_list.remove(unicode(obj['_id']))
 
@@ -607,7 +607,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
         member = nodes_collection.find_one({'_id': member_id})
         is_visible = is_visible_group(nodes_collection.database, unicode(group['_id']), member)
 
-        if is_visible is None:
+        if not is_visible:
 
             member['memberof'].remove(group['_id'])
             user_member_of_groups = member['memberof']
