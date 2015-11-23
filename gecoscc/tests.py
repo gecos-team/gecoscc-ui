@@ -3157,16 +3157,37 @@ class MovementsTests(BaseGecosTestCase):
         except HTTPForbidden:
             printer_update = printer
 
-        # 5 - Checks if the printer has been moved
+        # 5 - Checks if the printer has been moved and check if the policy has been updated
         self.assertEqual(printer_update['path'], printer['path'])
-
-        # 6 - Move printer to the OU path like super admin
+        node = NodeMock(CHEF_NODE_ID, None)
+        printer_policy = node.attributes.get_dotted(policy_path)
+        self.assertEqualsObjects(printer_policy[0], new_printer, fields=('oppolicy',
+                                                                         'model',
+                                                                         'uri',
+                                                                         'name',
+                                                                         'manufacturer'))
+        # 6 - Move printer to the OU path like superadmin
         printer_update = self.update_node(obj=new_printer, field_name='path',
                                           field_value=ou_1['path'], api_class=PrinterResource,
                                           is_superuser=True)
 
         # 7 - Checks if the printer has been moved
         self.assertNotEqual(printer_update['path'], printer['path'])
+
+        # 8 - Create another OU
+        data, ou_2 = self.create_ou('OU 2')
+
+        # 9 - Move printer to OU 2 like superadmin
+        printer_update = self.update_node(obj=new_printer, field_name='path',
+                                          field_value=ou_2['path'] + ',' + unicode(ou_2['_id']),
+                                          api_class=PrinterResource,
+                                          is_superuser=True)
+
+        # 10 - Check if the printer is moved and the policy has been updated
+        self.assertNotEqual(printer_update['path'], printer['path'])
+        node = NodeMock(CHEF_NODE_ID, None)
+        printer_policy = node.attributes.get_dotted(policy_path)
+        self.assertEquals(printer_policy, [])
 
         self.assertNoErrorJobs()
 
@@ -3239,9 +3260,31 @@ class MovementsTests(BaseGecosTestCase):
         storage_update = self.update_node(obj=new_storage, field_name='path',
                                           field_value=ou_2['path'], api_class=StorageResource,
                                           is_superuser=True)
-
-        # 9- Check if the storage has been moved
+        # 9 - Check if the storage is moved and the policy has been updated
         self.assertNotEqual(storage_update['path'], storage['path'])
+        node = NodeMock(CHEF_NODE_ID, None)
+        printer_policy = node.attributes.get_dotted(policy_path)
+        self.assertEqualsObjects(printer_policy[0], storage, fields=('oppolicy',
+                                                                     'model',
+                                                                     'uri',
+                                                                     'name',
+                                                                     'manufacturer'))
+        # 10 - Create another OU
+        data, ou_3 = self.create_ou('OU 3')
+
+        # 11 - Move storage in the OU 3 like admin
+        storage_update = self.update_node(obj=new_storage, field_name='path',
+                                          field_value=ou_3['path'] + ',' + ou_3['_id'], api_class=StorageResource,
+                                          is_superuser=True)
+
+        # 12 - Check if the storage is moved and the policy has been updated
+        self.assertNotEqual(storage_update['path'], storage['path'])
+        node = NodeMock(CHEF_NODE_ID, None)
+        try:
+            printer_policy = node.attributes.get_dotted(policy_path)
+            self.assertEquals(printer_policy, [])
+        except KeyError:
+            self.assertEquals([], [])
 
         self.assertNoErrorJobs()
 
@@ -3288,13 +3331,30 @@ class MovementsTests(BaseGecosTestCase):
         # 5 - Checks if the repository has been moved
         self.assertEqual(repository_update['path'], repository['path'])
 
-        # 6 - Move repository to the OU path like super admin
+        # 6 - Move repository to the OU path like admin
         repository_update = self.update_node(obj=new_repository, field_name='path',
                                              field_value=ou_1['path'], api_class=RepositoryResource,
                                              is_superuser=True)
 
         # 7 - Checks if the repository has been moved
         self.assertNotEqual(repository_update['path'], repository['path'])
+
+        # 8 - Create another OU
+        data, ou_2 = self.create_ou('OU 2')
+
+        # 9 - Move printer to OU 2 like superadmin
+        repository = db.nodes.find_one({'name': 'Testrepo'})
+        repository_path = repository['path']
+        repository_update = self.update_node(obj=repository, field_name='path',
+                                             field_value=ou_2['path'] + ',' + unicode(ou_2['_id']),
+                                             api_class=RepositoryResource,
+                                             is_superuser=True)
+
+        # 10 - Check if the printer is moved and the policy has been updated
+        self.assertNotEqual(repository_update['path'], repository_path)
+        node = NodeMock(CHEF_NODE_ID, None)
+        printer_policy = node.attributes.get_dotted(policy_path)
+        self.assertEquals(printer_policy, [])
 
         self.assertNoErrorJobs()
 
@@ -3332,7 +3392,7 @@ class MovementsTests(BaseGecosTestCase):
 
         # 4 - move group to the OU path
         try:
-            group_update = self.update_node(obj=new_group, field_name='path',
+            group_update = self.update_node(obj=group, field_name='path',
                                             field_value=ou_1['path'], api_class=GroupResource,
                                             is_superuser=False)
         except HTTPForbidden:
@@ -3342,12 +3402,29 @@ class MovementsTests(BaseGecosTestCase):
         self.assertEqual(group_update['path'], group['path'])
 
         # 6 - move group to the OU path like admin
-        group_update = self.update_node(obj=new_group, field_name='path',
+        group = db.nodes.find_one({'name': 'testgroup'})
+        group_path = group['path']
+        group_update = self.update_node(obj=group, field_name='path',
                                         field_value=ou_1['path'], api_class=GroupResource,
                                         is_superuser=True)
-
         # 7 - Check if the groups has been moved
-        self.assertNotEqual(group_update['path'], group['path'])
+        self.assertNotEqual(group_update['path'], group_path)
+        self.assertNotEqual(group_update['members'], [])
+
+        # 8 - Create another OU
+        data, ou_2 = self.create_ou('OU 2')
+
+        # 9 - Move group to OU 2 like superadmin
+        group = db.nodes.find_one({'name': 'testgroup'})
+        group_path = group['path']
+        group_update = self.update_node(obj=group, field_name='path',
+                                        field_value=ou_2['path'] + ',' + unicode(ou_2['_id']),
+                                        api_class=GroupResource,
+                                        is_superuser=True)
+
+        # 10 - Check if the group is moved and the policy has been updated
+        self.assertNotEqual(group_update['path'], group_path)
+        self.assertEqual(group_update['members'], [])
 
         self.assertNoErrorJobs()
 
@@ -3394,7 +3471,7 @@ class MovementsTests(BaseGecosTestCase):
 
         data, domain = self.create_domain('Domain 2', flag_new)
 
-        # 5 - move group to the OU path
+        # 5 - move group to the OU path like admin
         try:
             group_update = self.update_node(obj=new_group, field_name='path',
                                             field_value=domain['path'], api_class=GroupResource,
@@ -3487,7 +3564,7 @@ class MovementsTests(BaseGecosTestCase):
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
         self.register_computer(ou_name=ou_1['name'])
 
-        # 3 - Move OU 1 to Domain path
+        # 3 - Move OU 1 to Domain path like admin
         try:
             ou_moved = self.update_node(obj=ou_1, field_name='path',
                                         field_value=domain['path'], api_class=OrganisationalUnitResource,
