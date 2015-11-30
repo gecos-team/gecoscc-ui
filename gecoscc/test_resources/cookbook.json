@@ -1024,7 +1024,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "printers_res": {
-                                            "title_es": "Impresoras", 
+                                            "title_es": "Impresoras",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "printers_list"
                                             ], 
@@ -1154,7 +1155,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "package_res": {
-                                            "title_es": "Administraci\u00f3n de paquetes", 
+                                            "title_es": "Administraci\u00f3n de paquetes",
+                                            "is_mergeable": true,
                                             "properties": {
                                                 "pkgs_to_remove": {
                                                     "title": "Package list to remove", 
@@ -1237,7 +1239,8 @@
                                             "title": "Packages management"
                                         }, 
                                         "package_profile_res": {
-                                            "title_es": "Administraci\u00f3n de perfiles de software", 
+                                            "title_es": "Administraci\u00f3n de perfiles de software",
+                                            "is_mergeable": true,
                                             "properties": {
                                                 "support_os": {
                                                     "default": [
@@ -1346,7 +1349,8 @@
                                                     "title": "Updated by"
                                                 }, 
                                                 "firefox_config": {
-                                                    "title_es": "Configuraci\u00f3n de Firefox", 
+                                                    "title_es": "Configuraci\u00f3n de Firefox",
+                                                    "is_mergeable": false,
                                                     "type": "object", 
                                                     "properties": {
                                                         "app_update": {
@@ -1377,7 +1381,8 @@
                                                     "type": "array"
                                                 }, 
                                                 "java_config": {
-                                                    "title_es": "Configuraci\u00f3n de Java", 
+                                                    "title_es": "Configuraci\u00f3n de Java",
+                                                    "is_mergeable": false,
                                                     "properties": {
                                                         "plug_version": {
                                                             "title_es": "Plugins versi\u00f3n de Java", 
@@ -1484,6 +1489,7 @@
                                                 }, 
                                                 "loffice_config": {
                                                     "title_es": "Configuraci\u00f3n de Libre Office", 
+                                                    "is_mergeable": false,
                                                     "type": "object", 
                                                     "properties": {
                                                         "app_update": {
@@ -1500,7 +1506,8 @@
                                                     "title": "Libre Office Configuration"
                                                 }, 
                                                 "thunderbird_config": {
-                                                    "title_es": "Configuraci\u00f3n de Thunderbird", 
+                                                    "title_es": "Configuraci\u00f3n de Thunderbird",
+                                                    "is_mergeable": false,
                                                     "type": "object", 
                                                     "properties": {
                                                         "app_update": {
@@ -1528,7 +1535,8 @@
                                             "title": "Applications Config"
                                         }, 
                                         "software_sources_res": {
-                                            "title_es": "Fuentes de software", 
+                                            "title_es": "Fuentes de software",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "repo_list"
                                             ], 
@@ -1662,7 +1670,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "cert_res": {
-                                            "title_es": "Gestion de Certificados", 
+                                            "title_es": "Gestion de Certificados",
+                                            "is_mergeable": true,
                                             "type": "object", 
                                             "properties": {
                                                 "java_keystores": {
@@ -1725,7 +1734,8 @@
                                             "title": "Certificate Management"
                                         }, 
                                         "local_users_res": {
-                                            "title_es": "Usuarios", 
+                                            "title_es": "Usuarios",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users_list"
                                             ], 
@@ -1840,7 +1850,8 @@
                                             "title": "Users"
                                         }, 
                                         "local_admin_users_res": {
-                                            "title_es": "Administradores locales", 
+                                            "title_es": "Administradores locales",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "local_admin_list"
                                             ], 
@@ -1911,7 +1922,9 @@
                                             "title": "Local Administrators"
                                         }, 
                                         "remote_shutdown_res": {
-                                            "title_es": "Apagado remoto", 
+                                            "is_mergeable": false,
+                                            "title_es": "Apagado remoto",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "shutdown_mode"
                                             ], 
@@ -1967,7 +1980,8 @@
                                                 "usb_autosuspend", 
                                                 "auto_shutdown"
                                             ], 
-                                            "title_es": "Administraci\u00f3n de energ\u00eda", 
+                                            "title_es": "Administraci\u00f3n de energ\u00eda",
+                                            "is_mergeable": false,
                                             "type": "object", 
                                             "properties": {
                                                 "updated_by": {
@@ -2072,7 +2086,8 @@
                                             }
                                         }, 
                                         "auto_updates_res": {
-                                            "title_es": "Actualizaciones autom\u00e1ticas de repositorios", 
+                                            "title_es": "Actualizaciones autom\u00e1ticas de repositorios",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "auto_updates_rules"
                                             ], 
@@ -2254,7 +2269,8 @@
                                                 "on_startup", 
                                                 "on_shutdown"
                                             ], 
-                                            "title_es": "Lanzador de scripts", 
+                                            "title_es": "Lanzador de scripts",
+                                            "is_mergeable": true,
                                             "type": "object", 
                                             "properties": {
                                                 "on_shutdown": {
@@ -2335,7 +2351,8 @@
                                             }
                                         }, 
                                         "local_groups_res": {
-                                            "title_es": "Grupos locales", 
+                                            "title_es": "Grupos locales",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "groups_list"
                                             ], 
@@ -2435,7 +2452,8 @@
                                                 "copy_files", 
                                                 "delete_files"
                                             ], 
-                                            "title_es": "Archivos locales", 
+                                            "title_es": "Archivos locales",
+                                            "is_mergeable": true,
                                             "type": "object", 
                                             "properties": {
                                                 "copy_files": {
@@ -2577,7 +2595,8 @@
                                             }
                                         }, 
                                         "tz_date_res": {
-                                            "title_es": "Administraci\u00f3n fecha/hora", 
+                                            "title_es": "Administraci\u00f3n fecha/hora",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "server"
                                             ], 
@@ -2655,7 +2674,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "network_res": {
-                                            "title_es": "Administrador de red", 
+                                            "title_es": "Administrador de red",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "connections"
                                             ], 
@@ -2912,7 +2932,8 @@
                                                 "autostart", 
                                                 "keepalive"
                                             ], 
-                                            "title_es": "Conexiones VPN de FortiClient", 
+                                            "title_es": "Conexiones VPN de FortiClient",
+                                            "is_mergeable": false,
                                             "type": "object", 
                                             "properties": {
                                                 "proxyport": {
@@ -3032,7 +3053,8 @@
                                             }
                                         }, 
                                         "mobile_broadband_res": {
-                                            "title_es": "Conexiones de banda ancha m\u00f3vil", 
+                                            "title_es": "Conexiones de banda ancha m\u00f3vil",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "connections"
                                             ], 
@@ -3167,7 +3189,8 @@
                                     "type": "object", 
                                     "properties": {
                                         "folder_sharing_res": {
-                                            "title_es": "Permisos para compartir", 
+                                            "title_es": "Permisos para compartir",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3252,6 +3275,7 @@
                                         }, 
                                         "user_shared_folders_res": {
                                             "title_es": "Carpetas Compartidas", 
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3354,7 +3378,8 @@
                                             "title": "Shared Folders"
                                         }, 
                                         "user_launchers_res": {
-                                            "title_es": "Acceso directo en el escritorio", 
+                                            "title_es": "Acceso directo en el escritorio",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3444,7 +3469,8 @@
                                             "title": "User Launchers"
                                         }, 
                                         "file_browser_res": {
-                                            "title_es": "Explorador de archivos", 
+                                            "title_es": "Explorador de archivos",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3583,7 +3609,8 @@
                                             "title": "File Browser"
                                         }, 
                                         "desktop_menu_res": {
-                                            "title_es": "Men\u00fa de aplicaciones", 
+                                            "title_es": "Men\u00fa de aplicaciones",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3679,7 +3706,8 @@
                                             "title": "Application Menu"
                                         }, 
                                         "user_alerts_res": {
-                                            "title_es": "Alertas de usuario", 
+                                            "title_es": "Alertas de usuario",
+                                            "is_mergeable": false,
                                             "type": "object", 
                                             "properties": {
                                                 "support_os": {
@@ -3790,7 +3818,8 @@
                                             "title": "User alert"
                                         }, 
                                         "user_mount_res": {
-                                            "title_es": "Montaje de unidades externas", 
+                                            "title_es": "Montaje de unidades externas",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -3876,6 +3905,7 @@
                                         }, 
                                         "web_browser_res": {
                                             "title_es": "Navegador Web", 
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4081,7 +4111,8 @@
                                             "title": "Web Browser"
                                         }, 
                                         "user_apps_autostart_res": {
-                                            "title_es": "Aplicaciones que se ejecutar\u00e1n al inicio", 
+                                            "title_es": "Aplicaciones que se ejecutar\u00e1n al inicio",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4109,7 +4140,7 @@
                                                             "required": [
                                                                 "desktops"
                                                             ], 
-                                                            "type": "object", 
+                                                            "type": "object",
                                                             "properties": {
                                                                 "desktops": {
                                                                     "description": "It is necessary to add .desktop at the end of the application", 
@@ -4171,7 +4202,8 @@
                                             "title": "Applications that will run at the start of the system"
                                         }, 
                                         "desktop_background_res": {
-                                            "title_es": "Fondo de escritorio", 
+                                            "title_es": "Fondo de escritorio",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4255,7 +4287,8 @@
                                             "title": "Desktop Background"
                                         }, 
                                         "user_modify_nm_res": {
-                                            "title_es": "Conceder permisos de red al usuario", 
+                                            "title_es": "Conceder permisos de red al usuario",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4343,7 +4376,8 @@
                                             "title": "Give network privileges to user"
                                         }, 
                                         "email_client_res": {
-                                            "title_es": "Configuraci\u00f3n de email", 
+                                            "title_es": "Configuraci\u00f3n de email",
+                                            "is_mergeable": false,
                                             "type": "object", 
                                             "properties": {
                                                 "support_os": {
@@ -4502,7 +4536,8 @@
                                             "title": "Email Configuration"
                                         }, 
                                         "desktop_control_res": {
-                                            "title_es": "Panel de control", 
+                                            "title_es": "Panel de control",
+                                            "is_mergeable": true,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4589,7 +4624,8 @@
                                             "title": "Control panel"
                                         }, 
                                         "screensaver_res": {
-                                            "title_es": "Salvapantallas", 
+                                            "title_es": "Salvapantallas",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4697,7 +4733,8 @@
                                             "title": "Screensaver"
                                         }, 
                                         "shutdown_options_res": {
-                                            "title_es": "Opciones de apagado", 
+                                            "title_es": "Opciones de apagado",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
@@ -4788,7 +4825,8 @@
                                             "title": "Shutdown Options"
                                         }, 
                                         "folder_sync_res": {
-                                            "title_es": "Carpeta para sincronizar", 
+                                            "title_es": "Carpeta para sincronizar",
+                                            "is_mergeable": false,
                                             "required": [
                                                 "users"
                                             ], 
