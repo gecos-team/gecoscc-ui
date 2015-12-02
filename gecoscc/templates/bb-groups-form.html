@@ -34,7 +34,11 @@
                         <button class="btn btn-primary" type="submit" id="save">{{ gettext('Save') }}</button>
                         <% if (typeof id !== "undefined") { %>
                             <button class="btn btn-danger pull-right" id="delete">{{ gettext('Delete') }}</button>
-                            <button id="cut" class="pull-right btn btn-warning">{{ gettext('Cut') }}</button>
+                            {% if request.user and request.user.get('is_superuser') %}
+                                <button id="cut" class="pull-right btn btn-warning">{{ gettext('Cut') }}</button>
+                            {% else %}
+                                <button class="pull-right btn btn-group">{{ gettext('Cut') }}</button>
+                            {% endif %}
                         <% } %>
                     </div></div>
                      <% } %>
