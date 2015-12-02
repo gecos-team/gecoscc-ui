@@ -28,8 +28,8 @@ from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
-                           visibility_object_related, visibility_group)
-
+                           visibility_object_related, visibility_group,
+                           RESOURCES_EMITTERS_TYPES, get_object_related_list)
 from gecoscc.i18n import gettext as _
 
 import logging
@@ -179,23 +179,15 @@ class ResourcePaginatedReadOnly(BaseAPI):
         node = self.collection.find_one(collection_filter)
         if not node:
             raise HTTPNotFound()
-        if node['type'] in ('printer', 'storage', 'repository'):
-            node = self.parse_item(node)
+        node = self.parse_item(node)
+        if node['type'] in RESOURCES_EMITTERS_TYPES:
             node['is_assigned'] = self.is_assigned(node)
             return node
-        return self.parse_item(node)
+        return node
 
     def is_assigned(self, related_object):
-        db = self.get_collection('policies')
-        policy = db.find_one({'slug': '%s_can_view' % related_object['type']})
-        node_with_related_object = self.collection.find({'policies.%s.object_related_list' % unicode(policy['_id']):
-                                                        {'$in': [unicode(related_object['_id'])]}})
-        if node_with_related_object.count() == 0:
-            return False
-        else:
-            return True
-
-        return related_object
+        node_with_related_object = get_object_related_list(self.request.db, related_object)
+        return bool(node_with_related_object.count())
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
