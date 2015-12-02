@@ -179,8 +179,23 @@ class ResourcePaginatedReadOnly(BaseAPI):
         node = self.collection.find_one(collection_filter)
         if not node:
             raise HTTPNotFound()
-
+        if node['type'] in ('printer', 'storage', 'repository'):
+            node = self.parse_item(node)
+            node['is_assigned'] = self.is_assigned(node)
+            return node
         return self.parse_item(node)
+
+    def is_assigned(self, related_object):
+        db = self.get_collection('policies')
+        policy = db.find_one({'slug': '%s_can_view' % related_object['type']})
+        node_with_related_object = self.collection.find({'policies.%s.object_related_list' % unicode(policy['_id']):
+                                                        {'$in': [unicode(related_object['_id'])]}})
+        if node_with_related_object.count() == 0:
+            return False
+        else:
+            return True
+
+        return related_object
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
