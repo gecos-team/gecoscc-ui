@@ -39,7 +39,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_printer, apply_policies_to_storage,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
-                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX)
+                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
+                           get_policy_emiter_id, get_object_related_list)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -131,26 +132,13 @@ class ChefTask(Task):
 
         return related_computers
 
-    def get_policy_emiter_id(self, obj):
-        '''
-        Get the id from a emitter policy
-        '''
-        return self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
-
-    def get_object_related_list(self, obj):
-        '''
-        Get the objects related list to an object
-        '''
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        return self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
-
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
         '''
         Get the related computers of emitter objects
         '''
         if self.walking_here(obj, related_objects):
             return related_computers
-        object_related_list = self.get_object_related_list(obj)
+        object_related_list = get_object_related_list(self.db, obj)
         for object_related in object_related_list:
             self.get_related_computers(object_related, related_computers, related_objects)
         return related_computers
@@ -881,8 +869,8 @@ class ChefTask(Task):
 
     def object_emiter_deleted(self, user, obj, computers=None):
         obj_id = unicode(obj['_id'])
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        object_related_list = self.get_object_related_list(obj)
+        policy_id = unicode(get_policy_emiter_id(self.db, obj))
+        object_related_list = get_object_related_list(self.db, obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
             object_related_list = obj_related['policies'][policy_id]['object_related_list']

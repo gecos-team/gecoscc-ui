@@ -36,6 +36,21 @@ SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
 
 
+def get_policy_emiter_id(collection, obj):
+    '''
+    Get the id from a emitter policy
+    '''
+    return collection.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
+
+
+def get_object_related_list(collection, obj):
+    '''
+    Get the objects related list to an object
+    '''
+    policy_id = unicode(get_policy_emiter_id(collection, obj))
+    return collection.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+
+
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
     """
         Merge a list of relations in a two ways relation model.
