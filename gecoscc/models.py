@@ -212,17 +212,18 @@ class Groups(colander.SequenceSchema):
 class Setting(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     key = colander.SchemaNode(colander.String(),
-                                     title=_('Key'),
-                                     default='',
-                                     missing='')
+                              title=_('Key'),
+                              default='',
+                              missing='')
     value = colander.SchemaNode(colander.String('UTF-8'),
-                                    title=_('Value'),
-                                    default='',
-                                    missing='')
+                                title=_('Value'),
+                                default='',
+                                missing='')
     type = colander.SchemaNode(colander.String(),
-                                    title=_('Type'),
-                                    default='',
-                                    missing='')
+                               title=_('Type'),
+                               default='',
+                               missing='')
+
 
 class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
@@ -247,8 +248,8 @@ class User(Node, BaseUser):
                                   default='',
                                   missing='')
     commentaries = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')								 								  
+                                       default='',
+                                       missing='')
     memberof = ObjectIdList(missing=[], default=[])
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
@@ -478,8 +479,8 @@ class Computer(Node):
                                  default='',
                                  missing='')
     commentaries = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')								 
+                                       default='',
+                                       missing='')
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
