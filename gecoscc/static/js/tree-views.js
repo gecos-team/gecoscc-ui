@@ -259,13 +259,19 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             $html.find("a.text-warning").click(function (evt) {
                 evt.preventDefault();
-                var $modal = $('#maintenance-modal');
-                $modal.modal('show');
 
-                $('#set-maintenance').click(function(){
-                    _.bind(that._pasteOU, ouId)();
-                    $modal.modal('hide');
-                });
+                var $button = $('#cut');
+                if($button.hasClass('admin') && !$button.hasClass('no-maintenance')){
+                    var $modal = $('#maintenance-modal');
+                    $modal.modal('show');
+                    $('#set-maintenance').click(function(){
+                        _.bind(that._pasteOU, ouId)();
+                        $modal.modal('hide');
+                    });
+                }else{
+                     _.bind(that._pasteOU, ouId)();
+                }
+
 
             });
         },

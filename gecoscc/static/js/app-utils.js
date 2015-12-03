@@ -386,6 +386,34 @@
             }, 2000);
 
         },
+        canMove: function(){
+            var $button = this.$('#cut');
+            console.log(this.$('#cut') );
+            var disable = function(){
+                    $button.removeClass('btn-warning');
+                    $button.addClass('btn-group');
+                    $button.removeAttr('id');
+                    $button.unbind('click')
+                    $button.css('margin-right','5px');
+            };
+
+            if(this.model.get('type')=='group'){
+                if($button.hasClass('admin')==false && this.model.get('members').length != 0){
+                    disable();
+                }
+                if($button.hasClass('admin')==true && this.model.get('members').length == 0){
+                    $button.addClass('no-maintenance');
+                }
+            }
+            if(this.model.get('type')=='storage' || this.model.get('type')=='printer' || this.model.get('type')=='repository'){
+                if($button.hasClass('admin')==false && this.model.get('is_assigned') == true){
+                    disable();
+                }
+                if($button.hasClass('admin')==true && this.model.get('is_assigned') == false){
+                    $button.addClass('no-maintenance');
+                }
+            }
+        },
 
         getDomainAttrs: function () {
             var that = this,

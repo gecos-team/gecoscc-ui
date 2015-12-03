@@ -56,7 +56,34 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         policiesList: undefined,
 
         onBeforeRender: function () {
+
             var path = this.model.get("path");
+
+            //CHECK IS EMPTY
+            var id = this.model.get("id");
+
+            var page = new App.Tree.Models.Container({path:path+','+id});
+
+            page.goTo(1, {
+                success: function (data) {
+                    var $button = $('#cut');
+                    if($button.hasClass('admin')==false && data.models.length != 0){
+                        $button.removeClass('btn-warning');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click')
+                        $button.css('margin-right','5px');
+
+                    }
+
+                    if($button.hasClass('admin')==true && data.models.length == 0){
+                        $button.addClass('no-maintenance');
+                    }
+
+
+                }
+            });
+            //END CHECK IS EMPTY
 
             if (this.model.get("isEditable") !== undefined) { return; }
 

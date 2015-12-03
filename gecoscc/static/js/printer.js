@@ -82,6 +82,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.canMove();
             var promise = $.get(this.modelsAPIUrl + "?manufacturers_list=true"),
                 that = this;
 
