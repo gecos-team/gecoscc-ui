@@ -180,7 +180,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
         if not node:
             raise HTTPNotFound()
         node = self.parse_item(node)
-        if node['type'] in RESOURCES_EMITTERS_TYPES:
+        if node.get('type', None) in RESOURCES_EMITTERS_TYPES:
             node['is_assigned'] = self.is_assigned(node)
             return node
         return node
