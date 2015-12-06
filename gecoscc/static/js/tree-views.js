@@ -261,7 +261,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 evt.preventDefault();
 
                 var $button = $('#cut');
-                if($button.hasClass('admin') && !$button.hasClass('no-maintenance')){
+
+                if($button.hasClass('admin') && !App.instances.noMaintenance[App.instances.cut.get('id')]){
                     var $modal = $('#maintenance-modal');
                     $modal.modal('show');
                     $('#set-maintenance').click(function(){

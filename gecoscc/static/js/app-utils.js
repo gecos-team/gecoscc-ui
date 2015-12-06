@@ -388,7 +388,9 @@
         },
         canMove: function(){
             var $button = this.$('#cut');
-            console.log(this.$('#cut') );
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
             var disable = function(){
                     $button.removeClass('btn-warning');
                     $button.addClass('btn-group');
@@ -400,17 +402,19 @@
             if(this.model.get('type')=='group'){
                 if($button.hasClass('admin')==false && this.model.get('members').length != 0){
                     disable();
+                    App.instances.noMaintenance[this.model.get('id')] = false;
                 }
                 if($button.hasClass('admin')==true && this.model.get('members').length == 0){
-                    $button.addClass('no-maintenance');
+                    App.instances.noMaintenance[this.model.get('id')] = true;
                 }
             }
             if(this.model.get('type')=='storage' || this.model.get('type')=='printer' || this.model.get('type')=='repository'){
                 if($button.hasClass('admin')==false && this.model.get('is_assigned') == true){
                     disable();
+                    App.instances.noMaintenance[this.model.get('id')] = false;
                 }
                 if($button.hasClass('admin')==true && this.model.get('is_assigned') == false){
-                    $button.addClass('no-maintenance');
+                    App.instances.noMaintenance[this.model.get('id')] = true;
                 }
             }
         },

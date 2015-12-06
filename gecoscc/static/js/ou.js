@@ -56,10 +56,13 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         policiesList: undefined,
 
         onBeforeRender: function () {
-
+            var that = this;
             var path = this.model.get("path");
 
             //CHECK IS EMPTY
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
             var id = this.model.get("id");
 
             var page = new App.Tree.Models.Container({path:path+','+id});
@@ -71,13 +74,14 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                         $button.removeClass('btn-warning');
                         $button.addClass('btn-group');
                         $button.removeAttr('id');
-                        $button.unbind('click')
+                        $button.unbind('click');
                         $button.css('margin-right','5px');
+                        App.instances.noMaintenance[that.model.get('id')] = false;
 
                     }
 
                     if($button.hasClass('admin')==true && data.models.length == 0){
-                        $button.addClass('no-maintenance');
+                        App.instances.noMaintenance[that.model.get('id')] = true;
                     }
 
 
