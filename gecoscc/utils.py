@@ -664,16 +664,16 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
 
 
 def update_data_ou(nodes_collection, obj, policy, api, auth_user):
-    members_path = obj['path'] + ',' + obj[unicode('_id')]
+    members_path = obj['path'] + ',' + unicode(obj['_id'])
     members = nodes_collection.find({'path': members_path})
-    for member_id in members:
-        member = nodes_collection.find_one({'_id': member_id})
+
+    for member in members:
         if member['type'] in RESOURCES_RECEPTOR_TYPES:
             try:
-                func = 'update_data_%s' % obj['type']
+                func = globals()['update_data_%s' % member['type']]
             except KeyError:
                 raise NotImplementedError
-            func(nodes_collection, obj, policy, api, auth_user)
+            func(nodes_collection, member, policy, api, auth_user)
 
 
 def update_data_group(nodes_collection, obj, policy, api, auth_user):
