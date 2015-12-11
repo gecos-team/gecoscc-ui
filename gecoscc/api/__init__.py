@@ -537,26 +537,28 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
         '''
         Check if the emitter object is related with any object
         '''
-        if obj['type'] == 'printer':
-            slug = 'printer_can_view'
-        elif obj['type'] == 'repository':
-            slug = 'repository_can_view'
-        elif obj['type'] == 'storage':
-            slug == 'storage_can_view'
-        elif obj['type'] == 'group':
-            members_group = obj['members']
-            if not members_group:
+        if obj.get('_id'):
+            if obj['type'] == 'printer':
+                slug = 'printer_can_view'
+            elif obj['type'] == 'repository':
+                slug = 'repository_can_view'
+            elif obj['type'] == 'storage':
+                slug = 'storage_can_view'
+            elif obj['type'] == 'group':
+                members_group = obj['members']
+                if not members_group:
+                    return True
+                return False
+
+            policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
+            nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
+                                                                % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
+
+            if nodes_related_with_obj.count() == 0:
                 return True
+
             return False
-
-        policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
-        nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
-                                                            % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
-
-        if nodes_related_with_obj.count() == 0:
-            return True
-
-        return False
+        return True
 
     def integrity_validation(self, obj, real_obj=None):
         result = super(PassiveResourcePaginated, self).integrity_validation(

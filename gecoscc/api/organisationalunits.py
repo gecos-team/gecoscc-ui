@@ -36,15 +36,17 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     def integrity_validation(self, obj, real_obj=None):
         status = super(OrganisationalUnitResource,
                        self).integrity_validation(obj, real_obj)
-        status_user = self.request.user.get('is_superuser', False) or self.is_ou_empty(obj)
-        status = status and status_user
+
+        if obj['path'] != real_obj['path']:
+            status_user = self.request.user.get('is_superuser', False) or self.is_ou_empty(obj)
+            status = status and status_user
         return status
 
     def is_ou_empty(self, obj):
         '''
         Check if the Ou contains any object
         '''
-        ou_children = self.get_db().nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}).count()
+        ou_children = self.collection.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}).count()
 
         if ou_children == 0:
             return True
