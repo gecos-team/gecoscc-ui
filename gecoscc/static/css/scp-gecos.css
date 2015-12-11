@@ -462,3 +462,8 @@ legend {
 .btn.refresh, .btn.archiveTasks {
     margin-right: 3px;
 }
+
+.no-admin-message{
+    float: right;
+    margin-right: 85px;
+}

@@ -412,8 +412,11 @@
                     $button.removeClass('btn-warning');
                     $button.addClass('btn-group');
                     $button.removeAttr('id');
-                    $button.unbind('click')
+                    $button.unbind('click');
                     $button.css('margin-right','5px');
+                    $button.click(function(){
+                        $button.parent().parent().after('<div class="row"><span class="no-admin-message">Solo el administrador puede cortar el elemento</span></div>');
+                    });
             };
 
             if(this.model.get('type')=='group'){
