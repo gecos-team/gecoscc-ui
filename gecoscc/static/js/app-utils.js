@@ -375,15 +375,32 @@
         },
 
         cutModel: function (evt) {
-            evt.preventDefault();
-            var $button = $(evt.target);
-            $button.attr("disabled", "disabled");
-            App.instances.cut = this.model;
-            App.instances.tree.trigger("change");
+            var that = this;
+            var $button = $('#cut');
+            var cutModel = function(){
+                evt.preventDefault();
+                var $button = $(evt.target);
+                $button.attr("disabled", "disabled");
+                App.instances.cut = that.model;
+                App.instances.tree.trigger("change");
 
-            setTimeout(function () {
-                $button.attr("disabled", false);
-            }, 2000);
+                setTimeout(function () {
+                    $button.attr("disabled", false);
+                }, 2000);
+            };
+
+            if($button.hasClass('admin') && !App.instances.noMaintenance[this.model.get('id')]){
+                var $modal = $('#maintenance-modal');
+                $modal.modal('show');
+                $('#set-maintenance').click(function(){
+                    cutModel();
+                    $modal.modal('hide');
+                });
+            }else{
+                 cutModel();
+            }
+
+
 
         },
         canMove: function(){
