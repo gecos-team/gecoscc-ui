@@ -415,7 +415,7 @@
                     $button.unbind('click');
                     $button.css('margin-right','5px');
                     $button.click(function(){
-                        $button.parent().parent().after('<div class="row"><span class="no-admin-message">Solo el administrador puede cortar el elemento</span></div>');
+                        App.showAlert('warning','Solo el administrador puede cortar el elemento');
                     });
             };
 
