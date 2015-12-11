@@ -451,24 +451,28 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                 return False
         return True
 
-    def check_policies_integrity(self, obj):
+    def check_policies_integrity(self, obj, is_moved=False):
         """
         Check if the policie is out of scope
         """
         obj_original = deepcopy(obj)
         visibility_object_related(self.request.db, obj)
-        if obj != obj_original:
-            self.request.errors.add(unicode(obj[self.key]), 'policies',
-                                    "The related object is out of scope")
-            return False
+        if not is_moved:
+            if obj != obj_original:
+                self.request.errors.add(unicode(obj[self.key]), 'policies',
+                                        "The related object is out of scope")
+                return False
         return True
 
     def integrity_validation(self, obj, real_obj=None):
         result = super(TreeLeafResourcePaginated, self).integrity_validation(
             obj, real_obj)
         result = result and self.check_memberof_integrity(obj)
-        result = result and self.check_policies_integrity(obj)
         result = result and self.check_unique_node_name_by_type_at_domain(obj)
+        if real_obj is not None and real_obj['path'] == obj['path']:
+            result = result and self.check_policies_integrity(obj)
+        else:
+            result = result and self.check_policies_integrity(obj, is_moved=True)
         return result
 
     def computers_to_group(self, obj):

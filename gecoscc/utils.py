@@ -650,6 +650,8 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
     children_path = ou['path'] + ',' + unicode(ou['_id'])
     ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}})
 
+    visibility_object_related(nodes_collection.database, ou)
+
     if ou_children.count() == 0:
         return
 
