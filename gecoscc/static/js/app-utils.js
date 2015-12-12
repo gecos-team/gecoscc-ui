@@ -408,6 +408,9 @@
             if(typeof App.instances.noMaintenance == 'undefined'){
                 App.instances.noMaintenance = [];
             }
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
             var disable = function(){
                     $button.removeClass('btn-warning');
                     $button.addClass('btn-group');
@@ -429,6 +432,11 @@
                 }
             }
             if(this.model.get('type')=='storage' || this.model.get('type')=='printer' || this.model.get('type')=='repository'){
+                if(App.instances.refresh[this.model.get('id')]){
+                    this.refresh();
+                    delete App.instances.refresh[this.model.get('id')];
+                }
+
                 if($button.hasClass('admin')==false && this.model.get('is_assigned') == true){
                     disable();
                     App.instances.noMaintenance[this.model.get('id')] = false;

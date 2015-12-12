@@ -77,7 +77,18 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             var that = this,
                 promise;
 
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+
+            _.each(this.get("policies")[id],function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
+
             this.get("policyCollection").remove(id);
+
             delete this.get("policies")[id];
 
             promise = this.saveWithToken();
@@ -90,6 +101,15 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         addPolicy: function (policyModel, values) {
             var that = this,
                 promise;
+
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+            _.each(values,function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
 
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
