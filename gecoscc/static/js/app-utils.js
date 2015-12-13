@@ -377,8 +377,8 @@
         cutModel: function (evt) {
             var that = this;
             var $button = $('#cut');
+            evt.preventDefault(); 
             var cutModel = function(){
-                evt.preventDefault();
                 var $button = $(evt.target);
                 $button.attr("disabled", "disabled");
                 App.instances.cut = that.model;
