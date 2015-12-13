@@ -680,6 +680,8 @@ def update_data_ou(nodes_collection, obj, policy, api, auth_user):
             func(nodes_collection, member, policy, api, auth_user)
             if member['type'] == 'user':
                 apply_policies_to_user(nodes_collection, member, auth_user, api)
+            if member['type'] == 'computer':
+                apply_policies_to_computer(nodes_collection, member, auth_user, api)
 
 
 def update_data_group(nodes_collection, obj, policy, api, auth_user):
