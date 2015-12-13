@@ -76,7 +76,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                         $button.removeAttr('id');
                         $button.unbind('click');
                         $button.css('margin-right','5px');
-                        $button.click(function(){
+                        $button.click(function (e){
+                            e.preventDefault();
                             App.showAlert('warning','Solo el administrador puede cortar el elemento');
                         });
                         App.instances.noMaintenance[that.model.get('id')] = false;

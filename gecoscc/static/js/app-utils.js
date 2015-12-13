@@ -417,7 +417,8 @@
                     $button.removeAttr('id');
                     $button.unbind('click');
                     $button.css('margin-right','5px');
-                    $button.click(function(){
+                    $button.click(function(e){
+                        e.preventDefault();
                         App.showAlert('warning','Solo el administrador puede cortar el elemento');
                     });
             };
