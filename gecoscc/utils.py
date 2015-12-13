@@ -224,7 +224,10 @@ def remove_chef_computer_data(computer, api, policies=None):
                 for policy in policies:
                     policy_path = policy[1]
                     policy_field = policy[2]
-                    cookbook[policy_path].pop(policy_field)
+                    try:
+                        cookbook[policy_path].pop(policy_field)
+                    except KeyError:
+                        continue
             else:
                 for mgmt in cookbook.keys():
                     if mgmt == USER_MGMT:
@@ -567,7 +570,6 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
     Checks if a emitter object is within the scope of the objects that is related and then update policies
     '''
     from gecoscc.tasks import object_changed, object_created
-
     policy = policies_collection.find_one({'slug': slug})
     policy_id = unicode(policy.get('_id'))
 
@@ -592,14 +594,17 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
                 del node['policies'][policy_id]
             else:
                 node['policies'][policy_id]['object_related_list'] = object_related_list
-            obj = update_collection_and_get_obj(nodes_collection, node['_id'], node['policies'])
-
-            if obj['type'] in RESOURCES_RECEPTOR_TYPES:
+            obj_related = update_collection_and_get_obj(nodes_collection, node['_id'], node['policies'])
+            if obj_related['type'] in RESOURCES_RECEPTOR_TYPES:
                 try:
-                    func = globals()['update_data_%s' % obj['type']]
+                    func = globals()['update_data_%s' % obj_related['type']]
                 except KeyError:
                     raise NotImplementedError
-                func(nodes_collection, obj, policy, api, auth_user)
+                func(nodes_collection, obj_related, policy, api, auth_user)
+                if obj_related['type'] == 'user':
+                    apply_policies_to_user(nodes_collection, obj_related, auth_user, api)
+                if obj_related['type'] == 'computer':
+                    apply_policies_to_computer(nodes_collection, obj_related, auth_user, api)
 
     object_created(auth_user, obj['type'], obj)
 
@@ -614,10 +619,8 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
         object_changed = object_changed.delay
     policies = group['policies'].keys()
     members_group = copy(group['members'])
-
     if not members_group:
         return
-
     for member_id in members_group:
         member = nodes_collection.find_one({'_id': member_id})
         is_visible = is_visible_group(nodes_collection.database, group['_id'], member)
@@ -633,6 +636,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
 
             if member['type'] == 'user':
                 update_data_user(nodes_collection, member, policies, api, auth_user)
+                apply_policies_to_user(nodes_collection, member, auth_user, api)
             elif member['type'] == 'computer':
                 update_data_computer(nodes_collection, member, policies, api, auth_user)
 
@@ -674,41 +678,45 @@ def update_data_ou(nodes_collection, obj, policy, api, auth_user):
             except KeyError:
                 raise NotImplementedError
             func(nodes_collection, member, policy, api, auth_user)
+            if member['type'] == 'user':
+                apply_policies_to_user(nodes_collection, member, auth_user, api)
 
 
 def update_data_group(nodes_collection, obj, policy, api, auth_user):
     for member_id in obj['members']:
         member = nodes_collection.find_one({'_id': member_id})
         if member['type'] == 'user':
-            update_data_user(nodes_collection, obj, member, policy, api)
+            update_data_user(nodes_collection, member, policy, api, auth_user)
         elif member['type'] == 'computer':
             update_data_computer(nodes_collection, member, policy, api)
 
 
 def update_data_user(nodes_collection, obj, policy, api, auth_user):
-    from gecoscc.tasks import object_created
+    from gecoscc.tasks import object_changed, object_created
     computers = get_computer_of_user(nodes_collection, obj)
     if isinstance(policy, list):
         policy_field_name = []
         for policy_id in policy:
-            policy = nodes_collection.database.policies.find_one({'_id': policy_id})
+            policy = nodes_collection.database.policies.find_one({'_id': ObjectId(policy_id)})
             policy_field_name.append(policy['path'].split('.')[2])
     else:
         policy_field_name = [policy['path'].split('.')[2]]
     remove_chef_user_data(obj, computers, api, policy_field_name)
     object_created(auth_user, 'user', obj, computers=computers)
+    object_changed(auth_user, 'user', obj, {}, computers=computers)
 
 
 def update_data_computer(nodes_collection, obj, policy, api, auth_user):
     from gecoscc.tasks import object_created
-    if isinstance(policy, list):
-        policy_field_name = []
-        for policy_id in policy:
-            policy = nodes_collection.database.policies.find_one({'_id': policy_id})
-            policy_field_name.append(policy['path'].split('.')[:3])
-    else:
-        policy_field_name = [policy['path'].split('.')[:3]]
-    remove_chef_computer_data(obj, api, policy_field_name)
+    if policy and policy['slug'] != 'storage_can_view':
+        if isinstance(policy, list):
+            policy_field_name = []
+            for policy_id in policy:
+                policy = nodes_collection.database.policies.find_one({'_id': ObjectId(policy_id)})
+                policy_field_name.append(policy['path'].split('.')[:3])
+        else:
+            policy_field_name = [policy['path'].split('.')[:3]]
+        remove_chef_computer_data(obj, api, policy_field_name)
     object_created(auth_user, 'computer', obj, computers=[obj])
 
 
