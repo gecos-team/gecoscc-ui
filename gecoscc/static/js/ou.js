@@ -78,7 +78,7 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                         $button.css('margin-right','5px');
                         $button.click(function (e){
                             e.preventDefault();
-                            App.showAlert('warning','Solo el administrador puede cortar el elemento');
+                            App.showAlert('warning',gettext('Only the super admin can cut this object'));
                         });
                         App.instances.noMaintenance[that.model.get('id')] = false;
 
