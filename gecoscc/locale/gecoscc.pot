@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.10\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-12-13 21:13+0100\n"
+"POT-Creation-Date: 2015-12-14 09:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -727,12 +727,12 @@ msgstr ""
 
 #: gecoscc/templates/bb-policies-add.html:25
 #: gecoscc/templates/bb-policies-list.html:18 gecoscc/templates/bb-policy.html:5
-msgid "Mergeable"
+msgid "Additive"
 msgstr ""
 
 #: gecoscc/templates/bb-policies-add.html:27
 #: gecoscc/templates/bb-policies-list.html:20 gecoscc/templates/bb-policy.html:7
-msgid "Unmergeable"
+msgid "Overriding"
 msgstr ""
 
 #: gecoscc/templates/bb-policies-add.html:32

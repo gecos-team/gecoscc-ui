@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2015-12-13 21:13+0100\n"
+"POT-Creation-Date: 2015-12-14 09:02+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -757,14 +757,14 @@ msgstr "Añadir política a"
 #: gecoscc/templates/bb-policies-add.html:25
 #: gecoscc/templates/bb-policies-list.html:18
 #: gecoscc/templates/bb-policy.html:5
-msgid "Mergeable"
-msgstr "Mezclable"
+msgid "Additive"
+msgstr "Aditiva"
 
 #: gecoscc/templates/bb-policies-add.html:27
 #: gecoscc/templates/bb-policies-list.html:20
 #: gecoscc/templates/bb-policy.html:7
-msgid "Unmergeable"
-msgstr "No mezclable"
+msgid "Overriding"
+msgstr "Dominante"
 
 #: gecoscc/templates/bb-policies-add.html:32
 msgid "Add"

@@ -22,9 +22,9 @@
             <% _.each(items, function (policy) { %>
                 <li id="<%= policy.id %>">
                     <% if (policy['is_mergeable']) { %>
-                        <span class="fa fa-random" title="{{ gettext('Mergeable') }}"></span>
+                        <span class="fa fa-random" title="{{ gettext('Additive') }}"></span>
                     <% } else { %>
-                        <span class="fa fa-long-arrow-right" title="{{ gettext('Unmergeable') }}"></span>
+                        <span class="fa fa-long-arrow-right" title="{{ gettext('Overriding') }}"></span>
                     <% } %>
                      <%= policy['name_' + App.language] || policy.name %>
                     <% if (!resource.policyCollection.get(policy.id) && !_.some(resource.master_policies, function (a, k) { return k === policy.id;})) {  %>

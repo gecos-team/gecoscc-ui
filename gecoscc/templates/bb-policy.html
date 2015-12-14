@@ -2,9 +2,9 @@
     <div class="panel-heading">
         <div class="text-muted bootstrap-admin-box-title">
             <% if (is_mergeable) { %>
-                <span class="fa fa-random" title="{{ gettext('Mergeable') }}"></span>
+                <span class="fa fa-random" title="{{ gettext('Additive') }}"></span>
             <% } else { %>
-                <span class="fa fa-long-arrow-right" title="{{ gettext('Unmergeable') }}"></span>
+                <span class="fa fa-long-arrow-right" title="{{ gettext('Overriding') }}"></span>
             <% } %>
          {{ gettext('Configure policy:') }} <%= name %></div>
         <a href="{{ help_manual_url }}?id=gecoscc:politicas:<%= slug %>"

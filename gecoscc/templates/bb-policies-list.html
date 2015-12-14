@@ -15,9 +15,9 @@
             ">
                 <td>
                     <% if (policy['is_mergeable']) { %>
-                        <span class="fa fa-random" title="{{ gettext('Mergeable') }}"></span>
+                        <span class="fa fa-random" title="{{ gettext('Additive') }}"></span>
                     <% } else { %>
-                        <span class="fa fa-long-arrow-right" title="{{ gettext('Unmergeable') }}"></span>
+                        <span class="fa fa-long-arrow-right" title="{{ gettext('Overriding') }}"></span>
                     <% } %>
                      <%= policy['name_' + App.language] || policy.name %></td>
                 <td>
