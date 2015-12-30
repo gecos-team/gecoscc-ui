@@ -1377,7 +1377,7 @@ class AdvancedTests(BaseGecosTestCase):
         # 3 - Assign group to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': 'testgroup'})
         self.assertEqual(group['members'][0], computer['_id'])
 
@@ -1452,7 +1452,7 @@ class AdvancedTests(BaseGecosTestCase):
         # 5 - Assign groupB to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group_a = db.nodes.find_one({'name': 'group_A'})
         self.assertEqual(group_a['members'][0], computer['_id'])
         group_b = db.nodes.find_one({'name': 'group_B'})
@@ -1528,7 +1528,7 @@ class AdvancedTests(BaseGecosTestCase):
         # 5 - Assign groupB to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], computer['_id'])
         group_b = db.nodes.find_one({'name': new_group_b['name']})
@@ -1607,7 +1607,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
@@ -1690,7 +1690,7 @@ class AdvancedTests(BaseGecosTestCase):
         # 7 - Assign B group to user
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], user['_id'])
         group_b = db.nodes.find_one({'name': new_group_b['name']})
@@ -1774,7 +1774,7 @@ class AdvancedTests(BaseGecosTestCase):
         # 7  - Assign B group to user
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group_a = db.nodes.find_one({'name': new_group_a['name']})
         self.assertEqual(group_a['members'][0], user['_id'])
         group_b = db.nodes.find_one({'name': new_group_b['name']})
@@ -2338,7 +2338,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertIsNone(ou_1)
         self.assertIsNone(user)
 
-        # 9 - Verification if the policy has been deleted from node chef
+        # 9 - Verification if the policy has been deleted from chef node
         node = NodeMock(chef_node_id, None)
         try:
             package_list = node.attributes.get_dotted(policy_path)
@@ -2396,7 +2396,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
         computer = db.nodes.find_one({'name': computer['name']})
 
-        # 6 - Verification if the group's node is update in node chef
+        # 6 - Verification if the group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
 
@@ -2466,7 +2466,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # 7 - Check if group's node is update in node chef
+        # 7 - Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
@@ -2534,7 +2534,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
@@ -2610,7 +2610,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
@@ -2686,7 +2686,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # 7 - Check if group's node is update in node chef
+        # 7 - Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
@@ -2756,7 +2756,7 @@ class AdvancedTests(BaseGecosTestCase):
         user = db.nodes.find_one({'name': username})
         self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
 
-        # 7 - Check if group's node is update in node chef
+        # 7 - Check if group's node is update in chef node
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], computer['_id'])
         self.assertEqual(group['members'][1], user['_id'])
@@ -3386,7 +3386,7 @@ class MovementsTests(BaseGecosTestCase):
         # 3 - Assign group to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': 'testgroup'})
         self.assertEqual(group['members'][0], computer['_id'])
 
@@ -3455,7 +3455,7 @@ class MovementsTests(BaseGecosTestCase):
         # 3 - Assign group to computer
         self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
 
-        # Check if group's node is update in node chef
+        # Check if group's node is update in chef node
         group = db.nodes.find_one({'name': 'testgroup'})
         self.assertEqual(group['members'][0], computer['_id'])
 
@@ -3674,5 +3674,57 @@ class MovementsTests(BaseGecosTestCase):
         self.assertEmitterObjects(node_storage_policy, [storage], fields=('name',
                                                                           'uri'))
         self.assertItemsEqual(node_package_policy, [u'kate', u'sublime'])
+
+        self.assertNoErrorJobs()
+
+
+class RecalcPoliciesTests(BaseGecosTestCase):
+
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    def test_01_recalc_policies_workstation(self, get_cookbook_method, get_cookbook_method_tasks,
+                                            NodeClass, ChefNodeClass, isinstance_method):
+        '''
+        Test 1:
+        1. Check the recalc policies command works
+        '''
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
+
+        # 1 - Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 2 - Add package policy in OU
+        package_res_policy = self.get_default_ws_policy()
+        policy_path = package_res_policy['path'] + '.package_list'
+        ou_1['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['gimp'], 'pkgs_to_remove': []}}
+        package_res_node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        self.assertEquals(package_res_node_policy, ['gimp'])
+
+        # 3 - Add package policy to computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = {unicode(package_res_policy['_id']): {'package_list': ['sublime'], 'pkgs_to_remove': []}}
+        node_policy = self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        self.assertItemsEqual(node_policy, [u'gimp', u'sublime'])
+
+        # 4 - Verify if the policies are applied in chef node
+        node = NodeMock(CHEF_NODE_ID, None)
+        self.assertItemsEqual(node.attributes.get_dotted(policy_path), [u'gimp', u'sublime'])
+
+        # 5 - Remove package policies from chef node
+        node.attributes.set_dotted(policy_path, '[test]')
+        node.save()
+        self.assertEqual(node.attributes.get_dotted(policy_path), '[test]')
+
+        # 6 - Run recal policies command
+        self.recalc_policies()
+
+        # 7 - Verify if the policies are applied sucesfull in chef node
+        self.assertItemsEqual(node.attributes.get_dotted(policy_path), [u'gimp', u'sublime'])
 
         self.assertNoErrorJobs()
