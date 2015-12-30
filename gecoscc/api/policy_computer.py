@@ -5,6 +5,7 @@
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
+import pyramid.httpexceptions as exc
 
 from bson import ObjectId
 from cornice.resource import resource
@@ -14,8 +15,6 @@ from gecoscc.api.computers import ComputerResource
 from gecoscc.permissions import api_login_required
 from gecoscc.utils import (get_chef_api, recalc_node_policies,
                            priority_object)
-
-from pyramid.response import Response
 
 
 @resource(collection_path='/api/computers_policy/',
@@ -42,8 +41,8 @@ class ComputerPolicies(ComputerResource):
             db = self.get_collection().database
             cookbook_name = self.request.registry.settings['chef.cookbook_name']
             recalc_node_policies(db.nodes, db.jobs, real_obj, self.request.user, cookbook_name, api=api)
-
-        return Response('Not allowed.')
+        else:
+            raise exc.HTTPForbidden()
 
     def get_policies_and_objects(self, type_policies, db):
         '''
