@@ -20,7 +20,7 @@
 App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.PrinterModel = App.GecosResourceModel.extend({
+    Models.PrinterModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "printer",
 
         defaults: {
@@ -57,7 +57,8 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click #cut": "cutModel"
         },
 
         onBeforeRender: function () {
@@ -81,6 +82,7 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.canMove();
             var promise = $.get(this.modelsAPIUrl + "?manufacturers_list=true"),
                 that = this;
 

@@ -29,15 +29,18 @@ from jsonschema.exceptions import ValidationError
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
-# It is necessary import here: apply_policies_to_computer and apply_policies_to_user
+# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user...
 from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
-                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
-                           POLICY_EMITTER_SUBFIX)
+                           apply_policies_to_printer, apply_policies_to_storage,
+                           apply_policies_to_repository, apply_policies_to_group,
+                           apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
+                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
+                           get_policy_emiter_id, get_object_related_list)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -129,26 +132,13 @@ class ChefTask(Task):
 
         return related_computers
 
-    def get_policy_emiter_id(self, obj):
-        '''
-        Get the id from a emitter policy
-        '''
-        return self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
-
-    def get_object_related_list(self, obj):
-        '''
-        Get the objects related list to an object
-        '''
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        return self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
-
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
         '''
         Get the related computers of emitter objects
         '''
         if self.walking_here(obj, related_objects):
             return related_computers
-        object_related_list = self.get_object_related_list(obj)
+        object_related_list = get_object_related_list(self.db, obj)
         for object_related in object_related_list:
             self.get_related_computers(object_related, related_computers, related_objects)
         return related_computers
@@ -348,9 +338,16 @@ class ChefTask(Task):
             return False
         related_objs = obj_ui
         for field_value in field_chef_value:
-            if related_objs['name'] == field_value['name']:
+            if obj_ui['type'] == 'repository':
+                field_chef = field_value['repo_name']
+            else:
+                field_chef = field_value['name']
+            if related_objs['name'] == field_chef:
                 for attribute in field_value.keys():
-                    if related_objs[attribute] != field_value[attribute]:
+                    if attribute == 'repo_name':
+                        if related_objs['name'] != field_value[attribute]:
+                            return True
+                    elif related_objs[attribute] != field_value[attribute]:
                         return True
         return False
 
@@ -868,12 +865,12 @@ class ChefTask(Task):
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
             raise NotImplementedError
-        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False)
+        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
     def object_emiter_deleted(self, user, obj, computers=None):
         obj_id = unicode(obj['_id'])
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        object_related_list = self.get_object_related_list(obj)
+        policy_id = unicode(get_policy_emiter_id(self.db, obj))
+        object_related_list = get_object_related_list(self.db, obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
             object_related_list = obj_related['policies'][policy_id]['object_related_list']
@@ -899,8 +896,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
-        self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
+        self.object_moved(user, objnew, objold)
+        self.log_action('moved', 'Group', objnew)
 
     def group_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_deleted(user, obj, computers=computers)
@@ -969,8 +966,8 @@ class ChefTask(Task):
         self.log_action('changed', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'OU', objnew)
-        raise NotImplementedError
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
@@ -993,8 +990,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Printer', objnew)
-        raise NotImplementedError
 
     def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
@@ -1009,8 +1006,8 @@ class ChefTask(Task):
         self.log_action('changed', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
 
     def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
@@ -1018,19 +1015,19 @@ class ChefTask(Task):
 
     def repository_created(self, user, objnew, computers=None):
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Storage', objnew)
+        self.log_action('created', 'Repository', objnew)
 
     def repository_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
-        self.log_action('changed', 'Storage', objnew)
+        self.log_action('changed', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Repository', objnew)
-        raise NotImplementedError
 
     def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Storage', obj)
+        self.log_action('deleted', 'Repository', obj)
 
 
 @task_prerun.connect

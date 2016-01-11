@@ -273,9 +273,18 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.inProgress = true;
             $.when.apply($, promises)
                 .done(function () {
+                    if(typeof App.instances.refresh == 'undefined'){
+                        App.instances.refresh = {};
+                    }
+
                     App.tree.currentView.activeNode = null;
                     App.instances.tree.trigger("change");
                     App.instances.router.navigate("", { trigger: true });
+
+                    _.each(App.instances.refresh,function(value,key){
+                        App.instances.refresh[key] = true;
+                    });
+
                 }).always(function () {
                     that.inProgress = false;
                     that.render();

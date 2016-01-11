@@ -36,16 +36,22 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     def integrity_validation(self, obj, real_obj=None):
         status = super(OrganisationalUnitResource,
                        self).integrity_validation(obj, real_obj)
-        if (real_obj is not None and obj['path'] != real_obj['path']):
-            # Check if the ou is moving to self depth, that is not correct.
-            if obj['path'] in real_obj['path']:
-                self.request.errors.add(
-                    obj[self.key], 'path',
-                    "the ou is moving to self depth position, "
-                    "that is not allowed")
-            return False
-        status = status and self.check_unique_node_name_by_type_at_domain(obj)
+
+        if real_obj is not None and obj['path'] != real_obj['path']:
+            status_user = self.request.user.get('is_superuser', False) or self.is_ou_empty(obj)
+            status = status and status_user
         return status
+
+    def is_ou_empty(self, obj):
+        '''
+        Check if the Ou contains any object
+        '''
+        ou_children = self.collection.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}).count()
+
+        if ou_children == 0:
+            return True
+        else:
+            return False
 
     def post_save(self, obj, old_obj=None):
         """ Check if path has changed to refresh children nodes """
