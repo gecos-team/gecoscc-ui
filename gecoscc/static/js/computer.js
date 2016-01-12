@@ -48,6 +48,33 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             error_last_chef_client: true
         }
     });
+
+    Models.ComputerPoliciesModel = Backbone.Model.extend({
+        urlRoot: '/api/computers_policy/',
+        defaults: {
+            id:"",
+            type:"computer",
+            lock:false,
+            source:"gecos",
+            name:"",
+            registry:"",
+            family:"",
+            error_last_saved:false,
+            error_last_chef_client:true,
+            memberof:[],
+            path:"",
+            node_chef_id:"",
+            last_connection:"",
+            description:""
+
+        }
+    });
+
+    Models.ComputerPoliciesCollection = Backbone.Collection.extend({
+      url: '/api/computers_policy/',
+      model: Models.ComputerPoliciesModel
+    });
+
 });
 
 App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
