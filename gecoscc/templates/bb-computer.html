@@ -3,6 +3,7 @@
         <li class="active" id="info-tab"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
         <li><a href="#ohai" data-toggle="tab">{{ gettext('Workstation specifications') }}</a></li>
         <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
+        <li id="computer-policy-tab"><a href="#computer-policies" data-toggle="tab">{{ gettext('Computer Policies') }}</a></li>
     </ul>
 
     <div class="tab-content" id="computers">
@@ -200,6 +201,15 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Policies list') }}</div>
+                </div>
+                <div class="bootstrap-admin-panel-content"></div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade in" id="computer-policies">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="text-muted bootstrap-admin-box-title">{{ gettext('Computer Policies list') }}</div>
                 </div>
                 <div class="bootstrap-admin-panel-content"></div>
             </div>

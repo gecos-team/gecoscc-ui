@@ -65,7 +65,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             path:"",
             node_chef_id:"",
             last_connection:"",
-            description:""
+            description:"",
+            details_policy: {}
 
         }
     });
@@ -80,6 +81,27 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
 App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
     "use strict";
 
+    Views.ComputerPolicies = Marionette.ItemView.extend({
+      template: "#computer-policies-list-template",
+      resource: null,
+      details_policy: null,
+      show: true,
+      initialize: function (options) {
+          if (_.has(options, "resource")) {
+              this.resource = options.resource;
+              this.details_policy = options.details_policy;
+              this.show = options.show;
+          }
+      },
+      serializeData: function () {
+          return {
+              resource: this.resource,
+              details_policy: this.details_policy,
+              show: this.show
+          };
+      }
+    });
+
     Views.ComputerForm = App.GecosFormItemView.extend({
         template: "#computer-template",
         tagName: "div",
@@ -90,7 +112,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         ui: {
             groups: "div#groups-widget",
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            computer_policies: "div#computer-policies div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -98,9 +121,49 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "click #cut": "cutModel",
             "change input": "validate",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click #computer-policy-tab": "showComputerPolicies"
         },
+        showComputerPolicies:function(){
+            var that = this;
+            that.computerPoliciesList = new App.Computer.Views.ComputerPolicies({
+                  el: that.ui.computer_policies[0],
+                  resource: {},
+                  details_policy:{},
+                  show:false
+            });
+            that.computerPoliciesList.render();
 
+            var policie = new App.Computer.Models.ComputerPoliciesModel();
+            policie.set('_id',this.model.get('id'));
+            policie.set('id',this.model.get('id'));
+            policie.set('type',this.model.get('type'));
+            policie.set('lock',this.model.get('lock'));
+            policie.set('source',this.model.get('source'));
+            policie.set('name',this.model.get('name'));
+            policie.set('registry',this.model.get('registry'));
+            policie.set('family',this.model.get('family'));
+            policie.set('error_last_saved',this.model.get('error_last_saved'));
+            policie.set('error_last_chef_client',this.model.get('error_last_chef_client'));
+            policie.set('memberof',this.model.get('memberof'));
+            policie.set('path',this.model.get('path'));
+            policie.set('node_chef_id',this.model.get('node_chef_id'));
+            policie.set('last_connection',this.model.get('last_connection'));
+            policie.set('description',"");
+            policie.url = policie.urlRoot+this.model.get('id')+'/';
+            policie.fetch({
+              success: function(model){
+                  that.computerPoliciesList = new App.Computer.Views.ComputerPolicies({
+                      el: that.ui.computer_policies[0],
+                      resource: that.model,
+                      details_policy:model.get('details_policy'),
+                      show:true
+                  });
+
+                  that.computerPoliciesList.render();
+              }
+            });
+        },
         onBeforeRender: function () {
             this.checkErrors();
 
