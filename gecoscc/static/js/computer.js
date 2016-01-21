@@ -66,7 +66,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             node_chef_id:"",
             last_connection:"",
             description:"",
-            details_policy: {}
+            details_policy: {},
+            user_details_policy: {}
 
         }
     });
@@ -85,11 +86,13 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
       template: "#computer-policies-list-template",
       resource: null,
       details_policy: null,
+      user_details_policy: null,
       show: true,
       initialize: function (options) {
           if (_.has(options, "resource")) {
               this.resource = options.resource;
               this.details_policy = options.details_policy;
+              this.user_details_policy = options.user_details_policy;
               this.show = options.show;
           }
       },
@@ -97,6 +100,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
           return {
               resource: this.resource,
               details_policy: this.details_policy,
+              user_details_policy: this.user_details_policy,
               show: this.show
           };
       }
@@ -130,6 +134,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                   el: that.ui.computer_policies[0],
                   resource: {},
                   details_policy:{},
+                  user_details_policy:{},
                   show:false
             });
             that.computerPoliciesList.render();
@@ -157,6 +162,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                       el: that.ui.computer_policies[0],
                       resource: that.model,
                       details_policy:model.get('details_policy'),
+                      user_details_policy:model.get('user_details_policy'),
                       show:true
                   });
 

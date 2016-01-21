@@ -11,17 +11,21 @@
                 <thead>
                     <tr>
                         <th>{{ gettext('Name') }}</th>
-                        <th>{{ gettext('applied policy') }}</th>
+                        <th>{{ gettext('User') }}</th>
+                        <th>{{ gettext('Applied policy') }}</th>
                     </tr>
                 </thead>
                 <tbody>
-                <% _.each(details_policy, function (ou_data, policy_name) { %>
-                <tr id="<%= policy_name %>" class="">
+                <% _.each(details_policy, function (data, policy) { %>
+                <tr id="<%= policy %>" class="">
                     <td>
-                        <%= policy_name %>
+                        <%= data['name_' + App.language] || data.name %></td>
                     </td>
                     <td>
-                        <% _.each(ou_data, function (name,ou) { %>
+
+                    </td>
+                    <td>
+                        <% _.each(data.data, function (name,ou) { %>
                                 <div class="col-md-12">
                                     <div class="col-md-6">
                                         <span class="label label-success"><%= ou %></span>
@@ -34,6 +38,32 @@
                     </td>
                 </tr>
             <% }); %>
+
+                <% _.each(user_details_policy, function (data, user) { %>
+                    <% _.each(data, function (policy, policy_name) { %>
+                        <tr id="<%= user %>" class="">
+                            <td>
+                                <%= policy['name_' + App.language] || policy.name %></td>
+                            </td>
+                            <td>
+                                <%= user %>
+                            </td>
+                            <td>
+                                <% _.each(policy.data, function (name,ou) { %>
+                                        <div class="col-md-12">
+                                            <div class="col-md-6">
+                                                <span class="label label-success"><%= ou %></span>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <span class="label label-warning"><%= name %></span>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                            </td>
+                        </tr>
+                    <% }); %>
+            <% }); %>
+
                 </tbody>
             </table>
         </div>
