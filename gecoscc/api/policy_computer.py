@@ -96,30 +96,33 @@ class ComputerPolicies(ComputerResource):
                 except KeyError:
                         computer_policies[user] = {}
                 policy_updated_by = type_policies.get(policy_slug).get('users').get(user).get('updated_by')
-                if policy['is_mergeable']:
-                    computer_policies[user].update({policy_slug: []})
-                    for type_update_by in policy_updated_by.keys():
-                        if type_update_by in ('ou', 'group', 'users'):
-                            computer_policies[user].get(policy_slug).append({type_update_by: []})
-                            for update_by in policy_updated_by.get(type_update_by):
-                                node = self.get_element(objects, '_id', ObjectId(update_by))
-                                computer_policies[user].get(policy_slug)[0].get(type_update_by).append(node['name'])
-                        else:
-                            node = self.get_element(objects, '_id', ObjectId(policy_updated_by.get(type_update_by)))
-                            computer_policies[user].get(policy_slug).append({'name': policy.get('name'),
-                                                                             'name_es': policy.get('name_es'),
-                                                                             'computer': node['name']})
-                else:
-                    node = policy_updated_by[policy_updated_by.keys()[0]]
-                    if isinstance(node, list):
-                        node = self.get_element(objects, '_id', ObjectId(node[0]))
+                try:
+                    if policy['is_mergeable']:
+                        computer_policies[user].update({policy_slug: {'data': {},
+                                                                      'name': policy.get('name'),
+                                                                      'name_es': policy.get('name_es')}})
+                        for type_update_by in policy_updated_by.keys():
+                            if type_update_by in ('ou', 'group', 'users'):
+                                computer_policies[user].get(policy_slug).get('data').update({type_update_by: []})
+                                for update_by in policy_updated_by.get(type_update_by):
+                                    node = self.get_element(objects, '_id', ObjectId(update_by))
+                                    computer_policies[user].get(policy_slug).get('data').get(type_update_by).append(node['name'])
+                            else:
+                                node = self.get_element(objects, '_id', ObjectId(policy_updated_by.get(type_update_by)))
+                                computer_policies[user].get(policy_slug).get('data').update({'computer': node['name']})
                     else:
-                        node = self.get_element(objects, '_id', ObjectId(node))
-                    node = priority_object(computer_node, policy['path'] + '.updated_by', node, None, db.nodes)
-                    computer_policies[user].update({policy_slug: []})
-                    computer_policies[user].get(policy_slug).append({'name': policy.get('name'),
-                                                                     'name_es': policy.get('name_es'),
-                                                                     node['type']: node['name']})
+                        node = policy_updated_by[policy_updated_by.keys()[0]]
+                        if isinstance(node, list):
+                            node = self.get_element(objects, '_id', ObjectId(node[0]))
+                        else:
+                            node = self.get_element(objects, '_id', ObjectId(node))
+                        node = priority_object(computer_node, policy['path'] + '.updated_by', node, None, db.nodes)
+                        computer_policies[user].update({policy_slug: {'data': {},
+                                                                      'name': policy.get('name'),
+                                                                      'name_es': policy.get('name_es')}})
+                        computer_policies[user].get(policy_slug).get('data').update({node['type']: node['name']})
+                except:
+                    pass
         return computer_policies
 
     def get_policies_and_objects(self, type_policies, db):
@@ -168,19 +171,18 @@ class ComputerPolicies(ComputerResource):
                     policy_slug = self.emitters_policy_slug(policy_slug)
                 policy = self.get_element(policies, 'slug', policy_slug)
                 if policy['is_mergeable']:
-                    computer_policies[policy_slug] = {'name': policy.get('name'),
+                    computer_policies[policy_slug] = {'data': {},
+                                                      'name': policy.get('name'),
                                                       'name_es': policy.get('name_es')}
                     for type_update_by in policy_updated_by.keys():
                         if type_update_by in ('ou', 'group', 'users'):
-                            computer_policies[policy_slug].update({type_update_by: []})
+                            computer_policies[policy_slug].get('data').update({type_update_by: []})
                             for update_by in policy_updated_by.get(type_update_by):
                                 node = self.get_element(objects, '_id', ObjectId(update_by))
-                                computer_policies[policy_slug][type_update_by].append(node['name'])
+                                computer_policies[policy_slug].get('data').get(type_update_by).append(node['name'])
                         else:
                             node = self.get_element(objects, '_id', ObjectId(policy_updated_by.get(type_update_by)))
-                            computer_policies[policy_slug].update({'name': policy.get('name'),
-                                                                   'name_es': policy.get('name_es'),
-                                                                   'computer': node['name']})
+                            computer_policies[policy_slug].get('data').update({'computer': node['name']})
                 else:
                     node = policy_updated_by[policy_updated_by.keys()[0]]
                     if isinstance(node, list):
@@ -188,9 +190,11 @@ class ComputerPolicies(ComputerResource):
                     else:
                         node = self.get_element(objects, '_id', ObjectId(node))
                     node = priority_object(computer_node, policy['path'] + '.updated_by', node, None, db.nodes)
-                    computer_policies[policy_slug] = {'name': policy.get('name'),
-                                                      'name_es': policy.get('name_es'),
-                                                      node['type']: node['name']}
+                    computer_policies[policy_slug] = {'data': {},
+                                                      'name': policy.get('name'),
+                                                      'name_es': policy.get('name_es')}
+                    computer_policies[policy_slug].get('data').update({node['type']: node['name']})
+
         return computer_policies
 
     def get_element(self, dictionary, field_title, field_content):
@@ -207,7 +211,7 @@ class ComputerPolicies(ComputerResource):
     def emitters_policy_slug(self, policy_slug):
         if policy_slug == 'printer_res':
             return 'printer_can_view'
-        elif policy_slug == 'user_shared_folder_res':
+        elif policy_slug == 'user_shared_folders_res':
             return 'storage_can_view'
         else:
             return 'repository_can_view'
