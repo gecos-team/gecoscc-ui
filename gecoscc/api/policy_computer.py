@@ -110,7 +110,7 @@ class ComputerPolicies(ComputerResource):
                                 computer_policies[user].get(policy_slug).get('data').get(type_update_by).append(node['name'])
                         else:
                             node = self.get_element(objects, '_id', ObjectId(policy_updated_by.get(type_update_by)))
-                            computer_policies[user].get(policy_slug).get('data').update({'computer': node['name']})
+                            computer_policies[user].get(policy_slug).get('data').update({'user': node['name']})
                 else:
                     node = policy_updated_by[policy_updated_by.keys()[0]]
                     if isinstance(node, list):
