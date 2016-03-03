@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2015-12-14 09:02+0100\n"
+"POT-Creation-Date: 2016-01-21 14:00+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -144,54 +144,54 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:117
+#: gecoscc/static/js/computer.js:213
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:118
+#: gecoscc/static/js/computer.js:214
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:126
+#: gecoscc/static/js/computer.js:222
 msgid "This workstation is not linked."
 msgstr "Esta estación de trabajo no está enlazada:"
 
-#: gecoscc/static/js/computer.js:127
+#: gecoscc/static/js/computer.js:223
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
-#: gecoscc/static/js/computer.js:134
+#: gecoscc/static/js/computer.js:230
 msgid "This workstation has incomplete Ohai information."
 msgstr "El Ohai de esta estación de trabajo está incompleto."
 
-#: gecoscc/static/js/computer.js:142 gecoscc/static/js/computer.js:152
-#: gecoscc/static/js/computer.js:162
+#: gecoscc/static/js/computer.js:238 gecoscc/static/js/computer.js:248
+#: gecoscc/static/js/computer.js:258
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:143
+#: gecoscc/static/js/computer.js:239
 msgid "There were errors while saving this node in Chef"
 msgstr "Se produjeron errores mientras se guardaba este nodo en Chef"
 
-#: gecoscc/static/js/computer.js:153
+#: gecoscc/static/js/computer.js:249
 msgid "Last synchronization had problems during its execution."
 msgstr "La última sincronización tuvo problemas durante su ejecución."
 
-#: gecoscc/static/js/computer.js:163
+#: gecoscc/static/js/computer.js:259
 msgid "Synchronization is not being executed on time."
 msgstr ""
 "La sincronización no se está ejecutando en el intervalo de tiempo "
 "definido."
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:299
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:299
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:299
 msgid "Minutes"
 msgstr "Minutos"
 

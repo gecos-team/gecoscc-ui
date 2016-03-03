@@ -4,6 +4,7 @@
 #
 # Authors:
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -28,6 +29,7 @@ from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
+DELETED_POLICY_ACTION = 'deleted'
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
@@ -474,7 +476,6 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
     node_chef_id = computer.get('node_chef_id', None)
     if not node_chef_id:
         return (False, 'The computer %s does not have node_chef_id' % computer['name'])
-
     node = ChefNode(node_chef_id, api)
     if not node.exists:
         return (False, 'Node %s does not exists in chef server' % node_chef_id)
@@ -921,3 +922,45 @@ def getURLComponents(url):
             components['port'] = '27017'
 
     return components
+
+
+def get_first_exists_node(ids, obj, action, db):
+    '''
+    Get the first exising node from a ids list
+    '''
+    for mongo_id in ids:
+        node = db.find_one({'_id': ObjectId(mongo_id)})
+        if node:
+            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
+                return node
+    return {}
+
+
+def priority_object(node, updated_by_fieldname, obj, action, db):
+    '''
+    Get the priority from an object
+    '''
+    if obj['type'] in ['computer', 'user'] and action != DELETED_POLICY_ACTION:
+        return obj
+    try:
+        updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
+    except KeyError:
+        updated_by = {}
+    if not updated_by:
+        if action == DELETED_POLICY_ACTION:
+            return {}
+        else:
+            return obj
+    priority_object = {}
+
+    if updated_by.get('computer', None):
+        if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
+            priority_object = db.find_one({'_id': ObjectId(updated_by['computer'])})
+    if not priority_object and updated_by.get('user', None):
+        if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
+            priority_object = db.find_one({'_id': ObjectId(updated_by['user'])})
+    if not priority_object and updated_by.get('group', None):
+        priority_object = get_first_exists_node(updated_by.get('group', None), obj, action, db)
+    if not priority_object and updated_by.get('ou', None):
+        priority_object = get_first_exists_node(updated_by.get('ou', None), obj, action, db)
+    return priority_object

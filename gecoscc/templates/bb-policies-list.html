@@ -63,5 +63,13 @@
         <button class="btn btn-primary" id="add-policy">
             <span class="fa fa-plus"></span> {{ gettext('Add a policy to this resource') }}
         </button>
+
+        {% if request.user and request.user.get('is_superuser') %}
+            <% if (type == 'computer') { %>
+                <button class="btn btn-primary" id="recalc-policy">
+                     <span class="fa fa-refresh"></span> {{ gettext('Recalculate policies') }}
+                </button>
+            <% } %>
+        {% endif %}
 </div></div>
 <% } %>

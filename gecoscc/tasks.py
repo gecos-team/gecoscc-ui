@@ -40,10 +40,10 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
                            RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
-                           get_policy_emiter_id, get_object_related_list)
+                           get_policy_emiter_id, get_object_related_list,
+                           DELETED_POLICY_ACTION)
 
 
-DELETED_POLICY_ACTION = 'deleted'
 SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 
 
@@ -471,6 +471,7 @@ class ChefTask(Task):
             3 - The policy is not mergeable
             4 - The policy is mergeable
         '''
+        from gecoscc.utils import priority_object
         updated = updated_updated_by = False
         attributes_jobs_updated = []
         attributes_updated_by_updated = []
@@ -484,7 +485,7 @@ class ChefTask(Task):
             obj_ui_field = None
             if (rule_type == 'policies' or not policy.get('is_emitter_policy', False)) and updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
-            priority_obj = self.priority_object(node, updated_by_attr, obj, action)
+            priority_obj = priority_object(node, updated_by_attr, obj, action, self.db.nodes)
 
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
@@ -538,17 +539,6 @@ class ChefTask(Task):
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
         return (node, (updated or updated_updated_by))
 
-    def get_first_exists_node(self, ids, obj, action):
-        '''
-        Get the first exising node from a ids list
-        '''
-        for mongo_id in ids:
-            node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
-            if node:
-                if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
-                    return node
-        return {}
-
     def get_updated_by_fieldname(self, field_chef, policy, obj, computer):
         '''
         Get the path of updated_by field
@@ -562,35 +552,6 @@ class ChefTask(Task):
             updated_path += '.users.' + get_username_chef_format(user)
         updated_path += '.updated_by'
         return updated_path
-
-    def priority_object(self, node, updated_by_fieldname, obj, action):
-        '''
-        Get the priority from an object
-        '''
-        if obj['type'] in ['computer', 'user'] and action != DELETED_POLICY_ACTION:
-            return obj
-        try:
-            updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
-        except KeyError:
-            updated_by = {}
-        if not updated_by:
-            if action == DELETED_POLICY_ACTION:
-                return {}
-            else:
-                return obj
-        priority_object = {}
-
-        if updated_by.get('computer', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
-                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
-        if not priority_object and updated_by.get('user', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
-                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
-        if not priority_object and updated_by.get('group', None):
-            priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
-        if not priority_object and updated_by.get('ou', None):
-            priority_object = self.get_first_exists_node(updated_by.get('ou', None), obj, action)
-        return priority_object
 
     def update_node_updated_by(self, node, field_chef, obj, action, attr, attributes_updated):
         '''
