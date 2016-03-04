@@ -452,6 +452,9 @@ class OrganisationalUnit(Node):
     master_policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                           default={},
                                           missing={})
+    maintenance = colander.SchemaNode(RealBoolean(),
+                                      default=False)
+    user_maintenance = colander.SchemaNode(ObjectIdField())
 
 
 class OrganisationalUnits(colander.SequenceSchema):
