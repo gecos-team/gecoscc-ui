@@ -454,7 +454,7 @@ class OrganisationalUnit(Node):
                                           missing={})
     maintenance = colander.SchemaNode(RealBoolean(),
                                       default=False)
-    user_maintenance = colander.SchemaNode(ObjectIdField())
+    user_maintenance = colander.SchemaNode(ObjectIdField(), missing=colander._drop())
 
 
 class OrganisationalUnits(colander.SequenceSchema):
