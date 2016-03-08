@@ -396,7 +396,7 @@ class TreeResourcePaginated(ResourcePaginated):
                                     "Name must be unique in domain.")
         return unique
 
-    def check_branch(self, obj):
+    def check_maintenance_branch_ou(self, obj):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
@@ -420,7 +420,7 @@ class TreeResourcePaginated(ResourcePaginated):
                 return True
         return False
 
-    def check_maintenance_parent(self, obj):
+    def check_maintenance_branch_general(self, obj):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
         if path_length < 3:
@@ -437,15 +437,25 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_if_branch_in_maintenance(self, obj):
         """ Check if the node is type ou or not """
         if obj['type'] == 'ou':
-            return self.check_branch(obj)
-        return self.check_maintenance_parent(obj)
+            return self.check_maintenance_branch_ou(obj)
+        return self.check_maintenance_branch_general(obj)
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
-        if self.check_if_branch_in_maintenance(real_obj):
+        if real_obj is None:
+            maintenance_obj = obj
+        elif real_obj['path'] == obj['path']:
+            maintenance_obj = real_obj
+            # TODO Error Messages
+            if self.check_if_branch_in_maintenance(maintenance_obj):
+                self.request.errors.add(
+                    unicode(maintenance_obj['name']), 'path', "the portal is "
+                    "in mode maintenance")
+                return False
+        elif self.check_if_branch_in_maintenance(real_obj) or self.check_if_branch_in_maintenance(obj):
             self.request.errors.add(
-                unicode(real_obj['name']), 'path', "the portal is "
-                "in mode maintance")
+                    unicode(maintenance_obj['name']), 'path', "the portal is "
+                    "in mode maintenance")
             return False
 
         if real_obj is not None and obj['path'] == real_obj['path']:
