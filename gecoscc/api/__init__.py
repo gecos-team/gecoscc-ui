@@ -396,8 +396,37 @@ class TreeResourcePaginated(ResourcePaginated):
                                     "Name must be unique in domain.")
         return unique
 
+    def check_if_branch_in_maintenance(self, obj):
+        """ Check if the node branch is in maintenance mode """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                   '$where': "this.path.length==79",
+                                                   'type': 'ou'})
+            for child_branch in children:
+                if child_branch['maintenance']:
+                    if child_branch.user_maintenance == self.request.user or self.request.user.is_superuser:
+                        return False
+                    self.request.errors.add(
+                        unicode(child_branch['name']), 'path', "this branch is "
+                        "in mode maintance")
+                    return True
+        else:
+            branch_path = obj['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            if parent_ou['maintenance']:
+                if parent_ou.user_maintenance == self.request.user or self.request.user.is_superuser:
+                    return False
+                return True
+        return False
+
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
+        if self.check_if_branch_in_maintenance(obj):
+            self.request.errors.add(
+                unicode(obj['name']), 'path', "the portal is "
+                "in mode maintance")
+            return False
 
         if real_obj is not None and obj['path'] == real_obj['path']:
             # This path was already verified before
