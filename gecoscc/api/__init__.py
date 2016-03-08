@@ -405,7 +405,7 @@ class TreeResourcePaginated(ResourcePaginated):
                                                    'type': 'ou'})
             for child_branch in children:
                 if child_branch['maintenance']:
-                    if child_branch.user_maintenance == self.request.user or self.request.user.is_superuser:
+                    if child_branch['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
                         return False
                     self.request.errors.add(
                         unicode(child_branch['name']), 'path', "this branch is "
@@ -415,7 +415,7 @@ class TreeResourcePaginated(ResourcePaginated):
             branch_path = obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             if parent_ou['maintenance']:
-                if parent_ou.user_maintenance == self.request.user or self.request.user.is_superuser:
+                if parent_ou['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
                     return False
                 return True
         return False
@@ -429,21 +429,22 @@ class TreeResourcePaginated(ResourcePaginated):
         parent = obj['path'].split(',')[3]
         parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
         if parent_ou['maintenance']:
-            if parent_ou.user_maintenance == self.request.user or self.request.user.is_superuser:
+            if parent_ou['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
                 return False
             return True
         return False
 
     def check_if_branch_in_maintenance(self, obj):
+        """ Check if the node is type ou or not """
         if obj['type'] == 'ou':
-            return self.check_maintenance_branch(obj)
+            return self.check_branch(obj)
         return self.check_maintenance_parent(obj)
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
-        if self.check_if_branch_in_maintenance(obj):
+        if self.check_if_branch_in_maintenance(real_obj):
             self.request.errors.add(
-                unicode(obj['name']), 'path', "the portal is "
+                unicode(real_obj['name']), 'path', "the portal is "
                 "in mode maintance")
             return False
 
