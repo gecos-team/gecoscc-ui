@@ -406,7 +406,7 @@ class TreeResourcePaginated(ResourcePaginated):
                                                    'type': 'ou'})
             for child_branch in children:
                 if child_branch['maintenance']:
-                    if child_branch['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
+                    if child_branch['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
                         return False
                     self.request.errors.add(
                         unicode(child_branch['name']), 'path', "this branch is "
@@ -416,7 +416,7 @@ class TreeResourcePaginated(ResourcePaginated):
             branch_path = obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             if parent_ou['maintenance']:
-                if parent_ou['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
+                if parent_ou['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
                     return False
                 return True
         return False
@@ -430,7 +430,7 @@ class TreeResourcePaginated(ResourcePaginated):
         parent = obj['path'].split(',')[3]
         parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
         if parent_ou['maintenance']:
-            if parent_ou['user_maintenance'] == self.request.user or self.request.user['is_superuser']:
+            if parent_ou['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
                 return False
             return True
         return False
@@ -450,7 +450,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
-        # TODO Error Messages
+        # TODO Error Messages        
         if real_obj is None:
             if self.check_if_branch_in_maintenance(obj):
                 return False
