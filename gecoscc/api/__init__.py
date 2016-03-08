@@ -5,6 +5,7 @@
 # Authors:
 #   Antonio Perez-Aranda <ant30tx@gmail.com>
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -437,25 +438,26 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_if_branch_in_maintenance(self, obj):
         """ Check if the node is type ou or not """
         if obj['type'] == 'ou':
-            return self.check_maintenance_branch_ou(obj)
-        return self.check_maintenance_branch_general(obj)
+            maintenance = self.check_maintenance_branch_ou(obj)
+        else:
+            maintenance = self.check_maintenance_branch_general(obj)
+        if maintenance:
+            self.request.errors.add(
+                unicode(obj['name']), 'path', "the portal is "
+                "in mode maintenance")
+            return True
+        return False
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
+        # TODO Error Messages
         if real_obj is None:
-            maintenance_obj = obj
+            if self.check_if_branch_in_maintenance(obj):
+                return False
         elif real_obj['path'] == obj['path']:
-            maintenance_obj = real_obj
-            # TODO Error Messages
-            if self.check_if_branch_in_maintenance(maintenance_obj):
-                self.request.errors.add(
-                    unicode(maintenance_obj['name']), 'path', "the portal is "
-                    "in mode maintenance")
+            if self.check_if_branch_in_maintenance(obj):
                 return False
         elif self.check_if_branch_in_maintenance(real_obj) or self.check_if_branch_in_maintenance(obj):
-            self.request.errors.add(
-                    unicode(maintenance_obj['name']), 'path', "the portal is "
-                    "in mode maintenance")
             return False
 
         if real_obj is not None and obj['path'] == real_obj['path']:
