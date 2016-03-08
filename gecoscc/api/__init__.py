@@ -396,7 +396,7 @@ class TreeResourcePaginated(ResourcePaginated):
                                     "Name must be unique in domain.")
         return unique
 
-    def check_if_branch_in_maintenance(self, obj):
+    def check_branch(self, obj):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
@@ -419,6 +419,25 @@ class TreeResourcePaginated(ResourcePaginated):
                     return False
                 return True
         return False
+
+    def check_maintenance_parent(self, obj):
+        """ Check if the node branch is in maintenance mode """
+        path_length = len(obj['path'].split(','))
+        if path_length < 3:
+            return False
+
+        parent = obj['path'].split(',')[3]
+        parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
+        if parent_ou['maintenance']:
+            if parent_ou.user_maintenance == self.request.user or self.request.user.is_superuser:
+                return False
+            return True
+        return False
+
+    def check_if_branch_in_maintenance(self, obj):
+        if obj['type'] == 'ou':
+            return self.check_maintenance_branch(obj)
+        return self.check_maintenance_parent(obj)
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
