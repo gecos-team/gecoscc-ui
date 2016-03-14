@@ -332,6 +332,10 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 self.request.errors.add('body', 'object', 'Integrity error')
             return
 
+        if obj['path'] != old_obj['path']:
+            self.enable_branch_maintenance(obj)
+            self.enable_branch_maintenance(old_obj)
+
         obj = self.pre_save(obj, old_obj=old_obj)
         if obj is None:
             return
@@ -346,7 +350,74 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.post_save(obj, old_obj=old_obj)
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
+        self.disable_branch_maintenance(obj)
+        self.disable_branch_maintenance(old_obj)
+
         return obj
+
+    def enable_branch_maintenance(self, obj):
+        """
+        Enable branch/branches in maintenance mode
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                   '$where': "this.path.length==79",
+                                                   'type': 'ou'})
+            for child_branch in children:
+                self.request.db.nodes.update({
+                    '_id': child_branch['_id']
+                    }, {
+                    '$set': {
+                        'maintenance': True,
+                        'user_maintenance': ObjectId(self.request.user['_id']),
+                        }
+                    }, multi=False)
+        else:
+            branch_path = obj['path'].split(',')[3]
+            self.request.db.nodes.update({
+                '_id': ObjectId(branch_path)
+                }, {
+                '$set': {
+                    'maintenance': True,
+                    'user_maintenance': ObjectId(self.request.user['_id']),
+                    }
+                }, multi=False)
+
+    def disable_branch_maintenance(self, obj):
+        """
+        Disable branch/branches in maintenance mode
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                   '$where': "this.path.length==79",
+                                                   'type': 'ou'})
+            for child_branch in children:
+                self.request.db.nodes.update({
+                    '_id': child_branch['_id']
+                    }, {
+                    '$set': {
+                        'maintenance': False,
+                        },
+                    '$unset': {
+                        'user_maintenance': "",
+                        },
+
+                    }, multi=False)
+        else:
+            branch_path = obj['path'].split(',')[3]
+            self.request.db.nodes.update({
+                '_id': ObjectId(branch_path)
+                }, {
+                '$set': {
+                    'maintenance': False,
+                    },
+                '$unset': {
+                    'user_maintenance': "",
+                    },
+
+                }, multi=False)
 
     def delete(self):
 
@@ -450,7 +521,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
-        # TODO Error Messages        
+        # TODO Error Messages
         if real_obj is None:
             if self.check_if_branch_in_maintenance(obj):
                 return False
