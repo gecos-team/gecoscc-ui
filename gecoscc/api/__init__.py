@@ -333,8 +333,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
 
         if obj['path'] != old_obj['path']:
-            self.enable_branch_maintenance(obj)
-            self.enable_branch_maintenance(old_obj)
+            if obj['type'] == 'ou':
+                self.enable_branch_maintenance(obj)
+                self.enable_branch_maintenance(old_obj)
+            else:
+                self.enable_parent_maintenance(obj)
+                self.enable_parent_maintenance(old_obj)
 
         obj = self.pre_save(obj, old_obj=old_obj)
         if obj is None:
@@ -355,9 +359,48 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         return obj
 
+    def enable_parent_maintenance(self, obj):
+        """
+        Enable parent branch in maintenance mode when the node isn't a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            return False
+
+        branch_path = obj['path'].split(',')[3]
+        self.request.db.nodes.update({
+            '_id': ObjectId(branch_path)
+            }, {
+            '$set': {
+                'maintenance': True,
+                'user_maintenance': ObjectId(self.request.user['_id']),
+                }
+            }, multi=False)
+
+    def disable_parent_maintenance(self, obj):
+        """
+        Disable parent branch in maintenance mode when the node isn't a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length < 3:
+            return False
+
+        branch_path = obj['path'].split(',')[3]
+        self.request.db.nodes.update({
+            '_id': ObjectId(branch_path)
+            }, {
+            '$set': {
+                'maintenance': False,
+                },
+            '$unset': {
+                'user_maintenance': "",
+                },
+
+            }, multi=False)
+
     def enable_branch_maintenance(self, obj):
         """
-        Enable branch/branches in maintenance mode
+        Enable branch/branches in maintenance mode whent the obj is a OU
         """
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
@@ -386,7 +429,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
     def disable_branch_maintenance(self, obj):
         """
-        Disable branch/branches in maintenance mode
+        Disable branch/branches in maintenance mode when the obj is a OU
         """
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
@@ -472,9 +515,15 @@ class TreeResourcePaginated(ResourcePaginated):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
-            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
-                                                   '$where': "this.path.length==79",
-                                                   'type': 'ou'})
+            if obj.get('_id', False):
+                children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                       '$where': "this.path.length==79",
+                                                       'type': 'ou'})
+            else:
+                ou = obj['path'].split(',')[-1]
+                children = self.request.db.nodes.find({'path': {'$regex': ou},
+                                                       '$where': "this.path.length==79",
+                                                       'type': 'ou'})
             for child_branch in children:
                 if child_branch['maintenance']:
                     if child_branch['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
@@ -495,7 +544,7 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_maintenance_branch_general(self, obj):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
-        if path_length < 3:
+        if path_length <= 3:
             return False
 
         parent = obj['path'].split(',')[3]

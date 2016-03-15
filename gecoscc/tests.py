@@ -3617,6 +3617,7 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
         data, storage = self.create_storage('shared folder', ou_3['name'])
         data, storage_ou_1 = self.create_storage('shared folder_ou_1', ou_1['name'])
 
