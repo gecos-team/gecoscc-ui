@@ -331,7 +331,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
             return
-
         if obj['path'] != old_obj['path']:
             if obj['type'] == 'ou':
                 self.enable_branch_maintenance(obj)
@@ -536,7 +535,7 @@ class TreeResourcePaginated(ResourcePaginated):
             branch_path = obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             if parent_ou['maintenance']:
-                if parent_ou['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
+                if parent_ou.get('user_maintenance', None) == self.request.user or self.request.user.get('is_superuser', False):
                     return False
                 return True
         return False
