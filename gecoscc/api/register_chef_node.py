@@ -15,6 +15,9 @@ from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
 
+from chef import Node as ChefNode
+from chef import Client as ChefClient
+
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
@@ -82,6 +85,12 @@ class RegisterChefNode(BaseAPI):
         if num_node_deleted >= 1:
             if num_node_deleted == 1:
                 delete_computer(computer['_id'], computer['path'])
+                settings = get_current_registry().settings
+                api = get_chef_api(settings, self.request.user)
+                chef_node = ChefNode(node_id, api)
+                chef_node.delete()
+                chef_client = ChefClient(node_id, api)
+                chef_client.delete()
                 return {'ok': True}
             return {'ok': False,
                     'message': 'Deleted %s computers' % num_node_deleted}
