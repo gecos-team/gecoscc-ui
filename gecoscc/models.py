@@ -173,6 +173,8 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
+    maintenance_mode = colander.SchemaNode(RealBoolean(),
+                                           default=False)
 
 
 class Nodes(colander.SequenceSchema):
