@@ -377,7 +377,7 @@
         cutModel: function (evt) {
             var that = this;
             var $button = $('#cut');
-            evt.preventDefault(); 
+            evt.preventDefault();
             var cutModel = function(){
                 var $button = $(evt.target);
                 $button.attr("disabled", "disabled");
@@ -388,20 +388,7 @@
                     $button.attr("disabled", false);
                 }, 2000);
             };
-
-            if($button.hasClass('admin') && !App.instances.noMaintenance[this.model.get('id')]){
-                var $modal = $('#maintenance-modal');
-                $modal.modal('show');
-                $('#set-maintenance').click(function(){
-                    cutModel();
-                    $modal.modal('hide');
-                });
-            }else{
-                 cutModel();
-            }
-
-
-
+            cutModel();
         },
         canMove: function(){
             var $button = this.$('#cut');

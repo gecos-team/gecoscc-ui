@@ -39,7 +39,9 @@ App.module("Printer.Models", function (Models, App, Backbone, Marionette, $, _) 
             uri: "",
             ppd_uri: "",
             oppolicy: "default",
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         }
     });
 });

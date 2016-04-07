@@ -47,7 +47,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
     };
 
     var treeContainerPre =
-            '<div class="tree-container tree-node" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
+            '<div class="tree-container tree-node <% if (maintenance) { print("maintenance"); } %>" style="display: block;" id="<%= id %>" data-path="<%= path %>">\n' +
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
             '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-<%= icon %>"></span>\n' +
@@ -152,11 +152,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         };
 
         this.recursiveRender = function (node, root) {
-            var json = _.pick(node, "name", "type", "id", "path"),
+            var json = _.pick(node, "name", "type", "id", "path", "maintenance"),
                 ouData,
                 treeNode,
                 html;
-
             if (json.type === "ou") {
                 if (_.isUndefined(root)) { root = this.model.get("tree"); }
                 treeNode = root.first({ strategy: 'breadth' }, function (n) {
@@ -165,12 +164,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
                 if (_.isUndefined(treeNode)) {
                     json.closed = true; // Unloaded node, show it closed
+                    json.maintenance = json.maintenance;
                 } else {
                     json.closed = treeNode.model.closed;
+                    json.maintenance = treeNode.model.maintenance;
                 }
                 ouData = this.prepareRenderOUData(treeNode);
                 json.controlIcon = json.closed ? "plus" : "minus";
-
                 html = this.renderOU(json, ouData, treeNode);
             } else {
                 // It's a regular node
@@ -213,7 +213,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (json.name === App.forestAuxiliary) { return ""; }
 
             json.icon = Views.getIcon(json);
-
+            //json.maintenance = json.maintenance? true : false;
             html = this._templates.containerPre(json);
             if (data.children.length > 0) {
                 if (data.showPrev) {

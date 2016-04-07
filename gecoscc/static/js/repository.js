@@ -31,7 +31,9 @@ App.module("Repository.Models", function (Models, App, Backbone, Marionette, $, 
             deb_src: "",
             repo_key: "",
             key_server: "",
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         },
 
         url: function () {

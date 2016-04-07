@@ -175,6 +175,11 @@ footer {
     border-radius: 6px;
 }
 
+.maintenance {
+    color: #DDD !important;
+    border-radius: 6px;
+}
+
 .modified {
     color: #428bca !important;
     border-radius: 6px;

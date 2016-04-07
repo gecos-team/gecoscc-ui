@@ -224,7 +224,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                         App.instances.tree.updateNodeById(modelParent.get("id"));
                         App.instances.tree.reloadTree();
                     }
-                );
+                ).fail(function (response) {
+                    modelCut._showErrorMessage(response);
+                    App.instances.tree.trigger("change");
+                });
                 App.instances.staging.toMove.push([modelCut.get("id"), modelParent.get("id")]);
                 App.instances.cut = undefined;
                 App.instances.tree.trigger("change");

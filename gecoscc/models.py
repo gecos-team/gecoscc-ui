@@ -173,8 +173,8 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
-    maintenance_mode = colander.SchemaNode(RealBoolean(),
-                                           default=False)
+    maintenance = colander.SchemaNode(RealBoolean(),
+                                      default=False)
     user_maintenance = colander.SchemaNode(ObjectIdField(),
                                            missing=colander._drop())
 
