@@ -50,10 +50,32 @@ class BaseAPI(object):
         self.collection = self.get_collection()
 
     def parse_item(self, item):
-        return self.schema_detail().serialize(item)
+        schema = self.schema_detail().serialize(item)
+        if schema.has_key('maintenance') and schema.has_key('path') and len(schema['path'].split(',')) > 3:
+            branch_path = schema['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            schema['maintenance'] = parent_ou.get('maintenance', False)
+
+        return schema
 
     def parse_collection(self, collection):
-        return self.schema_collection().serialize(collection)
+        schema = self.schema_collection().serialize(collection)
+        # Retrieve the field maintenance for the ou parent to check if the node is in maintenance
+        schema_obj = {}
+        for obj in schema:
+            if obj.has_key('maintenance') and obj.has_key('path') and len(obj['path'].split(',')) > 3:
+                schema_obj = obj
+                break
+
+        if schema_obj.has_key('maintenance'):
+            branch_path = schema_obj['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            maintenance = parent_ou.get('maintenance', False)
+
+            for obj in schema:
+                obj['maintenance'] = maintenance
+
+        return schema
 
     def get_collection(self, collection=None):
         if collection is None:
@@ -525,7 +547,7 @@ class TreeResourcePaginated(ResourcePaginated):
                                                        'type': 'ou'})
             for child_branch in children:
                 if child_branch['maintenance']:
-                    if child_branch['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
+                    if child_branch['user_maintenance'] == self.request.user:
                         return False
                     self.request.errors.add(
                         unicode(child_branch['name']), 'path', "this branch is "
@@ -535,7 +557,7 @@ class TreeResourcePaginated(ResourcePaginated):
             branch_path = obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             if parent_ou['maintenance']:
-                if parent_ou.get('user_maintenance', None) == self.request.user or self.request.user.get('is_superuser', False):
+                if parent_ou.get('user_maintenance', None):
                     return False
                 return True
         return False
@@ -549,7 +571,7 @@ class TreeResourcePaginated(ResourcePaginated):
         parent = obj['path'].split(',')[3]
         parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
         if parent_ou['maintenance']:
-            if parent_ou['user_maintenance'] == self.request.user or self.request.user.get('is_superuser', False):
+            if parent_ou.get('user_maintenance', None) == self.request.user:
                 return False
             return True
         return False
