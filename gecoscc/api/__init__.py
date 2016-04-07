@@ -55,7 +55,7 @@ class BaseAPI(object):
             branch_path = schema['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             schema['maintenance'] = parent_ou.get('maintenance', False)
-
+            schema['user_maintenance'] = parent_ou.get('user_maintenance', False)
         return schema
 
     def parse_collection(self, collection):
@@ -71,10 +71,11 @@ class BaseAPI(object):
             branch_path = schema_obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             maintenance = parent_ou.get('maintenance', False)
+            user_maintenance = parent_ou.get('user_maintenance', None)
 
             for obj in schema:
                 obj['maintenance'] = maintenance
-
+                obj['user_maintenance'] = user_maintenance
         return schema
 
     def get_collection(self, collection=None):

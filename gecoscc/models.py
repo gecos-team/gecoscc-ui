@@ -175,7 +175,8 @@ class Node(colander.MappingSchema):
     name = colander.SchemaNode(colander.String())
     maintenance_mode = colander.SchemaNode(RealBoolean(),
                                            default=False)
-
+    user_maintenance = colander.SchemaNode(ObjectIdField(),
+                                           missing=colander._drop())
 
 class Nodes(colander.SequenceSchema):
     nodes = Node()
