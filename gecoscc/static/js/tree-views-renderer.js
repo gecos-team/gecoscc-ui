@@ -66,7 +66,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    </a></div>\n' +
             '</div>',
         treeItem =
-            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
+            '<div class="tree-leaf tree-node <% if (maintenance) { print("maintenance"); } %>" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
             '        <span class="fa fa-<%= icon %>"></span>\n' +
             '        <div class="tree-name"><%= name %></div>\n' +
@@ -175,6 +175,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 // It's a regular node
                 json.icon = Views.getIcon(json);
+                json.maintenance = json.maintenance ? true : false;
                 html = this._templates.item(json);
             }
 
@@ -213,7 +214,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (json.name === App.forestAuxiliary) { return ""; }
 
             json.icon = Views.getIcon(json);
-            //json.maintenance = json.maintenance? true : false;
+
             html = this._templates.containerPre(json);
             if (data.children.length > 0) {
                 if (data.showPrev) {

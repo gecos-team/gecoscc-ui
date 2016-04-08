@@ -450,6 +450,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     });
                     if (!_.isUndefined(node)) {
                         node.model.name = n.name;
+                        node.model.maintenance = n.maintenance;
+                        node.model.user_maintenance = n.user_maintenance;
                         if (node.model.status !== "paginated") {
                             node.model.status = "meta-only";
                         }
