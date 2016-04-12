@@ -43,7 +43,7 @@ class RegisterChefNode(BaseAPI):
 
         # create chef client
         chef_client = ChefClient(node_id, api)
-        if chef_node.exists:
+        if chef_client.exists:
             return {'ok': False, 'message': 'This client already exists'}
 
         chef_client = ChefClient.create(node_id, api)
@@ -67,3 +67,19 @@ class RegisterChefNode(BaseAPI):
         chef_client.delete()
 
         return {'ok': True, 'message': 'Node and client have been deleted'}
+
+    def put(self):
+        # implements "knife client reregister"
+        node_id = self.request.POST.get('node_id')
+        settings = get_current_registry().settings
+        api = get_chef_api(settings, self.request.user)
+
+        # remove current node's client
+        chef_client = ChefClient(node_id, api)
+        if chef_client.exists:
+            chef_client.delete()
+
+        chef_client = ChefClient.create(node_id, api)
+
+        return {'ok': True, 'message': "Chef node's client has been update",
+                'client_private_key': chef_client.private_key}
