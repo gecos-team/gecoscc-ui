@@ -364,27 +364,26 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if obj['path'] != old_obj['path']:
             if obj['type'] == 'ou':
                 self.enable_branch_maintenance(obj)
+                obj['maintenance'] = True
                 self.enable_branch_maintenance(old_obj)
+                old_obj['maintenance'] = True
             else:
                 self.enable_parent_maintenance(obj)
                 self.enable_parent_maintenance(old_obj)
-
         obj = self.pre_save(obj, old_obj=old_obj)
         if obj is None:
             return
-
         real_obj.update(obj)
         try:
             self.collection.update(obj_filter, real_obj, new=True)
         except DuplicateKeyError, e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))
-
         obj = self.post_save(obj, old_obj=old_obj)
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
-        self.disable_branch_maintenance(obj)
-        self.disable_branch_maintenance(old_obj)
+        obj = self.disable_branch_maintenance(obj)
+        old_obj = self.disable_branch_maintenance(old_obj)
 
         return obj
 
@@ -434,7 +433,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
             children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
-                                                   '$where': "this.path.length==79",
                                                    'type': 'ou'})
             for child_branch in children:
                 self.request.db.nodes.update({
@@ -445,6 +443,14 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                         'user_maintenance': ObjectId(self.request.user['_id']),
                         }
                     }, multi=False)
+            self.request.db.nodes.update({
+                '_id': ObjectId(obj['_id'])
+                }, {
+                '$set': {
+                    'maintenance': True,
+                    'user_maintenance': ObjectId(self.request.user['_id']),
+                    }
+                }, multi=False)
         else:
             branch_path = obj['path'].split(',')[3]
             self.request.db.nodes.update({
@@ -463,7 +469,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         path_length = len(obj['path'].split(','))
         if path_length <= 3:
             children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
-                                                   '$where': "this.path.length==79",
                                                    'type': 'ou'})
             for child_branch in children:
                 self.request.db.nodes.update({
@@ -490,6 +495,20 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                     },
 
                 }, multi=False)
+
+        self.request.db.nodes.update({
+            '_id': ObjectId(obj['_id'])
+            }, {
+            '$set': {
+                'maintenance': False,
+                },
+            '$unset': {
+                'user_maintenance': "",
+                },
+
+            }, multi=False)
+        obj['maintenance'] = False
+        return obj
 
     def delete(self):
 
@@ -543,20 +562,18 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_maintenance_branch_ou(self, obj):
         """ Check if the node branch is in maintenance mode """
         path_length = len(obj['path'].split(','))
+        if obj.get('maintenance', False):
+            return True
         if path_length <= 3:
             if obj.get('_id', False):
                 children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
-                                                       '$where': "this.path.length==79",
                                                        'type': 'ou'})
             else:
                 ou = obj['path'].split(',')[-1]
                 children = self.request.db.nodes.find({'path': {'$regex': ou},
-                                                       '$where': "this.path.length==79",
                                                        'type': 'ou'})
             for child_branch in children:
                 if child_branch['maintenance']:
-                    if child_branch['user_maintenance'] == self.request.user:
-                        return False
                     self.request.errors.add(
                         unicode(child_branch['name']), 'path', "this branch is "
                         "in mode maintance")
@@ -565,8 +582,9 @@ class TreeResourcePaginated(ResourcePaginated):
             branch_path = obj['path'].split(',')[3]
             parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
             if parent_ou['maintenance']:
-                if parent_ou.get('user_maintenance', None):
-                    return False
+                self.request.errors.add(
+                    unicode(parent_ou['name']), 'path', "this branch is "
+                    "in mode maintance")
                 return True
         return False
 
@@ -579,8 +597,9 @@ class TreeResourcePaginated(ResourcePaginated):
         parent = obj['path'].split(',')[3]
         parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
         if parent_ou['maintenance']:
-            if parent_ou.get('user_maintenance', None) == self.request.user:
-                return False
+            self.request.errors.add(
+                unicode(parent_ou['name']), 'path', "this branch is "
+                "in mode maintance")
             return True
         return False
 
