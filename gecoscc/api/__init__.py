@@ -78,8 +78,9 @@ class BaseAPI(object):
                 user_maintenance = parent_ou.get('user_maintenance')
 
                 for obj in schema:
-                    obj['maintenance'] = maintenance
-                    obj['user_maintenance'] = unicode(user_maintenance)
+                    if len(obj['path'].split(',')) > 3:
+                        obj['maintenance'] = maintenance
+                        obj['user_maintenance'] = unicode(user_maintenance)
             else:
                 for obj in schema:
                     obj['maintenance'] = maintenance
