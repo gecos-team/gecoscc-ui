@@ -24,15 +24,11 @@
 
             <% if (maintenance) { %>
               <div class="alert alert-warning">
-              <% if (GecosUtils.gecosUser.isSuperUser || GecosUtils.gecosUser.userId === user_maintenance) { %>
-                {{ gettext('Portal is in maintenance mode. Actions may cause errors.') }}
-              <% } else { %>
                 {{ gettext('Portal is in maintenance mode. Please try again in a few moments.') }}
-              <% } %>
               </div>
             <% } %>
 
-            <% if (isEditable && (!maintenance || GecosUtils.gecosUser.isSuperUser || GecosUtils.gecosUser.userId === user_maintenance)) { %>
+            <% if (isEditable && !maintenance) { %>
             <div class="row"><div class="col-sm-12">
                 <a href="#" class="btn btn-default">{{ gettext('Cancel') }}</a>
                 <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
