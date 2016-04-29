@@ -41,6 +41,8 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             filesystem: {},
             policyCollection: new App.Policies.Models.PolicyCollection(),
             isEditable: undefined,
+            maintenance: false,
+            user_maintenance: '',
             icon: "desktop",
             labelClass: "label-success",
             iconClass: "info-icon-success",

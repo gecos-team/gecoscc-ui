@@ -173,7 +173,10 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
-
+    maintenance = colander.SchemaNode(RealBoolean(),
+                                      default=False)
+    user_maintenance = colander.SchemaNode(ObjectIdField(),
+                                           missing=colander._drop())
 
 class Nodes(colander.SequenceSchema):
     nodes = Node()
@@ -452,6 +455,10 @@ class OrganisationalUnit(Node):
     master_policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                           default={},
                                           missing={})
+    maintenance = colander.SchemaNode(RealBoolean(),
+                                      default=False,
+                                      missing=False)
+    user_maintenance = colander.SchemaNode(ObjectIdField(), missing=colander._drop())
 
 
 class OrganisationalUnits(colander.SequenceSchema):

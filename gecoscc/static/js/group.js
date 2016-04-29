@@ -26,7 +26,9 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             members: [],
             memberof: [],
             policyCollection: new App.Policies.Models.PolicyCollection(),
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         }
     });
 
@@ -40,7 +42,9 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
             name: "",
             members: [],
             memberof: [],
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         }
     });
 

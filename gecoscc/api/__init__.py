@@ -5,6 +5,7 @@
 # Authors:
 #   Antonio Perez-Aranda <ant30tx@gmail.com>
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -49,10 +50,41 @@ class BaseAPI(object):
         self.collection = self.get_collection()
 
     def parse_item(self, item):
-        return self.schema_detail().serialize(item)
+        schema = self.schema_detail().serialize(item)
+        if schema.has_key('maintenance') and schema.has_key('path') and len(schema['path'].split(',')) > 3:
+            branch_path = schema['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            schema['maintenance'] = parent_ou.get('maintenance', False)
+            if parent_ou.get('user_maintenance', False):
+                schema['user_maintenance'] = unicode(parent_ou.get('user_maintenance'))
+        return schema
 
     def parse_collection(self, collection):
-        return self.schema_collection().serialize(collection)
+        schema = self.schema_collection().serialize(collection)
+        # Retrieve the field maintenance for the ou parent to check if the node is in maintenance
+        schema_obj = {}
+        for obj in schema:
+            if obj.has_key('maintenance') and obj.has_key('path') and len(obj['path'].split(',')) > 3:
+                schema_obj = obj
+                break
+
+        if schema_obj.has_key('maintenance'):
+            branch_path = schema_obj['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            maintenance = parent_ou.get('maintenance', False)
+
+            user_maintenance = False
+            if parent_ou.get('user_maintenance', False):
+                user_maintenance = parent_ou.get('user_maintenance')
+
+                for obj in schema:
+                    if len(obj['path'].split(',')) > 3:
+                        obj['maintenance'] = maintenance
+                        obj['user_maintenance'] = unicode(user_maintenance)
+            else:
+                for obj in schema:
+                    obj['maintenance'] = maintenance
+        return schema
 
     def get_collection(self, collection=None):
         if collection is None:
@@ -330,21 +362,153 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
             return
-
+        if obj['path'] != old_obj['path']:
+            if obj['type'] == 'ou':
+                self.enable_branch_maintenance(obj)
+                obj['maintenance'] = True
+                self.enable_branch_maintenance(old_obj)
+                old_obj['maintenance'] = True
+            else:
+                self.enable_parent_maintenance(obj)
+                self.enable_parent_maintenance(old_obj)
         obj = self.pre_save(obj, old_obj=old_obj)
         if obj is None:
             return
-
         real_obj.update(obj)
         try:
             self.collection.update(obj_filter, real_obj, new=True)
         except DuplicateKeyError, e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))
-
         obj = self.post_save(obj, old_obj=old_obj)
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
+        obj = self.disable_branch_maintenance(obj)
+        old_obj = self.disable_branch_maintenance(old_obj)
+
+        return obj
+
+    def enable_parent_maintenance(self, obj):
+        """
+        Enable parent branch in maintenance mode when the node isn't a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            return False
+
+        branch_path = obj['path'].split(',')[3]
+        self.request.db.nodes.update({
+            '_id': ObjectId(branch_path)
+            }, {
+            '$set': {
+                'maintenance': True,
+                'user_maintenance': ObjectId(self.request.user['_id']),
+                }
+            }, multi=False)
+
+    def disable_parent_maintenance(self, obj):
+        """
+        Disable parent branch in maintenance mode when the node isn't a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length < 3:
+            return False
+
+        branch_path = obj['path'].split(',')[3]
+        self.request.db.nodes.update({
+            '_id': ObjectId(branch_path)
+            }, {
+            '$set': {
+                'maintenance': False,
+                },
+            '$unset': {
+                'user_maintenance': "",
+                },
+
+            }, multi=False)
+
+    def enable_branch_maintenance(self, obj):
+        """
+        Enable branch/branches in maintenance mode whent the obj is a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                   'type': 'ou'})
+            for child_branch in children:
+                self.request.db.nodes.update({
+                    '_id': child_branch['_id']
+                    }, {
+                    '$set': {
+                        'maintenance': True,
+                        'user_maintenance': ObjectId(self.request.user['_id']),
+                        }
+                    }, multi=False)
+            self.request.db.nodes.update({
+                '_id': ObjectId(obj['_id'])
+                }, {
+                '$set': {
+                    'maintenance': True,
+                    'user_maintenance': ObjectId(self.request.user['_id']),
+                    }
+                }, multi=False)
+        else:
+            branch_path = obj['path'].split(',')[3]
+            self.request.db.nodes.update({
+                '_id': ObjectId(branch_path)
+                }, {
+                '$set': {
+                    'maintenance': True,
+                    'user_maintenance': ObjectId(self.request.user['_id']),
+                    }
+                }, multi=False)
+
+    def disable_branch_maintenance(self, obj):
+        """
+        Disable branch/branches in maintenance mode when the obj is a OU
+        """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                   'type': 'ou'})
+            for child_branch in children:
+                self.request.db.nodes.update({
+                    '_id': child_branch['_id']
+                    }, {
+                    '$set': {
+                        'maintenance': False,
+                        },
+                    '$unset': {
+                        'user_maintenance': "",
+                        },
+
+                    }, multi=False)
+        else:
+            branch_path = obj['path'].split(',')[3]
+            self.request.db.nodes.update({
+                '_id': ObjectId(branch_path)
+                }, {
+                '$set': {
+                    'maintenance': False,
+                    },
+                '$unset': {
+                    'user_maintenance': "",
+                    },
+
+                }, multi=False)
+
+        self.request.db.nodes.update({
+            '_id': ObjectId(obj['_id'])
+            }, {
+            '$set': {
+                'maintenance': False,
+                },
+            '$unset': {
+                'user_maintenance': "",
+                },
+
+            }, multi=False)
+        obj['maintenance'] = False
         return obj
 
     def delete(self):
@@ -396,8 +560,74 @@ class TreeResourcePaginated(ResourcePaginated):
                                     "Name must be unique in domain.")
         return unique
 
+    def check_maintenance_branch_ou(self, obj):
+        """ Check if the node branch is in maintenance mode """
+        path_length = len(obj['path'].split(','))
+        if obj.get('maintenance', False):
+            return True
+        if path_length <= 3:
+            if obj.get('_id', False):
+                children = self.request.db.nodes.find({'path': {'$regex': unicode(obj['_id'])},
+                                                       'type': 'ou'})
+            else:
+                ou = obj['path'].split(',')[-1]
+                children = self.request.db.nodes.find({'path': {'$regex': ou},
+                                                       'type': 'ou'})
+            for child_branch in children:
+                if child_branch['maintenance']:
+                    self.request.errors.add(
+                        unicode(child_branch['name']), 'path', "this branch is "
+                        "in mode maintance")
+                    return True
+        else:
+            branch_path = obj['path'].split(',')[3]
+            parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(branch_path)})
+            if parent_ou['maintenance']:
+                self.request.errors.add(
+                    unicode(parent_ou['name']), 'path', "this branch is "
+                    "in mode maintance")
+                return True
+        return False
+
+    def check_maintenance_branch_general(self, obj):
+        """ Check if the node branch is in maintenance mode """
+        path_length = len(obj['path'].split(','))
+        if path_length <= 3:
+            return False
+
+        parent = obj['path'].split(',')[3]
+        parent_ou = self.request.db.nodes.find_one({'_id': ObjectId(parent)})
+        if parent_ou['maintenance']:
+            self.request.errors.add(
+                unicode(parent_ou['name']), 'path', "this branch is "
+                "in mode maintance")
+            return True
+        return False
+
+    def check_if_branch_in_maintenance(self, obj):
+        """ Check if the node is type ou or not """
+        if obj['type'] == 'ou':
+            maintenance = self.check_maintenance_branch_ou(obj)
+        else:
+            maintenance = self.check_maintenance_branch_general(obj)
+        if maintenance:
+            self.request.errors.add(
+                unicode(obj['name']), 'path', "the portal is "
+                "in mode maintenance")
+            return True
+        return False
+
     def integrity_validation(self, obj, real_obj=None):
         """ Test that the object path already exist """
+        # TODO Error Messages
+        if real_obj is None:
+            if self.check_if_branch_in_maintenance(obj):
+                return False
+        elif real_obj['path'] == obj['path']:
+            if self.check_if_branch_in_maintenance(obj):
+                return False
+        elif self.check_if_branch_in_maintenance(real_obj) or self.check_if_branch_in_maintenance(obj):
+            return False
 
         if real_obj is not None and obj['path'] == real_obj['path']:
             # This path was already verified before

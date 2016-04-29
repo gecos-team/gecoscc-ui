@@ -29,7 +29,9 @@ App.module("OU.Models", function (Models, App, Backbone, Marionette, $, _) {
             isDomain: function () {
                 return this.path.split(',').length === 2;
             },
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         }
     });
 });

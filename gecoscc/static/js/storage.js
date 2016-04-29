@@ -25,7 +25,9 @@ App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) 
             source: "gecos",
             name: "",
             uri: "",
-            isEditable: undefined
+            isEditable: undefined,
+            maintenance: false,
+            user_maintenance: ''
         },
 
         parse: function (response) {

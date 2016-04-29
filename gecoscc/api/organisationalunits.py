@@ -36,7 +36,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
     def integrity_validation(self, obj, real_obj=None):
         status = super(OrganisationalUnitResource,
                        self).integrity_validation(obj, real_obj)
-
+        status = status and self.check_unique_node_name_by_type_at_domain(obj)
         if real_obj is not None and obj['path'] != real_obj['path']:
             status_user = self.request.user.get('is_superuser', False) or self.is_ou_empty(obj)
             status = status and status_user

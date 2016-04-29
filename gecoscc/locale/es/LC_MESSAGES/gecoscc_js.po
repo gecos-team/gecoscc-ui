@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2016-01-21 14:00+0100\n"
+"POT-Creation-Date: 2016-04-25 17:09+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -86,7 +86,7 @@ msgstr "Datos inválidos."
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:81
+#: gecoscc/static/js/app-utils.js:409 gecoscc/static/js/ou.js:83
 msgid "Only the super admin can cut this object"
 msgstr "Solo el super administrador puede cortar este objeto"
 
@@ -144,54 +144,54 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:213
+#: gecoscc/static/js/computer.js:215
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:214
+#: gecoscc/static/js/computer.js:216
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:222
+#: gecoscc/static/js/computer.js:224
 msgid "This workstation is not linked."
 msgstr "Esta estación de trabajo no está enlazada:"
 
-#: gecoscc/static/js/computer.js:223
+#: gecoscc/static/js/computer.js:225
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
-#: gecoscc/static/js/computer.js:230
+#: gecoscc/static/js/computer.js:232
 msgid "This workstation has incomplete Ohai information."
 msgstr "El Ohai de esta estación de trabajo está incompleto."
 
-#: gecoscc/static/js/computer.js:238 gecoscc/static/js/computer.js:248
-#: gecoscc/static/js/computer.js:258
+#: gecoscc/static/js/computer.js:240 gecoscc/static/js/computer.js:250
+#: gecoscc/static/js/computer.js:260
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:239
+#: gecoscc/static/js/computer.js:241
 msgid "There were errors while saving this node in Chef"
 msgstr "Se produjeron errores mientras se guardaba este nodo en Chef"
 
-#: gecoscc/static/js/computer.js:249
+#: gecoscc/static/js/computer.js:251
 msgid "Last synchronization had problems during its execution."
 msgstr "La última sincronización tuvo problemas durante su ejecución."
 
-#: gecoscc/static/js/computer.js:259
+#: gecoscc/static/js/computer.js:261
 msgid "Synchronization is not being executed on time."
 msgstr ""
 "La sincronización no se está ejecutando en el intervalo de tiempo "
 "definido."
 
-#: gecoscc/static/js/computer.js:299
+#: gecoscc/static/js/computer.js:301
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:299
+#: gecoscc/static/js/computer.js:301
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:299
+#: gecoscc/static/js/computer.js:301
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -230,7 +230,7 @@ msgstr "Más"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:552
 msgid "Loading"
 msgstr "Cargando"
 
@@ -238,7 +238,7 @@ msgstr "Cargando"
 msgid "Nodes can not be moved between domains."
 msgstr "Los nodos no pueden ser movidos entre dominios."
 
-#: gecoscc/static/js/tree-views.js:251
+#: gecoscc/static/js/tree-views.js:254
 msgid ""
 "Deleting an OU is a permanent action. It will also delete all its "
 "children."

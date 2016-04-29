@@ -29,10 +29,12 @@ App.module("User.Models", function (Models, App, Backbone, Marionette, $, _) {
             address: "",
             phone: "",
             email: "",
-            commentaries: "",			
+            commentaries: "",
             policyCollection: new App.Policies.Models.PolicyCollection(),
             isEditable: undefined,
-            computer_names: []
+            computer_names: [],
+            maintenance: false,
+            user_maintenance: ''
         }
     });
 });
@@ -120,7 +122,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 first_name: "#firstname",
                 last_name: "#lastname",
                 address: "#address",
-				commentaries: "#commentaries"				
+				commentaries: "#commentaries"
             });
         }
     });

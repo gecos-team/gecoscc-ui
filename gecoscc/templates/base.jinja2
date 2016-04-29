@@ -82,7 +82,6 @@
         <script src="{{ request.application_url }}/static/js/i18n.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/bootstrap-3.0.2.min.js"></script>
         <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
-
         <script>
             $(document).ready(function () {
                 var confirmModal = $("#confirm-modal").modal({ show: false });
@@ -109,6 +108,12 @@
                         gecosUser: null
                     {% endif %}
                 };
+                {% if request.user %}
+                  window.GecosUtils.gecosUser.userId = '{{ request.user['_id'] }}'
+                  {% if request.user.get('is_superuser') %}
+                    window.GecosUtils.gecosUser.isSuperUser = true;
+                  {% endif %}
+                {% endif %}
             });
             {% if request.user and request.user.get('is_superuser') %}
             var emptyTree =
