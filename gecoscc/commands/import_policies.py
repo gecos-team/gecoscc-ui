@@ -102,6 +102,9 @@ SPROFILES_LOCALIZED = {
 SPROFILES_URL = '/api/software_profiles/'
 SPROFILES_URL_TARGETS = ['ou', 'computer', 'group']
 
+MIMETYPES_POLICY = 'mimetypes_res'
+MIMETYPES_POLICY_URL = '/api/mimetypes/'
+
 
 class Command(BaseCommand):
     description = """
@@ -195,6 +198,10 @@ class Command(BaseCommand):
                 continue
             if key == PACKAGE_POLICY:
                 self.set_packages_url(value)
+            
+            if key == MIMETYPES_POLICY:
+                self.set_mimetypes_url(value)
+                
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
@@ -266,7 +273,12 @@ class Command(BaseCommand):
         value['properties']['package_list']['items']['enum'] = []
         value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['pkgs_to_remove']['items']['enum'] = []
+    
+    def set_mimetypes_url(self, value):
+        value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL
+        value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['items']['enum'] = []
 
+        
     def create_software_profiles_policy(self, policies, languages):
         slug = 'package_profile_res'
         schema = deepcopy(SCHEMA_EMITTER)
@@ -286,3 +298,5 @@ class Command(BaseCommand):
         for lan in languages:
             policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]
         self.treatment_policy(policy)
+
+			
