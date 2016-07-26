@@ -248,8 +248,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click table#policies-table button.btn-danger": "remove",
             "click table#policies-table button.btn-default": "edit",
             "click table#policies-table button.btn-info": "edit",
-            "click button#add-policy": "add",
-            "click button#recalc-policy": "recalculate"
+            "click button#add-policy": "add"
         },
 
         getPolicyUrl: function (id) {
@@ -280,36 +279,9 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         add: function (evt) {
             App.instances.router.navigate(this.getPolicyUrl(), { trigger: true });
         },
-        recalculate: function(evt){
-            if(this.resource.get('type')=='computer'){
-                var policie = new App.Computer.Models.ComputerPoliciesModel();
-
-                policie.set('_id',this.resource.get('id'));
-                policie.set('id',this.resource.get('id'));
-                policie.set('type',this.resource.get('type'));
-                policie.set('lock',this.resource.get('lock'));
-                policie.set('source',this.resource.get('source'));
-                policie.set('name',this.resource.get('name'));
-                policie.set('registry',this.resource.get('registry'));
-                policie.set('family',this.resource.get('family'));
-                policie.set('error_last_saved',this.resource.get('error_last_saved'));
-                policie.set('error_last_chef_client',this.resource.get('error_last_chef_client'));
-                policie.set('memberof',this.resource.get('memberof'));
-                policie.set('path',this.resource.get('path'));
-                policie.set('node_chef_id',this.resource.get('node_chef_id'));
-                policie.set('last_connection',this.resource.get('last_connection'));
-                policie.set('description',"");
-                policie.url = policie.urlRoot+this.resource.get('id')+'/';
-                App.instances.staging.add(policie, { arguments: {} });
-
-            }
-        },
         serializeData: function () {
-            return {
-                items: this.collection.toJSON(),
-                resource: this.resource,
-                type: this.resource.get('type')
-            };
+            return {items: this.collection.toJSON(),
+                    resource: this.resource};
         }
     });
 

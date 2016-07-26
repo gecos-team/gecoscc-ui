@@ -16,6 +16,7 @@ from optparse import make_option
 from bson import ObjectId
 
 from gecoscc.management import BaseCommand
+from gecoscc.utils import get_chef_api, recalc_node_policies, get_filter_this_domain
 
 
 class Command(BaseCommand):
@@ -52,7 +53,6 @@ class Command(BaseCommand):
         '''
         Get the computers from the command arguments.
         '''
-        from gecoscc.utils import get_filter_this_domain
         db = self.pyramid.db
         filters = {'type': 'computer'}
         if self.options.domain:
@@ -68,8 +68,6 @@ class Command(BaseCommand):
         This command recalculate the policies of the selected nodes
         These nodes are receiving as command arguments
         '''
-        from gecoscc.utils import get_chef_api, recalc_node_policies
-
         db = self.pyramid.db
         computers = self.get_computers()
         admin_user = db.adminusers.find_one({'username': self.options.administrator})
