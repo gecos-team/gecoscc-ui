@@ -44,8 +44,6 @@ def create_setting(key):
     elif key == "software_profiles":
         value = get_setting('software_profiles', default_settings, None)
         appstruct = {'key': key, 'type': 'Profiles', 'value': value}
-    elif key ==  "mimetypes":
-        appstruct = {'key': key, 'type': 'Mimes', 'value': default_settings.get(key)}
     else:
         appstruct = {'key': key, 'type': 'string', 'value': default_settings.get(key)}
 
@@ -79,13 +77,9 @@ def settings(context, request):
         
         # software_profiles
         result.append(create_setting("software_profiles"))
-
-        # mimetypes
-        result.append(create_setting("mimetypes"))
         
         
     else:
-        includesMimeTypes = False
         for setting in settings:
             if setting['key'] == "software_profiles":
                 # Get software profiles from database
@@ -104,14 +98,9 @@ def settings(context, request):
                 
                 Setting().set_value(sp_setting, 'value', value)
                 result.append(sp_setting)
-            elif setting['key'] == "mimetypes":
-                includesMimeTypes = True
-                result.append(Setting().deserialize(setting))
             else:
                 result.append(Setting().deserialize(setting))
-    
-        if not includesMimeTypes:
-          result.append(create_setting("mimetypes"))
+        
     #logger.debug('settings= %s'%(str(result)))
     return { "settings": result }
 
