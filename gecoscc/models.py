@@ -591,9 +591,6 @@ class Repository(Node):
 class Repositories(colander.SequenceSchema):
     repositories = Repository()
 
-class Settings(colander.SequenceSchema):
-		settings = Setting()
-	
 
 JOB_STATUS = {
     # Calculating node changes
