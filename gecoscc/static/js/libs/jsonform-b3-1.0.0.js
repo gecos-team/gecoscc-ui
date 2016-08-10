@@ -686,23 +686,50 @@ jsonform.elementTypes = {
 
       promise.done(function (res) {
         if(!_.isUndefined(res)) {
-          var collection = res.nodes || res.packages || res.software_profiles;
-          if(collection.length === 0) {
-            node.schemaElement.enum.push(node.value);
-            $(node.el).find("input").attr('value', node.value);
-            if (!_.isUndefined(res.packages)) {
-              resNode = {name: node.value};
-              $(node.el).find(".alert").show();
-            } else {
+          if ((typeof(res.settings) !== 'undefined')) {
+            // If mime types
+            nodes = []
+            var values = res.settings[0].value.replace(/[\[\]"]/g, '').split(',');
+            if(values.length === 0) {
+              node.schemaElement.enum.push(node.value);
+              $(node.el).find("input").attr('value', node.value);
+              if (!_.isUndefined(res.packages)) {
+                resNode = {name: node.value};
+                $(node.el).find(".alert").show();
+              } else {
+                $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
+                return;
+              }
               $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
-              return;
+               return;
+            } else {
+              resNode = {
+                name: values[0],
+                _id: values[0]
+              }
+            }                            
+          }
+          else {          
+            // Other cases
+            var collection = res.nodes || res.packages || res.software_profiles;
+            if(collection.length === 0) {
+              node.schemaElement.enum.push(node.value);
+              $(node.el).find("input").attr('value', node.value);
+              if (!_.isUndefined(res.packages)) {
+                resNode = {name: node.value};
+                $(node.el).find(".alert").show();
+              } else {
+                $(node.parentNode.el).find(".array-warning-message").removeClass("hidden");
+                return;
+              }
+            } else {
+              resNode = collection[0];
             }
-          } else {
-            resNode = collection[0];
+            
           }
         }
+        
         $(node.el).find("input").html("");
-
 
         $(node.el).find("input").select2({
           query: function(query) {
@@ -738,18 +765,35 @@ jsonform.elementTypes = {
                       },
                       type: 'GET',
                       success: function(data) {
-                          var collection = data.software_profiles || data.nodes || data.packages,
-                              nodes = collection.map(function (n) {
-                            n._id = n._id || n.name;
-                            node.schemaElement.enum.push(n._id);
-                            return {
-                              text: n.name,
-                              value: n._id,
-                              id: n._id
-                            };
-                          });
+                          if ((typeof(data.settings) !== 'undefined')) {
+                            nodes = []
+                            var values = data.settings[0].value.replace(/[\[\]"]/g, '').split(',');
+                            
+                            for (var i = 0; i < values.length; i++) {
+                              nodes[i] = {
+                                text: values[i],
+                                value: values[i],
+                                id: values[i]
+                              }
+                              node.schemaElement.enum.push(values[i]);
+                            }
+                            
+                            more = values.length >= pagesize;
+                          }
+                          else {
+                            var collection = data.software_profiles || data.nodes || data.packages
+                            nodes = collection.map(function (n) {
+                              n._id = n._id || n.name;
+                              node.schemaElement.enum.push(n._id);
+                              return {
+                                text: n.name,
+                                value: n._id,
+                                id: n._id
+                              }
+                            });
+                            more = collection.length >= pagesize;
+                          }
 
-                          more = collection.length >= pagesize;
                           if(data.page === 1) {
                               cachedData = nodes;
                           } else  {
