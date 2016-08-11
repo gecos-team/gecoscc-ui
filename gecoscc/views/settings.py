@@ -45,7 +45,7 @@ def create_setting(key):
         value = get_setting('software_profiles', default_settings, None)
         appstruct = {'key': key, 'type': 'Profiles', 'value': value}
     elif key ==  "mimetypes":
-        appstruct = {'key': key, 'type': 'Mimes', 'value': default_settings.get(key)}
+        appstruct = {'key': key, 'type': 'Mimetypes', 'value': default_settings.get(key)}
     else:
         appstruct = {'key': key, 'type': 'string', 'value': default_settings.get(key)}
 
