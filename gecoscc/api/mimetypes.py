@@ -18,16 +18,16 @@ from gecoscc.permissions import api_login_required
 
 @resource(collection_path='/api/mimetypes/',
           path='/api/mimetypes/{oid}/',
-          description='Mimes resource',
+          description='Mimetypes resource',
           validators=(api_login_required,))
-class MimesResource(ResourcePaginatedReadOnly):
+class MimestypesResource(ResourcePaginatedReadOnly):
 
     schema_collection = Settings
     schema_detail = Setting
     objtype = 'settings'
 
     mongo_filter = {
-      'type': 'Mimes',
+      'type': 'Mimetypes',
     }
 
     collection_name = "settings"
@@ -46,7 +46,7 @@ class MimesResource(ResourcePaginatedReadOnly):
           "settings": [ 
             { 
               "_id": "NOT USED",
-              "type": "Mimes", 
+              "type": "Mimetypes", 
               "value": oid,
               "key": "mimetypes"
             }
@@ -57,5 +57,5 @@ class MimesResource(ResourcePaginatedReadOnly):
         }
         return node
       else:
-        return super(MimesResource, self).collection_get()
+        return super(MimestypesResource, self).collection_get()
     
