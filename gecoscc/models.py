@@ -511,6 +511,7 @@ PRINTER_CONN_TYPE = {
 PRINTER_OPPOLICY_TYPE = {
     'default': _('Default'),
     'authenticated': _('Authenticated'),
+    'negotiate': _('Negotiate'),
 }
 
 
