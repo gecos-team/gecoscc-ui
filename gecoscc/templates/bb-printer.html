@@ -30,11 +30,12 @@
             <div class="row">
                 <div class="col-md-3 col-sm-4 col-xs-12">
                     <div class="form-group">
-                        <label>{{ gettext('Connection type') }}</label>
-                        <select id="connection" class="form-control" required>
-                            <option value="network" <% if (connection === "network") { print("selected"); } %>>{{ gettext('Network') }}</option>
-                            <option value="local" <% if (connection === "local") { print("selected"); } %>>{{ gettext('Local') }}</option>
-                        </select>
+						<label>{{ gettext('Connection type') }}</label>
+						<select id="connection" class="form-control" required>
+							{% for key, value in printer_conn_type.iteritems() %}
+								<option value="{{ key }}" <% if (connection === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
                     </div>
                 </div>
                 <div class="col-md-9 col-sm-8 col-xs-12">
@@ -47,11 +48,12 @@
             <div class="row">
                 <div class="col-md-3 col-sm-4 col-xs-12">
                     <div class="form-group">
-                        <label>{{ gettext('Operation Policy') }}</label>
-                        <select id="oppolicy" class="form-control" required>
-                            <option value="default" <% if (oppolicy === "default") { print("selected"); } %>>{{ gettext('Default') }}</option>
-                            <option value="authenticated" <% if (oppolicy === "authenticated") { print("selected"); } %>>{{ gettext('Authenticated') }}</option>
-                        </select>
+						<label>{{ gettext('Operation Policy') }}</label>
+						<select id="oppolicy" class="form-control" required>
+							{% for key, value in printer_oppolicy_type.iteritems() %}
+								<option value="{{ key }}" <% if (oppolicy === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
                     </div>
                 </div>
                 <div class="col-md-9 col-sm-8 col-xs-12">
@@ -64,12 +66,12 @@
             <div class="row">
                 <div class="col-sm-4">
                     <div class="form-group">
-                        <label for="type">{{ gettext('Type') }}</label>
-                        <select id="type" class="form-control">
-                            <option value="laser" <% if (printtype === "laser") { print("selected"); } %>>{{ gettext('Laser') }}</option>
-                            <option value="ink" <% if (printtype === "ink") { print("selected"); } %>>{{ gettext('Ink') }}</option>
-                            <option value="matrix" <% if (printtype === "matrix") { print("selected"); } %>>{{ gettext('Dot matrix') }}</option>
-                        </select>
+						<label for="type">{{ gettext('Type') }}</label>
+						<select id="type" class="form-control">
+							{% for key, value in printer_type.iteritems() %}
+								<option value="{{ key }}" <% if (printtype === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
                     </div>
                 </div>
                 <div class="col-sm-4">
