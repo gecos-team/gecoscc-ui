@@ -103,7 +103,7 @@
             {{ setting.value|safe }}
             {% elif setting.type == "Profiles" %}
             {{ setting.value|safe }}
-						{% elif setting.type == "Mimes" %}
+            {% elif setting.type == "Mimes" %}
             {{ setting.value|safe }}
             {% else %}
             "{{ setting.value }}"
@@ -200,7 +200,7 @@
                     "printers___urls",
                     "repositories",
                     "software_profiles",
-										"mimetypes"
+                    "mimetypes"
                 ],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: function (values) {

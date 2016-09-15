@@ -77,67 +77,67 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 onSubmitValid: _.bind(this.processForm, this)
             };
 
-					 	//
-					 	//options.form = data.schema.properties.form.fields.concat(data.schema.properties.form.pairs);
-						
-						
-						options.form = [];
-					
-						var root = jsonPath(data.schema, "$.properties")[0];
+             //
+             //options.form = data.schema.properties.form.fields.concat(data.schema.properties.form.pairs);
+            
+            
+            options.form = [];
+          
+            var root = jsonPath(data.schema, "$.properties")[0];
 
-						for (var i in root)  {
+            for (var i in root)  {
 
-							 if  (root[i].type == 'object') {
-									var g = {
-      							"type": "fieldset",
-										"title": root[i].title,
-										"title_es": root[i].title_es,
-							      "items": [
-							      ]
-									};										
-			
-								  for (var j in root[i].properties) {
-											if (root[i].properties[j].hasOwnProperty("allowEmpty")) {
-												g.items.push({"key": i + "." + j, "allowEmpty": root[i].properties[j].allowEmpty});
-											} else {
-												g.items.push(i + "." + j);
-											}
-									}
+               if  (root[i].type == 'object') {
+                  var g = {
+                    "type": "fieldset",
+                    "title": root[i].title,
+                    "title_es": root[i].title_es,
+                    "items": [
+                    ]
+                  };                    
+      
+                  for (var j in root[i].properties) {
+                      if (root[i].properties[j].hasOwnProperty("allowEmpty")) {
+                        g.items.push({"key": i + "." + j, "allowEmpty": root[i].properties[j].allowEmpty});
+                      } else {
+                        g.items.push(i + "." + j);
+                      }
+                  }
 
-									options.form.push(g);
-	
-							 } else if (root[i].type == 'array') {
-										var h = {
-											  "type": "array",
-												"title": root[i].title,
-												"title_es": root[i].title_es,
-												"items": {
-													"type": "section",
-  												"items": [
-											  	]
-												}
-										};
-					
-										for (var k in root[i].items.properties) {
-											if (root[i].items.properties[k].hasOwnProperty("allowEmpty")) {
-												h.items.items.push({"key": i + "[]." + k, "allowEmpty": root[i].items.properties[k].allowEmpty});
-											} else {
-												h.items.items.push(i + "[]." + k);
-											}
-										}
+                  options.form.push(g);
+  
+               } else if (root[i].type == 'array') {
+                    var h = {
+                        "type": "array",
+                        "title": root[i].title,
+                        "title_es": root[i].title_es,
+                        "items": {
+                          "type": "section",
+                          "items": [
+                          ]
+                        }
+                    };
+          
+                    for (var k in root[i].items.properties) {
+                      if (root[i].items.properties[k].hasOwnProperty("allowEmpty")) {
+                        h.items.items.push({"key": i + "[]." + k, "allowEmpty": root[i].items.properties[k].allowEmpty});
+                      } else {
+                        h.items.items.push(i + "[]." + k);
+                      }
+                    }
 
-									options.form.push(h);
+                  options.form.push(h);
 
-							 } else {
+               } else {
 
-										if (root[i].hasOwnProperty("allowEmpty")) {
-											options.form.push({"key": i, "allowEmpty": root[i].allowEmpty});
-										} else {
-											options.form.push(i);
-										}
+                    if (root[i].hasOwnProperty("allowEmpty")) {
+                      options.form.push({"key": i, "allowEmpty": root[i].allowEmpty});
+                    } else {
+                      options.form.push(i);
+                    }
 
-							 }
-						}
+               }
+            }
 
             if (_.has(data, "values")) { options.value = data.values; }
             options.validate = jjv();
