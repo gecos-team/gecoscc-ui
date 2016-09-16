@@ -49,7 +49,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         render: function () {
-            var data, policyData, template, $html, options, allowEmptys, objs, items;
+            var data, policyData, template, $html, options;
 
             this.isClosed = false;
 
@@ -77,10 +77,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 onSubmitValid: _.bind(this.processForm, this)
             };
 
-             //
-             //options.form = data.schema.properties.form.fields.concat(data.schema.properties.form.pairs);
-            
-            
+
             options.form = [];
           
             var root = jsonPath(data.schema, "$.properties")[0];
