@@ -1006,7 +1006,13 @@ jsonform.elementTypes = {
       var boundaries = node.getArrayBoundaries();
       node.resetDeleteEvents();
 
-      var warning = (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      var warning;
+      try {
+        warning = (node["schemaElement"]["title_" + App.language]) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      } catch (e) {
+         warning = (node["formElement"]["title_" + App.language]) || node.title;
+      }
+
       $(node.el).find(".alert-warning").html(warning);
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
@@ -2722,7 +2728,13 @@ formNode.prototype.render = function (el) {
  */
 formNode.prototype.getLocalizedAttr = function (attr, lan) {
   lan = lan || this.lan;
-  return this.schemaElement[attr + "_" + lan] || this[attr];
+  var loc_attr = null;
+  try {
+    loc_attr = this.schemaElement[attr + "_" + lan];
+  } catch (e) {
+    loc_attr = this.formElement[attr + "_" + lan] || this[attr];
+  };
+  return loc_attr;
 };
 
 
