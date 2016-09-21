@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 def home(context, request):
     return {
         'websockets_enabled': json.dumps(is_websockets_enabled()),
-        'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db)
+        'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db),
         'printer_type': PRINTER_TYPE,
         'printer_conn_type': PRINTER_CONN_TYPE,
         'printer_oppolicy_type': PRINTER_OPPOLICY_TYPE
