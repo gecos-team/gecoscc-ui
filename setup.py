@@ -13,7 +13,7 @@ def get_version():
     with open('gecoscc/version.py') as f:
         for line in f:
             if line.startswith('__VERSION__'):
-                return eval(line.split('=')[-1])
+                return eval(line.split('=')[-1].strip())
 
 setup(name='gecoscc',
       version=get_version(),
