@@ -15,6 +15,7 @@ from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
 
+from chef import ChefAPI
 from chef import Node as ChefNode
 from chef import Client as ChefClient
 
@@ -38,18 +39,22 @@ class RegisterChefNode(object):
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
 
-        # create chef node
-        chef_node = ChefNode(node_id, api)
-        if chef_node.exists:
-            return {'ok': False, 'message': 'This node already exists'}
-        chef_node.save()
-
         # create chef client
         chef_client = ChefClient(node_id, api)
         if chef_client.exists:
             return {'ok': False, 'message': 'This client already exists'}
 
         chef_client = ChefClient.create(node_id, api)
+        
+        # Prepare the API for this client
+        chef_url = settings.get('chef.url')
+        api = ChefAPI(chef_url, chef_client.private_key, node_id)
+        
+        # create chef node
+        chef_node = ChefNode(node_id, api)
+        if chef_node.exists:
+            return {'ok': False, 'message': 'This node already exists'}
+        chef_node.save()
 
         return {'ok': True, 'message': 'Node and client have been added',
                 'client_private_key': chef_client.private_key}
@@ -85,10 +90,10 @@ class RegisterChefNode(object):
 
         # remove current node's client
         chef_client = ChefClient(node_id, api)
-        if chef_client.exists:
-            chef_client.delete()
+        if not chef_client.exists:
+            return {'ok': False, 'message': 'This client does not exists'}
 
-        chef_client = ChefClient.create(node_id, api)
+        chef_client = ChefClient.rekey(api)
 
         return {'ok': True, 'message': "Chef node's client has been update",
                 'client_private_key': chef_client.private_key}
