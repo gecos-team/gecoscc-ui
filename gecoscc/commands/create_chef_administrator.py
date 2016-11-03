@@ -109,7 +109,7 @@ class Command(BaseCommand):
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem)
+                            self.options.chef_pem, self.settings.get('chef.version'))
         try:
             api['/users/%s' % toChefUsername(self.options.username)]
             print "The username %s already exists in the chef sever" % toChefUsername(self.options.username)
@@ -120,7 +120,7 @@ class Command(BaseCommand):
         chef_password = self.create_password("Insert the chef password, the spaces will be stripped",
                                              "The generated password to chef server is: {0}")
         try:
-            create_chef_admin_user(api, self.settings, toChefUsername(self.options.username), chef_password)
+            create_chef_admin_user(api, self.settings, toChefUsername(self.options.username), chef_password, self.options.email)
         except ChefServerError, e:
             print "User not created in chef, error was: %s" % e
             sys.exit(1)

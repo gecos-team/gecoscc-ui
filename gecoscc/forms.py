@@ -13,6 +13,7 @@ import os
 
 import colander
 import deform
+import logging
 
 from pkg_resources import resource_filename
 
@@ -30,6 +31,7 @@ default_dir = resource_filename('deform', 'templates/')
 gecoscc_dir = resource_filename('gecoscc', 'templates/deform/')
 gecos_renderer = ZPTRendererFactory((gecoscc_dir, default_dir))
 
+logger = logging.getLogger(__name__)
 
 class GecosButton(deform.Button):
 
@@ -102,9 +104,10 @@ class AdminUserAddForm(BaseAdminUserForm):
         admin_user['plain_password'] = self.cstruct['password']
         settings = get_current_registry().settings
         user = self.request.user
+        
         api = get_chef_api(settings, user)
         try:
-            create_chef_admin_user(api, settings, admin_user['username'])
+            create_chef_admin_user(api, settings, admin_user['username'], None, admin_user['email'])
             self.created_msg(_('User created successfully'))
             return True
         except ChefServerError as e:

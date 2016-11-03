@@ -52,7 +52,7 @@ CHEF_URL = 'https://CHEF_URL/'
 CHEF_NODE_ID = '36e13492663860e631f53a00afcdd92d'
 
 
-def create_chef_admin_user_mock(api, settings, username, password=None):
+def create_chef_admin_user_mock(api, settings, username, password=None, email='nobody@nobody.es'):
     pass
 
 
