@@ -21,8 +21,14 @@ from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariable
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage
 from gecoscc.pagination import create_pagination_mongo_collection
-from gecoscc.utils import delete_chef_admin_user, get_chef_api
+from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername
 
+from subprocess import call
+
+import logging
+logger = logging.getLogger(__name__)
+
+from chef.exceptions import ChefServerError
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='is_superuser')
@@ -41,13 +47,30 @@ def admins(context, request):
 @view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='is_superuser')
 def admins_superuser(context, request):
     username = request.matchdict['username']
+    settings = get_current_registry().settings
     if '_superuser' in request.POST:
         is_superuser = True
         message = _('Now the user is a super user')
+        
+        if settings.get('chef.chef_server_ctl_path') is not None:
+            # Include the user in the "server-admins" group
+            cmd = [settings.get('chef.chef_server_ctl_path'), 'grant-server-admin-permissions', toChefUsername(username)]
+            if call(cmd) != 0:
+                messages.created_msg(request, _('Error adding the administrator to "server-admins" chef group'), 'danger')
+        
     elif '_no_superuser' in request.POST:
         is_superuser = False
         message = _('Now the user is not a super user')
         message.translate('es')
+        
+        if settings.get('chef.chef_server_ctl_path') is not None:
+            # Remove the user from the "server-admins" group
+            cmd = [settings.get('chef.chef_server_ctl_path'), 'remove-server-admin-permissions', toChefUsername(username)]
+            if call(cmd) != 0:
+                messages.created_msg(request, _('Error removing the administrator from "server-admins" chef group'), 'danger')
+        
+        
+        
     request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
     messages.created_msg(request, message, 'success')
     return HTTPFound(location=request.route_url('admins'))
@@ -159,6 +182,52 @@ def admin_delete(context, request):
     return {'ok': 'ok'}
 
 
+def _check_if_user_belongs_to_admin_group(request, organization, username):
+    chefusername = toChefUsername(username)
+    settings = get_current_registry().settings
+    api = get_chef_api(settings, request.user)
+    
+    admins_group = api['/organizations/%s/groups/admins'%(organization)]
+    if not chefusername in admins_group:
+        # Check if exists an association request for this user
+        assoc_requests = None
+        try:
+            assoc_requests = api['/organizations/%s/association_requests'%(organization)]
+        except ChefServerNotFoundError:
+            pass                    
+        
+        association_id = None
+        for req in assoc_requests:
+            if req["username"] == chefusername:
+                association_id = req["id"]
+        
+        if association_id is None:
+            # Set an association request for the user in that organization
+            try:
+                data = {"user": chefusername}
+                response = api.api_request('POST', '/organizations/%s/association_requests'%(organization), data=data) 
+                association_id = response["uri"].split("/")[-1]
+            except ChefServerError:
+                # Association already exists?
+                pass                    
+
+        if association_id is not None:
+            # Accept the association request
+            logger.info('Adding %s user to default organization'%(username))
+            api.api_request('PUT', '/users/%s/association_requests/%s'%(chefusername, association_id),  data={ "response": 'accept' }) 
+
+        # Add the user to the group
+        logger.info('Adding %s user to admins group'%(username))
+        admins_group['users'].append(chefusername)
+        api.api_request('PUT', '/organizations/%s/groups/admins'%(organization), data={ "groupname": admins_group["groupname"], 
+            "actors": {
+                "users": admins_group['users'],
+                "groups": admins_group["groups"]
+            }
+            })         
+        
+        
+    
 def _admin_edit(request, form_class, username=None):
     admin_user_schema = AdminUser()
     admin_user_form = form_class(schema=admin_user_schema,
@@ -166,6 +235,7 @@ def _admin_edit(request, form_class, username=None):
                                  username=username,
                                  request=request)
     instance = data = {}
+    settings = get_current_registry().settings
     if username:
         instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
@@ -174,8 +244,16 @@ def _admin_edit(request, form_class, username=None):
             data.append(('username', username))
         try:
             admin_user = admin_user_form.validate(data)
+            if username is None:
+                username = admin_user['username']
+            logger.info('Save %s data in GECOS database'%(username))
             success = admin_user_form.save(admin_user)
             if success:
+                # At this moment all GECOS domains are in the "default" Chef organization.
+                # So, all the administrator users must belong to the "default" organization's "admins" group
+                if settings.get('chef.chef_server_ctl_path') is not None and username is not None:
+                    _check_if_user_belongs_to_admin_group(request, 'default', username)
+            
                 return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure, e:
             admin_user_form = e
@@ -183,9 +261,16 @@ def _admin_edit(request, form_class, username=None):
         form_render = admin_user_form.render(instance)
     else:
         form_render = admin_user_form.render()
+        
+    # At this moment all GECOS domains are in the "default" Chef organization.
+    # So, all the administrator users must belong to the "default" organization's "admins" group
+    if settings.get('chef.chef_server_ctl_path') is not None and username is not None:
+        _check_if_user_belongs_to_admin_group(request, 'default', username)
+        
     return {'admin_user_form': form_render,
             'username': username,
-            'instance': instance}
+            'instance': instance,
+            'registry': get_current_registry()}
 
 
 def get_url_redirect(request):
