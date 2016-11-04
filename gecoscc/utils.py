@@ -189,8 +189,6 @@ def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@
     if password is None:
         password = password_generator()
         
-    logger.info('Create Chef admin user: %s'%(username))
-        
     if api.version_parsed >= pkg_resources.parse_version("12.0.0"):
         # Chef 12 user data
         data = {'name': username, 'password': password, 'admin': True, 'display_name': username, 'email': email}
@@ -198,16 +196,14 @@ def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@
         # Chef 11 user data
         data = {'name': username, 'password': password, 'admin': True}
         
-    logger.info('data %s'%(json.dumps(data)))
     chef_user = api.api_request('POST', '/users', data=data)
-    logger.info('User created')
+
     user_private_key = chef_user.get('private_key', None)
     if user_private_key:
         save_pem_for_username(settings, username, 'chef_user.pem', user_private_key)
-    logger.info('Creating client')
+
     chef_client = Client.create(name=username, api=api, admin=True)
     client_private_key = getattr(chef_client, 'private_key', None)
-    logger.info('client created')
     if client_private_key:
         save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
