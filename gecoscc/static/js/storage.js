@@ -16,7 +16,7 @@
 App.module("Storage.Models", function (Models, App, Backbone, Marionette, $, _) {
     "use strict";
 
-    Models.StorageModel = App.GecosResourceModel.extend({
+    Models.StorageModel = App.Policies.Models.GecosResourceModel.extend({
         resourceType: "storage",
 
         defaults: {
@@ -54,7 +54,8 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click #cut": "cutModel"
         },
 
         onBeforeRender: function () {
@@ -70,6 +71,7 @@ App.module("Storage.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.canMove();
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }

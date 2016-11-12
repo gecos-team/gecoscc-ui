@@ -12,6 +12,7 @@
 from gecoscc.models import Setting
 import json
 
+
 def get_setting(key, settings, db):
     value = None
     if db is not None:
@@ -19,7 +20,7 @@ def get_setting(key, settings, db):
         if setting is not None:
             obj = Setting().serialize(setting)
             value = obj['value']
-    
+
     if value is None:
         value = settings.get(key)
         # "software_profiles" has a different format in gecoscc.ini
@@ -28,16 +29,16 @@ def get_setting(key, settings, db):
 
     return value
 
+
 def transform_software_profiles(software_profiles):
     profiles = json.loads(software_profiles)
-    value = u'[';
+    value = u'['
     for name in profiles:
-        new_profile = u"{ \"name\":\"%s\", \"packages\":%s }"%(name, json.dumps(profiles[name]))
+        new_profile = u"{ \"name\":\"%s\", \"packages\":%s }" % (name, json.dumps(profiles[name]))
         if value == u'[':
-            value = value + new_profile;
+            value = value + new_profile
         else:
-            value = value + u',' + new_profile;
+            value = value + u',' + new_profile
     value = value + u']'
-        
+
     return value
-    

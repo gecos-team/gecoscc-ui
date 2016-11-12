@@ -36,7 +36,7 @@ class PrinterModelsResource(ResourcePaginatedReadOnly):
         if self.request.GET.get('manufacturers_list'):
             objects = objects.distinct('manufacturer')
             objects.sort()
-            objects = [{'manufacturer':m, 'model':''} for m in objects]
+            objects = [{'manufacturer': m, 'model': ''} for m in objects]
         return objects
 
     def set_name_filter(self, query, key_name='manufacturer'):

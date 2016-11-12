@@ -4,6 +4,7 @@
 #
 # Authors:
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -19,7 +20,7 @@ import time
 import re
 
 from bson import ObjectId, json_util
-from copy import deepcopy
+from copy import deepcopy, copy
 
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
@@ -28,12 +29,28 @@ from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
+DELETED_POLICY_ACTION = 'deleted'
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
+
+
+def get_policy_emiter_id(collection, obj):
+    '''
+    Get the id from a emitter policy
+    '''
+    return collection.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
+
+
+def get_object_related_list(collection, obj):
+    '''
+    Get the objects related list to an object
+    '''
+    policy_id = unicode(get_policy_emiter_id(collection, obj))
+    return collection.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -194,7 +211,10 @@ def delete_chef_admin_user(api, settings, usrname):
         return False
 
 
-def remove_chef_computer_data(computer, api):
+def remove_chef_computer_data(computer, api, policies=None):
+    '''
+    Remove computer policies in chef node
+    '''
     node_chef_id = computer.get('node_chef_id', None)
     if node_chef_id:
         node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
@@ -202,14 +222,26 @@ def remove_chef_computer_data(computer, api):
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
             cookbook = node.normal.get(cookbook_name)
-            for mgmt in cookbook:
-                if mgmt == USER_MGMT:
-                    continue
-                cookbook.pop(mgmt)
+            if policies:
+                for policy in policies:
+                    policy_path = policy[1]
+                    policy_field = policy[2]
+                    try:
+                        cookbook[policy_path].pop(policy_field)
+                    except KeyError:
+                        continue
+            else:
+                for mgmt in cookbook.keys():
+                    if mgmt == USER_MGMT:
+                        continue
+                    cookbook.pop(mgmt)
             save_node_and_free(node)
 
 
-def remove_chef_user_data(user, computers, api):
+def remove_chef_user_data(user, computers, api, policy_fields=None):
+    '''
+    Remove computer policies in chef node
+    '''
     settings = get_current_registry().settings
     cookbook_name = settings.get('chef.cookbook_name')
     for computer in computers:
@@ -217,19 +249,31 @@ def remove_chef_user_data(user, computers, api):
         if node_chef_id:
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
             if node:
-                try:
-                    user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
-                    for policy in user_mgmt:
+                if policy_fields:
+                    for policy in policy_fields:
                         try:
-                            users = user_mgmt.get(policy).get('users')
+                            user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name + '.' + USER_MGMT, policy))
+                            users = user_mgmt.get('users')
                             if not users:
                                 continue
                             users.pop(user['name'])
+                            save_node_and_free(node)
                         except KeyError:
-                            continue
-                    save_node_and_free(node)
-                except KeyError:
-                    save_node_and_free(node)
+                            save_node_and_free(node)
+                else:
+                    try:
+                        user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
+                        for policy in user_mgmt:
+                            try:
+                                users = user_mgmt.get(policy).get('users')
+                                if not users:
+                                    continue
+                                users.pop(user['name'])
+                            except KeyError:
+                                continue
+                        save_node_and_free(node)
+                    except KeyError:
+                        save_node_and_free(node)
 
 
 def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
@@ -252,10 +296,17 @@ def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attemp
 
 
 def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
+    '''
+    Check if the node is busy, else try to get it and write in control and expiration date in the field USE_NODE.
+    '''
     settings = get_current_registry().settings
     seconds_block_is_busy = int(settings.get('chef.seconds_block_is_busy'))
     time_to_exp = datetime.timedelta(seconds=seconds_block_is_busy)
+
+    time_get = time.time()
     node = ChefNode(node_id, api)
+    time_get = time.time() - time_get
+
     current_use_node = node.attributes.get(USE_NODE, {})
     current_use_node_control = current_use_node.get('control', None)
     current_use_node_exp_date = current_use_node.get('exp_date', None)
@@ -272,6 +323,11 @@ def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
         node.attributes.set_dotted(USE_NODE, {'control': controller_requestor,
                                               'exp_date': json.dumps(exp_date, default=json_util.default)})
         node.save()
+
+        smart_lock_sleep_parameter = settings.get('chef.smart_lock_sleep_factor', 3)
+        seconds_sleep_is_busy = time_get * int(smart_lock_sleep_parameter)
+        time.sleep(seconds_sleep_is_busy)
+
         node2 = ChefNode(node.name, api)  # second check
         current_use_node2 = node2.attributes.get(USE_NODE, {})
         current_use_control2 = current_use_node2.get('control', None)
@@ -376,6 +432,7 @@ def visibility_group(db, obj):
 
 
 def visibility_object_related(db, obj):
+    from gecoscc.tasks import SOFTWARE_PROFILE_SLUG
     policies = obj.get('policies', None)
     if not policies:
         return obj
@@ -389,11 +446,12 @@ def visibility_object_related(db, obj):
             object_related_list = obj['policies'][unicode(emitter_policy_id)].get('object_related_list', [])
             object_related_visible = []
             for object_related_id in object_related_list:
-                is_visible = db.nodes.find_one(
-                    {'_id': ObjectId(object_related_id),
-                     'path': get_filter_nodes_parents_ou(db,
-                                                         ou_id,
-                                                         obj_id)})
+                if emitter_policy['slug'] == SOFTWARE_PROFILE_SLUG:
+                    is_visible = db.software_profiles.find_one({
+                                                               '_id': ObjectId(object_related_id)
+                                                               })
+                else:
+                    is_visible = is_object_visible(db.nodes, object_related_id, ou_id, obj_id)
                 if is_visible:
                     object_related_visible.append(object_related_id)
             if object_related_list != object_related_visible:
@@ -403,13 +461,64 @@ def visibility_object_related(db, obj):
                     del policies[unicode(emitter_policy_id)]
                 have_updated = True
     if have_updated:
-        db.nodes.update({'_id': obj_id}, {'$set': {'policies': policies}})
-        obj = db.nodes.find_one({'_id': obj_id})
+        obj = update_collection_and_get_obj(db.nodes, obj_id, policies)
     return obj
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False):
+def get_job_errors_from_computer(jobs_collection, computer):
+    return jobs_collection.find({'computerid': computer['_id'],
+                                 '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
+
+
+def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user, cookbook_name,
+                         api=None, initialize=True, use_celery=False):
+    job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    node_chef_id = computer.get('node_chef_id', None)
+    if not node_chef_id:
+        return (False, 'The computer %s does not have node_chef_id' % computer['name'])
+    node = ChefNode(node_chef_id, api)
+    if not node.exists:
+        return (False, 'Node %s does not exists in chef server' % node_chef_id)
+
+    is_inizialized = node.attributes.get(cookbook_name)
+    if not is_inizialized:
+        return (False, 'Node %s is not inizialized in chef server' % node_chef_id)
+
+    apply_policies_to_computer(nodes_collection, computer, auth_user, api,
+                               initialize=initialize,
+                               use_celery=use_celery)
+    users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
+    for user in users:
+        apply_policies_to_user(nodes_collection, user, auth_user, api,
+                               initialize=initialize,
+                               use_celery=use_celery)
+    new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    if new_job_errors > job_errors:
+        return (False, 'The computer %s had problems while it was updating' % computer['name'])
+    return (True, 'success')
+
+
+def is_object_visible(nodes_collection, object_related_id, ou_id, obj_id):
+    return nodes_collection.find_one({'_id': ObjectId(object_related_id),
+                                      'path': get_filter_nodes_parents_ou(nodes_collection.database,
+                                                                          ou_id,
+                                                                          obj_id)})
+
+
+def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
+    '''
+    Updates the node policy and return the obj
+    '''
+    nodes_collection.update({'_id': obj_id}, {'$set': {'policies': policies_value}})
+    return nodes_collection.find_one({'_id': obj_id})
+
+
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+
     if api and initialize:
         computer = visibility_group(nodes_collection.database, computer)
         computer = visibility_object_related(nodes_collection.database, computer)
@@ -418,18 +527,21 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed.delay(auth_user, 'ou', ou, {}, computers=[computer])
+            object_changed(auth_user, 'ou', ou, {}, computers=[computer])
 
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed.delay(auth_user, 'group', group, {}, computers=[computer])
+            object_changed(auth_user, 'group', group, {}, computers=[computer])
 
-    object_created.delay(auth_user, 'computer', computer, computers=[computer])
+    object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
 
     computers = get_computer_of_user(nodes_collection, user)
 
@@ -444,14 +556,192 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed.delay(auth_user, 'ou', ou, {}, computers=computers)
+            object_changed(auth_user, 'ou', ou, {}, computers=computers)
 
     groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed.delay(auth_user, 'group', group, {}, computers=computers)
+            object_changed(auth_user, 'group', group, {}, computers=computers)
 
-    object_created.delay(auth_user, 'user', user, computers=computers)
+    object_created(auth_user, 'user', user, computers=computers)
+
+
+def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a emitter object is within the scope of the objects that is related and then update policies
+    '''
+    from gecoscc.tasks import object_changed, object_created
+    policy = policies_collection.find_one({'slug': slug})
+    policy_id = unicode(policy.get('_id'))
+
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+
+    nodes_related_with_obj = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+
+    if nodes_related_with_obj.count() == 0:
+        return
+
+    for node in nodes_related_with_obj:
+        is_visible = is_object_visible(nodes_collection, object_related_id=obj['_id'],
+                                       ou_id=node['path'].split(',')[-1], obj_id=node['_id'])
+
+        if not is_visible:
+            object_related_list = node['policies'][policy_id].get('object_related_list', [])
+            object_related_list.remove(unicode(obj['_id']))
+
+            if not object_related_list:
+                del node['policies'][policy_id]
+            else:
+                node['policies'][policy_id]['object_related_list'] = object_related_list
+            obj_related = update_collection_and_get_obj(nodes_collection, node['_id'], node['policies'])
+            if obj_related['type'] in RESOURCES_RECEPTOR_TYPES:
+                try:
+                    func = globals()['update_data_%s' % obj_related['type']]
+                except KeyError:
+                    raise NotImplementedError
+                func(nodes_collection, obj_related, policy, api, auth_user)
+                if obj_related['type'] == 'user':
+                    apply_policies_to_user(nodes_collection, obj_related, auth_user, api)
+                if obj_related['type'] == 'computer':
+                    apply_policies_to_computer(nodes_collection, obj_related, auth_user, api)
+
+    object_created(auth_user, obj['type'], obj)
+
+
+def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a group is within the scope of the objects that is related and then update policies
+    '''
+    from gecoscc.tasks import object_changed, object_created
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+    policies = group['policies'].keys()
+    members_group = copy(group['members'])
+    if not members_group:
+        return
+    for member_id in members_group:
+        member = nodes_collection.find_one({'_id': member_id})
+        is_visible = is_visible_group(nodes_collection.database, group['_id'], member)
+
+        if not is_visible:
+
+            member['memberof'].remove(group['_id'])
+            user_member_of_groups = member['memberof']
+            group['members'].remove(member['_id'])
+            groups_members = group['members']
+            nodes_collection.update({'_id': member_id, }, {'$set': {'memberof': user_member_of_groups}})
+            nodes_collection.update({'_id': group['_id']}, {'$set': {'members': groups_members}})
+
+            if member['type'] == 'user':
+                update_data_user(nodes_collection, member, policies, api, auth_user)
+                apply_policies_to_user(nodes_collection, member, auth_user, api)
+            elif member['type'] == 'computer':
+                update_data_computer(nodes_collection, member, policies, api, auth_user)
+
+    object_created(auth_user, group['type'], group)
+
+
+def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a group is within the scope of the objects that is related and then update policies
+    '''
+    from gecoscc.tasks import object_changed, object_created, object_moved
+    if use_celery:
+        object_created = object_created.delay
+        object_changed = object_changed.delay
+    children_path = ou['path'] + ',' + unicode(ou['_id'])
+    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}})
+
+    visibility_object_related(nodes_collection.database, ou)
+
+    if ou_children.count() == 0:
+        return
+
+    for child in ou_children:
+        child_old = nodes_collection.find_one({'_id': child['_id']})
+        child['path'] = children_path
+        object_moved(auth_user, child['type'], child, child_old)
+
+    object_created(auth_user, 'ou', ou)
+
+
+def update_data_ou(nodes_collection, obj, policy, api, auth_user):
+    members_path = obj['path'] + ',' + unicode(obj['_id'])
+    members = nodes_collection.find({'path': members_path})
+
+    for member in members:
+        if member['type'] in RESOURCES_RECEPTOR_TYPES:
+            try:
+                func = globals()['update_data_%s' % member['type']]
+            except KeyError:
+                raise NotImplementedError
+            func(nodes_collection, member, policy, api, auth_user)
+            if member['type'] == 'user':
+                apply_policies_to_user(nodes_collection, member, auth_user, api)
+            if member['type'] == 'computer':
+                apply_policies_to_computer(nodes_collection, member, auth_user, api)
+
+
+def update_data_group(nodes_collection, obj, policy, api, auth_user):
+    for member_id in obj['members']:
+        member = nodes_collection.find_one({'_id': member_id})
+        if member['type'] == 'user':
+            update_data_user(nodes_collection, member, policy, api, auth_user)
+        elif member['type'] == 'computer':
+            update_data_computer(nodes_collection, member, policy, api)
+
+
+def update_data_user(nodes_collection, obj, policy, api, auth_user):
+    from gecoscc.tasks import object_changed, object_created
+    computers = get_computer_of_user(nodes_collection, obj)
+    if isinstance(policy, list):
+        policy_field_name = []
+        for policy_id in policy:
+            policy = nodes_collection.database.policies.find_one({'_id': ObjectId(policy_id)})
+            policy_field_name.append(policy['path'].split('.')[2])
+    else:
+        policy_field_name = [policy['path'].split('.')[2]]
+    remove_chef_user_data(obj, computers, api, policy_field_name)
+    object_created(auth_user, 'user', obj, computers=computers)
+    object_changed(auth_user, 'user', obj, {}, computers=computers)
+
+
+def update_data_computer(nodes_collection, obj, policy, api, auth_user):
+    from gecoscc.tasks import object_created
+    if policy and policy['slug'] != 'storage_can_view':
+        if isinstance(policy, list):
+            policy_field_name = []
+            for policy_id in policy:
+                policy = nodes_collection.database.policies.find_one({'_id': ObjectId(policy_id)})
+                policy_field_name.append(policy['path'].split('.')[:3])
+        else:
+            policy_field_name = [policy['path'].split('.')[:3]]
+        remove_chef_computer_data(obj, api, policy_field_name)
+    object_created(auth_user, 'computer', obj, computers=[obj])
+
+
+def apply_policies_to_printer(nodes_collection, printer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a printer is within the scope of the objects that is related and then update policies
+    '''
+    apply_policies_to_emitter_object(nodes_collection, printer, auth_user, 'printer_can_view', api, initialize, use_celery, policies_collection)
+
+
+def apply_policies_to_repository(nodes_collection, repository, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a repository is within the scope of the objects that is related and then update policies
+    '''
+    apply_policies_to_emitter_object(nodes_collection, repository, auth_user, 'repository_can_view', api, initialize, use_celery, policies_collection)
+
+
+def apply_policies_to_storage(nodes_collection, storage, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+    '''
+    Checks if a storage is within the scope of the objects that is related and then update policies
+    '''
+    apply_policies_to_emitter_object(nodes_collection, storage, auth_user, 'storage_can_view', api, initialize, use_celery, policies_collection)
 
 
 def remove_policies_of_computer(user, computer, auth_user):
@@ -462,6 +752,11 @@ def remove_policies_of_computer(user, computer, auth_user):
 
 def get_pem_for_username(settings, username, pem_name):
     return open(get_pem_path_for_username(settings, toChefUsername(username), pem_name), 'r').read().encode('base64')
+
+
+def get_chef_validation_pem(settings, pem_name):
+    first_boot_chef_validation = settings.get('firstboot_api.chef_validation')
+    return open(os.path.join(first_boot_chef_validation, pem_name), 'r').read().encode('base64')
 
 
 def get_pem_path_for_username(settings, username, pem_name):
@@ -595,23 +890,23 @@ def is_local_user(user, collection_nodes):
 
     return is_local
 
+
 # Transform an username into a Chef username
 # by replacing the dots by "___"
-#
 def toChefUsername(username):
     return username.replace('.', '___')
 
+
 # Transforms back a Chef username into a regular username
 # by replacing the "___" by dots
-#
 def fromChefUsername(username):
     return username.replace('___', '.')
 
+
 # Get the components of a URL
-#
 def getURLComponents(url):
     components = {}
-    
+
     url_re = r"(?P<protocol>(http[s]?|ftp|mongodb))://((?P<user>[^:@]+)(:(?P<password>[^@]+))?@)?(?P<host_name>[^:/]+)(:(?P<port>[0-9]+))?(?P<path>[a-zA-Z0-9\/]+)?"
     m = re.match(url_re, url)
     components['protocol'] = m.group('protocol')
@@ -620,7 +915,7 @@ def getURLComponents(url):
     components['path'] = m.group('path')
     components['user'] = m.group('user')
     components['password'] = m.group('password')
-  
+
     if components['port'] is None:
         if components['protocol'] == 'ftp':
             components['port'] = '21'
@@ -630,5 +925,47 @@ def getURLComponents(url):
             components['port'] = '443'
         elif components['protocol'] == 'mongodb':
             components['port'] = '27017'
-    
+
     return components
+
+
+def get_first_exists_node(ids, obj, action, db):
+    '''
+    Get the first exising node from a ids list
+    '''
+    for mongo_id in ids:
+        node = db.find_one({'_id': ObjectId(mongo_id)})
+        if node:
+            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
+                return node
+    return {}
+
+
+def priority_object(node, updated_by_fieldname, obj, action, db):
+    '''
+    Get the priority from an object
+    '''
+    if obj['type'] in ['computer', 'user'] and action != DELETED_POLICY_ACTION:
+        return obj
+    try:
+        updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
+    except KeyError:
+        updated_by = {}
+    if not updated_by:
+        if action == DELETED_POLICY_ACTION:
+            return {}
+        else:
+            return obj
+    priority_object = {}
+
+    if updated_by.get('computer', None):
+        if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
+            priority_object = db.find_one({'_id': ObjectId(updated_by['computer'])})
+    if not priority_object and updated_by.get('user', None):
+        if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
+            priority_object = db.find_one({'_id': ObjectId(updated_by['user'])})
+    if not priority_object and updated_by.get('group', None):
+        priority_object = get_first_exists_node(updated_by.get('group', None), obj, action, db)
+    if not priority_object and updated_by.get('ou', None):
+        priority_object = get_first_exists_node(updated_by.get('ou', None), obj, action, db)
+    return priority_object

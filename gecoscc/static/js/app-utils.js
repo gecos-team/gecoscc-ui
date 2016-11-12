@@ -375,16 +375,77 @@
         },
 
         cutModel: function (evt) {
-            evt.preventDefault();
-            var $button = $(evt.target);
-            $button.attr("disabled", "disabled");
-            App.instances.cut = this.model;
-            App.instances.tree.trigger("change");
+            var that = this;
+            var $button = $('#cut');
+            evt.preventDefault(); 
+            var cutModel = function(){
+                var $button = $(evt.target);
+                $button.attr("disabled", "disabled");
+                App.instances.cut = that.model;
+                App.instances.tree.trigger("change");
 
-            setTimeout(function () {
-                $button.attr("disabled", false);
-            }, 2000);
+                setTimeout(function () {
+                    $button.attr("disabled", false);
+                }, 2000);
+            };
 
+            if($button.hasClass('admin') && !App.instances.noMaintenance[this.model.get('id')]){
+                var $modal = $('#maintenance-modal');
+                $modal.modal('show');
+                $('#set-maintenance').click(function(){
+                    cutModel();
+                    $modal.modal('hide');
+                });
+            }else{
+                 cutModel();
+            }
+
+
+
+        },
+        canMove: function(){
+            var $button = this.$('#cut');
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+            var disable = function(){
+                    $button.removeClass('btn-warning');
+                    $button.addClass('btn-group');
+                    $button.removeAttr('id');
+                    $button.unbind('click');
+                    $button.css('margin-right','5px');
+                    $button.click(function(e){
+                        e.preventDefault();
+                        App.showAlert('warning',gettext('Only the super admin can cut this object'));
+                    });
+            };
+
+            if(this.model.get('type')=='group'){
+                if($button.hasClass('admin')==false && this.model.get('members').length != 0){
+                    disable();
+                    App.instances.noMaintenance[this.model.get('id')] = false;
+                }
+                if($button.hasClass('admin')==true && this.model.get('members').length == 0){
+                    App.instances.noMaintenance[this.model.get('id')] = true;
+                }
+            }
+            if(this.model.get('type')=='storage' || this.model.get('type')=='printer' || this.model.get('type')=='repository'){
+                if(App.instances.refresh[this.model.get('id')]){
+                    this.refresh();
+                    delete App.instances.refresh[this.model.get('id')];
+                }
+
+                if($button.hasClass('admin')==false && this.model.get('is_assigned') == true){
+                    disable();
+                    App.instances.noMaintenance[this.model.get('id')] = false;
+                }
+                if($button.hasClass('admin')==true && this.model.get('is_assigned') == false){
+                    App.instances.noMaintenance[this.model.get('id')] = true;
+                }
+            }
         },
 
         getDomainAttrs: function () {

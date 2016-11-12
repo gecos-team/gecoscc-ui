@@ -49,7 +49,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button#delete": "deleteModel",
             "click button#save": "save",
             "click button.refresh": "refresh",
-            "click ul.pagination a": "goToPage"
+            "click ul.pagination a": "goToPage",
+            "click #cut": "cutModel"
         },
 
         policiesList: undefined,
@@ -140,6 +141,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.canMove();
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }

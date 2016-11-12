@@ -4,6 +4,7 @@
 #
 # Authors:
 #   Pablo Martin <goinnn@gmail.com>
+#   Pablo Iglesias <pabloig90@gmail.com>
 #
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
@@ -26,20 +27,23 @@ from jsonschema.exceptions import ValidationError
 
 
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format
+from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
-# It is necessary import here: apply_policies_to_computer and apply_policies_to_user
-from gecoscc.utils import (get_chef_api,
-                           get_cookbook, get_filter_nodes_belonging_ou,
+# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user...
+from gecoscc.utils import (get_chef_api, get_cookbook,
+                           get_filter_nodes_belonging_ou,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
-                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES,
-                           POLICY_EMITTER_SUBFIX)
+                           apply_policies_to_printer, apply_policies_to_storage,
+                           apply_policies_to_repository, apply_policies_to_group,
+                           apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
+                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
+                           get_policy_emiter_id, get_object_related_list,
+                           DELETED_POLICY_ACTION)
 
 
-DELETED_POLICY_ACTION = 'deleted'
 SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 
 
@@ -47,9 +51,14 @@ class ChefTask(Task):
     abstract = True
 
     def __init__(self):
-        self.db = self.app.conf.get('mongodb').get_database()
         self.init_jobid()
         self.logger = self.get_logger()
+
+    @property
+    def db(self):
+        if hasattr(self, '_db'):
+            return self._db
+        return self.app.conf.get('mongodb').get_database()
 
     def log(self, messagetype, message):
         assert messagetype in ('debug', 'info', 'warning', 'error', 'critical')
@@ -57,12 +66,15 @@ class ChefTask(Task):
         op('[{0}] {1}'.format(self.jid, message))
 
     def init_jobid(self):
-        if self.request is not None:
+        if getattr(self, 'request', None) is not None:
             self.jid = self.request.id
         else:
             self.jid = unicode(ObjectId())
 
     def walking_here(self, obj, related_objects):
+        '''
+        Checks if an object is in the object related list else add it to the list
+        '''
         if related_objects is not None:
             if obj not in related_objects:
                 related_objects.append(deepcopy(obj))
@@ -71,12 +83,18 @@ class ChefTask(Task):
         return False
 
     def get_related_computers_of_computer(self, obj, related_computers, related_objects):
+        '''
+        Get the related computers of a computer
+        '''
         if self.walking_here(obj, related_objects):
             return related_computers
         related_computers.append(obj)
         return related_computers
 
     def get_related_computers_of_group(self, obj, related_computers, related_objects):
+        '''
+        Get the related computers of a group
+        '''
         if self.walking_here(obj, related_objects):
             return related_computers
         for node_id in obj['members']:
@@ -86,6 +104,9 @@ class ChefTask(Task):
         return related_computers
 
     def get_related_computers_of_ou(self, ou, related_computers, related_objects):
+        '''
+        Get the related computers of an OU
+        '''
         if self.walking_here(ou, related_objects):
             return related_computers
         computers = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(ou['_id']),
@@ -111,27 +132,29 @@ class ChefTask(Task):
 
         return related_computers
 
-    def get_policy_emiter_id(self, obj):
-        return self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})['_id']
-
-    def get_object_related_list(self, obj):
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        return self.db.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
-
     def get_related_computers_of_emiters(self, obj, related_computers, related_objects):
+        '''
+        Get the related computers of emitter objects
+        '''
         if self.walking_here(obj, related_objects):
             return related_computers
-        object_related_list = self.get_object_related_list(obj)
+        object_related_list = get_object_related_list(self.db, obj)
         for object_related in object_related_list:
             self.get_related_computers(object_related, related_computers, related_objects)
         return related_computers
 
     def get_related_computers_of_user(self, obj, related_computers, related_objects):
+        '''
+        Get the related computer of User
+        '''
         if self.walking_here(obj, related_objects):
             return related_computers
         return get_computer_of_user(self.db.nodes, obj, related_computers)
 
     def get_related_computers(self, obj, related_computers=None, related_objects=None):
+        '''
+        Get the related computers with the objs
+        '''
         if related_objects is None:
             related_objects = []
 
@@ -146,6 +169,9 @@ class ChefTask(Task):
         return get_realted_computers_of_type(obj, related_computers, related_objects)
 
     def is_updating_policies(self, obj, objold):
+        '''
+        Checks if the not mergeable policy has changed or is equal to the policy stored in the node chef.
+        '''
         new_policies = obj.get('policies', {})
         new_memberof = obj.get('memberof', {})
         if objold is None:
@@ -157,9 +183,15 @@ class ChefTask(Task):
         return new_policies != old_policies or new_memberof != old_memberof
 
     def is_updated_node(self, obj, objold):
+        '''
+        Chef if an objects is updated in node
+        '''
         return obj != objold
 
     def get_object_ui(self, rule_type, obj, node, policy):
+        '''
+        Get the object
+        '''
         if obj == {}:
             return {}
         if rule_type == 'save':
@@ -169,7 +201,10 @@ class ChefTask(Task):
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
             if policy.get('is_emitter_policy', False):
-                object_related_id_list = obj[rule_type][policy_id]['object_related_list']
+                if not obj.get(rule_type, None):
+                    object_related_id_list = []
+                else:
+                    object_related_id_list = obj[rule_type][policy_id]['object_related_list']
                 object_related_list = []
                 for object_related_id in object_related_id_list:
                     if policy['slug'] == SOFTWARE_PROFILE_SLUG:
@@ -190,6 +225,9 @@ class ChefTask(Task):
         return ValueError("The rule type should be save or policy")
 
     def get_rules_and_object(self, rule_type, obj, node, policy):
+        '''
+        Get the rules and object
+        '''
         if rule_type == 'save':
             rules = get_rules(obj['type'], rule_type, node, policy)
             obj = self.get_object_ui(rule_type, obj, node, policy)
@@ -202,10 +240,242 @@ class ChefTask(Task):
                     self.get_object_ui(rule_type, obj, node, policy))
         return ValueError("The rule type should be save or policy")
 
+    def get_related_objects(self, nodes_ids, policy, obj_type):
+        '''
+        Get related objects from a emitter policy
+        '''
+        new_field_chef_value = []
+        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+
+        for updater_node in updater_nodes:
+            new_field_chef_value += updater_node['policies'][unicode(policy['_id'])]['object_related_list']
+
+        new_field_chef_value = list(set(new_field_chef_value))
+        related_objects = []
+
+        for node_id in new_field_chef_value:
+            if obj_type == SOFTWARE_PROFILE_SLUG:
+                related_objs = self.db.software_profiles.find_one({'_id': ObjectId(node_id)})
+                related_objs.update({'type': 'software_profile'})
+                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
+            else:
+                related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
+                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
+            related_objects += object_related_list(obj_list)
+
+        return related_objects
+
+    def get_nodes_ids(self, nodes_updated_by):
+        '''
+        Get the nodes ids
+        '''
+        nodes_ids = []
+        for node_type, updated_by_id in nodes_updated_by:
+            if isinstance(updated_by_id, list):
+                nodes_ids += [ObjectId(node_id) for node_id in updated_by_id]
+            else:
+                nodes_ids.append(ObjectId(updated_by_id))
+        return nodes_ids
+
+    def remove_duplicated_dict(self, new_field_chef_value):
+        '''
+        Remove duplicate elements from a list of dictionaries
+        '''
+        new_field_chef_dict = []
+        for field_value in new_field_chef_value:
+            if field_value not in new_field_chef_dict:
+                new_field_chef_dict.append(field_value)
+
+        return new_field_chef_dict
+
+    def has_changed_ws_policy(self, node, obj_ui, field_ui, field_chef):
+        '''
+        Checks if the ws policy has changed or is equal to the policy stored in the node chef.
+        '''
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        for obj in obj_ui[field_ui]:
+            if isinstance(field_chef_value, list):
+                if obj not in field_chef_value:
+                    return True
+        return False
+
+    def has_changed_user_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        '''
+        Checks if the user policy has changed or is equal to the policy stored in the node chef.
+        '''
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        for policy_type in obj_ui.keys():
+            if isinstance(field_chef_value.get(priority_obj['name']).get(policy_type), list) or field_chef_value.get(priority_obj['name']).get(policy_type) is None:
+                if field_chef_value.get(priority_obj['name']).get(policy_type) is None:
+                    return True
+                elif obj_ui.get(policy_type) != []:
+                    for obj in obj_ui.get(policy_type):
+                            if obj not in field_chef_value.get(priority_obj['name']).get(policy_type):
+                                return True
+        return False
+
+    def has_changed_ws_emitter_policy(self, node, obj_ui, field_chef):
+        '''
+        Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
+        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        '''
+        field_chef_value = node.attributes.get_dotted(field_chef)
+
+        if obj_ui.get('object_related_list', False):
+            related_objs = obj_ui['object_related_list']
+            for related_obj in related_objs:
+                if obj_ui['type'] == SOFTWARE_PROFILE_SLUG:
+                    for obj_field in related_obj['packages']:
+                        if obj_field not in field_chef_value:
+                            return True
+
+                elif obj_ui['type'] == 'repository':
+                    if not any(d['repo_name'] == related_obj['name'] for d in field_chef_value):
+                        return True
+
+                elif not any(d['name'] == related_obj['name'] for d in field_chef_value):
+                    return True
+            return False
+        related_objs = obj_ui
+        for field_value in field_chef_value:
+            if obj_ui['type'] == 'repository':
+                field_chef = field_value['repo_name']
+            else:
+                field_chef = field_value['name']
+            if related_objs['name'] == field_chef:
+                for attribute in field_value.keys():
+                    if attribute == 'repo_name':
+                        if related_objs['name'] != field_value[attribute]:
+                            return True
+                    elif related_objs[attribute] != field_value[attribute]:
+                        return True
+        return False
+
+    def has_changed_user_emitter_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        '''
+        Checks if the user emitter policy has changed or is equal to the policy stored in the node chef.
+        This policy is emitter, that is that the policy contains related objects (storage)
+        '''
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
+        if obj_ui.get('object_related_list', False):
+            related_objects = obj_ui['object_related_list']
+            if field_chef_value_storage:
+                for obj in related_objects:
+                    if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
+                        return True
+                return False
+            return True
+
+        related_objects = obj_ui
+        for field_value in field_chef_value_storage:
+            if related_objects['name'] == field_value['name']:
+                for attribute in field_value.keys():
+                    if related_objects[attribute] != field_value[attribute]:
+                        return True
+        return False
+
+    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path, obj_ui):
+        '''
+        Updates node chef with a mergeable workstation policy
+        '''
+        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) is True:
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            new_field_chef_value = []
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
+
+            try:
+                node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
+            except TypeError:
+                new_field_chef_value = self.remove_duplicated_dict(new_field_chef_value)
+                node.attributes.set_dotted(field_chef, new_field_chef_value)
+            return True
+
+        return False
+
+    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
+        '''
+        Updates node chef with a mergeable user policy
+        '''
+        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            new_field_chef_value = {}
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                node_policy = updater_node['policies'][unicode(policy['_id'])]
+                for policy_field in node_policy.keys():
+                    if policy_field not in new_field_chef_value:
+                        new_field_chef_value[policy_field] = []
+                    new_field_chef_value[policy_field] += node_policy[policy_field]
+
+            obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            if obj_ui_field.get(priority_obj['name']):
+                for policy_field in policy['schema']['properties'].keys():
+                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+            else:
+                return False
+            node.attributes.set_dotted(field_chef, obj_ui_field)
+            return True
+
+        return False
+
+    def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
+        '''
+        Update node chef with a mergeable workstation emitter policy
+        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        '''
+        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+
+            node.attributes.set_dotted(field_chef, related_objects)
+            return True
+
+        return False
+
+    def update_user_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
+        '''
+        Update node chef with a mergeable user emitter policy
+        This policy is emitter, that is that the policy contains related objects (storage)
+        '''
+        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+
+            current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+
+            for objs in related_objects:
+                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
+                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+            node.attributes.set_dotted(field_chef, current_objs)
+
+        return False
+
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
+        '''
+        This function update a node from rules.
+        Rules are the different fields in a policy.
+        We have different cases:
+            1 - The field is None and action is different to remove
+            2 - The field is None and action is remove
+            3 - The policy is not mergeable
+            4 - The policy is mergeable
+        '''
+        from gecoscc.utils import priority_object
         updated = updated_updated_by = False
         attributes_jobs_updated = []
         attributes_updated_by_updated = []
+        is_mergeable = policy.get('is_mergeable', False)
         for field_chef, field_ui in rules.items():
             if is_user_policy(field_chef) and 'user' not in computer:
                 continue
@@ -215,10 +485,11 @@ class ChefTask(Task):
             obj_ui_field = None
             if (rule_type == 'policies' or not policy.get('is_emitter_policy', False)) and updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
-            priority_obj = self.priority_object(node, updated_by_attr, obj, action)
+            priority_obj = priority_object(node, updated_by_attr, obj, action, self.db.nodes)
+
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-            if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION:
+            if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION or is_mergeable:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
@@ -228,34 +499,50 @@ class ChefTask(Task):
 
                 if obj_ui_field is None and action != DELETED_POLICY_ACTION:
                     continue
+
                 elif obj_ui_field is None and action == DELETED_POLICY_ACTION:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
                     except KeyError:
                         pass
-                else:
+
+                elif not is_mergeable:
                     try:
                         value_field_chef = node.attributes.get_dotted(field_chef)
                     except KeyError:
                         value_field_chef = None
+
                     if obj_ui_field != value_field_chef:
                         node.attributes.set_dotted(field_chef, obj_ui_field)
+                        updated = True
+
+                elif is_mergeable:
+                    update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
+
+                    if action == DELETED_POLICY_ACTION:
+                        node.attributes.set_dotted(field_chef, obj_ui_field)
+                        is_policy_updated = True
+                    elif obj_ui.get('type', None) == 'storage':
+                        is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
+                    elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
+                        is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
+                    elif not is_user_policy(field_chef):
+                        is_policy_updated = self.update_ws_mergeable_policy(node, field_chef, field_ui, policy, update_by_path, obj_ui)
+                    elif is_user_policy(field_chef):
+                        is_policy_updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui)
+
+                    if is_policy_updated:
                         updated = True
             if job_attr not in attributes_jobs_updated:
                 if updated:
                     self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
         return (node, (updated or updated_updated_by))
 
-    def get_first_exists_node(self, ids, obj, action):
-        for mongo_id in ids:
-            node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
-            if node:
-                if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
-                    return node
-        return {}
-
     def get_updated_by_fieldname(self, field_chef, policy, obj, computer):
+        '''
+        Get the path of updated_by field
+        '''
         updated_path = '.'.join(field_chef.split('.')[:3])
         if is_user_policy(field_chef):
             if obj['type'] != 'user':
@@ -266,33 +553,10 @@ class ChefTask(Task):
         updated_path += '.updated_by'
         return updated_path
 
-    def priority_object(self, node, updated_by_fieldname, obj, action):
-        if obj['type'] in ['computer', 'user'] and action != DELETED_POLICY_ACTION:
-            return obj
-        try:
-            updated_by = node.attributes.get_dotted(updated_by_fieldname).to_dict()
-        except KeyError:
-            updated_by = {}
-        if not updated_by:
-            if action == DELETED_POLICY_ACTION:
-                return {}
-            else:
-                return obj
-        priority_object = {}
-
-        if updated_by.get('computer', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
-                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
-        if not priority_object and updated_by.get('user', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
-                priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
-        if not priority_object and updated_by.get('group', None):
-            priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
-        if not priority_object and updated_by.get('ou', None):
-            priority_object = self.get_first_exists_node(updated_by.get('ou', None), obj, action)
-        return priority_object
-
     def update_node_updated_by(self, node, field_chef, obj, action, attr, attributes_updated):
+        '''
+        Updates the updated_by field of a node
+        '''
         updated = False
         try:
             updated_by = node.attributes.get_dotted(attr).to_dict()
@@ -338,12 +602,18 @@ class ChefTask(Task):
         return updated
 
     def order_ou_by_depth(self, ou_ids):
+        '''
+        order ous by depth
+        '''
         ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
         ous = [ou for ou in self.db.nodes.find({'_id': {'$in': ou_ids}})]
         ous.sort(key=lambda x: x['path'].count(','), reverse=True)
         return [unicode(ou['_id']) for ou in ous]
 
     def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, job_ids_by_computer):
+        '''
+        Update the jobs field of a node
+        '''
         if node.attributes.has_dotted(attr):
             job_ids = node.attributes.get_dotted(attr)
         else:
@@ -366,7 +636,24 @@ class ChefTask(Task):
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
 
+    def disassociate_object_from_group(self, obj):
+        '''
+        Disassociate object from a group
+        '''
+        groups = self.db.nodes.find({'type': 'group', 'members': obj['_id']})
+        for g in groups:
+            self.db.nodes.update({
+                '_id': g['_id']
+            }, {
+                '$pull': {
+                    'members': obj['_id']
+                }
+            }, multi=False)
+
     def get_policies(self, rule_type, action, obj, objold):
+        '''
+        Get the policies to apply and the policies to remove from an object
+        '''
         policies_apply = [(policy_id, action) for policy_id in obj[rule_type].keys()]
         if not objold:
             return policies_apply
@@ -375,6 +662,12 @@ class ChefTask(Task):
         return policies_apply + policies_delete
 
     def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer, force_update):
+        '''
+        This method update the node with changed or created actions.
+        Have two different cases:
+            1 - object type is ou, user, computer or group.
+            2 - object type is emitter: printer, storage or repository
+        '''
         updated = False
         if action not in ['changed', 'created']:
             raise ValueError('The action should be changed or created')
@@ -400,10 +693,16 @@ class ChefTask(Task):
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
+        '''
+        Useful method, validate the DATABASES
+        '''
         schema = cookbook['metadata']['attributes']['json_schema']['object']
         validate(to_deep_dict(node.attributes), schema)
 
     def report_error(self, exception, job_ids, computer, prefix=None):
+        '''
+        if an error is produced, save the error in the job
+        '''
         message = 'No save in chef server.'
         if prefix:
             message = "%s %s" % (prefix, message)
@@ -419,18 +718,30 @@ class ChefTask(Task):
                                  {'$set': {'error_last_saved': True}})
 
     def report_node_not_linked(self, computer, user, obj, action):
+        '''
+        if the node is not linked, report node not linked error
+        '''
         message = 'No save in chef server. The node is not linked, it is possible that this node was imported from AD or LDAP'
         self.report_generic_error(user, obj, action, message, computer, status='warnings')
 
     def report_node_busy(self, computer, user, obj, action):
+        '''
+        if the node is busy, report node busy error
+        '''
         message = 'No save in chef server. The node is busy'
         self.report_generic_error(user, obj, action, message, computer)
 
     def report_unknown_error(self, exception, user, obj, action, computer=None):
+        '''
+        Report unknown error
+        '''
         message = 'No save in chef server. %s' % unicode(exception)
         self.report_generic_error(user, obj, action, message, computer)
 
     def report_generic_error(self, user, obj, action, message, computer=None, status='errors'):
+        '''
+        Report generic error
+        '''
         job_storage = JobStorage(self.db.jobs, user)
         job_status = status
         job = dict(obj=obj,
@@ -443,6 +754,11 @@ class ChefTask(Task):
         job_storage.create(**job)
 
     def object_action(self, user, obj, objold=None, action=None, computers=None):
+        '''
+        This method try to get the node to make changes in it.
+        Theses changes are called actions and can be: changed, created, moved and deleted.
+        if the node is free, the method can get the node, it reserves the node and runs the action, later the node is saved and released.
+        '''
         api = get_chef_api(self.app.conf, user)
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
@@ -510,12 +826,12 @@ class ChefTask(Task):
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
             raise NotImplementedError
-        func(self.db.nodes, objnew, user, api, initialize=True)
+        func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
     def object_emiter_deleted(self, user, obj, computers=None):
         obj_id = unicode(obj['_id'])
-        policy_id = unicode(self.get_policy_emiter_id(obj))
-        object_related_list = self.get_object_related_list(obj)
+        policy_id = unicode(get_policy_emiter_id(self.db, obj))
+        object_related_list = get_object_related_list(self.db, obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
             object_related_list = obj_related['policies'][policy_id]['object_related_list']
@@ -541,10 +857,10 @@ class ChefTask(Task):
         self.log_action('changed', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
-        self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
+        self.object_moved(user, objnew, objold)
+        self.log_action('moved', 'Group', objnew)
 
-    def group_deleted(self, user, obj, computers=None):
+    def group_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Group', obj)
 
@@ -560,7 +876,9 @@ class ChefTask(Task):
         self.object_moved(user, objnew, objold)
         self.log_action('moved', 'User', objnew)
 
-    def user_deleted(self, user, obj, computers=None):
+    def user_deleted(self, user, obj, computers=None, direct_deleted=True):
+        if direct_deleted is False:
+            self.disassociate_object_from_group(obj)
         self.object_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'User', obj)
 
@@ -576,7 +894,8 @@ class ChefTask(Task):
         self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Computer', objnew)
 
-    def computer_deleted(self, user, obj, computers=None):
+    def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
+        # 1 - Delete computer from chef server
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
@@ -584,6 +903,19 @@ class ChefTask(Task):
             node.delete()
             client = Client(node_chef_id, api=api)
             client.delete()
+        if direct_deleted is False:
+            # 2 - Disassociate computer from its users
+            users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
+            for u in users:
+                self.db.nodes.update({
+                    '_id': u['_id']
+                }, {
+                    '$pull': {
+                        'computers': obj['_id']
+                    }
+                }, multi=False)
+            # 3 - Disassociate computers from its groups
+            self.disassociate_object_from_group(obj)
         self.log_action('deleted', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
@@ -595,10 +927,10 @@ class ChefTask(Task):
         self.log_action('changed', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'OU', objnew)
-        raise NotImplementedError
 
-    def ou_deleted(self, user, obj, computers=None):
+    def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
@@ -606,7 +938,7 @@ class ChefTask(Task):
                                                 'type': node_type})
             for node in nodes_by_type:
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
-                node_deleted_function(user, node, computers=computers)
+                node_deleted_function(user, node, computers=computers, direct_deleted=False)
         self.db.nodes.remove({'path': ou_path})
         self.log_action('deleted', 'OU', obj)
 
@@ -619,10 +951,10 @@ class ChefTask(Task):
         self.log_action('changed', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Printer', objnew)
-        raise NotImplementedError
 
-    def printer_deleted(self, user, obj, computers=None):
+    def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Printer', obj)
 
@@ -635,28 +967,28 @@ class ChefTask(Task):
         self.log_action('changed', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Storage', objnew)
-        raise NotImplementedError
 
-    def storage_deleted(self, user, obj, computers=None):
+    def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
         self.log_action('deleted', 'Storage', obj)
 
     def repository_created(self, user, objnew, computers=None):
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Storage', objnew)
+        self.log_action('created', 'Repository', objnew)
 
     def repository_changed(self, user, objnew, objold, computers=None):
         self.object_changed(user, objnew, objold, computers=computers)
-        self.log_action('changed', 'Storage', objnew)
+        self.log_action('changed', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
+        self.object_moved(user, objnew, objold)
         self.log_action('moved', 'Repository', objnew)
-        raise NotImplementedError
 
-    def repository_deleted(self, user, obj, computers=None):
+    def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Storage', obj)
+        self.log_action('deleted', 'Repository', obj)
 
 
 @task_prerun.connect

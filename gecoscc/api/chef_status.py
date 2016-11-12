@@ -160,7 +160,7 @@ class ChefStatusResource(BaseAPI):
         if reload_clients:
             update_tree(node.get('path', ''))
 
-        chef_node.normal.set_dotted('ohai_gecos.users_old', users)
+        chef_node.normal.set_dotted(USERS_OLD, users)
         save_node_and_free(chef_node)
 
         for user in users_recalculate_policies:

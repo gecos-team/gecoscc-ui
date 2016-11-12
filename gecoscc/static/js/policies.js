@@ -67,6 +67,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     }
                     model.set("support_os", p.support_os);
                     model.set("schema", p.schema);
+                    model.set("is_mergeable", p.is_mergeable);
                 });
                 that.trigger("policiesloaded");
             });
@@ -76,7 +77,18 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             var that = this,
                 promise;
 
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+
+            _.each(this.get("policies")[id],function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
+
             this.get("policyCollection").remove(id);
+
             delete this.get("policies")[id];
 
             promise = this.saveWithToken();
@@ -89,6 +101,15 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         addPolicy: function (policyModel, values) {
             var that = this,
                 promise;
+
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+            _.each(values,function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
 
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
@@ -109,6 +130,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         defaults: {
             name: "",
             name_es: "",
+            is_mergeable: false,
             schema: {},
             values: {}
         },
@@ -226,7 +248,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click table#policies-table button.btn-danger": "remove",
             "click table#policies-table button.btn-default": "edit",
             "click table#policies-table button.btn-info": "edit",
-            "click button#add-policy": "add"
+            "click button#add-policy": "add",
+            "click button#recalc-policy": "recalculate"
         },
 
         getPolicyUrl: function (id) {
@@ -257,9 +280,36 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         add: function (evt) {
             App.instances.router.navigate(this.getPolicyUrl(), { trigger: true });
         },
+        recalculate: function(evt){
+            if(this.resource.get('type')=='computer'){
+                var policie = new App.Computer.Models.ComputerPoliciesModel();
+
+                policie.set('_id',this.resource.get('id'));
+                policie.set('id',this.resource.get('id'));
+                policie.set('type',this.resource.get('type'));
+                policie.set('lock',this.resource.get('lock'));
+                policie.set('source',this.resource.get('source'));
+                policie.set('name',this.resource.get('name'));
+                policie.set('registry',this.resource.get('registry'));
+                policie.set('family',this.resource.get('family'));
+                policie.set('error_last_saved',this.resource.get('error_last_saved'));
+                policie.set('error_last_chef_client',this.resource.get('error_last_chef_client'));
+                policie.set('memberof',this.resource.get('memberof'));
+                policie.set('path',this.resource.get('path'));
+                policie.set('node_chef_id',this.resource.get('node_chef_id'));
+                policie.set('last_connection',this.resource.get('last_connection'));
+                policie.set('description',"");
+                policie.url = policie.urlRoot+this.resource.get('id')+'/';
+                App.instances.staging.add(policie, { arguments: {} });
+
+            }
+        },
         serializeData: function () {
-            return {items: this.collection.toJSON(),
-                    resource: this.resource};
+            return {
+                items: this.collection.toJSON(),
+                resource: this.resource,
+                type: this.resource.get('type')
+            };
         }
     });
 
