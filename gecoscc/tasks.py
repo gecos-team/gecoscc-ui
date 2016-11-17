@@ -716,9 +716,9 @@ class ChefTask(Task):
         # Example:
         # {u'gecos_ws_mgmt': {u'software_mgmt': {u'package_res': {u'pkgs_to_remove': [], u'package_list': [u'lynx', u'mutt', u'anacron'] }}}}
         attrs = {}
-        coobook_key,policy_key,recipe_key = policy['path'].split('.')
-        attrs.setdefault(coobook_key, {}).setdefault(policy_key, {}).setdefault(recipe_key, {})
-        attrs[coobook_key][policy_key][recipe_key] = policy_dataform
+        cookbook_key,policy_key,recipe_key = policy['path'].split('.')
+        attrs.setdefault(cookbook_key, {}).setdefault(policy_key, {}).setdefault(recipe_key, {})
+        attrs[cookbook_key][policy_key][recipe_key] = policy_dataform
         self.log('debug','task.py:::get_rules_and_object_sanitized - attrs {0}'.format(attrs))
 
         # Update node attributes with form data
