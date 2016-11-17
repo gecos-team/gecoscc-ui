@@ -14,6 +14,30 @@
                         <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000" value="<%= name %>">
                     </div>
                 </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label for="manufacturer">{{ gettext('Manufacturer') }}</label>
+                        <input id="manufacturer" type="text" class="form-control" required placeholder="{{ gettext('Select manufacturer') }}" value="<%= manufacturer %>">
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="form-group">
+                        <label for="model">{{ gettext('Model') }}</label>
+                        <input id="model" type="text" class="form-control" required placeholder="{{ gettext('Select model') }}" disabled="disabled" value="<%= model %>">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+						<label for="type">{{ gettext('Type') }}</label>
+						<select id="type" class="form-control">
+							{% for key, value in printer_type.iteritems() %}
+								<option value="{{ key }}" <% if (printtype === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
+                    </div>
+                </div>
                 <div class="col-md-4 col-sm-12 col-xs-12">
                     <div class="form-group">
                         <label for="description">{{ gettext('Description') }}</label>
@@ -24,6 +48,20 @@
                     <div class="form-group">
                         <label for="location">{{ gettext('Location') }}</label>
                         <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" value="<%= location %>">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="serial">{{ gettext('Serial number') }}</label>
+                        <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456" value="<%= serial %>">
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="form-group">
+                        <label for="registry">{{ gettext('Registry number') }}</label>
+                        <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC" value="<%= registry %>">
                     </div>
                 </div>
             </div>
@@ -60,44 +98,6 @@
                     <div class="form-group">
                         <label for="ppd_uri">{{ gettext('PPD URI') }}</label>
                         <input id="ppd_uri" type="text" class="form-control urlExtend" value="<%= ppd_uri %>">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-4">
-                    <div class="form-group">
-						<label for="type">{{ gettext('Type') }}</label>
-						<select id="type" class="form-control">
-							{% for key, value in printer_type.iteritems() %}
-								<option value="{{ key }}" <% if (printtype === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
-							{% endfor %}
-						</select>
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <label for="manufacturer">{{ gettext('Manufacturer') }}</label>
-                        <input id="manufacturer" type="text" class="form-control" required placeholder="{{ gettext('Select manufacturer') }}" value="<%= manufacturer %>">
-                    </div>
-                </div>
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <label for="model">{{ gettext('Model') }}</label>
-                        <input id="model" type="text" class="form-control" required placeholder="{{ gettext('Select model') }}" disabled="disabled" value="<%= model %>">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        <label for="serial">{{ gettext('Serial number') }}</label>
-                        <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456" value="<%= serial %>">
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="form-group">
-                        <label for="registry">{{ gettext('Registry number') }}</label>
-                        <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC" value="<%= registry %>">
                     </div>
                 </div>
             </div>
