@@ -797,7 +797,7 @@ msgid "Description"
 msgstr ""
 
 #: gecoscc/templates/bb-printer.html:20
-msgid "The one of the accounting deparment"
+msgid "Main printer at sales department"
 msgstr ""
 
 #: gecoscc/templates/bb-printer.html:25

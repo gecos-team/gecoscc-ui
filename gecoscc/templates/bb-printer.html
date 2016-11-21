@@ -11,19 +11,19 @@
                 <div class="col-md-4 col-sm-12 col-xs-12">
                     <div class="form-group">
                         <label for="name">{{ gettext('Name') }}</label>
-                        <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000" value="<%= name %>">
+                        <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Make and model') }}" value="<%= name %>">
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-12 col-xs-12">
                     <div class="form-group">
                         <label for="description">{{ gettext('Description') }}</label>
-                        <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('The one of the accounting deparment') }}" value="<%= description %>">
+                        <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Main printer at sales department') }}" value="<%= description %>">
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-12 col-xs-12">
                     <div class="form-group">
                         <label for="location">{{ gettext('Location') }}</label>
-                        <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" value="<%= location %>">
+                        <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Sales Department" value="<%= location %>">
                     </div>
                 </div>
             </div>
@@ -91,13 +91,13 @@
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label for="serial">{{ gettext('Serial number') }}</label>
-                        <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP123QWERTY456" value="<%= serial %>">
+                        <input id="serial" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} 1234567890ABCDEF" value="<%= serial %>">
                     </div>
                 </div>
                 <div class="col-sm-6">
                     <div class="form-group">
                         <label for="registry">{{ gettext('Registry number') }}</label>
-                        <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} JDA0009ZXC" value="<%= registry %>">
+                        <input id="registry" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} 1234567890ABCDEF" value="<%= registry %>">
                     </div>
                 </div>
             </div>

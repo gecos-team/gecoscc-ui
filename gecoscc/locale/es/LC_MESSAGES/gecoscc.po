@@ -828,8 +828,8 @@ msgid "Description"
 msgstr "Descripción"
 
 #: gecoscc/templates/bb-printer.html:20
-msgid "The one of the accounting deparment"
-msgstr "La del departamento de cuentas"
+msgid "Main printer at sales department"
+msgstr "Impresora principal en ventas"
 
 #: gecoscc/templates/bb-printer.html:25
 msgid "Location"
