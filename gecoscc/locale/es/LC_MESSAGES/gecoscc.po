@@ -507,6 +507,10 @@ msgstr "Nombre"
 msgid "e.g."
 msgstr "Ej:"
 
+#: gecoscc/templates/bb-printer.html:14
+msgid "Make and model"
+msgstr "Marca y modelo"
+
 #: gecoscc/templates/bb-computer.html:52
 msgid "John's laptop"
 msgstr "Portátil de Juan"
@@ -828,8 +832,8 @@ msgid "Description"
 msgstr "Descripción"
 
 #: gecoscc/templates/bb-printer.html:20
-msgid "The one of the accounting deparment"
-msgstr "La del departamento de cuentas"
+msgid "Main printer at sales department"
+msgstr "Impresora principal en ventas"
 
 #: gecoscc/templates/bb-printer.html:25
 msgid "Location"
