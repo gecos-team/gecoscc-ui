@@ -55,34 +55,11 @@ class Command(BaseCommand):
     )
     
     
-    def isChefUserSuperadmin(self, username):
-        found = False
-        cmd = '%s list-server-admins'%(self.settings.get('chef.chef_server_ctl_path'))
-        p = subprocess.Popen(cmd, shell=True, 
-                             stdout=subprocess.PIPE, 
-                             stderr=subprocess.STDOUT)
-
-        # Read the process output with a timeout
-        stdout = p.stdout.read()
-        for line in stdout.split('\n'):
-            if line.strip() == username:
-                found = True
-        
-        retval = p.wait()      
-        
-        return found
-    
-
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
                             self.options.chef_pem, self.settings.get('chef.version'))
                             
-        if self.settings.get('chef.chef_server_ctl_path') is None:
-            print "ERROR: plase configure 'chef.chef_server_ctl_path' in gecoscc.ini file!"
-            return
-                            
-                  
         print '============ CHECKING ADMINISTRATOR USERS ============='                  
         # Check if all the GECOS CC administrators
         # are properly created in Chef 12
@@ -121,25 +98,6 @@ class Command(BaseCommand):
                 print "Try to change the chef user email!"
                 chef_user['email'] = admin_user['email']
                 api.api_request('PUT', '/users/%s'%(toChefUsername(admin_user['username'])), data=chef_user)                
-            
-            # Check if the administrator is a superuser
-            isChefSuperuser = self.isChefUserSuperadmin(toChefUsername(admin_user['username']))
-            if admin_user['is_superuser'] and not isChefSuperuser:
-                print "WARNING: GECOS superuser is not a Chef superuser. We will try to change this!"
-                
-                # Include the user in the "server-admins" group
-                cmd = [self.settings.get('chef.chef_server_ctl_path'), 'grant-server-admin-permissions', toChefUsername(admin_user['username'])]
-                if subprocess.call(cmd) != 0:
-                    print 'ERROR: error adding the administrator to "server-admins" chef group'
-              
-            if not admin_user['is_superuser'] and isChefSuperuser:
-                print "WARNING: Chef superuser is not a GECOS superuser. We will try to change this!"
-                
-                # Remove the user from the "server-admins" group
-                cmd = [self.settings.get('chef.chef_server_ctl_path'), 'remove-server-admin-permissions', toChefUsername(admin_user['username'])]
-                if subprocess.call(cmd) != 0:
-                    print 'ERROR: error removing the administrator to "server-admins" chef group'
-            
             
             # Check if the administrator belongs to the "admins" group in the "default" organization
             admins_group = None

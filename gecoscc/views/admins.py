@@ -44,38 +44,6 @@ def admins(context, request):
             'page': page}
 
 
-@view_config(route_name='admins_superuser', renderer='templates/admins/variables.jinja2', permission='is_superuser')
-def admins_superuser(context, request):
-    username = request.matchdict['username']
-    settings = get_current_registry().settings
-    if '_superuser' in request.POST:
-        is_superuser = True
-        message = _('Now the user is a super user')
-        
-        if settings.get('chef.chef_server_ctl_path') is not None:
-            # Include the user in the "server-admins" group
-            cmd = [settings.get('chef.chef_server_ctl_path'), 'grant-server-admin-permissions', toChefUsername(username)]
-            if call(cmd) != 0:
-                messages.created_msg(request, _('Error adding the administrator to "server-admins" chef group'), 'danger')
-        
-    elif '_no_superuser' in request.POST:
-        is_superuser = False
-        message = _('Now the user is not a super user')
-        message.translate('es')
-        
-        if settings.get('chef.chef_server_ctl_path') is not None:
-            # Remove the user from the "server-admins" group
-            cmd = [settings.get('chef.chef_server_ctl_path'), 'remove-server-admin-permissions', toChefUsername(username)]
-            if call(cmd) != 0:
-                messages.created_msg(request, _('Error removing the administrator from "server-admins" chef group'), 'danger')
-        
-        
-        
-    request.userdb.collection.update({'username': username}, {'$set': {'is_superuser': is_superuser}})
-    messages.created_msg(request, message, 'success')
-    return HTTPFound(location=request.route_url('admins'))
-
-
 @view_config(route_name='admins_ou_manage', renderer='templates/admins/ou_manage.jinja2',
              permission='is_superuser')
 def admins_ou_manage(context, request):
@@ -251,7 +219,7 @@ def _admin_edit(request, form_class, username=None):
             if success:
                 # At this moment all GECOS domains are in the "default" Chef organization.
                 # So, all the administrator users must belong to the "default" organization's "admins" group
-                if settings.get('chef.chef_server_ctl_path') is not None and username is not None:
+                if int(settings.get('chef.version').split('.')[0]) >= 12 and username is not None:
                     _check_if_user_belongs_to_admin_group(request, 'default', username)
             
                 return HTTPFound(location=get_url_redirect(request))
@@ -264,7 +232,7 @@ def _admin_edit(request, form_class, username=None):
         
     # At this moment all GECOS domains are in the "default" Chef organization.
     # So, all the administrator users must belong to the "default" organization's "admins" group
-    if settings.get('chef.chef_server_ctl_path') is not None and username is not None:
+    if int(settings.get('chef.version').split('.')[0]) >= 12 and username is not None:
         _check_if_user_belongs_to_admin_group(request, 'default', username)
         
     return {'admin_user_form': form_render,
