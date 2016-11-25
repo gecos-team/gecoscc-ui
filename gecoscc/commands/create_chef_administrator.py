@@ -128,13 +128,20 @@ class Command(BaseCommand):
 
         print "User %s created in chef server" % toChefUsername(self.options.username)
 
-        if self.settings.get('chef.chef_server_ctl_path') is not None:
-            # Include the user in the "server-admins" group
-            cmd = [self.settings.get('chef.chef_server_ctl_path'), 'grant-server-admin-permissions', toChefUsername(self.options.username)]
-            if subprocess.call(cmd) != 0:
-                print 'ERROR: error adding the administrator to "server-admins" chef group'        
-                sys.exit(1)
-                
+        if int(self.settings.get('chef.version').split('.')[0]) >= 12:
+            if os.path.isfile('/opt/opscode/bin/chef-server-ctl') is not None:
+                # Include the user in the "server-admins" group
+                cmd = ['/opt/opscode/bin/chef-server-ctl', 'grant-server-admin-permissions', toChefUsername(self.options.username)]
+                if subprocess.call(cmd) != 0:
+                    print 'ERROR: error adding the administrator to "server-admins" chef group'        
+                    sys.exit(1)
+            else:
+                # Chef 12 /opt/opscode/bin/chef-server-ctl does not exists in the system
+                # This use to be because Chef and GECOS CC are installed in different machines
+                print "NOTICE: Please remember to grant server admin permissions to this user by executing the following command in Chef 12 server:"
+                print "%s %s %s"%('/opt/opscode/bin/chef-server-ctl', 'grant-server-admin-permissions', toChefUsername(self.options.username))
+
+            
             # Add the user to the default organization
             try:
                 data = {"user": toChefUsername(self.options.username)}
@@ -162,7 +169,7 @@ class Command(BaseCommand):
                 print "User not added to default organization's admins group in chef, error was: %s" % e
                 sys.exit(1)                
             
-        print "User %s set as administrator in the default organization chef server" % toChefUsername(self.options.username)
+            print "User %s set as administrator in the default organization chef server" % toChefUsername(self.options.username)
             
 
         gcc_password = self.create_password("Insert the GCC password, the spaces will be stripped",
