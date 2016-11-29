@@ -495,7 +495,11 @@ class ChefTask(Task):
                         priority_obj = computer['user']
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
                 else:
-                    obj_ui_field = priority_obj_ui.get(field_ui, None)
+                    # If it's mergeable we dont set a default value
+                    if is_mergeable:
+                        obj_ui_field = priority_obj_ui.get(field_ui, None)
+                    else:
+                        obj_ui_field = priority_obj_ui.get(field_ui, node.default.get_dotted(field_chef))
 
 
                 if obj_ui_field is None and action != DELETED_POLICY_ACTION:
