@@ -28,6 +28,8 @@ from chef.node import NodeAttributes
 
 from pyramid.threadlocal import get_current_registry
 
+from collections import defaultdict
+
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
@@ -350,6 +352,14 @@ class NodeNotLinked(Exception):
 
 # Utils to NodeAttributes chef class
 
+def recursive_defaultdict():
+    return defaultdict(recursive_defaultdict)
+
+def setpath(d, p, k):
+    if len(p) == 1:
+        d[p[0]] = k
+    else:
+        setpath(d[p[0]], p[1:], k)
 
 def to_deep_dict(node_attr):
     merged = {}

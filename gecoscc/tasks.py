@@ -18,6 +18,7 @@ from copy import deepcopy
 from bson import ObjectId
 
 from chef import Node, Client
+from chef.node import NodeAttributes
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -38,8 +39,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_computer, apply_policies_to_user,
                            apply_policies_to_printer, apply_policies_to_storage,
                            apply_policies_to_repository, apply_policies_to_group,
-                           apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
-                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
+                           apply_policies_to_ou, recursive_defaultdict, setpath, dict_merge,
+                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list)
 
 
@@ -496,6 +497,7 @@ class ChefTask(Task):
                 else:
                     obj_ui_field = priority_obj_ui.get(field_ui, None)
 
+
                 if obj_ui_field is None and action != DELETED_POLICY_ACTION:
                     continue
 
@@ -735,8 +737,54 @@ class ChefTask(Task):
         '''
         Useful method, validate the DATABASES
         '''
-        schema = cookbook['metadata']['attributes']['json_schema']['object']
-        validate(to_deep_dict(node.attributes), schema)
+        try:
+            schema = cookbook['metadata']['attributes']['json_schema']['object']
+            validate(to_deep_dict(node.attributes), schema)
+        except ValidationError as e:
+            # Bugfix: Validation error "required property"
+            # example:
+            # u'boot_lock_res' is a required property Failed validating
+            if 'is a required property' in e.message:
+                self.log('debug',"validation error: e.validator_value = {0}".format(e.validator_value))
+                # e.path: deque
+                for required_field in e.validator_value:
+                    e.path.append(required_field)
+                    self.log('debug',"validation error: path = {0}".format(e.path))
+
+                    # Required fields initialization
+                    attr_type = e.schema['properties'][required_field]['type']
+                    if  attr_type == 'array':
+                        initial_value = []
+                    elif attr_type == 'object':
+                        initial_value = {}
+                    elif attr_type == 'string':
+                        initial_value = ''
+                    elif attr_type == 'number':
+                        initial_value = 0
+
+                    # Making required fields dictionary
+                    # example: {u'gecos_ws_mgmt': {u'sotfware_mgmt': {u'package_res':{u'new_field':[]}}}}
+                    required_dict = recursive_defaultdict()
+                    setpath(required_dict, list(e.path), initial_value)
+                    self.log('debug',"validation error: required_dict = {0}".format(required_dict))
+
+                    # node.default: default chef attributes
+                    defaults_dict = node.default.to_dict()
+
+                    # merging defaults with new required fields
+                    merge_dict = dict_merge(defaults_dict,required_dict)
+                    self.log('debug',"validation error: merge_dict = {0}".format(merge_dict))
+
+                    # setting new default attributes
+                    setattr(node,'default',NodeAttributes(merge_dict))
+
+                    # Saving node
+                    save_node_and_free(node)
+
+                    # reset variables next iteration
+                    del required_dict, defaults_dict, merge_dict
+                    e.path.pop()
+
 
     def report_error(self, exception, job_ids, computer, prefix=None):
         '''
