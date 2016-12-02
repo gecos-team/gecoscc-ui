@@ -18,6 +18,7 @@ from copy import deepcopy
 from bson import ObjectId
 
 from chef import Node, Client
+from chef.node import NodeAttributes
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -38,8 +39,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_computer, apply_policies_to_user,
                            apply_policies_to_printer, apply_policies_to_storage,
                            apply_policies_to_repository, apply_policies_to_group,
-                           apply_policies_to_ou, RESOURCES_RECEPTOR_TYPES,
-                           RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
+                           apply_policies_to_ou, recursive_defaultdict, setpath, dict_merge,
+                           RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list)
 
 
@@ -248,9 +249,11 @@ class ChefTask(Task):
         updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
 
         for updater_node in updater_nodes:
-            new_field_chef_value += updater_node['policies'][unicode(policy['_id'])]['object_related_list']
+            if unicode(policy['_id']) in updater_node['policies']:
+                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])]['object_related_list']
 
         new_field_chef_value = list(set(new_field_chef_value))
+        self.log("debug","tasks.py:::get_related_objects -> new_field_chef_value = {0}".format(new_field_chef_value))
         related_objects = []
 
         for node_id in new_field_chef_value:
@@ -262,7 +265,7 @@ class ChefTask(Task):
                 related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
                 obj_list = {'object_related_list': [related_objs], 'type': obj_type}
             related_objects += object_related_list(obj_list)
-
+        self.log("debug","tasks.py:::get_related_objects -> related_objects = {0}".format(related_objects))
         return related_objects
 
     def get_nodes_ids(self, nodes_updated_by):
@@ -379,87 +382,92 @@ class ChefTask(Task):
         '''
         Updates node chef with a mergeable workstation policy
         '''
-        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) is True:
-            node_updated_by = node.attributes.get_dotted(update_by_path).items()
-            nodes_ids = self.get_nodes_ids(node_updated_by)
-
-            new_field_chef_value = []
-            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-            for updater_node in updater_nodes:
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
+        
+        # defaults
+        new_field_chef_value = obj_ui[field_ui] 
+        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+        for updater_node in updater_nodes:
+            if field_ui in updater_node['policies'][unicode(policy['_id'])]:
                 new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
+            
+            self.log("debug","tasks.py:::update_ws_mergeable_policy -> new_field_chef_value = {0}".format(new_field_chef_value))
+            
+        try:
+            node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
+        except TypeError:
+            new_field_chef_value = self.remove_duplicated_dict(new_field_chef_value)
+            node.attributes.set_dotted(field_chef, new_field_chef_value)
+                
+        return True
 
-            try:
-                node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
-            except TypeError:
-                new_field_chef_value = self.remove_duplicated_dict(new_field_chef_value)
-                node.attributes.set_dotted(field_chef, new_field_chef_value)
-            return True
-
-        return False
 
     def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
         '''
         Updates node chef with a mergeable user policy
         '''
-        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
-            node_updated_by = node.attributes.get_dotted(update_by_path).items()
-            nodes_ids = self.get_nodes_ids(node_updated_by)
+        # You always have to recalculate the array of mergeable fields
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
 
-            new_field_chef_value = {}
-            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-            for updater_node in updater_nodes:
-                node_policy = updater_node['policies'][unicode(policy['_id'])]
-                for policy_field in node_policy.keys():
-                    if policy_field not in new_field_chef_value:
-                        new_field_chef_value[policy_field] = []
-                    new_field_chef_value[policy_field] += node_policy[policy_field]
+        new_field_chef_value = {}
+        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+        for updater_node in updater_nodes:
+            node_policy = updater_node['policies'][unicode(policy['_id'])]
+            for policy_field in node_policy.keys():
+                if policy_field not in new_field_chef_value:
+                    new_field_chef_value[policy_field] = []
+                new_field_chef_value[policy_field] += node_policy[policy_field]
+                
+            self.log("debug","tasks.py:::update_user_mergeable_policy -> new_field_chef_value = {0}".format(new_field_chef_value))
 
-            obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-            if obj_ui_field.get(priority_obj['name']):
-                for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
-            else:
-                return False
-            node.attributes.set_dotted(field_chef, obj_ui_field)
-            return True
+        obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+        if obj_ui_field.get(priority_obj['name']):
+            for policy_field in policy['schema']['properties'].keys():
+                obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+        else:
+            return False
+        
+        node.attributes.set_dotted(field_chef, obj_ui_field)
 
-        return False
+        return True                
 
     def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
         '''
         Update node chef with a mergeable workstation emitter policy
         This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
         '''
-        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef):
-            node_updated_by = node.attributes.get_dotted(update_by_path).items()
-            nodes_ids = self.get_nodes_ids(node_updated_by)
+        
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
 
-            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
-            node.attributes.set_dotted(field_chef, related_objects)
-            return True
+        node.attributes.set_dotted(field_chef, related_objects)
+        return True
 
-        return False
+        
 
     def update_user_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
         '''
         Update node chef with a mergeable user emitter policy
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
-        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
-            node_updated_by = node.attributes.get_dotted(update_by_path).items()
-            nodes_ids = self.get_nodes_ids(node_updated_by)
+        
+        node_updated_by = node.attributes.get_dotted(update_by_path).items()
+        nodes_ids = self.get_nodes_ids(node_updated_by)
 
-            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
-            current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+        current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
-            for objs in related_objects:
-                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
-            node.attributes.set_dotted(field_chef, current_objs)
+        for objs in related_objects:
+            if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
+                current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+        node.attributes.set_dotted(field_chef, current_objs)
 
-        return False
+        
 
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
         '''
@@ -494,12 +502,13 @@ class ChefTask(Task):
                         priority_obj = computer['user']
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
                 else:
-                    obj_ui_field = priority_obj_ui.get(field_ui, None)
+                    # Policy fields that are not sent in the form are populated with their defaults
+                    obj_ui_field = priority_obj_ui.get(field_ui, node.default.get_dotted(field_chef))
+                    self.log("debug","tasks:::update_node_from_rules -> obj_ui_field = {0}".format(obj_ui_field))
+                    obj_ui[field_ui] = obj_ui_field
+                    self.log("debug","tasks:::update_node_from_rules -> obj_ui = {0}".format(obj_ui))
 
-                if obj_ui_field is None and action != DELETED_POLICY_ACTION:
-                    continue
-
-                elif obj_ui_field is None and action == DELETED_POLICY_ACTION:
+                elif not obj_ui_field and action == DELETED_POLICY_ACTION:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
@@ -735,8 +744,54 @@ class ChefTask(Task):
         '''
         Useful method, validate the DATABASES
         '''
-        schema = cookbook['metadata']['attributes']['json_schema']['object']
-        validate(to_deep_dict(node.attributes), schema)
+        try:
+            schema = cookbook['metadata']['attributes']['json_schema']['object']
+            validate(to_deep_dict(node.attributes), schema)
+        except ValidationError as e:
+            # Bugfix: Validation error "required property"
+            # example:
+            # u'boot_lock_res' is a required property Failed validating
+            if 'is a required property' in e.message:
+                self.log('debug',"validation error: e.validator_value = {0}".format(e.validator_value))
+                # e.path: deque
+                for required_field in e.validator_value:
+                    e.path.append(required_field)
+                    self.log('debug',"validation error: path = {0}".format(e.path))
+
+                    # Required fields initialization
+                    attr_type = e.schema['properties'][required_field]['type']
+                    if  attr_type == 'array':
+                        initial_value = []
+                    elif attr_type == 'object':
+                        initial_value = {}
+                    elif attr_type == 'string':
+                        initial_value = ''
+                    elif attr_type == 'number':
+                        initial_value = 0
+
+                    # Making required fields dictionary
+                    # example: {u'gecos_ws_mgmt': {u'sotfware_mgmt': {u'package_res':{u'new_field':[]}}}}
+                    required_dict = recursive_defaultdict()
+                    setpath(required_dict, list(e.path), initial_value)
+                    self.log('debug',"validation error: required_dict = {0}".format(required_dict))
+
+                    # node.default: default chef attributes
+                    defaults_dict = node.default.to_dict()
+
+                    # merging defaults with new required fields
+                    merge_dict = dict_merge(defaults_dict,required_dict)
+                    self.log('debug',"validation error: merge_dict = {0}".format(merge_dict))
+
+                    # setting new default attributes
+                    setattr(node,'default',NodeAttributes(merge_dict))
+
+                    # Saving node
+                    save_node_and_free(node)
+
+                    # reset variables next iteration
+                    del required_dict, defaults_dict, merge_dict
+                    e.path.pop()
+
 
     def report_error(self, exception, job_ids, computer, prefix=None):
         '''
