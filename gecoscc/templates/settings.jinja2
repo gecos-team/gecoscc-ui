@@ -103,7 +103,7 @@
             {{ setting.value|safe }}
             {% elif setting.type == "Profiles" %}
             {{ setting.value|safe }}
-            {% elif setting.type == "Mimetypes" %}
+	    {% elif setting.type == "Mimetypes" %}
             {{ setting.value|safe }}
             {% else %}
             "{{ setting.value }}"
@@ -168,8 +168,7 @@
     <script src="{{request.application_url}}/static/js/libs/jquery.dataTables-1.9.4.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/DT_bootstrap.min.js"></script>
     <script src="{{request.application_url}}/static/js/libs/chosen.jquery-0.13.0.min.js"></script>
-    <script src="{{request.application_url}}/static/js/libs/jsonform-b3-1.0.0.gecos1.js"></script> 
-    <script src="{{request.application_url}}/static/js/libs/jsonpath-0.8.0.gecos1.js"></script> 
+    <script src="{{request.application_url}}/static/js/libs/jsonform-b3-1.0.0.js"></script>
     <!-- script src="{{request.application_url}}/static/js/libs/jsonform-b3-1.0.0.min.js"></script -->
     <script src="{{request.application_url}}/static/js/libs/jjv.js"></script>
     <script src="{{request.application_url}}/static/js/libs/socket.io.min.js"></script>
@@ -200,7 +199,7 @@
                     "printers___urls",
                     "repositories",
                     "software_profiles",
-                    "mimetypes"
+		    "mimetypes"
                 ],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: function (values) {
