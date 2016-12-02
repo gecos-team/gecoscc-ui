@@ -763,6 +763,11 @@ def get_pem_for_username(settings, username, pem_name):
     return open(get_pem_path_for_username(settings, toChefUsername(username), pem_name), 'r').read().encode('base64')
 
 
+def get_chef_validation_pem(settings, pem_name):
+    first_boot_chef_validation = settings.get('firstboot_api.chef_validation')
+    return open(os.path.join(first_boot_chef_validation, pem_name), 'r').read().encode('base64')
+
+
 def get_pem_path_for_username(settings, username, pem_name):
     first_boot_media = settings.get('firstboot_api.media')
     user_media = os.path.join(first_boot_media, username)
