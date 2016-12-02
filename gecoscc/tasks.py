@@ -1,4 +1,4 @@
-﻿#
+#
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
 #
@@ -12,14 +12,12 @@
 
 import datetime
 import random
-import json
 
 from copy import deepcopy
 
 from bson import ObjectId
 
 from chef import Node, Client
-from chef.node import NodeAttributes
 
 from celery.task import Task, task
 from celery.signals import task_prerun
@@ -701,33 +699,6 @@ class ChefTask(Task):
         policies_delete = set(objold[rule_type].keys()) - set(obj[rule_type].keys())
         policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
-        
-    def get_rules_and_object_sanitized(self, rule_type, obj, node, policy, policy_id):
-        '''
-        Add new attributes to the node from policy form data (new metadata properties)
-        '''
-        self.log('debug','task.py:::get_rules_and_object_sanitized - Starting ...')
-        
-        # Convert dict's keys and values to unicode
-        policy_dataform = json.dumps(obj['policies'][policy_id])
-        policy_dataform = json.loads(policy_dataform)
-        
-        # Building attrs from form data
-        # Example:
-        # {u'gecos_ws_mgmt': {u'software_mgmt': {u'package_res': {u'pkgs_to_remove': [], u'package_list': [u'lynx', u'mutt', u'anacron'] }}}}
-        attrs = {}
-        cookbook_key,policy_key,recipe_key = policy['path'].split('.')
-        attrs.setdefault(cookbook_key, {}).setdefault(policy_key, {}).setdefault(recipe_key, {})
-        attrs[cookbook_key][policy_key][recipe_key] = policy_dataform
-        self.log('debug','task.py:::get_rules_and_object_sanitized - attrs {0}'.format(attrs))
-
-        # Update node attributes with form data
-        defaults = node.attributes.to_dict()
-        defaults.update(attrs)
-        self.log('debug','task.py:::get_rules_and_object_sanitized - defaults {0}'.format(defaults))
-        setattr(node, 'default', NodeAttributes(defaults))
-
-        return self.get_rules_and_object(rule_type, obj, node, policy)    
 
     def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer, force_update):
         '''
@@ -747,14 +718,7 @@ class ChefTask(Task):
                     if action == DELETED_POLICY_ACTION:
                         rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
                     else:
-                        # Bugfix "No save in chef server. {} is not of type u'string' Failed validation" 
-                        # after updating metadata.rb with new properties in nodes which old policies applied
-                        # ORIGINAL CODE: rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                        rules, obj_ui = self.get_rules_and_object_sanitized(rule_type, obj, node, policy, policy_id)
-                        
-                    self.log('debug',"task.py:::update_node - obj_ui {0}".format(obj_ui))
-                    self.log('debug',"task.py:::update_node - rules  {0}".format(rules))
-                    
+                        rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
                     node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
