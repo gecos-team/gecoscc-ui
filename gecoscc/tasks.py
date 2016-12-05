@@ -466,6 +466,7 @@ class ChefTask(Task):
             if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
                 current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
         node.attributes.set_dotted(field_chef, current_objs)
+        return True
 
         
 
