@@ -508,7 +508,7 @@ class ChefTask(Task):
                     obj_ui[field_ui] = obj_ui_field
                     self.log("debug","tasks:::update_node_from_rules -> obj_ui = {0}".format(obj_ui))
 
-                elif not obj_ui_field and action == DELETED_POLICY_ACTION:
+                if not obj_ui_field and action == DELETED_POLICY_ACTION:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
