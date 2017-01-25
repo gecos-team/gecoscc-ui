@@ -29,6 +29,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             family: "",
             users: "",
             uptime: "-",
+            gcc_link: true,
             ipaddress: "",
             commentaries: "",
             product_name: "",
@@ -144,6 +145,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 );
                 return;
             }
+ 
+            if (!this.model.get("gcc_link")) {
+                this.alertWarning(
+                    gettext("This workstation is not working properly:"),
+                     "<br/> - " + gettext("Network problems connecting to the Control Center.")
+                );
+                return;
+            }
 
             if (this.model.get("error_last_chef_client")) {
                 this.model.set("iconClass", "info-icon-danger");
@@ -179,6 +188,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         alertWarning: function (strong, text) {
             this.model.set("uptime", "-");
+            this.model.set("gcc_link", false);
             this.model.set("iconClass", "info-icon-warning");
             this.model.set("labelClass", "label-warning");
             App.showAlert(
@@ -204,6 +214,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.$el.find('[data-toggle="tooltip"]').tooltip();
             this.checkErrors();
 
             if (!_.isUndefined(this.model.id)) {

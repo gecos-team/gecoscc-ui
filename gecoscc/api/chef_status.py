@@ -78,6 +78,11 @@ class ChefStatusResource(BaseAPI):
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'finished',
                                                      'last_update': datetime.datetime.utcnow()}})
+                elif job_status['status'] == 2:
+                    self.collection.update({'_id': job['_id']},
+                                           {'$set': {'status': 'warnings',
+                                                     'message': job_status.get('message', 'Warning'),
+                                                     'last_update': datetime.datetime.utcnow()}})
                 else:
                     chef_client_error = True
                     self.collection.update({'_id': job['_id']},
