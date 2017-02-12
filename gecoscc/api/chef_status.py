@@ -64,6 +64,12 @@ class ChefStatusResource(BaseAPI):
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
         job_status = node.attributes.get('job_status')
+
+        # After chef-client run, a report handler calls /api/chef_status
+        # Previously, gcc_link attribute of chef node is updated by network policies
+        gcc_link = node.attributes.get('gcc_link')
+        self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
+
         reserve_node = False
         if job_status:
             node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
