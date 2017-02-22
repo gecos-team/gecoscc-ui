@@ -1,14 +1,14 @@
-# Translations template for gecoscc.
-# Copyright (C) 2015 ORGANIZATION
-# This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2015.
+# Translations template for PROJECT.
+# Copyright (C) 2017 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 2.1.10\n"
+"Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2015-12-14 09:02+0100\n"
+"POT-Creation-Date: 2017-01-25 11:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,8 +48,8 @@ msgstr ""
 
 #: gecoscc/static/js/app-utils.js:174
 msgid ""
-"Someone has changed this object while you were working on it, please reload "
-"before applying any changes."
+"Someone has changed this object while you were working on it, please "
+"reload before applying any changes."
 msgstr ""
 
 #: gecoscc/static/js/app-utils.js:184
@@ -68,7 +68,8 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:299 gecoscc/static/js/tree-views-renderer.js:88
+#: gecoscc/static/js/app-utils.js:299
+#: gecoscc/static/js/tree-views-renderer.js:88
 msgid "Delete"
 msgstr ""
 
@@ -140,60 +141,62 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:117
+#: gecoscc/static/js/computer.js:118
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:118
+#: gecoscc/static/js/computer.js:119
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:126
+#: gecoscc/static/js/computer.js:127
 msgid "This workstation is not linked."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:127
+#: gecoscc/static/js/computer.js:128
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:134
+#: gecoscc/static/js/computer.js:135
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:142 gecoscc/static/js/computer.js:152
-#: gecoscc/static/js/computer.js:162
+#: gecoscc/static/js/computer.js:143 gecoscc/static/js/computer.js:151
+#: gecoscc/static/js/computer.js:161 gecoscc/static/js/computer.js:171
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:143
+#: gecoscc/static/js/computer.js:144
 msgid "There were errors while saving this node in Chef"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:153
+#: gecoscc/static/js/computer.js:152
+msgid "Network problems connecting to the Control Center."
+msgstr ""
+
+#: gecoscc/static/js/computer.js:162
 msgid "Last synchronization had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:163
+#: gecoscc/static/js/computer.js:172
 msgid "Synchronization is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:213
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:213
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:203
+#: gecoscc/static/js/computer.js:213
 msgid "Minutes"
 msgstr ""
 
-#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
+#: gecoscc/static/js/i18n.js:70
 msgid "x04"
-msgid_plural "x04"
-msgstr[0] ""
-msgstr[1] ""
+msgstr ""
 
 #: gecoscc/static/js/policies-form-generator.js:126
 msgid "Policy successfully saved."
@@ -233,22 +236,12 @@ msgid "Nodes can not be moved between domains."
 msgstr ""
 
 #: gecoscc/static/js/tree-views.js:251
-msgid "Deleting an OU is a permanent action. It will also delete all its children."
+msgid ""
+"Deleting an OU is a permanent action. It will also delete all its "
+"children."
 msgstr ""
 
 #: gecoscc/static/js/tree.js:67
 msgid "Loading nodes..."
-msgstr ""
-
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
-msgid "Package not found in server repositories"
-msgstr ""
-
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:965
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
-msgid ""
-"contains items that are outside your scope, please consult a global "
-"administrator if you need more information."
 msgstr ""
 

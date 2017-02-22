@@ -53,6 +53,7 @@ class ComputerResource(TreeLeafResourcePaginated):
             result.update({'ohai': ohai,
                            'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
                            'uptime': ohai.get('uptime', ''),
+                           #'gcc_link': ohai.get('gcc_link',True),
                            'ipaddress': ohai.get('ipaddress', ''),
                            'cpu': '%s %s' % (cpu.get('vendor_id', ''), cpu.get('model_name', '')),
                            'product_name': dmi.get('system', {}).get('product_name', ''),

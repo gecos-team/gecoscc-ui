@@ -491,6 +491,8 @@ class Computer(Node):
                                            default=False)
     error_last_chef_client = colander.SchemaNode(RealBoolean(),
                                                  default=False)
+    gcc_link = colander.SchemaNode(RealBoolean(),
+                                   default=False)
 
 
 class Computers(colander.SequenceSchema):
