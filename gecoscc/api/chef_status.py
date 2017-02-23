@@ -25,7 +25,7 @@ from gecoscc.models import Job
 from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            apply_policies_to_user, remove_policies_of_computer,
-                           reserve_node_or_raise, save_node_and_free)
+                           reserve_node_or_raise, save_node_and_free, update_computers_of_user)
 from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_user, update_tree
 
 
@@ -137,7 +137,12 @@ class ChefStatusResource(BaseAPI):
                                              'type': 'user',
                                              'lock': node.get('lock', ''),
                                              'source': node.get('source', '')})
-                user['computers'].append(node['_id'])
+
+                settings = get_current_registry().settings
+                api = get_chef_api(settings, self.request.user)
+
+                user = update_computers_of_user(self.request.db, user, api)
+
                 del user['_id']
                 user_id = node_collection.insert(user)
                 user = node_collection.find_one({'_id': user_id})
@@ -161,7 +166,7 @@ class ChefStatusResource(BaseAPI):
             user = node_collection.find_one({'name': username,
                                              'type': 'user',
                                              'path': get_filter_in_domain(node)})
-            computers = user['computers']
+            computers = user['computers'] if user else []
             if node['_id'] in computers:
                 users_remove_policies.append(deepcopy(user))
                 computers.remove(node['_id'])
