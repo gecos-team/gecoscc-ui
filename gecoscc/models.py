@@ -197,6 +197,9 @@ class Group(Node):
     # groupmembers = ObjectIdList(missing=[], default=[])
 
     # Node objects
+    type = colander.SchemaNode(colander.String(),
+                               default='group',
+                               validator=colander.OneOf(['group']))
     members = ObjectIdList(missing=[], default=[])
 
     memberof = ObjectIdList(missing=[], default=[])
@@ -237,6 +240,9 @@ class BaseUser(colander.MappingSchema):
 
 
 class User(Node, BaseUser):
+    type = colander.SchemaNode(colander.String(),
+                               default='user',
+                               validator=colander.OneOf(['user']))
     email = colander.SchemaNode(colander.String(),
                                 validator=colander.Email(),
                                 default='',
@@ -437,6 +443,9 @@ class AdminUserVariables(colander.MappingSchema):
 
 
 class OrganisationalUnit(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='ou',
+                               validator=colander.OneOf(['ou']))
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
@@ -467,6 +476,9 @@ COMPUTER_FAMILY = {
 
 
 class Computer(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='computer',
+                               validator=colander.OneOf(['computer']))
     memberof = ObjectIdList(missing=[], default=[])
     family = colander.SchemaNode(colander.String(),
                                  default='desktop',
@@ -518,6 +530,9 @@ PRINTER_OPPOLICY_TYPE = {
 
 
 class Printer(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='printer',
+                               validator=colander.OneOf(['printer']))
     printtype = colander.SchemaNode(colander.String(),
                                     default='laser',
                                     validator=colander.OneOf(
@@ -572,6 +587,9 @@ STORAGE_MOUNT_TYPE = {
 
 
 class Storage(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='storage',
+                               validator=colander.OneOf(['storage']))
     uri = colander.SchemaNode(colander.String(),
                               default='')
 
@@ -581,6 +599,9 @@ class Storages(colander.SequenceSchema):
 
 
 class Repository(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='repository',
+                               validator=colander.OneOf(['repository']))
     uri = colander.SchemaNode(colander.String())
     components = StringList(missing=[], default=[])
     distribution = colander.SchemaNode(colander.String(),
