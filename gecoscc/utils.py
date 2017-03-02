@@ -17,6 +17,8 @@ import random
 import string
 import time
 import re
+import pkg_resources
+import logging
 
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
@@ -37,6 +39,7 @@ USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
 
+logger = logging.getLogger(__name__)
 
 def get_policy_emiter_id(collection, obj):
     '''
@@ -169,32 +172,38 @@ def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
 def get_chef_api(settings, user):
     username = toChefUsername(user['username'])
     chef_url = settings.get('chef.url')
-    chef_client_pem = get_pem_path_for_username(settings, username, 'chef_client.pem')
     chef_user_pem = get_pem_path_for_username(settings, username, 'chef_user.pem')
-    if os.path.exists(chef_client_pem):
-        chef_pem = chef_client_pem
-    else:
-        chef_pem = chef_user_pem
-    api = _get_chef_api(chef_url, username, chef_pem)
+    api = _get_chef_api(chef_url, username, chef_user_pem, settings.get('chef.version'))
+        
     return api
 
 
-def _get_chef_api(chef_url, username, chef_pem):
+def _get_chef_api(chef_url, username, chef_pem, chef_version = '11.0.0'):
     if not os.path.exists(chef_pem):
         raise ChefError('User has no pem to access chef server')
-    api = ChefAPI(chef_url, chef_pem, username)
+    api = ChefAPI(chef_url, chef_pem, username, chef_version)
+    
     return api
 
 
-def create_chef_admin_user(api, settings, usrname, password=None):
+def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@nobody.es'):
     username = toChefUsername(usrname)
     if password is None:
         password = password_generator()
-    data = {'name': username, 'password': password, 'admin': True}
+        
+    if api.version_parsed >= pkg_resources.parse_version("12.0.0"):
+        # Chef 12 user data
+        data = {'name': username, 'password': password, 'admin': True, 'display_name': username, 'email': email}
+    else:
+        # Chef 11 user data
+        data = {'name': username, 'password': password, 'admin': True}
+        
     chef_user = api.api_request('POST', '/users', data=data)
+
     user_private_key = chef_user.get('private_key', None)
     if user_private_key:
         save_pem_for_username(settings, username, 'chef_user.pem', user_private_key)
+
     chef_client = Client.create(name=username, api=api, admin=True)
     client_private_key = getattr(chef_client, 'private_key', None)
     if client_private_key:

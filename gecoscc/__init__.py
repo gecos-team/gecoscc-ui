@@ -177,30 +177,45 @@ def jinja2_config(config):
     """)
 
 
+#def celery_config(config):
+#    settings = config.registry.settings
+#    settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
+#    if not settings.get('BROKER_URL', ''):
+#
+#        parsed_uri = pymongo.uri_parser.parse_uri(settings['mongo_uri'])
+#
+#        settings['BROKER_URL'] = settings['mongo_uri']
+#        settings['CELERY_RESULT_BACKEND'] = "mongodb"
+#        settings['CELERY_MONGODB_BACKEND_SETTINGS'] = {
+#            "host": parsed_uri.get('nodelist')[0][0],
+#            "port": parsed_uri.get('nodelist')[0][1],
+#            "database": parsed_uri.get('database'),
+#            "taskmeta_collection": "celery_taskmeta",
+#        }
+#        if parsed_uri.get('username', ''):
+#            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
+#                "user": parsed_uri.get('username'),
+#                "password": parsed_uri.get("password"),
+#            })
+#        if parsed_uri.get('options', ''):
+#            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
+#                "options": parsed_uri.get('options'),
+#            })
+
 def celery_config(config):
+    from urlparse import urlparse
     settings = config.registry.settings
     settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
     if not settings.get('BROKER_URL', ''):
+        parsed_uri = urlparse(settings['redis_uri'])
+        settings['BROKER_URL'] = settings['redis_uri']
+        settings['CELERY_RESULT_BACKEND'] = "redis"
+        settings['CELERY_REDIS_HOST'] = parsed_uri.hostname
+        settings['CELERY_REDIS_PORT'] = parsed_uri.port
+        settings['CELERY_REDIS_DB'] = parsed_uri.path.strip('/')
+    if parsed_uri.password:
+        settings['CELERY_REDIS_PASSWORD'] = parsed_uri.password
 
-        parsed_uri = pymongo.uri_parser.parse_uri(settings['mongo_uri'])
-
-        settings['BROKER_URL'] = settings['mongo_uri']
-        settings['CELERY_RESULT_BACKEND'] = "mongodb"
-        settings['CELERY_MONGODB_BACKEND_SETTINGS'] = {
-            "host": parsed_uri.get('nodelist')[0][0],
-            "port": parsed_uri.get('nodelist')[0][1],
-            "database": parsed_uri.get('database'),
-            "taskmeta_collection": "celery_taskmeta",
-        }
-        if parsed_uri.get('username', ''):
-            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-                "user": parsed_uri.get('username'),
-                "password": parsed_uri.get("password"),
-            })
-        if parsed_uri.get('options', ''):
-            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-                "options": parsed_uri.get('options'),
-            })
 
 
 def locale_config(config):

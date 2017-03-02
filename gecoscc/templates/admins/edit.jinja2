@@ -27,17 +27,6 @@
                 <a href="{{ request.route_url('admins_set_variables', username=username) }}" class="btn btn-primary pull-right"><span class="fa"></span> {{ gettext('Set variables') }}</a>
                 {% if request.user.get('is_superuser') %}
                     <a href="{{ request.route_url('admins_ou_manage', username=username) }}" class="btn btn-primary pull-right"><span class="fa"></span> {{ gettext('Set Organitation Unit managed by this user') }}</a>
-                    <form method="POST" accept-charset="utf-8" role="form" action="{{ request.route_url('admins_superuser', username=username) }}">
-                        {% if not instance.get('is_superuser') %}
-                            <button id="deform_submit" name="_superuser" type="submit" class="btn btn-primary pull-right" value="_submit">
-                                {{ gettext('Set like superuser') }}
-                            </button>
-                        {% else %}
-                            <button id="deform_submit" name="_no_superuser" type="submit" class="btn btn-primary pull-right" value="_submit">
-                                {{ gettext('Remove like superuser') }}
-                            </button>
-                        {% endif %}
-                    </form>
                 {% endif %}
             </div>
         </div>
