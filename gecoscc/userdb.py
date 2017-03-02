@@ -13,7 +13,7 @@ import bcrypt
 from uuid import uuid4
 import pymongo
 
-from pyramid.security import authenticated_userid
+import pyramid.request
 
 
 ## MongoDB User Document structure
@@ -150,7 +150,7 @@ def get_userdb(request):
 
 
 def get_user(request):
-    userid = authenticated_userid(request)
+    userid = request.authenticated_userid
     if userid is not None:
         return request.userdb.get_user(userid)
     else:
