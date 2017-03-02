@@ -181,7 +181,8 @@ def get_chef_api(settings, user):
 def _get_chef_api(chef_url, username, chef_pem, chef_version = '11.0.0'):
     if not os.path.exists(chef_pem):
         raise ChefError('User has no pem to access chef server')
-    api = ChefAPI(chef_url, chef_pem, username, chef_version, ssl_verify=False)
+    chef_ssl_verify = settings.get('chef.ssl.verify')
+    api = ChefAPI(chef_url, chef_pem, username, chef_version, ssl_verify=chef_ssl_verify)
     
     return api
 
