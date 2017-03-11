@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2015-12-14 09:02+0100\n"
+"POT-Creation-Date: 2017-03-07 20:53+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -17,32 +17,32 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:55 gecoscc/forms.py:121 gecoscc/templates/login.jinja2:31
-#: gecoscc/templates/settings.jinja2:127
+#: gecoscc/forms.py:57 gecoscc/forms.py:124 gecoscc/templates/login.jinja2:31
+#: gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr ""
 
-#: gecoscc/forms.py:108
+#: gecoscc/forms.py:111
 msgid "User created successfully"
 msgstr ""
 
-#: gecoscc/forms.py:124 gecoscc/templates/bb-computer.html:110
+#: gecoscc/forms.py:127 gecoscc/templates/bb-computer.html:116
 #: gecoscc/templates/bb-groups-form.html:36 gecoscc/templates/bb-ou.html:61
-#: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:107
+#: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:109
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
 #: gecoscc/templates/bb-user.html:90 gecoscc/templates/server/status.jinja2:93
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/forms.py:142 gecoscc/forms.py:170
+#: gecoscc/forms.py:145 gecoscc/forms.py:173
 msgid "User edited successfully"
 msgstr ""
 
-#: gecoscc/forms.py:159 gecoscc/forms.py:160
+#: gecoscc/forms.py:162 gecoscc/forms.py:163
 msgid "Add another"
 msgstr ""
 
-#: gecoscc/forms.py:209
+#: gecoscc/forms.py:212
 msgid "Variables updated successfully"
 msgstr ""
 
@@ -58,214 +58,218 @@ msgstr ""
 msgid "The passwords do not match"
 msgstr ""
 
-#: gecoscc/models.py:215 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:218 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr ""
 
-#: gecoscc/models.py:219
+#: gecoscc/models.py:222
 msgid "Value"
 msgstr ""
 
-#: gecoscc/models.py:223 gecoscc/templates/bb-computer.html:57
-#: gecoscc/templates/bb-computer.html:164 gecoscc/templates/bb-printer.html:67
+#: gecoscc/models.py:226 gecoscc/templates/bb-computer.html:63
+#: gecoscc/templates/bb-computer.html:170 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr ""
 
-#: gecoscc/models.py:230 gecoscc/templates/bb-user.html:40
+#: gecoscc/models.py:233 gecoscc/templates/bb-user.html:40
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr ""
 
-#: gecoscc/models.py:234 gecoscc/templates/bb-user.html:44
+#: gecoscc/models.py:237 gecoscc/templates/bb-user.html:44
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr ""
 
-#: gecoscc/models.py:327 gecoscc/templates/bb-user.html:36
+#: gecoscc/models.py:333 gecoscc/templates/bb-user.html:36
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr ""
 
-#: gecoscc/models.py:333 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:339 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr ""
 
-#: gecoscc/models.py:338
+#: gecoscc/models.py:344
 msgid "Repeat the password"
 msgstr ""
 
-#: gecoscc/models.py:342 gecoscc/templates/bb-user.html:50
+#: gecoscc/models.py:348 gecoscc/templates/bb-user.html:50
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr ""
 
-#: gecoscc/models.py:349
+#: gecoscc/models.py:355
 msgid "There is a user with this email: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:350
+#: gecoscc/models.py:356
 msgid "There is a user with this username: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:355
+#: gecoscc/models.py:361
 msgid "This user can register workstation under these Organitation Units"
 msgstr ""
 
-#: gecoscc/models.py:358
+#: gecoscc/models.py:364
 msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 
-#: gecoscc/models.py:368
+#: gecoscc/models.py:374
 msgid "uri"
 msgstr ""
 
-#: gecoscc/models.py:371
+#: gecoscc/models.py:377
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:374
+#: gecoscc/models.py:380
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:377
+#: gecoscc/models.py:383
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:380
+#: gecoscc/models.py:386
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:386
+#: gecoscc/models.py:392
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:388
+#: gecoscc/models.py:394
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:394
+#: gecoscc/models.py:400
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:397
+#: gecoscc/models.py:403
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:400
+#: gecoscc/models.py:406
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:403
+#: gecoscc/models.py:409
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:412
+#: gecoscc/models.py:418
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:414
+#: gecoscc/models.py:420
 msgid "Auth type"
 msgstr ""
 
-#: gecoscc/models.py:418
+#: gecoscc/models.py:424
 msgid "Specific conf"
 msgstr ""
 
-#: gecoscc/models.py:420
+#: gecoscc/models.py:426
 msgid "Auth LDAP"
 msgstr ""
 
-#: gecoscc/models.py:421 gecoscc/models.py:422
+#: gecoscc/models.py:427 gecoscc/models.py:428
 msgid "Auth Active directory"
 msgstr ""
 
-#: gecoscc/models.py:462 gecoscc/templates/bb-computer.html:59
+#: gecoscc/models.py:471 gecoscc/templates/bb-computer.html:65
 msgid "Desktop"
 msgstr ""
 
-#: gecoscc/models.py:463 gecoscc/templates/bb-computer.html:60
+#: gecoscc/models.py:472 gecoscc/templates/bb-computer.html:66
 msgid "Laptop"
 msgstr ""
 
-#: gecoscc/models.py:464 gecoscc/templates/bb-computer.html:61
+#: gecoscc/models.py:473 gecoscc/templates/bb-computer.html:67
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:465 gecoscc/templates/bb-computer.html:62
+#: gecoscc/models.py:474 gecoscc/templates/bb-computer.html:68
 msgid "Tablet"
 msgstr ""
 
-#: gecoscc/models.py:501 gecoscc/templates/bb-printer.html:69
+#: gecoscc/models.py:515
 msgid "Laser"
 msgstr ""
 
-#: gecoscc/models.py:502 gecoscc/templates/bb-printer.html:70
+#: gecoscc/models.py:516
 msgid "Ink"
 msgstr ""
 
-#: gecoscc/models.py:503 gecoscc/templates/bb-printer.html:71
+#: gecoscc/models.py:517
 msgid "Dot matrix"
 msgstr ""
 
-#: gecoscc/models.py:507 gecoscc/templates/bb-printer.html:35
+#: gecoscc/models.py:521
 msgid "Network"
 msgstr ""
 
-#: gecoscc/models.py:508 gecoscc/templates/bb-printer.html:36
+#: gecoscc/models.py:522
 msgid "Local"
 msgstr ""
 
-#: gecoscc/models.py:512 gecoscc/templates/bb-printer.html:52
+#: gecoscc/models.py:526
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:513 gecoscc/templates/bb-printer.html:53
+#: gecoscc/models.py:527
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:558
+#: gecoscc/models.py:528
+msgid "Kerberos-AD"
+msgstr ""
+
+#: gecoscc/models.py:576
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:559
+#: gecoscc/models.py:577
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:560
+#: gecoscc/models.py:578
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:561
+#: gecoscc/models.py:579
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:562
+#: gecoscc/models.py:580
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:566
+#: gecoscc/models.py:584
 msgid "System mounts (fstab)"
 msgstr ""
 
-#: gecoscc/models.py:567
+#: gecoscc/models.py:585
 msgid "User space mounts (gvfs)"
 msgstr ""
 
-#: gecoscc/models.py:598
+#: gecoscc/models.py:625
 msgid "Processing"
 msgstr ""
 
-#: gecoscc/models.py:601
+#: gecoscc/models.py:628
 msgid "Applying changes"
 msgstr ""
 
-#: gecoscc/models.py:604
+#: gecoscc/models.py:631
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:607 gecoscc/models.py:610
+#: gecoscc/models.py:634 gecoscc/models.py:637
 msgid "There were errors"
 msgstr ""
 
@@ -277,10 +281,10 @@ msgstr ""
 msgid "Are you sure?"
 msgstr ""
 
-#: gecoscc/templates/base.jinja2:39 gecoscc/templates/bb-computer.html:107
+#: gecoscc/templates/base.jinja2:39 gecoscc/templates/bb-computer.html:113
 #: gecoscc/templates/bb-groups-form.html:33 gecoscc/templates/bb-ou.html:58
 #: gecoscc/templates/bb-policies-add.html:52
-#: gecoscc/templates/bb-policy.html:17 gecoscc/templates/bb-printer.html:104
+#: gecoscc/templates/bb-policy.html:17 gecoscc/templates/bb-printer.html:106
 #: gecoscc/templates/bb-repository.html:68 gecoscc/templates/bb-storage.html:26
 #: gecoscc/templates/bb-user.html:87
 msgid "Cancel"
@@ -298,7 +302,7 @@ msgstr ""
 msgid "There are problems to connect with the server, please reload page."
 msgstr ""
 
-#: gecoscc/templates/base.jinja2:54 gecoscc/templates/settings.jinja2:146
+#: gecoscc/templates/base.jinja2:54 gecoscc/templates/settings.jinja2:154
 msgid "Reload page"
 msgstr ""
 
@@ -328,7 +332,7 @@ msgid "Administrators"
 msgstr ""
 
 #: gecoscc/templates/base_navbar.jinja2:26
-#: gecoscc/templates/settings.jinja2:114 gecoscc/templates/settings.jinja2:117
+#: gecoscc/templates/settings.jinja2:122 gecoscc/templates/settings.jinja2:125
 msgid "Settings"
 msgstr ""
 
@@ -363,30 +367,30 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:23
+#: gecoscc/templates/base_tree.jinja2:25
 #: gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:136
+#: gecoscc/templates/base_tree.jinja2:138
 msgid "This action requires a little time"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:139
+#: gecoscc/templates/base_tree.jinja2:141
 msgid "Is the website maintenance?"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:142
+#: gecoscc/templates/base_tree.jinja2:144
 #: gecoscc/templates/admins/list.jinja2:49
 msgid "No"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:143
+#: gecoscc/templates/base_tree.jinja2:145
 #: gecoscc/templates/admins/list.jinja2:47
 msgid "Yes"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:224 gecoscc/templates/bb-computer.html:93
+#: gecoscc/templates/base_tree.jinja2:226 gecoscc/templates/bb-computer.html:99
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
 msgstr ""
@@ -429,7 +433,7 @@ msgstr ""
 msgid "Policies"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:37
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:43
 msgid "Workstation"
 msgstr ""
 
@@ -473,7 +477,13 @@ msgstr ""
 msgid "Last connection"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:51
+#: gecoscc/templates/bb-computer.html:47
+msgid ""
+"Former network connection restored because current one does not work "
+"properly"
+msgstr ""
+
+#: gecoscc/templates/bb-computer.html:57
 #: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
@@ -482,12 +492,12 @@ msgstr ""
 msgid "Name"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:52 gecoscc/templates/bb-computer.html:71
-#: gecoscc/templates/bb-computer.html:77
+#: gecoscc/templates/bb-computer.html:58 gecoscc/templates/bb-computer.html:77
+#: gecoscc/templates/bb-computer.html:83
 #: gecoscc/templates/bb-groups-form.html:22 gecoscc/templates/bb-ou.html:44
-#: gecoscc/templates/bb-printer.html:14 gecoscc/templates/bb-printer.html:20
-#: gecoscc/templates/bb-printer.html:26 gecoscc/templates/bb-printer.html:43
-#: gecoscc/templates/bb-printer.html:92 gecoscc/templates/bb-printer.html:98
+#: gecoscc/templates/bb-printer.html:14 gecoscc/templates/bb-printer.html:44
+#: gecoscc/templates/bb-printer.html:50 gecoscc/templates/bb-printer.html:58
+#: gecoscc/templates/bb-printer.html:64 gecoscc/templates/bb-printer.html:82
 #: gecoscc/templates/bb-repository.html:14
 #: gecoscc/templates/bb-repository.html:24
 #: gecoscc/templates/bb-repository.html:30
@@ -502,109 +512,105 @@ msgstr ""
 msgid "e.g."
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:14
-msgid "Make and model"
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:52
+#: gecoscc/templates/bb-computer.html:58
 msgid "John's laptop"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:70 gecoscc/templates/bb-printer.html:97
+#: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:63
 #: gecoscc/views/reports.py:95
 msgid "Registry number"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:91
+#: gecoscc/templates/bb-computer.html:82 gecoscc/templates/bb-printer.html:57
 #: gecoscc/views/reports.py:96
 msgid "Serial number"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:84 gecoscc/templates/bb-user.html:66
+#: gecoscc/templates/bb-computer.html:90 gecoscc/templates/bb-user.html:66
 msgid "Commentaries"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:85
+#: gecoscc/templates/bb-computer.html:91
 msgid "Describe the workstation here..."
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:98
+#: gecoscc/templates/bb-computer.html:104
 #: gecoscc/templates/bb-groups-multi-widget.html:3
 #: gecoscc/templates/bb-user.html:79
 msgid "Groups"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:100 gecoscc/templates/bb-user.html:81
+#: gecoscc/templates/bb-computer.html:106 gecoscc/templates/bb-user.html:81
 msgid "If you want to add any group, please execute the changes"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:108
+#: gecoscc/templates/bb-computer.html:114
 #: gecoscc/templates/bb-groups-form.html:34 gecoscc/templates/bb-ou.html:59
-#: gecoscc/templates/bb-policy.html:18 gecoscc/templates/bb-printer.html:105
+#: gecoscc/templates/bb-policy.html:18 gecoscc/templates/bb-printer.html:107
 #: gecoscc/templates/bb-repository.html:69 gecoscc/templates/bb-storage.html:27
 #: gecoscc/templates/bb-tree-selection.html:21
 #: gecoscc/templates/bb-user.html:88
 msgid "Save"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:111
+#: gecoscc/templates/bb-computer.html:117
 #: gecoscc/templates/bb-groups-form.html:37 gecoscc/templates/bb-ou.html:62
-#: gecoscc/templates/bb-printer.html:108
+#: gecoscc/templates/bb-printer.html:110
 #: gecoscc/templates/bb-repository.html:72 gecoscc/templates/bb-storage.html:30
 #: gecoscc/templates/bb-user.html:91
 msgid "Cut"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:123
+#: gecoscc/templates/bb-computer.html:129
 msgid "Workstation specifications (Ohai)"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:129 gecoscc/views/reports.py:97
+#: gecoscc/templates/bb-computer.html:135 gecoscc/views/reports.py:97
 msgid "Node chef id"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:139
+#: gecoscc/templates/bb-computer.html:145
 #: gecoscc/templates/server/status.jinja2:69
 msgid "CPU"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:143
+#: gecoscc/templates/bb-computer.html:149
 msgid "RAM"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:149
+#: gecoscc/templates/bb-computer.html:155
 #: gecoscc/templates/bb-repository.html:23
 msgid "Distribution"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:153
+#: gecoscc/templates/bb-computer.html:159
 msgid "Kernel"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:159
+#: gecoscc/templates/bb-computer.html:165
 msgid "File system"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:163
+#: gecoscc/templates/bb-computer.html:169
 #: gecoscc/templates/server/status.jinja2:30
 msgid "Device"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:165
+#: gecoscc/templates/bb-computer.html:171
 #: gecoscc/templates/server/status.jinja2:31
 msgid "Mount point"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:166
+#: gecoscc/templates/bb-computer.html:172
 #: gecoscc/templates/server/status.jinja2:33
 msgid "Used"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:184
+#: gecoscc/templates/bb-computer.html:190
 msgid "Data retrieved from workstation"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:202
+#: gecoscc/templates/bb-computer.html:208
 #: gecoscc/templates/bb-groups-form.html:49 gecoscc/templates/bb-ou.html:74
 #: gecoscc/templates/bb-user.html:103
 msgid "Policies list"
@@ -690,20 +696,32 @@ msgstr ""
 msgid "Archive Tasks"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:34
+#: gecoscc/templates/bb-jobs.html:28
+msgid "Backstrack"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:37
+msgid "Created"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:40
 msgid "Emiter node"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:37 gecoscc/templates/bb-new-element.html:12
+#: gecoscc/templates/bb-jobs.html:43 gecoscc/templates/bb-new-element.html:12
 #: gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:40
+#: gecoscc/templates/bb-jobs.html:46
 msgid "Policy"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/bb-jobs.html:50
+msgid "Order"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:54
 msgid "Trace"
 msgstr ""
 
@@ -820,52 +838,56 @@ msgstr ""
 msgid "Back"
 msgstr ""
 
+#: gecoscc/templates/bb-printer.html:14
+msgid "Make and model"
+msgstr ""
+
 #: gecoscc/templates/bb-printer.html:19
-msgid "Description"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:20
-msgid "Main printer at sales department"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:25
-msgid "Location"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:33
-msgid "Connection type"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:42
-msgid "Printer path"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:43
-msgid "http://workstation_name:631/ipp/port1"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:50
-msgid "Operation Policy"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:59
-msgid "PPD URI"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:77
 msgid "Manufacturer"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:78
+#: gecoscc/templates/bb-printer.html:20
 msgid "Select manufacturer"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:83
+#: gecoscc/templates/bb-printer.html:25
 msgid "Model"
 msgstr ""
 
-#: gecoscc/templates/bb-printer.html:84
+#: gecoscc/templates/bb-printer.html:26
 msgid "Select model"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:43
+msgid "Description"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:44
+msgid "Main printer at sales department"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:49
+msgid "Location"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:71
+msgid "Connection type"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:81
+msgid "Printer path"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:82
+msgid "http://workstation_name:631/ipp/port1"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:89
+msgid "Operation Policy"
+msgstr ""
+
+#: gecoscc/templates/bb-printer.html:99
+msgid "PPD URI"
 msgstr ""
 
 #: gecoscc/templates/bb-repository.html:3
@@ -1007,11 +1029,15 @@ msgstr ""
 msgid "Packages"
 msgstr ""
 
-#: gecoscc/templates/settings.jinja2:142
+#: gecoscc/templates/settings.jinja2:76
+msgid "Mime Types"
+msgstr ""
+
+#: gecoscc/templates/settings.jinja2:150
 msgid "Saving problems"
 msgstr ""
 
-#: gecoscc/templates/settings.jinja2:144
+#: gecoscc/templates/settings.jinja2:152
 msgid "There was a problem saving the data"
 msgstr ""
 
@@ -1036,15 +1062,7 @@ msgstr ""
 msgid "Set Organitation Unit managed by this user"
 msgstr ""
 
-#: gecoscc/templates/admins/edit.jinja2:33
-msgid "Set like superuser"
-msgstr ""
-
-#: gecoscc/templates/admins/edit.jinja2:37
-msgid "Remove like superuser"
-msgstr ""
-
-#: gecoscc/templates/admins/edit.jinja2:53
+#: gecoscc/templates/admins/edit.jinja2:42
 msgid "Are you sure that you want to delete this user?"
 msgstr ""
 
@@ -1152,27 +1170,19 @@ msgstr ""
 msgid "Connections"
 msgstr ""
 
-#: gecoscc/views/admins.py:46
-msgid "Now the user is a super user"
-msgstr ""
-
-#: gecoscc/views/admins.py:49
-msgid "Now the user is not a super user"
-msgstr ""
-
-#: gecoscc/views/admins.py:156
+#: gecoscc/views/admins.py:147
 msgid "User deleted unsuccessfully from chef"
 msgstr ""
 
-#: gecoscc/views/admins.py:158
+#: gecoscc/views/admins.py:149
 msgid "User deleted successfully"
 msgstr ""
 
-#: gecoscc/views/portal.py:56 gecoscc/views/portal.py:62
+#: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69
 msgid "Please enter the correct username and password"
 msgstr ""
 
-#: gecoscc/views/portal.py:67
+#: gecoscc/views/portal.py:74
 msgid "Welcome ${username}"
 msgstr ""
 
@@ -1184,17 +1194,20 @@ msgstr ""
 msgid "Phone"
 msgstr ""
 
-#: gecoscc/views/settings.py:156
+#: gecoscc/views/settings.py:167
 msgid "Software Profiles policy not found"
 msgstr ""
 
-#: gecoscc/views/settings.py:181
+#: gecoscc/views/settings.py:192
 #, python-format
 msgid "Software Profile in use: %s"
 msgstr ""
 
-#: gecoscc/views/settings.py:187
+#: gecoscc/views/settings.py:198
 msgid "Settings modified successfully"
+msgstr ""
+
+msgid "Total"
 msgstr ""
 
 #~ msgid "NFS v3"
