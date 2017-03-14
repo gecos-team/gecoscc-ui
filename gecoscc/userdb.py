@@ -13,7 +13,6 @@ import bcrypt
 from uuid import uuid4
 import pymongo
 
-import pyramid.request
 from pyramid.security import authenticated_userid
 
 
