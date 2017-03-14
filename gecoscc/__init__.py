@@ -213,8 +213,8 @@ def celery_config(config):
         settings['CELERY_REDIS_HOST'] = parsed_uri.hostname
         settings['CELERY_REDIS_PORT'] = parsed_uri.port
         settings['CELERY_REDIS_DB'] = parsed_uri.path.strip('/')
-    if parsed_uri.password:
-        settings['CELERY_REDIS_PASSWORD'] = parsed_uri.password
+        if parsed_uri.password:
+            settings['CELERY_REDIS_PASSWORD'] = parsed_uri.password
 
 
 

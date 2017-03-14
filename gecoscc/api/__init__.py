@@ -11,6 +11,7 @@
 #
 
 import cgi
+import os
 
 from bson import ObjectId
 from copy import deepcopy
@@ -30,8 +31,8 @@ from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
                            RESOURCES_EMITTERS_TYPES, get_object_related_list)
-from gecoscc.i18n import gettext as _
 
+import gettext
 import logging
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,10 @@ class BaseAPI(object):
     def __init__(self, request):
         self.request = request
         self.collection = self.get_collection()
+        localedir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'locale')
+        gettext.bindtextdomain('gecoscc', localedir)
+        gettext.textdomain('gecoscc')
+        self._ = gettext.gettext                                
 
     def parse_item(self, item):
         return self.schema_detail().serialize(item)
@@ -169,6 +174,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
             'pages': pages,
             'page': page,
             self.collection_name: parsed_objects,
+            'total': nodes_count,
         }
 
     def get(self):

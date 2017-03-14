@@ -12,6 +12,7 @@
 
 import datetime
 import random
+import os
 
 from copy import deepcopy
 
@@ -27,6 +28,7 @@ from jsonschema import validate
 from jsonschema.exceptions import ValidationError
 
 
+import gettext
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
@@ -54,7 +56,12 @@ class ChefTask(Task):
     def __init__(self):
         self.init_jobid()
         self.logger = self.get_logger()
-
+        localedir = os.path.join(os.path.dirname(__file__), 'locale')
+        gettext.bindtextdomain('gecoscc', localedir)
+        gettext.textdomain('gecoscc')
+        self._ = gettext.gettext
+        
+        
     @property
     def db(self):
         if hasattr(self, '_db'):
@@ -382,71 +389,76 @@ class ChefTask(Task):
         '''
         Updates node chef with a mergeable workstation policy
         '''
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+        self.log("debug","tasks.py:::update_ws_mergeable_policy -> field_chef = {0}".format(field_chef))
+        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) is True:
+           
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
         
-        # defaults
-        new_field_chef_value = obj_ui[field_ui] 
-        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-        for updater_node in updater_nodes:
-            if field_ui in updater_node['policies'][unicode(policy['_id'])]:
+                  
+            new_field_chef_value = obj_ui[field_ui]
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                #if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
                 new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
             
-            self.log("debug","tasks.py:::update_ws_mergeable_policy -> new_field_chef_value = {0}".format(new_field_chef_value))
+                                                                                                                                
             
-        try:
-            node.attributes.set_dotted(field_chef, list(set(new_field_chef_value)))
-        except TypeError:
-            new_field_chef_value = self.remove_duplicated_dict(new_field_chef_value)
-            node.attributes.set_dotted(field_chef, new_field_chef_value)
-                
-        return True
-
+            try:
+                node.attributes.set_dotted(field_chef,list(set(new_field_chef_value)))
+            except TypeError:
+                new_field_chef_value = self.remove_duplicated_dict(new_field_chef_value)
+                node.attributes.set_dotted(field_chef, new_field_chef_value)
+            return True
+   
+        return False
+            
 
     def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
         '''
         Updates node chef with a mergeable user policy
         '''
-        # You always have to recalculate the array of mergeable fields
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
 
-        new_field_chef_value = {}
-        updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
-        for updater_node in updater_nodes:
-            node_policy = updater_node['policies'][unicode(policy['_id'])]
-            for policy_field in node_policy.keys():
-                if policy_field not in new_field_chef_value:
-                    new_field_chef_value[policy_field] = []
-                new_field_chef_value[policy_field] += node_policy[policy_field]
+            new_field_chef_value = {}
+            updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            for updater_node in updater_nodes:
+                node_policy = updater_node['policies'][unicode(policy['_id'])]
+                for policy_field in node_policy.keys():
+                    if policy_field not in new_field_chef_value:
+                        new_field_chef_value[policy_field] = []
+                    new_field_chef_value[policy_field] += node_policy[policy_field]
                 
-            self.log("debug","tasks.py:::update_user_mergeable_policy -> new_field_chef_value = {0}".format(new_field_chef_value))
 
-        obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-        if obj_ui_field.get(priority_obj['name']):
-            for policy_field in policy['schema']['properties'].keys():
-                obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
-        else:
-            return False
+            obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+            if obj_ui_field.get(priority_obj['name']):
+                for policy_field in policy['schema']['properties'].keys():
+                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+            else:
+                return False
         
-        node.attributes.set_dotted(field_chef, obj_ui_field)
+            node.attributes.set_dotted(field_chef, obj_ui_field)
+            return True
 
-        return True                
+        return False
 
     def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
         '''
         Update node chef with a mergeable workstation emitter policy
         This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
         '''
-        
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
+        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
 
-        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
 
-        node.attributes.set_dotted(field_chef, related_objects)
-        return True
+            node.attributes.set_dotted(field_chef, related_objects)
+            return True
 
+        return False
         
 
     def update_user_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
@@ -454,23 +466,23 @@ class ChefTask(Task):
         Update node chef with a mergeable user emitter policy
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
+        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+            node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            nodes_ids = self.get_nodes_ids(node_updated_by)
+
+            related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
+            current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+
+            for objs in related_objects:
+                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
+                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+            node.attributes.set_dotted(field_chef, current_objs)
+            return True
+
+        return False
         
-        node_updated_by = node.attributes.get_dotted(update_by_path).items()
-        nodes_ids = self.get_nodes_ids(node_updated_by)
 
-        related_objects = self.get_related_objects(nodes_ids, policy, obj_ui['type'])
-
-        current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-
-        for objs in related_objects:
-            if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
-        node.attributes.set_dotted(field_chef, current_objs)
-        return True
-
-        
-
-    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer):
+    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, parent_id, job_ids_by_computer):
         '''
         This function update a node from rules.
         Rules are the different fields in a policy.
@@ -545,7 +557,7 @@ class ChefTask(Task):
                         updated = True
             if job_attr not in attributes_jobs_updated:
                 if updated:
-                    self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, job_ids_by_computer)
+                    self.update_node_job_id(user, obj, action, computer, node, policy, job_attr, attributes_jobs_updated, parent_id, job_ids_by_computer)
         return (node, (updated or updated_updated_by))
 
     def get_first_exists_node(self, ids, obj, action):
@@ -659,7 +671,7 @@ class ChefTask(Task):
         ous.sort(key=lambda x: x['path'].count(','), reverse=True)
         return [unicode(ou['_id']) for ou in ous]
 
-    def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, job_ids_by_computer):
+    def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, parent_id, job_ids_by_computer):
         '''
         Update the jobs field of a node
         '''
@@ -679,6 +691,7 @@ class ChefTask(Task):
                                     status=job_status,
                                     computer=computer,
                                     policy=policy,
+                                    parent=parent_id,
                                     administrator_username=user['username'])
         job_ids.append(unicode(job_id))
         job_ids_by_computer.append(job_id)
@@ -710,7 +723,7 @@ class ChefTask(Task):
         policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
 
-    def update_node(self, user, computer, obj, objold, node, action, job_ids_by_computer, force_update):
+    def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
         '''
         This method update the node with changed or created actions.
         Have two different cases:
@@ -729,7 +742,7 @@ class ChefTask(Task):
                         rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
                     else:
                         rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type, job_ids_by_computer)
+                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
             return (node, updated)
@@ -857,6 +870,19 @@ class ChefTask(Task):
         api = get_chef_api(self.app.conf, user)
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
+        # MacroJob
+        job_ids_by_order = []
+        name = "%s %s" % (obj['type'], action)
+        self.log("debug","obj_type_translate {0}".format(obj['type']))
+        self.log("debug","action_translate {0}".format(action))
+        name_es = self._(obj['type']) + " " + self._(action)
+        macrojob_storage = JobStorage(self.db.jobs, user)
+        macrojob_id = macrojob_storage.create(obj=obj,
+                                    op=action,
+                                    computer=None,
+                                    status='processing',
+                                    policy={'name':name,'name_es':name_es},
+                                    administrator_username=user['username'])
         are_new_jobs = False
         for computer in computers:
             try:
@@ -868,7 +894,9 @@ class ChefTask(Task):
                 error_last_saved = computer.get('error_last_saved', False)
                 error_last_chef_client = computer.get('error_last_chef_client', False)
                 force_update = error_last_saved or error_last_chef_client
-                node, updated = self.update_node(user, computer, obj, objold, node, action, job_ids_by_computer, force_update)
+                node, updated = self.update_node(user, computer, obj, objold, node, action, macrojob_id, job_ids_by_computer, force_update)
+                if job_ids_by_computer:
+                    job_ids_by_order.append(job_ids_by_computer[-1])
                 if not updated:
                     save_node_and_free(node)
                     continue
@@ -900,6 +928,9 @@ class ChefTask(Task):
                 except:
                     pass
                 are_new_jobs = True
+        job_status = 'processing' if job_ids_by_order else 'finished'
+        self.db.jobs.update({'_id': macrojob_id},
+                            {'$set': {'status': job_status, 'nchilds': len(job_ids_by_order),'message': self._("This is a macrojob: %d childs") % len(job_ids_by_order)}})
         if are_new_jobs:
             invalidate_jobs(self.request, user)
 
