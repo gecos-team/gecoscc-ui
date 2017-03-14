@@ -162,7 +162,7 @@ class Command(BaseCommand):
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.version'))
+                            self.options.chef_pem, self.settings.get('chef.ssl.verify'), self.settings.get('chef.version'))
         cookbook_name = self.settings['chef.cookbook_name']
 
         cookbook = get_cookbook(api, cookbook_name)
