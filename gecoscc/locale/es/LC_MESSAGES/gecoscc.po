@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-01-25 11:17+0100\n"
+"POT-Creation-Date: 2017-03-07 20:53+0100\n"
 "PO-Revision-Date: 2013-11-14 10:24+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -16,16 +16,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:55 gecoscc/forms.py:121 gecoscc/templates/login.jinja2:31
+#: gecoscc/forms.py:57 gecoscc/forms.py:124 gecoscc/templates/login.jinja2:31
 #: gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr "Enviar"
 
-#: gecoscc/forms.py:108
+#: gecoscc/forms.py:111
 msgid "User created successfully"
 msgstr "Usuario creado con éxito"
 
-#: gecoscc/forms.py:124 gecoscc/templates/bb-computer.html:116
+#: gecoscc/forms.py:127 gecoscc/templates/bb-computer.html:116
 #: gecoscc/templates/bb-groups-form.html:36 gecoscc/templates/bb-ou.html:61
 #: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:109
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
@@ -33,15 +33,15 @@ msgstr "Usuario creado con éxito"
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/forms.py:142 gecoscc/forms.py:170
+#: gecoscc/forms.py:145 gecoscc/forms.py:173
 msgid "User edited successfully"
 msgstr "Usuario modificado con éxito"
 
-#: gecoscc/forms.py:159 gecoscc/forms.py:160
+#: gecoscc/forms.py:162 gecoscc/forms.py:163
 msgid "Add another"
 msgstr "Añadir otro"
 
-#: gecoscc/forms.py:209
+#: gecoscc/forms.py:212
 msgid "Variables updated successfully"
 msgstr "Variables actualizadas con éxito"
 
@@ -57,222 +57,222 @@ msgstr "Solo letras minúsculas, números o puntos"
 msgid "The passwords do not match"
 msgstr "Las contraseñas con coinciden"
 
-#: gecoscc/models.py:215 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:218 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr "Clave"
 
-#: gecoscc/models.py:219
+#: gecoscc/models.py:222
 msgid "Value"
 msgstr "Valor"
 
-#: gecoscc/models.py:223 gecoscc/templates/bb-computer.html:63
+#: gecoscc/models.py:226 gecoscc/templates/bb-computer.html:63
 #: gecoscc/templates/bb-computer.html:170 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr "Tipo"
 
-#: gecoscc/models.py:230 gecoscc/templates/bb-user.html:40
+#: gecoscc/models.py:233 gecoscc/templates/bb-user.html:40
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr "Nombre"
 
-#: gecoscc/models.py:234 gecoscc/templates/bb-user.html:44
+#: gecoscc/models.py:237 gecoscc/templates/bb-user.html:44
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr "Apellidos"
 
-#: gecoscc/models.py:327 gecoscc/templates/bb-user.html:36
+#: gecoscc/models.py:333 gecoscc/templates/bb-user.html:36
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr "Nombre de usuario"
 
-#: gecoscc/models.py:333 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:339 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr "Contraseña"
 
-#: gecoscc/models.py:338
+#: gecoscc/models.py:344
 msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
-#: gecoscc/models.py:342 gecoscc/templates/bb-user.html:50
+#: gecoscc/models.py:348 gecoscc/templates/bb-user.html:50
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: gecoscc/models.py:349
+#: gecoscc/models.py:355
 msgid "There is a user with this email: ${val}"
 msgstr "Hay un usuario con este correo electrónico: ${val}"
 
-#: gecoscc/models.py:350
+#: gecoscc/models.py:356
 msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
-#: gecoscc/models.py:355
+#: gecoscc/models.py:361
 msgid "This user can register workstation under these Organitation Units"
 msgstr ""
 "Este usuario puede registrar estaciones de trabajo bajo estas unidades "
 "organizativas"
 
-#: gecoscc/models.py:358
+#: gecoscc/models.py:364
 msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 "Unidades organizativas disponibles para que este usuario pueda registrar "
 "estaciones de trabajo"
 
-#: gecoscc/models.py:368
+#: gecoscc/models.py:374
 msgid "uri"
 msgstr "uri"
 
-#: gecoscc/models.py:371
+#: gecoscc/models.py:377
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:374
+#: gecoscc/models.py:380
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:377
+#: gecoscc/models.py:383
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:380
+#: gecoscc/models.py:386
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:386
+#: gecoscc/models.py:392
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:388
+#: gecoscc/models.py:394
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:394
+#: gecoscc/models.py:400
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:397
+#: gecoscc/models.py:403
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:400
+#: gecoscc/models.py:406
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:403
+#: gecoscc/models.py:409
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:412
+#: gecoscc/models.py:418
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:414
+#: gecoscc/models.py:420
 msgid "Auth type"
 msgstr "Tipo de autenticación"
 
-#: gecoscc/models.py:418
+#: gecoscc/models.py:424
 msgid "Specific conf"
 msgstr "Configuración específica"
 
-#: gecoscc/models.py:420
+#: gecoscc/models.py:426
 msgid "Auth LDAP"
 msgstr "Autenticación LDAP"
 
-#: gecoscc/models.py:421 gecoscc/models.py:422
+#: gecoscc/models.py:427 gecoscc/models.py:428
 msgid "Auth Active directory"
 msgstr "Autenticación Active directory"
 
-#: gecoscc/models.py:462 gecoscc/templates/bb-computer.html:65
+#: gecoscc/models.py:471 gecoscc/templates/bb-computer.html:65
 msgid "Desktop"
 msgstr "Sobremesa"
 
-#: gecoscc/models.py:463 gecoscc/templates/bb-computer.html:66
+#: gecoscc/models.py:472 gecoscc/templates/bb-computer.html:66
 msgid "Laptop"
 msgstr "Portátil"
 
-#: gecoscc/models.py:464 gecoscc/templates/bb-computer.html:67
+#: gecoscc/models.py:473 gecoscc/templates/bb-computer.html:67
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:465 gecoscc/templates/bb-computer.html:68
+#: gecoscc/models.py:474 gecoscc/templates/bb-computer.html:68
 msgid "Tablet"
 msgstr "Tableta"
 
-#: gecoscc/models.py:501
+#: gecoscc/models.py:515
 msgid "Laser"
 msgstr "Láser"
 
-#: gecoscc/models.py:502
+#: gecoscc/models.py:516
 msgid "Ink"
 msgstr "Tinta"
 
-#: gecoscc/models.py:503
+#: gecoscc/models.py:517
 msgid "Dot matrix"
 msgstr "Matricial"
 
-#: gecoscc/models.py:507
+#: gecoscc/models.py:521
 msgid "Network"
 msgstr "En red"
 
-#: gecoscc/models.py:508
+#: gecoscc/models.py:522
 msgid "Local"
 msgstr "Local"
 
-#: gecoscc/models.py:512
+#: gecoscc/models.py:526
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:513
+#: gecoscc/models.py:527
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:514
+#: gecoscc/models.py:528
 msgid "Kerberos-AD"
 msgstr ""
 
-#: gecoscc/models.py:559
+#: gecoscc/models.py:576
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:560
+#: gecoscc/models.py:577
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:561
+#: gecoscc/models.py:578
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:562
+#: gecoscc/models.py:579
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:563
+#: gecoscc/models.py:580
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:567
+#: gecoscc/models.py:584
 msgid "System mounts (fstab)"
 msgstr "En el arranque del sistema (fstab)"
 
-#: gecoscc/models.py:568
+#: gecoscc/models.py:585
 msgid "User space mounts (gvfs)"
 msgstr "En espacio de usuario (gvfs)"
 
-#: gecoscc/models.py:602
+#: gecoscc/models.py:625
 msgid "Processing"
 msgstr "Procesando"
 
-#: gecoscc/models.py:605
+#: gecoscc/models.py:628
 msgid "Applying changes"
 msgstr "Aplicando cambios"
 
-#: gecoscc/models.py:608
+#: gecoscc/models.py:631
 msgid "Changes applied"
 msgstr "Cambios aplicados"
 
-#: gecoscc/models.py:611 gecoscc/models.py:614
+#: gecoscc/models.py:634 gecoscc/models.py:637
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
@@ -370,30 +370,30 @@ msgstr "Establecer variables"
 msgid "Log out"
 msgstr "Salir"
 
-#: gecoscc/templates/base_tree.jinja2:23
+#: gecoscc/templates/base_tree.jinja2:25
 #: gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr "Buscar"
 
-#: gecoscc/templates/base_tree.jinja2:136
+#: gecoscc/templates/base_tree.jinja2:138
 msgid "This action requires a little time"
 msgstr "Esta acción puede llevar un tiempo"
 
-#: gecoscc/templates/base_tree.jinja2:139
+#: gecoscc/templates/base_tree.jinja2:141
 msgid "Is the website maintenance?"
 msgstr "¿Esta el portal en mantenimiento?"
 
-#: gecoscc/templates/base_tree.jinja2:142
+#: gecoscc/templates/base_tree.jinja2:144
 #: gecoscc/templates/admins/list.jinja2:49
 msgid "No"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:143
+#: gecoscc/templates/base_tree.jinja2:145
 #: gecoscc/templates/admins/list.jinja2:47
 msgid "Yes"
 msgstr "Si"
 
-#: gecoscc/templates/base_tree.jinja2:224 gecoscc/templates/bb-computer.html:99
+#: gecoscc/templates/base_tree.jinja2:226 gecoscc/templates/bb-computer.html:99
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
 msgstr "Cargando"
@@ -438,7 +438,7 @@ msgstr "Características de la estación de trabajo"
 msgid "Policies"
 msgstr "Políticas"
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:37
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:43
 msgid "Workstation"
 msgstr "Estación de trabajo"
 
@@ -486,7 +486,9 @@ msgstr "Última conexión"
 msgid ""
 "Former network connection restored because current one does not work "
 "properly"
-msgstr "Se ha restaurado  una configuración de red anterior porque la actual no funciona correctamente"
+msgstr ""
+"Se ha restaurado  una configuración de red anterior porque la actual no "
+"funciona correctamente"
 
 #: gecoscc/templates/bb-computer.html:57
 #: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
@@ -703,20 +705,32 @@ msgstr "Minimizar"
 msgid "Archive Tasks"
 msgstr "Archivar Tareas"
 
-#: gecoscc/templates/bb-jobs.html:34
+#: gecoscc/templates/bb-jobs.html:28
+msgid "Backstrack"
+msgstr "Volver"
+
+#: gecoscc/templates/bb-jobs.html:37
+msgid "Created"
+msgstr "Creación"
+
+#: gecoscc/templates/bb-jobs.html:40
 msgid "Emiter node"
 msgstr "Nodo emisor"
 
-#: gecoscc/templates/bb-jobs.html:37 gecoscc/templates/bb-new-element.html:12
+#: gecoscc/templates/bb-jobs.html:43 gecoscc/templates/bb-new-element.html:12
 #: gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr "Usuario"
 
-#: gecoscc/templates/bb-jobs.html:40
+#: gecoscc/templates/bb-jobs.html:46
 msgid "Policy"
 msgstr "Política"
 
-#: gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/bb-jobs.html:50
+msgid "Order"
+msgstr "Orden"
+
+#: gecoscc/templates/bb-jobs.html:54
 msgid "Trace"
 msgstr "Traza"
 
@@ -1057,15 +1071,7 @@ msgstr "Editar %(username)s"
 msgid "Set Organitation Unit managed by this user"
 msgstr "Establecer las unidades organizativas que puede administrar este usuario"
 
-#: gecoscc/templates/admins/edit.jinja2:33
-msgid "Set like superuser"
-msgstr "Establecer como superusuario"
-
-#: gecoscc/templates/admins/edit.jinja2:37
-msgid "Remove like superuser"
-msgstr "Eliminar permisos de superusuario"
-
-#: gecoscc/templates/admins/edit.jinja2:53
+#: gecoscc/templates/admins/edit.jinja2:42
 msgid "Are you sure that you want to delete this user?"
 msgstr "¿Estás seguro de que quieres borrar este usuario?"
 
@@ -1184,19 +1190,11 @@ msgstr ""
 msgid "Connections"
 msgstr "Última conexión"
 
-#: gecoscc/views/admins.py:46
-msgid "Now the user is a super user"
-msgstr "Ahora el usuario es un superusuario"
-
-#: gecoscc/views/admins.py:49
-msgid "Now the user is not a super user"
-msgstr "Ahora el usuario no es un superusuario"
-
-#: gecoscc/views/admins.py:156
+#: gecoscc/views/admins.py:147
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:158
+#: gecoscc/views/admins.py:149
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
@@ -1228,4 +1226,58 @@ msgstr "Perfil de Software en uso: %s"
 #: gecoscc/views/settings.py:198
 msgid "Settings modified successfully"
 msgstr "Configuración modificada con éxito"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "repository"
+msgstr "repositorio"
+
+msgid "user"
+msgstr "usuario"
+
+msgid "printer"
+msgstr "impresora"
+
+msgid "computer"
+msgstr "puesto"
+
+msgid "storage"
+msgstr "almacenamiento"
+
+msgid "group"
+msgstr "grupo"
+
+msgid "created"
+msgstr "creado"
+
+msgid "changed"
+msgstr "modificado"
+
+msgid "deleted"
+msgstr "eliminado"
+
+msgid "This is a macrojob: %d childs"
+msgstr "Orden: %d subtareas"
+
+#~ msgid "Set like superuser"
+#~ msgstr "Establecer como superusuario"
+
+#~ msgid "Remove like superuser"
+#~ msgstr "Eliminar permisos de superusuario"
+
+#~ msgid "Now the user is a super user"
+#~ msgstr "Ahora el usuario es un superusuario"
+
+#~ msgid "Now the user is not a super user"
+#~ msgstr "Ahora el usuario no es un superusuario"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
+#~ msgid "Previous"
+#~ msgstr "Anterior"
+
+#~ msgid "records per page"
+#~ msgstr "Registros por página"
 

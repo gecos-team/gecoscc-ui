@@ -245,3 +245,15 @@ msgstr ""
 msgid "Loading nodes..."
 msgstr ""
 
+#: gecoscc/templates/bb-jobs.html:127
+msgid "Search"
+msgstr "Buscar"
+
+#: gecoscc/templates/bb-jobs.html:129
+msgid "Next"
+msgstr "Siguiente"
+
+#: gecoscc/templates/bb-jobs.html:130
+msgid "Previous"
+msgstr "Anterior"
+

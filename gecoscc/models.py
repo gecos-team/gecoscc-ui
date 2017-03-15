@@ -661,6 +661,12 @@ class Job(colander.MappingSchema):
                                   default='',
                                   missing='')
     type = colander.SchemaNode(colander.String())
+    parent = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    nchilds = colander.SchemaNode(colander.Integer(),
+                                  default=0,
+                                  missing=0)
     op = colander.SchemaNode(colander.String(),
                              validator=colander.OneOf(
                                  ['created', 'changed', 'deleted']))
