@@ -43,7 +43,7 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, recursive_defaultdict, setpath, dict_merge,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
-                           get_policy_emiter_id, get_object_related_list)
+                           get_policy_emiter_id, get_object_related_list, update_computers_of_user)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -991,6 +991,12 @@ class ChefTask(Task):
         self.log_action('deleted', 'Group', obj)
 
     def user_created(self, user, objnew, computers=None):
+        api = get_chef_api(self.app.conf, user)
+        objnew = update_computers_of_user(self.db, objnew, api)
+        self.db.nodes.update({'_id': objnew['_id']},
+                             {'$set': {
+                                  'computers': objnew['computers'] }})
+
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'User', objnew)
 
