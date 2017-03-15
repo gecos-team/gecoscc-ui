@@ -180,7 +180,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         paginator_core: {
             type: "GET",
             dataType: "json",
-            url: "/api/policies/"
+            url: "/api/policies/",
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         },
 
         paginator_ui: {
@@ -223,7 +228,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             dataType: "json",
             url: function () {
                 return "/api/policies/?iname=" + this.keyword;
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         }
     });
 });

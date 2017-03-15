@@ -68,6 +68,20 @@
             </div>
         </div>
 
+        <div id="forbidden-modal" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header alert alert-danger">
+                        <h4 class="modal-title">{{ gettext('Forbidden access') }}</h4>
+                    </div>
+                    <div class="modal-body"><p>{{ gettext('Probably the user session has expired due to inactivity.') }}</p></div>
+                    <div class="modal-footer">
+                        <button type="button" onclick="javascript:window.location.reload()" class="btn btn-default" data-dismiss="modal">{{ gettext('Reload page') }}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <footer>
             <span class="pull-right">&copy; 2013</span>
             <a href="http://www.github.com/gecos-team/gecoscc-ui/tree/{{ request.VERSION }}" target="_blank">GECOS CC (v{{ request.VERSION }})</a></span>

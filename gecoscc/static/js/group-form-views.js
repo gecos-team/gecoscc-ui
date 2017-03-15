@@ -86,7 +86,13 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 aux = new View(aux);
                 this.$el.find("#members").html(aux.render().el);
             } else {
-                $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+                $.ajax({url: "/api/nodes/?oids=" + oids, 
+                      statusCode: {
+                        403: function() {
+                          forbidden_access();
+                        }
+                      }
+                }).done(function (response) {
                     var items = response.nodes,
                         members = {},
                         view;

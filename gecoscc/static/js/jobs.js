@@ -59,7 +59,12 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
                 return "/api/jobs/";
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         },
         paginator_ui: {
             firstPage: 1,
