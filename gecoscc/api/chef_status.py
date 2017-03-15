@@ -104,12 +104,12 @@ class ChefStatusResource(BaseAPI):
         if not users_old or users_old != users:
             if not reserve_node:
                 node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
-            return self.check_users(node)
+            return self.check_users(node, api)
         if job_status:
             save_node_and_free(node)
         return {'ok': True}
 
-    def check_users(self, chef_node):
+    def check_users(self, chef_node, api):
         node_collection = self.request.db.nodes
 
         users_old = self.get_attr(chef_node, USERS_OLD)
@@ -137,9 +137,6 @@ class ChefStatusResource(BaseAPI):
                                              'type': 'user',
                                              'lock': node.get('lock', ''),
                                              'source': node.get('source', '')})
-
-                settings = get_current_registry().settings
-                api = get_chef_api(settings, self.request.user)
 
                 user = update_computers_of_user(self.request.db, user, api)
 
