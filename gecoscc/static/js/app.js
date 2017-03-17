@@ -15,9 +15,15 @@
 * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 */
 
+// Function to manage a 403 error code in any AJAX call.
+function forbidden_access() {
+    $("#forbidden-modal").modal({backdrop: 'static'});
+}
+
 // This file creates the global App variable, it should be loaded as soon as
 // possible
 var App;
+
 
 (function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
@@ -322,7 +328,11 @@ var App;
                 App.alerts.close();
                 App.main.show(App.instances.loaderView);
                 if (_.isUndefined(model)) {
-                    $.ajax("/api/nodes/" + id + '/').done(function (response) {
+                    $.ajax({ url:"/api/nodes/" + id + '/', statusCode: {
+                        403: function() {
+                          forbidden_access();
+                        }
+					}}).done(function (response) {
                         parent = _.last(response.path.split(','));
                         url = "ou/" + parent + "/" + response.type + "/" + id;
                         App.instances.router.navigate(url, { trigger: true });

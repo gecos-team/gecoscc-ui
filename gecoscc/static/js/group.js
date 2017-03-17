@@ -74,7 +74,12 @@ App.module("Group.Models", function (Models, App, Backbone, Marionette, $, _) {
                     return "/api/groups/?item_id=" + this.item_id + "&ou_id=" + this.ou_id;
                 }
                 return "/api/groups/";
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         },
 
         paginator_ui: {
