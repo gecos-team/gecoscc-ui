@@ -48,8 +48,6 @@ class RegisterChefNode(object):
         
         # Prepare the API for this client
         chef_url = settings.get('chef.url')
-        api = ChefAPI(chef_url, chef_client.private_key, node_id)
-       
         chef_version = settings.get('chef.version')
         chef_ssl_verify = settings.get('chef.ssl.verify')
         if chef_ssl_verify == 'False' or chef_ssl_verify == 'True':
