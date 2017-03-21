@@ -173,16 +173,19 @@ def get_chef_api(settings, user):
     username = toChefUsername(user['username'])
     chef_url = settings.get('chef.url')
     chef_user_pem = get_pem_path_for_username(settings, username, 'chef_user.pem')
-    api = _get_chef_api(chef_url, username, chef_user_pem, settings.get('chef.version'), settings.get('chef.ssl.verify'))
-        
+    api = _get_chef_api(chef_url, username, chef_user_pem, settings.get('chef.ssl.verify'), settings.get('chef.version'))
+
     return api
 
 
-def _get_chef_api(chef_url, username, chef_pem, chef_version = '11.0.0', chef_ssl_verify):
+def _get_chef_api(chef_url, username, chef_pem, chef_ssl_verify, chef_version = '11.0.0'):
     if not os.path.exists(chef_pem):
         raise ChefError('User has no pem to access chef server')
-    api = ChefAPI(chef_url, chef_pem, username, chef_version, ssl_verify=chef_ssl_verify)
-    
+    if chef_ssl_verify == 'False' or chef_ssl_verify == 'True':
+        chef_ssl_verify = bool(chef_ssl_verify)
+
+    api = ChefAPI(chef_url, chef_pem, username, chef_version, ssl_verify = False)
+
     return api
 
 
