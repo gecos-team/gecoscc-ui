@@ -48,8 +48,13 @@ class RegisterChefNode(object):
         
         # Prepare the API for this client
         chef_url = settings.get('chef.url')
-        api = ChefAPI(chef_url, chef_client.private_key, node_id)
-        
+        chef_version = settings.get('chef.version')
+        chef_ssl_verify = settings.get('chef.ssl.verify')
+        if chef_ssl_verify == 'False' or chef_ssl_verify == 'True':
+            chef_ssl_verify = bool(chef_ssl_verify)
+        api = ChefAPI(chef_url, str(chef_client.private_key), node_id, chef_version, ssl_verify = False)
+
+ 
         # create chef node
         chef_node = ChefNode(node_id, api)
         if chef_node.exists:
@@ -111,4 +116,4 @@ class RegisterChefNode(object):
             return {'ok': False, 'message': 'This node does not exists'}
         else:
             return {'ok': True, 'message': 'This node does exists'}
-                
+
