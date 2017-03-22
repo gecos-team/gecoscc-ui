@@ -15,7 +15,7 @@ from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
 
-from gecoscc.tasks import object_deleted
+from gecoscc.tasks import object_detached
 from gecoscc.api import BaseAPI
 from gecoscc.models import Node as MongoNode
 from gecoscc.permissions import http_basic_login_required
@@ -81,7 +81,7 @@ class RegisterComputerResource(BaseAPI):
         node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
         num_node_deleted = node_deleted['n']
         if num_node_deleted >= 1:
-            object_deleted.delay(self.request.user, 'computer', computer)
+            object_detached.delay(self.request.user, 'computer', computer)
             invalidate_delete(self.request, computer)
             if num_node_deleted == 1:
                 delete_computer(computer['_id'], computer['path'])

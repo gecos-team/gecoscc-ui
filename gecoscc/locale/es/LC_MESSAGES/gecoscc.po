@@ -1271,6 +1271,9 @@ msgstr "Modificación"
 msgid "deleted"
 msgstr "Borrado"
 
+msgid "detached"
+msgstr "Desvinculado"
+
 #~ msgid "Set like superuser"
 #~ msgstr "Establecer como superusuario"
 
