@@ -58,7 +58,7 @@ class JobStorage(object):
 
     def create(self, obj=None, op=None, status=None,
                computer=None, policy=None,
-               parent=None, nchilds=0,
+               parent=None, childs=0, counter=0,
                administrator_username=None,
                message=None):
         if obj is None or op is None or status is None:
@@ -102,7 +102,8 @@ class JobStorage(object):
             'last_update': datetime.utcnow(),
             'archived': False,
             'parent': parent,
-            'nchilds': nchilds
+            'childs': childs,
+            'counter': counter
         }
         if policy:
             settings = get_current_registry().settings
