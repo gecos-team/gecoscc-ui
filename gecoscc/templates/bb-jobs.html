@@ -1,12 +1,12 @@
 <div class="panel-heading">
     <div class="text-muted bootstrap-admin-box-title">
-        {{ gettext('My tasks') }}
+        {{ gettext('My actions') }}
         <span class="filters <% if (!isMaximized) { print('hide'); } %>">
-            <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Tasks') }}</a> |
-            <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Tasks') }}</a> |
-            <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Tasks') }}</a> |
-            <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Tasks') }}</a> |
-            <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Tasks') }}</a>
+            <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Actions') }}</a> |
+            <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Actions') }}</a> |
+            <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Actions') }}</a> |
+            <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Actions') }}</a> |
+            <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Actions') }}</a>
         </span>
         <span class="filters <% if (!isMaximized) { print('hide'); } %>">
             <a href="#" id="tasksActives" class="<% if (!archived) { print('active'); } %>">{{ gettext('Active') }}</a> |
@@ -34,24 +34,29 @@
         <thead class="long <% if (!isMaximized) { print('hide'); } %>">
             <tr>
                 <th>
-                    {{ gettext("Created") }}
+                    {{ gettext("Date") }}
                 </th>
                 <th>
-                    {{ gettext("Emiter node") }}
+                    {{ gettext("Origin") }}
                 </th>
                 <th>
                     {{ gettext("Workstation") }} / {{ gettext("User") }}
                 </th>
+                <% if (parentId) { %>
                 <th>
-                    {{ gettext("Policy") }}
+                        {{ gettext("Policy") }}
                 </th>
+                <% } %>
                 <% if (!parentId) { %>
                 <th>
-                    {{ gettext("Order") }}
+                        {{ gettext("Action") }}
+                </th>
+                <th>
+                    {{ gettext("ID") }}
                 </th>
                 <% } %>
                 <th>
-                    {{ gettext("Trace") }}
+                    {{ gettext("Status") }}
                 </th>
             </tr>
         </thead>
@@ -68,14 +73,18 @@
                     <%= item.objname %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">
-                    <%= item.computername %>
+                    <% if (parentId) { %>
+                        <%= item.computername %>
+                    <% } else { %>
+                        <%= item.administrator_username %>
+                    <% } %>
                 </td>
                 <td>
                     <%= item['policyname_' + App.language] || item.policyname %>
                 </td>
                 <% if (!parentId) { %>
                 <td>
-                    <% if (item.parent==='None' && item.nchilds > 0) { %>
+                    <% if (item.parent==='None' && item.childs > 0) { %>
                         <a href="#" id="tasksChilds" class="<% if (parentId) { print('active'); } %>"><%= item._id %></a>
                     <% } else { %>
                         <%= item._id %>

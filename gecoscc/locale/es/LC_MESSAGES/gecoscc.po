@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-03-07 20:53+0100\n"
+"POT-Creation-Date: 2017-03-20 14:05+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -14,7 +14,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 0.9.4\n"
+"Generated-By: Babel 1.3\n"
 
 #: gecoscc/forms.py:57 gecoscc/forms.py:124 gecoscc/templates/login.jinja2:31
 #: gecoscc/templates/settings.jinja2:135
@@ -276,6 +276,15 @@ msgstr "Cambios aplicados"
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
+#: gecoscc/tasks.py:879
+msgid "type"
+msgstr "Tipo"
+
+#: gecoscc/tasks.py:937 gecoscc/api/chef_status.py:110
+#, python-format
+msgid "Pending: %d"
+msgstr "Pendientes: %d"
+
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
 msgid "Control Center"
 msgstr "Centro de Control"
@@ -348,10 +357,10 @@ msgstr "Administradores"
 msgid "Settings"
 msgstr "Configuración"
 
-#: gecoscc/templates/base_navbar.jinja2:28
+#: gecoscc/templates/base_navbar.jinja2:28 gecoscc/templates/bb-jobs.html:59
 #: gecoscc/templates/server/connections.jinja2:26
 msgid "Status"
-msgstr ""
+msgstr "Estado"
 
 #: gecoscc/templates/base_navbar.jinja2:31 gecoscc/templates/reports.jinja2:10
 msgid "Reports"
@@ -537,8 +546,11 @@ msgstr "Portátil de Juan"
 msgid "Registry number"
 msgstr "Número de registro"
 
-#: gecoscc/templates/bb-computer.html:82 gecoscc/templates/bb-printer.html:57
-#: gecoscc/views/reports.py:96
+#: gecoscc/templates/bb-computer.html:82 gecoscc/templates/bb-jobs.html:55
+msgid "ID"
+msgstr "ID"
+
+#: gecoscc/templates/bb-printer.html:57 gecoscc/views/reports.py:96
 msgid "Serial number"
 msgstr "Número de serie"
 
@@ -671,28 +683,28 @@ msgid "Completed tasks"
 msgstr "Tareas completadas"
 
 #: gecoscc/templates/bb-jobs.html:3
-msgid "My tasks"
-msgstr "Mis tareas"
+msgid "My actions"
+msgstr "Mis Acciones"
 
 #: gecoscc/templates/bb-jobs.html:5
-msgid "All Tasks"
-msgstr "Todas las tareas"
+msgid "All Actions"
+msgstr "Todas las Acciones"
 
 #: gecoscc/templates/bb-jobs.html:6
-msgid "Processing Tasks"
-msgstr "Tareas en proceso"
+msgid "Processing Actions"
+msgstr "Acciones en proceso"
 
 #: gecoscc/templates/bb-jobs.html:7
-msgid "Finished Tasks"
-msgstr "Tareas finalizadas"
+msgid "Finished Actions"
+msgstr "Acciones finalizadas"
 
 #: gecoscc/templates/bb-jobs.html:8
-msgid "Warnings Tasks"
-msgstr "Tareas con advertencias"
+msgid "Warnings Actions"
+msgstr "Acciones con advertencias"
 
 #: gecoscc/templates/bb-jobs.html:9
-msgid "Errors Tasks"
-msgstr "Tareas con errores"
+msgid "Errors Actions"
+msgstr "Acciones fallidas"
 
 #: gecoscc/templates/bb-jobs.html:12
 msgid "Active"
@@ -719,29 +731,29 @@ msgid "Backstrack"
 msgstr "Volver"
 
 #: gecoscc/templates/bb-jobs.html:37
-msgid "Created"
-msgstr "Creación"
+msgid "Date"
+msgstr "Fecha"
 
 #: gecoscc/templates/bb-jobs.html:40
-msgid "Emiter node"
-msgstr "Nodo emisor"
+msgid "Origin"
+msgstr "Origen"
 
 #: gecoscc/templates/bb-jobs.html:43 gecoscc/templates/bb-new-element.html:12
 #: gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr "Usuario"
 
-#: gecoscc/templates/bb-jobs.html:46
+#: gecoscc/templates/bb-jobs.html:47
 msgid "Policy"
 msgstr "Política"
 
-#: gecoscc/templates/bb-jobs.html:50
-msgid "Order"
-msgstr "Orden"
+#: gecoscc/templates/bb-jobs.html:52
+msgid "Action"
+msgstr "Acciones"
 
-#: gecoscc/templates/bb-jobs.html:54
-msgid "Trace"
-msgstr "Traza"
+#: gecoscc/templates/bb-jobs.html:104
+msgid "Total"
+msgstr "Total"
 
 #: gecoscc/templates/bb-new-element.html:4
 msgid "Add new element"
@@ -1104,22 +1116,18 @@ msgstr "Selecciona una Unidad Organizativa"
 #: gecoscc/templates/server/log.jinja2:8
 #: gecoscc/templates/server/status.jinja2:8
 #: gecoscc/templates/server/status.jinja2:11
-#, fuzzy
 msgid "Servers"
 msgstr "Servidor de claves"
 
 #: gecoscc/templates/server/connections.jinja2:11
-#, fuzzy
 msgid "Server connections"
 msgstr "Última conexión"
 
 #: gecoscc/templates/server/connections.jinja2:21
-#, fuzzy
 msgid "Service"
 msgstr "Dispositivo"
 
 #: gecoscc/templates/server/connections.jinja2:22
-#, fuzzy
 msgid "Local IP address"
 msgstr "Dirección IP"
 
@@ -1132,17 +1140,14 @@ msgid "Remote IP address"
 msgstr ""
 
 #: gecoscc/templates/server/connections.jinja2:25
-#, fuzzy
 msgid "Remote port"
 msgstr "Almacenamiento remoto"
 
 #: gecoscc/templates/server/log.jinja2:11
-#, fuzzy
 msgid "Server log"
 msgstr "Servidor de claves"
 
 #: gecoscc/templates/server/log.jinja2:23
-#, fuzzy
 msgid "Process"
 msgstr "Procesando"
 
@@ -1164,17 +1169,14 @@ msgid "Size"
 msgstr ""
 
 #: gecoscc/templates/server/status.jinja2:34
-#, fuzzy
 msgid "FS Type"
 msgstr "Tipo de autenticación"
 
 #: gecoscc/templates/server/status.jinja2:35
-#, fuzzy
 msgid "Options"
 msgstr "Opciones de usuario"
 
 #: gecoscc/templates/server/status.jinja2:68
-#, fuzzy
 msgid "IP Address"
 msgstr "Dirección IP"
 
@@ -1195,7 +1197,6 @@ msgid "Unknown"
 msgstr ""
 
 #: gecoscc/templates/server/status.jinja2:96
-#, fuzzy
 msgid "Connections"
 msgstr "Última conexión"
 
@@ -1236,20 +1237,21 @@ msgstr "Perfil de Software en uso: %s"
 msgid "Settings modified successfully"
 msgstr "Configuración modificada con éxito"
 
-msgid "Total"
-msgstr "Total"
 
-msgid "repository"
-msgstr "repositorio"
+msgid "None"
+msgstr "Ninguno"
 
 msgid "user"
 msgstr "usuario"
 
+msgid "computer"
+msgstr "puesto de trabajo"
+
+msgid "ou"
+msgstr "unidad organizativa"
+
 msgid "printer"
 msgstr "impresora"
-
-msgid "computer"
-msgstr "puesto"
 
 msgid "storage"
 msgstr "almacenamiento"
@@ -1257,17 +1259,17 @@ msgstr "almacenamiento"
 msgid "group"
 msgstr "grupo"
 
+msgid "repository"
+msgstr "repositorio"
+
 msgid "created"
-msgstr "creado"
+msgstr "Creación"
 
 msgid "changed"
-msgstr "modificado"
+msgstr "Modificación"
 
 msgid "deleted"
-msgstr "eliminado"
-
-msgid "This is a macrojob: %d childs"
-msgstr "Orden: %d subtareas"
+msgstr "Borrado"
 
 #~ msgid "Set like superuser"
 #~ msgstr "Establecer como superusuario"
@@ -1289,4 +1291,55 @@ msgstr "Orden: %d subtareas"
 
 #~ msgid "records per page"
 #~ msgstr "Registros por página"
+
+#~ msgid "My tasks"
+#~ msgstr "Mis tareas"
+
+#~ msgid "All Tasks"
+#~ msgstr "Todas las tareas"
+
+#~ msgid "Processing Tasks"
+#~ msgstr "Tareas en proceso"
+
+#~ msgid "Errors Tasks"
+#~ msgstr "Tareas con errores"
+
+#~ msgid "Created"
+#~ msgstr "Creación"
+
+#~ msgid "Emiter node"
+#~ msgstr "Nodo emisor"
+
+#~ msgid "Order"
+#~ msgstr "Orden"
+
+#~ msgid "Trace"
+#~ msgstr "Traza"
+
+#~ msgid "repository"
+#~ msgstr "repositorio"
+
+#~ msgid "user"
+#~ msgstr "usuario"
+
+#~ msgid "printer"
+#~ msgstr "impresora"
+
+#~ msgid "computer"
+#~ msgstr "puesto"
+
+#~ msgid "storage"
+#~ msgstr "almacenamiento"
+
+#~ msgid "group"
+#~ msgstr "grupo"
+
+#~ msgid "changed"
+#~ msgstr "modificado"
+
+#~ msgid "deleted"
+#~ msgstr "eliminado"
+
+#~ msgid "This is a macrojob: %d pending childs"
+#~ msgstr "Orden: %d subtareas pendientes"
 

@@ -389,14 +389,14 @@ class ChefTask(Task):
         '''
         Updates node chef with a mergeable workstation policy
         '''
-        self.log("debug","tasks.py:::update_ws_mergeable_policy -> field_chef = {0}".format(field_chef))
+        self.log("debug","tasks.py:::update_ws_mergeable_policy - field_chef = {0}".format(field_chef))
         if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) is True:
            
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
         
                   
-            new_field_chef_value = obj_ui[field_ui]
+            new_field_chef_value = []
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
             for updater_node in updater_nodes:
                 #if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
@@ -518,8 +518,9 @@ class ChefTask(Task):
                     # Policy fields that are not sent in the form are populated with their defaults
                     obj_ui_field = priority_obj_ui.get(field_ui, node.default.get_dotted(field_chef))
                     self.log("debug","tasks:::update_node_from_rules -> obj_ui_field = {0}".format(obj_ui_field))
-                    obj_ui[field_ui] = obj_ui_field
-                    self.log("debug","tasks:::update_node_from_rules -> obj_ui = {0}".format(obj_ui))
+                    if field_ui not in obj_ui:
+                        obj_ui[field_ui] = node.default.get_dotted(field_chef)
+                        self.log("debug","tasks:::update_node_from_rules - obj_ui = {0}".format(obj_ui))
 
                 if not obj_ui_field and action == DELETED_POLICY_ACTION:
                     try:
@@ -731,6 +732,8 @@ class ChefTask(Task):
             2 - object type is emitter: printer, storage or repository
         '''
         updated = False
+        if action == DELETED_POLICY_ACTION:
+            return(node, False)
         if action not in ['changed', 'created']:
             raise ValueError('The action should be changed or created')
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
@@ -875,7 +878,7 @@ class ChefTask(Task):
         name = "%s %s" % (obj['type'], action)
         self.log("debug","obj_type_translate {0}".format(obj['type']))
         self.log("debug","action_translate {0}".format(action))
-        name_es = self._(obj['type']) + " " + self._(action)
+        name_es = self._(action) + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
         macrojob_id = macrojob_storage.create(obj=obj,
                                     op=action,
@@ -883,6 +886,7 @@ class ChefTask(Task):
                                     status='processing',
                                     policy={'name':name,'name_es':name_es},
                                     administrator_username=user['username'])
+        invalidate_jobs(self.request, user)
         are_new_jobs = False
         for computer in computers:
             try:
@@ -930,21 +934,24 @@ class ChefTask(Task):
                 are_new_jobs = True
         job_status = 'processing' if job_ids_by_order else 'finished'
         self.db.jobs.update({'_id': macrojob_id},
-                            {'$set': {'status': job_status, 'nchilds': len(job_ids_by_order),'message': self._("This is a macrojob: %d childs") % len(job_ids_by_order)}})
+                            {'$set': {'status': job_status,
+                                      'childs':  len(job_ids_by_order),
+                                      'counter': len(job_ids_by_order),
+                                      'message': self._("Pending: %d") % len(job_ids_by_order)}})
         if are_new_jobs:
             invalidate_jobs(self.request, user)
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)
 
-    def object_changed(self, user, objnew, objold, computers=None):
-        self.object_action(user, objnew, objold, action='changed', computers=computers)
+    def object_changed(self, user, objnew, objold, action, computers=None):
+        self.object_action(user, objnew, objold, action, computers=computers)
 
     def object_deleted(self, user, obj, computers=None):
         obj_without_policies = deepcopy(obj)
         obj_without_policies['policies'] = {}
         object_changed = getattr(self, '%s_changed' % obj['type'])
-        object_changed(user, obj_without_policies, obj, computers=computers)
+        object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
     def object_moved(self, user, objnew, objold):
         api = get_chef_api(self.app.conf, user)
@@ -955,6 +962,20 @@ class ChefTask(Task):
         func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
     def object_emiter_deleted(self, user, obj, computers=None):
+        name = "%s deleted" % obj['type']
+        name_es = self._("deleted") + " " + self._(obj['type'])
+        macrojob_storage = JobStorage(self.db.jobs, user)
+        macrojob_id = macrojob_storage.create(obj=obj,
+                                    op='deleted',
+                                    computer=None,
+                                    status='finished',
+                                    policy={'name':name,'name_es':name_es},
+                                    childs=0,
+                                    counter=0,
+                                    message="Pending: 0",
+                                    administrator_username=user['username'])
+        invalidate_jobs(self.request, user)
+        
         obj_id = unicode(obj['_id'])
         policy_id = unicode(get_policy_emiter_id(self.db, obj))
         object_related_list = get_object_related_list(self.db, obj)
@@ -978,8 +999,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Group', objnew)
 
-    def group_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def group_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
@@ -1000,8 +1021,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'User', objnew)
 
-    def user_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def user_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'User', objnew)
 
     def user_moved(self, user, objnew, objold):
@@ -1018,8 +1039,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Computer', objnew)
 
-    def computer_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def computer_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
@@ -1028,6 +1049,7 @@ class ChefTask(Task):
 
     def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
+        self.object_deleted(user, obj, computers=computers)
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
@@ -1054,8 +1076,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'OU', objnew)
 
-    def ou_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def ou_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
@@ -1072,14 +1094,27 @@ class ChefTask(Task):
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
                 node_deleted_function(user, node, computers=computers, direct_deleted=False)
         self.db.nodes.remove({'path': ou_path})
+        name = "%s deleted" % obj['type']
+        name_es = self._("deleted") + " " + self._(obj['type'])
+        macrojob_storage = JobStorage(self.db.jobs, user)
+        macrojob_id = macrojob_storage.create(obj=obj,
+                                    op='deleted',
+                                    computer=None,
+                                    status='finished',
+                                    policy={'name':name,'name_es':name_es},
+                                    childs=0,
+                                    counter=0,
+                                    message="Pending: 0",
+                                    administrator_username=user['username'])
+        invalidate_jobs(self.request, user)
         self.log_action('deleted', 'OU', obj)
 
     def printer_created(self, user, objnew, computers=None):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Printer', objnew)
 
-    def printer_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def printer_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
@@ -1094,8 +1129,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Storage', objnew)
 
-    def storage_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def storage_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
@@ -1110,8 +1145,8 @@ class ChefTask(Task):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'Repository', objnew)
 
-    def repository_changed(self, user, objnew, objold, computers=None):
-        self.object_changed(user, objnew, objold, computers=computers)
+    def repository_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.object_changed(user, objnew, objold, action, computers=computers)
         self.log_action('changed', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
@@ -1153,12 +1188,12 @@ def object_created(user, objtype, obj, computers=None):
 
 
 @task(base=ChefTask)
-def object_changed(user, objtype, objnew, objold, computers=None):
+def object_changed(user, objtype, objnew, objold, action='changed', computers=None):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
         try:
-            return func(user, objnew, objold, computers=computers)
+            return func(user, objnew, objold, action, computers=computers)
         except Exception as e:
             self.report_unknown_error(e, user, objnew, 'changed')
             invalidate_jobs(self.request, user)

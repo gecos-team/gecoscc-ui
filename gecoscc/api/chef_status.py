@@ -80,31 +80,35 @@ class ChefStatusResource(BaseAPI):
                 if not job:
                     continue
                 # Parent
-                macrojob = self.collection.find_one({'_id': ObjectId(job['parent'])})
+                macrojob = self.collection.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 if job_status['status'] == 0:
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'finished',
                                                      'last_update': datetime.datetime.utcnow()}})
                     # Decrement number of children in parent
-                    macrojob['nchilds'] -= 1
+                    if macrojob and 'counter' in macrojob:
+                        macrojob['counter'] -= 1
                 elif job_status['status'] == 2:
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'warnings',
                                                      'message': job_status.get('message', 'Warning'),
                                                      'last_update': datetime.datetime.utcnow()}})
-                    macrojob['status'] = 'warnings'
+                    if macrojob:                                
+                        macrojob['status'] = 'warnings'
                 else:
                     chef_client_error = True
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'errors',
                                                      'message': job_status.get('message', 'Error'),
                                                      'last_update': datetime.datetime.utcnow()}})
-                    macrojob['status'] = 'errors'
+                    if macrojob:                                
+                        macrojob['status'] = 'errors'
                 # Update parent                                 
-                self.collection.update({'_id': macrojob['_id']},                                                                
-                                       {'$set': {'nchilds': macrojob['nchilds'],
-                                                 'message': self._("This is a macrojob: %d childs") % macrojob['nchilds'],
-                                                 'status': 'finished' if macrojob['nchilds'] == 0 else macrojob['status']}})
+                if macrojob:
+                    self.collection.update({'_id': macrojob['_id']},                                                                
+                                           {'$set': {'counter': macrojob['counter'],
+                                                     'message': self._("Pending: %d") % macrojob['counter'],
+                                                     'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})
             self.request.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
