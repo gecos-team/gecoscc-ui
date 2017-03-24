@@ -12,9 +12,9 @@
 import bcrypt
 from uuid import uuid4
 import pymongo
-
 from pyramid.security import authenticated_userid
-
+from pyramid.threadlocal import get_current_registry
+import ldap
 
 ## MongoDB User Document structure
 #  {
@@ -78,15 +78,26 @@ class MongoUserDB(object):
             raise UserDoesNotExist()
         return user
 
-    def login(self, username, password):
+    def get_authtype(self, username):
+        user_authtype = self.collection.find_one({'username': username},{'authtype': 1})
+        if not user_authtype:
+            raise UserDoesNotExist()
+        return user_authtype
+
+    def login(self, username, password, authtype):
         user = self.get_user(username)
         password_dict = user.get('password', None)
-        if password_dict is None:
-            return False
-        if validate_password(password_dict, password):
-            return user
+        authtype = str(authtype)
+
+        if authtype == 'ldap':
+            return get_ldap_auth(str(user['username']),password)
         else:
-            return False
+            if password_dict is None:
+                return False
+            if validate_password(password_dict, password):
+                return user
+            else:
+                return False
 
     def change_password(self, username, password):
         user = self.get_user(username)
@@ -138,6 +149,15 @@ class MongoUserDB(object):
             }
         })
 
+    def add_authtype(self, username):
+        self.collection.update({
+            'username': username
+        }, {
+            '$set': {
+                'authtype': 'local'
+            }
+        })
+
     def list_users(self, filters=None):
         return self.collection.find(filters)
 
@@ -166,8 +186,38 @@ def get_user(request):
 
     return None
 
-
 def get_groups(userid, request):
     ## TODO
     # Not Implemented
     return ['logged']
+
+def get_ldap_info():
+    settings = get_current_registry().settings
+    ldap = {
+        'url' : settings.get('gecos.ldap.url'),
+        'port': settings.get('gecos.ldap.port'),
+        'base': settings.get('gecos.ldap.base'),
+        'srch': settings.get('gecos.ldap.srch'),
+        'user': settings.get('gecos.ldap.user'),
+        'pass': settings.get('gecos.ldap.pass')
+    }
+    return ldap
+
+def get_ldap_auth(user,password):
+    ldap_info = get_ldap_info()
+    conn = str(ldap_info['url'])+':'+str(ldap_info['port'])
+    conn = conn.replace('"','')
+    basedn = str(ldap_info['srch'])+user+","+str(ldap_info['base'])
+    basedn = basedn.replace('"','')
+
+    ld = ldap.initialize(conn)
+
+    try:
+        ld.simple_bind_s(basedn,password)
+        result = ld.whoami_s()
+        ld.unbind_s()
+        return result
+    except ldap.LDAPError, e:
+        ld.unbind_s()
+        return False
+

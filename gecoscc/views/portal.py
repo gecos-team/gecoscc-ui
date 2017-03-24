@@ -19,7 +19,6 @@ from pyramid.response import Response
 from pyramid.view import view_config, forbidden_view_config
 from pyramid.threadlocal import get_current_registry
 
-
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
@@ -54,8 +53,30 @@ class LoginViews(BaseView):
         if self.request.POST:
             username = self.request.POST.get('username')
             password = self.request.POST.get('password')
+
             try:
-                user = self.request.userdb.login(username, password)
+                user_authtype = self.request.userdb.get_authtype(username)
+            except UserDoesNotExist:
+                return {
+                    'username': username,
+                    'message': self.translate(
+                        _("Please enter the correct username and password")),
+                }
+
+            if not user_authtype:
+                self.request.userdb.add_authtype(username)
+                user_authtype = 'local'
+
+            ldap = get_ldap_info()
+            if ( ldap['url']  == None and user_authtype['authtype'] == 'ldap'):
+                return {
+                    'username': username,
+                    'message': self.translate(
+                        _("gecoscc.ini LDAP configuration misplaced. Please contact your system administrator.")),
+            }
+
+            try:
+                user = self.request.userdb.login(username, password, user_authtype['authtype'])
             except UserDoesNotExist:
                 return {
                     'username': username,
@@ -70,10 +91,11 @@ class LoginViews(BaseView):
                 }
 
             headers = remember(self.request, username)
-            created_msg(self.request, self.translate(
-                _('Welcome ${username}',
-                  mapping={'username': user['username']})
-            ), 'info')
+            #created_msg(self.request, self.translate(
+                #_('Welcome ${username}',
+                  #mapping={'username': user['username']})
+            #), 'info')
+
             return HTTPFound(location=self.request.route_path('home'),
                              headers=headers)
         else:
