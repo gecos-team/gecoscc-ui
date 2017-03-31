@@ -196,10 +196,8 @@ def get_ldap_info():
     ldap = {
         'url' : settings.get('gecos.ldap.url'),
         'port': settings.get('gecos.ldap.port'),
-        'base': settings.get('gecos.ldap.base'),
-        'srch': settings.get('gecos.ldap.srch'),
-        'user': settings.get('gecos.ldap.user'),
-        'pass': settings.get('gecos.ldap.pass')
+        'prfx': settings.get('gecos.ldap.prfx'),
+        'base': settings.get('gecos.ldap.base')
     }
     return ldap
 
@@ -207,7 +205,7 @@ def get_ldap_auth(user,password):
     ldap_info = get_ldap_info()
     conn = str(ldap_info['url'])+':'+str(ldap_info['port'])
     conn = conn.replace('"','')
-    basedn = str(ldap_info['srch'])+user+","+str(ldap_info['base'])
+    basedn = str(ldap_info['prfx'])+user+","+str(ldap_info['base'])
     basedn = basedn.replace('"','')
 
     ld = ldap.initialize(conn)
