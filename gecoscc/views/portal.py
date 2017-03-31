@@ -22,6 +22,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
+from gecoscc.userdb import get_ldap_info
 from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
 from gecoscc.command_util import get_setting
@@ -130,3 +131,4 @@ def forbidden_view(context, request):
     logger.debug("No user and forbidden access! --> redirect to login")        
     loginurl = request.route_url('login', _query=(('next', request.path),))
     return HTTPFound(location=loginurl)
+
