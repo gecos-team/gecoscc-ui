@@ -504,7 +504,7 @@ class Computer(Node):
     error_last_chef_client = colander.SchemaNode(RealBoolean(),
                                                  default=False)
     gcc_link = colander.SchemaNode(RealBoolean(),
-                                   default=False)
+                                   default=True)
 
 
 class Computers(colander.SequenceSchema):
@@ -664,7 +664,10 @@ class Job(colander.MappingSchema):
     parent = colander.SchemaNode(colander.String(),
                                  default='',
                                  missing='')
-    nchilds = colander.SchemaNode(colander.Integer(),
+    childs = colander.SchemaNode(colander.Integer(),
+                                  default=0,
+                                  missing=0)
+    counter = colander.SchemaNode(colander.Integer(),
                                   default=0,
                                   missing=0)
     op = colander.SchemaNode(colander.String(),
