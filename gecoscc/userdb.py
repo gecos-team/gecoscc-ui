@@ -212,7 +212,7 @@ def get_ldap_auth(user,password):
 
     try:
         ld.simple_bind_s(basedn,password)
-        result = ld.whoami_s()
+        result = { 'username': user, 'dn':ld.whoami_s() }
         ld.unbind_s()
         return result
     except ldap.LDAPError, e:
