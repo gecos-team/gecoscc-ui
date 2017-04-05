@@ -47,7 +47,7 @@
         (function($){
             $('#del-policy').click( function(evt) {
                 GecosUtils.askConfirmation({
-                    'message': "{{ gettext('Are you sure that you want to delete this user?') }}",
+                    'message': "{{ gettext('Are you sure that you want to delete this cookbook version?') }}",
                     'callback': function () {
                         {% if request.user.get('is_superuser') %}
                             window.location = "{{ request.route_url('admin_restore', name=cookbook_name, version=lastest.version) }}";
