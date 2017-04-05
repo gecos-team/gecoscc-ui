@@ -13,6 +13,7 @@
 import datetime
 import random
 import os
+import subprocess
 
 from copy import deepcopy
 
@@ -1262,3 +1263,47 @@ def object_detached(user, objtype, obj, computers=None):
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
+
+@task(base=ChefTask)
+def cookbook_upload(user, objtype, obj, computers=None):
+    self = cookbook_upload
+    macrojob_storage = JobStorage(self.db.jobs, user)
+    macrojob_id = macrojob_storage.create(obj=obj,
+                                          op='upload',
+                                          computer=None,
+                                          status='processing',
+                                          policy={'name':'policy uploaded','name_es': self._('policy uploaded')},
+                                          administrator_username=user['username'])
+
+    
+    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'])
+    cmd_import = self.app.conf.get('cmd_import') % (self.app.conf.get('import_user'),self.app.conf.get('import_cert'))
+    self.log("debug", "tasks.py ::: cmd_upload = {0}".format(cmd_upload))
+    self.log("debug", "tasks.py ::: cmd_import = {0}".format(cmd_import))
+
+    #output_upload = subprocess.call(cmd_upload, shell=True)
+    p1 = subprocess.Popen(cmd_upload, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    output_upload, errors_upload = p1.communicate()
+
+    self.log("debug", "tasks.py ::: output_upload = {0}".format(output_upload))
+    self.log("debug", "tasks.py ::: errors_upload = {0}".format(errors_upload))
+    if p1.returncode and errors_upload:
+        status = 'errors'
+        msg = errors_upload
+    else:
+        #output_import = subprocess.call(cmd_import, shell=True)
+        p2 = subprocess.Popen(cmd_import, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output_import, errors_import = p2.communicate()
+        self.log("debug", "tasks.py ::: output_import = {0}".format(output_import))
+        self.log("debug", "tasks.py ::: errors_import = {0}".format(errors_import))
+
+        if p2.returncode and errors_import:
+            status = 'errors'
+            msg = errors_import
+        else:
+            status = 'finished'
+            msg = self._('Cookbook uploaded successfully')
+     
+    self.db.jobs.update({'_id':ObjectId(macrojob_id)},{'$set':{'status':status, 'message':msg}})
+
+    invalidate_jobs(self.request, user)   

@@ -48,6 +48,11 @@
                                     <span class="fa fa-wrench"></span> {{ gettext('Set variables') }}
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ request.route_url('admin_upload', username=request.user['username']) }}">
+                                    <span class="fa fa-upload"></span> {{ gettext('Uploads') }}
+                                </a>
+                            </li>
                             <li role="presentation" class="divider"></li>
                             <li>
                                 <a href="{{ request.route_url('logout') }}">
@@ -65,7 +70,7 @@
             {% set msg_type, msg = request.session.messages.pop() %}
             <div class="alert alert-{{ msg_type }}">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-                {{ msg }}
+                {{ msg|safe }}
             </div>
         {% endfor %}
     {% endif %}

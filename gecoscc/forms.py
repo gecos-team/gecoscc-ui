@@ -10,10 +10,17 @@
 #
 
 import os
-
+import time
+import re
+import glob
 import colander
 import deform
 import logging
+import urllib2
+import zipfile
+import tempfile
+
+from bson import ObjectId
 
 from pkg_resources import resource_filename
 
@@ -23,6 +30,7 @@ from chef.exceptions import ChefServerError
 from deform.template import ZPTRendererFactory
 
 from gecoscc import messages
+from gecoscc.tasks import cookbook_upload
 from gecoscc.i18n import gettext as _
 from gecoscc.utils import get_chef_api, create_chef_admin_user
 
@@ -210,3 +218,99 @@ class AdminUserVariablesForm(GecosForm):
         del variables['auth_ad_spec']
         self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
         self.created_msg(_('Variables updated successfully'))
+
+class CookbookUploadForm(GecosForm):
+
+    def validate(self, data):
+        data_dict = dict(data)
+        if not data_dict['upload'] and data_dict['remote_file']:
+            self.schema.get('local_file').missing=''
+
+        return super(CookbookUploadForm, self).validate(data)
+
+    def save(self, upload):
+        
+        logger.info("CookbookUpload - upload - %s" % upload)
+        error = False
+        settings = get_current_registry().settings
+        rootdir = settings['cookbook_upload_rootdir'] 
+        logger.debug("forms.py ::: CookbookUpload - rootdir = %s" % rootdir)
+        uploadir = rootdir + self.username + "/uploads/" + str(int(time.time())) + "/"
+        logger.debug("forms.py ::: CookbookUpload - uploadir = %s" % uploadir)
+        if not os.path.exists(uploadir):
+           os.makedirs(uploadir)
+
+        try:
+            if upload['local_file']:
+                f = upload['local_file']
+                with open(f['filename'], "wb") as zipped:
+                    zipped.write(f['fp'].read())
+
+            elif upload['remote_file']:
+                f = urllib2.urlopen(upload['remote_file'])
+                with open(os.path.basename(upload['remote_file']), "wb") as zipped:
+                    zipped.write(f.read())
+
+            logger.info("forms.py ::: CookbookUpload - zipped = %s" % zipped)
+
+            # Decompress zipfile into temporal dir
+            tmpdir = tempfile.mkdtemp()
+            zip_ref = zipfile.ZipFile(zipped.name,'r')
+            zip_ref.extractall(tmpdir)
+            zip_ref.close()
+
+            # Getting cookbook's name
+            cookbook_name = ""
+            for name in glob.glob(tmpdir + "/*"):
+                logger.info("forms.py ::: CookbookUpload - name = %s" % name)
+                tmpdir = name
+                logger.info("forms.py ::: CookbookUpload - tmpdir = %s" % tmpdir)
+                with open("%s/metadata.rb" % name) as metafile:
+                    for line in metafile:
+                        logger.debug("forms.py ::: CookbookUpload - line = %s" % line)
+                        matching = re.search(r'name[ \t]+(")?(\w+)(?(1)\1|)', line)
+                        logger.debug("forms.py ::: CookbookUpload - cookbook_name = %s" % cookbook_name)
+                        if matching:
+                            cookbook_name = matching.group(2)
+                            break
+ 
+            logger.debug("forms.py ::: CookbookUpload - cookbook_name = %s" % cookbook_name)
+            cookbook_path = uploadir + cookbook_name
+            logger.debug("forms.py ::: CookbookUpload - cookbook_path = %s" % cookbook_path)
+            os.rename(tmpdir, cookbook_path)
+
+        except urllib2.HTTPError as e:
+                error = True
+                self.created_msg(_('There was an error downloading zip file'), 'danger')
+        except urllib2.URLError as e:
+                error = True
+                self.created_msg(_('There was an error downloading zip file'), 'danger')
+        except zipfile.BadZipfile as e:
+                error = True
+                self.created_msg(_('File is not a zip file: %s') % zipped.name, 'danger')
+        except OSError as e:
+                error = True
+                self.created_msg(e.message, 'danger')
+        except IOError as e:
+                logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
+                error = True
+                self.created_msg(_('No such file or directory: metadata.rb'), 'danger')
+
+        if not error:
+            obj = {
+                "_id": ObjectId(),
+                "name": cookbook_name,
+                "path": uploadir,
+                "type": 'upload'
+            }
+            cookbook_upload.delay(self.request.user, 'upload', obj)
+            logbook_link = '<a href="' +  self.request.application_url + '/#logbook' + '">' + _("here") + '</a>'
+            self.created_msg(_("Upload cookbook enqueue. Visit logbook %s") % logbook_link)
+
+class CookbookRestoreForm(GecosForm):
+    def validate(self, data):
+        data_dict = dict(data)
+        return super(CookbookUploadForm, self).validate(data)
+
+    def save(self, upload):
+        self.created_msg(_('Restore cookbook.'))
