@@ -223,7 +223,8 @@ def admin_restore(context, request):
         # Chef12
         response = api.api_request('DELETE', '/organizations/%s/cookbooks/%s/%s' %(organization,name,ver), data=data)
         logger.debug('admin_restore - response = %s'%(response))
-        messages.created_msg(request, _('Cookbook deleted successfully'), 'success')
+        logbook_link = '<a href="' +  request.application_url + '/#logbook' + '">' + _("here") + '</a>'
+        messages.created_msg(request, _('Cookbook deleted successfully. Visit logbook %s') % logbook_link, 'success')
 
         obj = {
             "_id": ObjectId(),

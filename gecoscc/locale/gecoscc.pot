@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.11\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-05 18:23+0200\n"
+"POT-Creation-Date: 2017-04-06 17:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -59,7 +59,7 @@ msgstr ""
 msgid "No such file or directory: metadata.rb"
 msgstr ""
 
-#: gecoscc/forms.py:307
+#: gecoscc/forms.py:307 gecoscc/views/admins.py:226
 msgid "here"
 msgstr ""
 
@@ -329,7 +329,7 @@ msgid "policy uploaded"
 msgstr ""
 
 #: gecoscc/tasks.py:1305
-msgid "Cookbook uploaded successfully"
+msgid "Cookbook uploaded successfully %s"
 msgstr ""
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
@@ -429,11 +429,11 @@ msgstr ""
 msgid "Set variables"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:53
+#: gecoscc/templates/base_navbar.jinja2:54
 msgid "Uploads"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:59
+#: gecoscc/templates/base_navbar.jinja2:61
 msgid "Log out"
 msgstr ""
 
@@ -1250,21 +1250,22 @@ msgstr ""
 msgid "User deleted successfully"
 msgstr ""
 
-#: gecoscc/views/admins.py:198 gecoscc/views/admins.py:242
+#: gecoscc/views/admins.py:199 gecoscc/views/admins.py:248
 msgid "Cookbook deleted unsuccessfully from chef"
 msgstr ""
 
-#: gecoscc/views/admins.py:223
-msgid "Cookbook deleted successfully"
+#: gecoscc/views/admins.py:227
+#, python-format
+msgid "Cookbook deleted successfully. Visit logbook %s"
 msgstr ""
 
-#: gecoscc/views/admins.py:237
+#: gecoscc/views/admins.py:241
 msgid "policy restored"
 msgstr ""
 
-#: gecoscc/views/admins.py:239
+#: gecoscc/views/admins.py:243
 #, python-format
-msgid "Cookbook deleted successfully %s %s"
+msgid "Cookbook deleted successfully %s"
 msgstr ""
 
 #: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69

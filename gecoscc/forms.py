@@ -233,7 +233,7 @@ class CookbookUploadForm(GecosForm):
         logger.info("CookbookUpload - upload - %s" % upload)
         error = False
         settings = get_current_registry().settings
-        rootdir = settings['cookbook_upload_rootdir'] 
+        rootdir = settings['cookbook_upload_rootdir'] + '/'
         logger.debug("forms.py ::: CookbookUpload - rootdir = %s" % rootdir)
         uploadir = rootdir + self.username + "/uploads/" + str(int(time.time())) + "/"
         logger.debug("forms.py ::: CookbookUpload - uploadir = %s" % uploadir)

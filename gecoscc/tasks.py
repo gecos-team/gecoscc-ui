@@ -1302,7 +1302,7 @@ def cookbook_upload(user, objtype, obj, computers=None):
             msg = errors_import
         else:
             status = 'finished'
-            msg = self._('Cookbook uploaded successfully')
+            msg = self._("Cookbook uploaded successfully %s") % (obj['name'])
      
     self.db.jobs.update({'_id':ObjectId(macrojob_id)},{'$set':{'status':status, 'message':msg}})
 

@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-04-05 18:11+0200\n"
+"POT-Creation-Date: 2017-04-06 17:56+0200\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -58,7 +58,7 @@ msgstr ""
 msgid "No such file or directory: metadata.rb"
 msgstr ""
 
-#: gecoscc/forms.py:307
+#: gecoscc/forms.py:307 gecoscc/views/admins.py:226
 msgid "here"
 msgstr "aquí"
 
@@ -332,9 +332,9 @@ msgid "policy uploaded"
 msgstr "Política subida"
 
 #: gecoscc/tasks.py:1305
-#, fuzzy
-msgid "Cookbook uploaded successfully"
-msgstr "Cookbook actualizado con éxito"
+#, python-format
+msgid "Cookbook uploaded successfully %s"
+msgstr "Cookbook actualizado con éxito %s"
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
 msgid "Control Center"
@@ -437,11 +437,11 @@ msgstr "Editar perfil"
 msgid "Set variables"
 msgstr "Establecer variables"
 
-#: gecoscc/templates/base_navbar.jinja2:53
+#: gecoscc/templates/base_navbar.jinja2:54
 msgid "Uploads"
 msgstr "Subir Cookbook"
 
-#: gecoscc/templates/base_navbar.jinja2:59
+#: gecoscc/templates/base_navbar.jinja2:61
 msgid "Log out"
 msgstr "Salir"
 
@@ -1152,7 +1152,6 @@ msgid "Set Organitation Unit managed by this user"
 msgstr "Establecer las unidades organizativas que puede administrar este usuario"
 
 #: gecoscc/templates/admins/edit.jinja2:42
-#: gecoscc/templates/admins/restore.jinja2:50
 msgid "Are you sure that you want to delete this user?"
 msgstr "¿Estás seguro de que quieres borrar este usuario?"
 
@@ -1292,21 +1291,23 @@ msgstr "Usuario borrado insatisfactoriamente de chef"
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
-#: gecoscc/views/admins.py:198 gecoscc/views/admins.py:242
+#: gecoscc/views/admins.py:199 gecoscc/views/admins.py:248
 msgid "Cookbook deleted unsuccessfully from chef"
 msgstr "Cookbook borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:223
-msgid "Cookbook deleted successfully"
-msgstr "Cookbook borrado con éxito"
+#: gecoscc/views/admins.py:227
+#, python-format
+msgid "Cookbook deleted successfully. Visit logbook %s"
+msgstr "Cookbook borrado con éxito. Visite bitácora %s"
 
-#: gecoscc/views/admins.py:237
+#: gecoscc/views/admins.py:241
 msgid "policy restored"
 msgstr "Política restaurada"
 
-#: gecoscc/views/admins.py:239
-msgid "Cookbook deleted successfully %s %s"
-msgstr "Cookbook borrado con éxito"
+#: gecoscc/views/admins.py:243
+#, python-format
+msgid "Cookbook deleted successfully %s"
+msgstr "Cookbook borrado con éxito %s"
 
 #: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69
 msgid "Please enter the correct username and password"
@@ -1417,4 +1418,7 @@ msgstr "Configuración modificada con éxito"
 
 #~ msgid "detached"
 #~ msgstr "Desvinculado"
+
+#~ msgid "Cookbook deleted successfully"
+#~ msgstr "Cookbook borrado con éxito"
 
