@@ -350,6 +350,9 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
+	authtype = colander.SchemaNode(colander.Boolean(),
+								default=False,
+								title=_('Is LDAP user?'))
 
 # Only to makemessages
 _('There is a user with this email: ${val}')
