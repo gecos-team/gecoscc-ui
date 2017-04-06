@@ -65,7 +65,7 @@ msgstr "aquí"
 #: gecoscc/forms.py:308
 #, python-format
 msgid "Upload cookbook enqueue. Visit logbook %s"
-msgstr "Tarea de importar pendiente pendiente. Visite bitácora %s"
+msgstr "Orden de subida e importación de cookbook pendiente. Visite bitácora %s"
 
 #: gecoscc/forms.py:316
 msgid "Restore cookbook."
@@ -329,7 +329,7 @@ msgstr "Borrado"
 
 #: gecoscc/tasks.py:1275
 msgid "policy uploaded"
-msgstr ""
+msgstr "Política subida"
 
 #: gecoscc/tasks.py:1305
 #, fuzzy
@@ -1301,9 +1301,8 @@ msgid "Cookbook deleted successfully"
 msgstr "Cookbook borrado con éxito"
 
 #: gecoscc/views/admins.py:237
-#, fuzzy
 msgid "policy restored"
-msgstr "Añadir política a"
+msgstr "Política restaurada"
 
 #: gecoscc/views/admins.py:239
 msgid "Cookbook deleted successfully %s %s"

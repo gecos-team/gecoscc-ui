@@ -185,16 +185,17 @@ def admin_upload(context, request):
     cookbook_name = settings['chef.cookbook_name']
     restore_choices = ['-']
     try:
-        # chef12
-        #versions = api['/organizations/%s/cookbooks/%s'%(organization,cookbook_name)]
-        response = api['/cookbooks/%s' % (cookbook_name)]
+        # Chef12
+        response = api['/organizations/%s/cookbooks/%s'%(organization,cookbook_name)]
+        # Chef11
+        #response = api['/cookbooks/%s' % (cookbook_name)]
         restore_choices = [x['version'].encode('utf-8') for x in response['gecos_ws_mgmt']['versions']]
         restore_choices.sort(reverse=True)
 
     except ChefServerNotFoundError, e:
-#        messages.created_msg(request, _('Cookbook not found'), 'warning')
-         logger.info('admin_uploads - data = %s'%(data))
+         logger.info('admin_uploads - ChefServerNotFoundError: %s'%(e))
     except ChefServerError, e:
+         logger.info('admin_uploads - ChefServerError: %s'%(e))
          messages.created_msg(request, _('Cookbook deleted unsuccessfully from chef'), 'danger')
 
     return { 
@@ -211,14 +212,16 @@ def admin_restore(context, request):
     ver = request.matchdict.get('version')
     logger.debug('admin_restore - version = %s'%(ver))
     username = request.user['username']
+    organization = 'default'
     chefusername = toChefUsername(username)
     settings = get_current_registry().settings
     api = get_chef_api(settings, request.user)
     try:
         data = {"user": chefusername}
-        response = api.api_request('DELETE', '/cookbooks/%s/%s' %(name,ver), data=data)
+        # Chef11
+        #response = api.api_request('DELETE', '/cookbooks/%s/%s' %(name,ver), data=data)
         # Chef12
-        #response = api.api_request('DELETE', '/organizations/%s/%s/%s' %(organization,cookbook_name,ver))
+        response = api.api_request('DELETE', '/organizations/%s/cookbooks/%s/%s' %(organization,name,ver), data=data)
         logger.debug('admin_restore - response = %s'%(response))
         messages.created_msg(request, _('Cookbook deleted successfully'), 'success')
 
@@ -236,11 +239,13 @@ def admin_restore(context, request):
                                     status='finished',
                                     policy={'name': 'policy restored','name_es':_('policy restored')},
                                     administrator_username=username,
-                                    message= _('Cookbook deleted successfully %s %s') % (name,ver))
+                                    message= _('Cookbook deleted successfully %s') % (obj['name']))
         invalidate_jobs(request, request.user)
+    except ChefServerNotFoundError, e:
+        logger.error("admin_restore - ChefServerNotFoundError: %s" % e)
     except ChefServerError, e:
         messages.created_msg(request, _('Cookbook deleted unsuccessfully from chef'), 'danger')
-        logger.error("admin_restore - cookbook deleted unsuccessfully: " % e)
+        logger.error("admin_restore - cookbook deleted unsuccessfully: %s" % e)
 
     logger.debug("admins_log ::: admin_restore - route_url = %s" % (request.route_url('admin_upload', username=username)))
     return HTTPFound(location=request.route_url('admin_upload', username=username))

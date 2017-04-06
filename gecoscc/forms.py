@@ -243,12 +243,12 @@ class CookbookUploadForm(GecosForm):
         try:
             if upload['local_file']:
                 f = upload['local_file']
-                with open(f['filename'], "wb") as zipped:
+                with open('/tmp/' + f['filename'], 'wb') as zipped: 
                     zipped.write(f['fp'].read())
 
             elif upload['remote_file']:
                 f = urllib2.urlopen(upload['remote_file'])
-                with open(os.path.basename(upload['remote_file']), "wb") as zipped:
+                with open('/tmp/' + os.path.basename(upload['remote_file']), "wb") as zipped:
                     zipped.write(f.read())
 
             logger.info("forms.py ::: CookbookUpload - zipped = %s" % zipped)

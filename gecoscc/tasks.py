@@ -1276,8 +1276,8 @@ def cookbook_upload(user, objtype, obj, computers=None):
                                           administrator_username=user['username'])
 
     
-    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'])
-    cmd_import = self.app.conf.get('cmd_import') % (self.app.conf.get('import_user'),self.app.conf.get('import_cert'))
+    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'], self.app.conf.get('knifeconf'))
+    cmd_import = self.app.conf.get('cmd_import') % (self.app.conf.get('adminuser'),self.app.conf.get('admincert'))
     self.log("debug", "tasks.py ::: cmd_upload = {0}".format(cmd_upload))
     self.log("debug", "tasks.py ::: cmd_import = {0}".format(cmd_import))
 

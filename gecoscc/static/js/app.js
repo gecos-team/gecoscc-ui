@@ -309,6 +309,7 @@ var App;
                 var events = App.events.$el;
                 var button = events.find("#maximize");
                 button.click();
+            },
             loadHome: function () {
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
