@@ -189,7 +189,7 @@ def _get_chef_api(chef_url, username, chef_pem, chef_ssl_verify, chef_version = 
     return api
 
 
-def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@nobody.es'):
+def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@nobody.es', authtype='local'):
     username = toChefUsername(usrname)
     if password is None:
         password = password_generator()
@@ -944,21 +944,15 @@ def getURLComponents(url):
 
     return components
 
-def update_computers_of_user(db, user, api):
-    from gecoscc.api.chef_status import USERS_OHAI
+def is_ldap_user():
 
-    logger.warning("utils ::: update_computers_of_user - user = %s" % str(user))
-    nodes = db.nodes.find({'path': {'$regex': '.*' + user['path'] +'.*'}, 'type':'computer'})
+    settings = get_current_registry().settings
 
-    for node in nodes:
-        chef_node = ChefNode(node['node_chef_id'], api)
-        try:
-            users = chef_node.attributes.get_dotted(USERS_OHAI)
-        except KeyError:
-            users = []
+    ldap__url = settings.get('gecos.ldap.url')
+    ldap_port = settings.get('gecos.ldap.port')
+    ldap_base = settings.get('gecos.ldap.base')
+    ldap_user = settings.get('gecos.ldap.user')
+    ldap_pass = settings.get('gecos.ldap.pass')
 
-        if any(usr['username'] == user['name'] for usr in users):
-            if node['_id'] not in user['computers']:
-                user['computers'].append(node['_id'])
+    return ldap_user
 
-    return user

@@ -83,7 +83,7 @@ class GecosTwoColumnsForm(GecosForm):
 class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
-                     'repeat_password', 'first_name', 'last_name',
+                     'repeat_password', 'first_name', 'last_name', 'authtype',
                      'ou_managed', 'ou_availables',)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
@@ -100,14 +100,20 @@ class AdminUserAddForm(BaseAdminUserForm):
     ignore_unique = False
 
     def save(self, admin_user):
+        if  admin_user['authtype']:
+            admin_user['authtype'] = 'ldap'
+        else:
+            admin_user['authtype'] = 'local'
+
         self.collection.insert(admin_user)
         admin_user['plain_password'] = self.cstruct['password']
         settings = get_current_registry().settings
         user = self.request.user
         
         api = get_chef_api(settings, user)
+
         try:
-            create_chef_admin_user(api, settings, admin_user['username'], None, admin_user['email'])
+            create_chef_admin_user(api, settings, admin_user['username'], None, admin_user['email'], admin_user['authtype'])
             self.created_msg(_('User created successfully'))
             return True
         except ChefServerError as e:
@@ -133,9 +139,14 @@ class AdminUserEditForm(BaseAdminUserForm):
         schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
+        schema.children[self.sorted_fields.index('authtype')].missing = schema.children[self.sorted_fields.index('authtype')].clone()
         self.children[self.sorted_fields.index('username')].widget.readonly = True
 
     def save(self, admin_user):
+        if admin_user['authtype']:
+            admin_user['authtype'] = 'ldap'
+        else:
+            admin_user['authtype'] = 'local'
         if admin_user['password'] == '':
             del admin_user['password']
         self.collection.update({'username': self.username},
