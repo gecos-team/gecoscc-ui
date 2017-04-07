@@ -152,7 +152,7 @@ msgstr ""
 
 #: gecoscc/models.py:369
 msgid "Cookbook ZIP"
-msgstr ""
+msgstr "Archivo de políticas (.zip)"
 
 #: gecoscc/models.py:373
 msgid "URL download"
