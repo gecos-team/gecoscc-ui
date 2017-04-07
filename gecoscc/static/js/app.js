@@ -294,10 +294,22 @@ var App;
             "ou/:containerid/:type/:itemid": "loadItem",
             "ou/:containerid/:type/:itemid/policy": "newPolicy",
             "ou/:containerid/:type/:itemid/policy/:policyid": "loadPolicy",
-            "search/:keyword": "search"
+            "search/:keyword": "search",
+            "logbook": "logbook"                                
         },
 
         controller: {
+            logbook: function () {
+                if (_.isUndefined(App.instances.job_collection)) {
+                    App.instances.job_collection = new App.Job.Models.JobCollection();
+                    App.instances.job_collection.fetch();
+                }
+                var jview = new JobsView({collection: App.instances.job_collection});
+                App.events.show(jview);
+                var events = App.events.$el;
+                var button = events.find("#maximize");
+                button.click();
+            },
             loadHome: function () {
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
@@ -618,7 +630,9 @@ var App;
             App.instances.job_statistics = new App.Job.Models.JobStatistics();
             App.instances.job_statistics.fetch();
         }
-        App.events.show(new JobsView({collection: App.instances.job_collection}));
+        if (! (Backbone.history.getFragment() == 'logbook')) {
+            App.events.show(new JobsView({collection: App.instances.job_collection}));
+        }
     });
 
     if (window.websocketsEnabled) {

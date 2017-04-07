@@ -1,0 +1,60 @@
+{% extends "admins/upload.jinja2" %}
+
+{% set lastest = {'version': False} %}
+
+{% block inner_content %}
+
+    {{ super() }}
+    <div id="admin-restore-actions" class="container">
+        <h3>{{ gettext('Restore previous version of Cookbook') }}</h3>
+        <div class="row" id="users">
+            <div class="col-sm-12">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>{{ gettext('Cookbook Name') }}</th>
+                            <th>{{ gettext('Version') }}</th>
+                            <th>{{ gettext('Action') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for choice in restore_choices %}
+                            <tr>
+                                <td>{{ cookbook_name }}</td>
+                                <td>
+                                    {{ choice }}
+                                </td>
+                                <td>
+                                    {% if choice!='-' and loop.index == 1 %}
+                                        {% if lastest.update({'version':choice}) %}{% endif %}
+                                        <button class="btn btn-danger btn-xs" id="del-policy">
+                                            <span class="fa fa-trash"></span> {{ gettext('Remove') }}
+                                        </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+     </div>
+{% endblock %}
+
+{% block extrajs %}
+    {{ super() }}
+    <script type="text/javascript">
+        (function($){
+            $('#del-policy').click( function(evt) {
+                GecosUtils.askConfirmation({
+                    'message': "{{ gettext('Are you sure that you want to delete this cookbook version?') }}",
+                    'callback': function () {
+                        {% if request.user.get('is_superuser') %}
+                            window.location = "{{ request.route_url('admin_restore', name=cookbook_name, version=lastest.version) }}";
+                        {% endif %}
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+{% endblock %}
