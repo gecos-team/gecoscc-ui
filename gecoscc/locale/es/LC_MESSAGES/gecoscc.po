@@ -60,7 +60,7 @@ msgstr ""
 
 #: gecoscc/forms.py:310
 msgid "No cookbook name or version found in metadata.rb"
-msgstr "No se encuentra el nombre o versión del cookbook en metadata.rb"
+msgstr "No se encuentra el nombre o versión del archivo de políticas en metadata.rb"
 
 #: gecoscc/forms.py:321 gecoscc/views/admins.py:226
 msgid "here"
@@ -69,11 +69,11 @@ msgstr "aquí"
 #: gecoscc/forms.py:322
 #, python-format
 msgid "Upload cookbook enqueue. Visit logbook %s"
-msgstr "Orden de subida e importación de cookbook pendiente. Visite bitácora %s"
+msgstr "Orden de subida e importación de archivo de políticas pendiente. Visite bitácora %s"
 
 #: gecoscc/forms.py:331
 msgid "Restore cookbook."
-msgstr "Restaurar cookbook"
+msgstr "Restaurar archivo de políticas"
 
 #: gecoscc/models.py:94
 msgid "There is some object with this value: ${val}"
@@ -160,7 +160,7 @@ msgstr "URL de descarga"
 
 #: gecoscc/models.py:381
 msgid "Restore previous version of cookbook"
-msgstr "Restaurar a una versión previa del cookbook"
+msgstr "Eliminar la última versión del archivo de politicas"
 
 #: gecoscc/models.py:390
 msgid "uri"
@@ -341,7 +341,7 @@ msgstr "Actualizando política..."
 
 #: gecoscc/tasks.py:1306
 msgid "Cookbook uploaded successfully %s %s"
-msgstr "Cookbook actualizado con éxito %s %s"
+msgstr "Archivo de políticas actualizado con éxito %s %s"
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
 msgid "Control Center"
@@ -446,7 +446,7 @@ msgstr "Establecer variables"
 
 #: gecoscc/templates/base_navbar.jinja2:54
 msgid "Uploads"
-msgstr "Subir Cookbook"
+msgstr "Subir Archivo de políticas"
 
 #: gecoscc/templates/base_navbar.jinja2:61
 msgid "Log out"
@@ -900,7 +900,7 @@ msgstr "Acciones"
 #: gecoscc/templates/bb-policies-list.html:35
 #: gecoscc/templates/admins/restore.jinja2:31
 msgid "Remove"
-msgstr "Quitar"
+msgstr "Eliminar"
 
 #: gecoscc/templates/bb-policies-list.html:38
 msgid "Edit"
@@ -1180,11 +1180,11 @@ msgstr "Selecciona una Unidad Organizativa"
 
 #: gecoscc/templates/admins/restore.jinja2:9
 msgid "Restore previous version of Cookbook"
-msgstr "Restaurar una versión previa de Cookbook"
+msgstr "Eliminar la última versión del archivo de politicas"
 
 #: gecoscc/templates/admins/restore.jinja2:15
 msgid "Cookbook Name"
-msgstr "Nombre del Cookbook"
+msgstr "Nombre del archivo de políticas"
 
 #: gecoscc/templates/admins/restore.jinja2:16
 msgid "Version"
@@ -1192,11 +1192,11 @@ msgstr ""
 
 #: gecoscc/templates/admins/restore.jinja2:50
 msgid "Are you sure that you want to delete this cookbook version?"
-msgstr "¿Estás seguro de que quieres borrar este cookbook?"
+msgstr "¿Estás seguro de que quieres borrar este archivo de políticas?"
 
 #: gecoscc/templates/admins/upload.jinja2:14
 msgid "Upload Cookbook"
-msgstr "Subir Cookbook"
+msgstr "Subir Archivo de política"
 
 #: gecoscc/templates/admins/upload.jinja2:24
 msgid "Browser file or Download URL required."
@@ -1300,12 +1300,12 @@ msgstr "Usuario borrado con éxito"
 
 #: gecoscc/views/admins.py:199 gecoscc/views/admins.py:248
 msgid "Cookbook deleted unsuccessfully from chef"
-msgstr "Cookbook borrado insatisfactoriamente de chef"
+msgstr "Archivo de políticas borrado insatisfactoriamente de chef"
 
 #: gecoscc/views/admins.py:227
 #, python-format
 msgid "Cookbook deleted successfully. Visit logbook %s"
-msgstr "Cookbook borrado con éxito. Visite bitácora %s"
+msgstr "Archivo de políticas borrado con éxito. Visite bitácora %s"
 
 #: gecoscc/views/admins.py:241
 msgid "policy restored"
@@ -1314,7 +1314,7 @@ msgstr "Política restaurada"
 #: gecoscc/views/admins.py:243
 #, python-format
 msgid "Cookbook deleted successfully %s"
-msgstr "Cookbook borrado con éxito %s"
+msgstr "Archivo de políticas borrado con éxito %s"
 
 #: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69
 msgid "Please enter the correct username and password"
