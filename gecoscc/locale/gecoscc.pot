@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.11\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-06 17:56+0200\n"
+"POT-Creation-Date: 2017-04-07 11:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,29 +46,33 @@ msgstr ""
 msgid "Variables updated successfully"
 msgstr ""
 
-#: gecoscc/forms.py:284 gecoscc/forms.py:287
+#: gecoscc/forms.py:293 gecoscc/forms.py:296
 msgid "There was an error downloading zip file"
 msgstr ""
 
-#: gecoscc/forms.py:290
+#: gecoscc/forms.py:299
 #, python-format
 msgid "File is not a zip file: %s"
 msgstr ""
 
-#: gecoscc/forms.py:297
+#: gecoscc/forms.py:306
 msgid "No such file or directory: metadata.rb"
 msgstr ""
 
-#: gecoscc/forms.py:307 gecoscc/views/admins.py:226
+#: gecoscc/forms.py:310
+msgid "No cookbook name or version found in metadata.rb"
+msgstr ""
+
+#: gecoscc/forms.py:321 gecoscc/views/admins.py:226
 msgid "here"
 msgstr ""
 
-#: gecoscc/forms.py:308
+#: gecoscc/forms.py:322
 #, python-format
 msgid "Upload cookbook enqueue. Visit logbook %s"
 msgstr ""
 
-#: gecoscc/forms.py:316
+#: gecoscc/forms.py:331
 msgid "Restore cookbook."
 msgstr ""
 
@@ -328,8 +332,13 @@ msgstr ""
 msgid "policy uploaded"
 msgstr ""
 
-#: gecoscc/tasks.py:1305
-msgid "Cookbook uploaded successfully %s"
+#: gecoscc/tasks.py:1277
+msgid "policy uploading..."
+msgstr ""
+
+#: gecoscc/tasks.py:1306
+#, python-format
+msgid "Cookbook uploaded successfully %s %s"
 msgstr ""
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16

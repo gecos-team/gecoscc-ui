@@ -219,6 +219,9 @@ class AdminUserVariablesForm(GecosForm):
         self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
         self.created_msg(_('Variables updated successfully'))
 
+class ParseMetadataException(Exception):
+    pass
+
 class CookbookUploadForm(GecosForm):
 
     def validate(self, data):
@@ -260,7 +263,7 @@ class CookbookUploadForm(GecosForm):
             zip_ref.close()
 
             # Getting cookbook's name
-            cookbook_name = ""
+            cookbook_name = cookbook_ver = ""
             for name in glob.glob(tmpdir + "/*"):
                 logger.info("forms.py ::: CookbookUpload - name = %s" % name)
                 tmpdir = name
@@ -268,13 +271,19 @@ class CookbookUploadForm(GecosForm):
                 with open("%s/metadata.rb" % name) as metafile:
                     for line in metafile:
                         logger.debug("forms.py ::: CookbookUpload - line = %s" % line)
-                        matching = re.search(r'name[ \t]+(")?(\w+)(?(1)\1|)', line)
-                        logger.debug("forms.py ::: CookbookUpload - cookbook_name = %s" % cookbook_name)
-                        if matching:
-                            cookbook_name = matching.group(2)
+                        matchname = re.search(r'name[ \t]+(")?(\w+)(?(1)\1|)', line)
+                        matchver  = re.search(r'version[ \t]+(")?([\d.]+)(?(1)\1|)', line)
+                        if matchname:
+                            cookbook_name = matchname.group(2)
+                        elif matchver:
+                            cookbook_ver  = matchver.group(2)
                             break
- 
+            
+            if  not (cookbook_name and cookbook_ver):            
+                raise ParseMetadataException()
+
             logger.debug("forms.py ::: CookbookUpload - cookbook_name = %s" % cookbook_name)
+            logger.debug("forms.py ::: CookbookUpload - cookbook_ver = %s" % cookbook_ver)
             cookbook_path = uploadir + cookbook_name
             logger.debug("forms.py ::: CookbookUpload - cookbook_path = %s" % cookbook_path)
             os.rename(tmpdir, cookbook_path)
@@ -295,17 +304,23 @@ class CookbookUploadForm(GecosForm):
                 logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
                 error = True
                 self.created_msg(_('No such file or directory: metadata.rb'), 'danger')
+        except ParseMetadataException as e:
+                logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
+                error = True
+                self.created_msg(_('No cookbook name or version found in metadata.rb'),'danger')
 
         if not error:
             obj = {
                 "_id": ObjectId(),
                 "name": cookbook_name,
                 "path": uploadir,
-                "type": 'upload'
+                "type": 'upload',
+                "version": cookbook_ver
             }
             cookbook_upload.delay(self.request.user, 'upload', obj)
             logbook_link = '<a href="' +  self.request.application_url + '/#logbook' + '">' + _("here") + '</a>'
             self.created_msg(_("Upload cookbook enqueue. Visit logbook %s") % logbook_link)
+
 
 class CookbookRestoreForm(GecosForm):
     def validate(self, data):

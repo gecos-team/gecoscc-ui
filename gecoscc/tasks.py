@@ -1273,7 +1273,8 @@ def cookbook_upload(user, objtype, obj, computers=None):
                                           computer=None,
                                           status='processing',
                                           policy={'name':'policy uploaded','name_es': self._('policy uploaded')},
-                                          administrator_username=user['username'])
+                                          administrator_username=user['username'],
+                                          message=self._('policy uploading...'))
 
     
     cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'], self.app.conf.get('knifeconf'))
@@ -1302,7 +1303,7 @@ def cookbook_upload(user, objtype, obj, computers=None):
             msg = errors_import
         else:
             status = 'finished'
-            msg = self._("Cookbook uploaded successfully %s") % (obj['name'])
+            msg = self._("Cookbook uploaded successfully %s %s") % (obj['name'], obj['version'])
      
     self.db.jobs.update({'_id':ObjectId(macrojob_id)},{'$set':{'status':status, 'message':msg}})
 
