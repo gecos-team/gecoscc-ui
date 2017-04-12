@@ -956,3 +956,22 @@ def is_ldap_user():
 
     return ldap_user
 
+def update_computers_of_user(db, user, api):
+	from gecoscc.api.chef_status import USERS_OHAI
+
+	logger.warning("utils ::: update_computers_of_user - user = %s" % str(user))
+	nodes = db.nodes.find({'path': {'$regex': '.*' + user['path'] +'.*'}, 'type':'computer'})
+
+	for node in nodes:
+		chef_node = ChefNode(node['node_chef_id'], api)
+		try:
+			users = chef_node.attributes.get_dotted(USERS_OHAI)
+		except KeyError:
+			users = []
+
+		if any(usr['username'] == user['name'] for usr in users):
+			if node['_id'] not in user['computers']:
+				user['computers'].append(node['_id'])
+
+return user
+
