@@ -100,11 +100,6 @@ class AdminUserAddForm(BaseAdminUserForm):
     ignore_unique = False
 
     def save(self, admin_user):
-        if  admin_user['authtype']:
-            admin_user['authtype'] = 'ldap'
-        else:
-            admin_user['authtype'] = 'local'
-
         self.collection.insert(admin_user)
         admin_user['plain_password'] = self.cstruct['password']
         settings = get_current_registry().settings
@@ -139,14 +134,10 @@ class AdminUserEditForm(BaseAdminUserForm):
         schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
-        schema.children[self.sorted_fields.index('authtype')].missing = schema.children[self.sorted_fields.index('authtype')].clone()
+        schema.children[self.sorted_fields.index('authtype')] = schema.children[self.sorted_fields.index('authtype')].clone()
         self.children[self.sorted_fields.index('username')].widget.readonly = True
 
     def save(self, admin_user):
-        if admin_user['authtype']:
-            admin_user['authtype'] = 'ldap'
-        else:
-            admin_user['authtype'] = 'local'
         if admin_user['password'] == '':
             del admin_user['password']
         self.collection.update({'username': self.username},

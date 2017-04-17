@@ -17,3 +17,21 @@
         {% endblock %}
     </div>
 {% endblock %}
+{% block extrajs %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function () {
+                $("select[name='authtype']").change(function() {
+                    if(this.value == 'ldap') {
+                        $("input[name='password']").prop('disabled', true);
+                        $("input[name='repeat_password']").prop('disabled', true);
+                    } else {
+                        $("input[name='password']").prop('disabled', false);
+                        $("input[name='repeat_password']").prop('disabled', false);
+
+                    }
+                });
+            });
+        })(jQuery);
+    </script>
+{% endblock %}

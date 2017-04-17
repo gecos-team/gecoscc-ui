@@ -197,20 +197,19 @@ def get_ldap_info():
         'url' : settings.get('gecos.ldap.url'),
         'port': settings.get('gecos.ldap.port'),
         'prfx': settings.get('gecos.ldap.prfx'),
-        'base': settings.get('gecos.ldap.base')
+        'base': settings.get('gecos.ldap.base'),
+        'admn': settings.get('gecos.ldap.admn'),
+        'pass': settings.get('gecos.ldap.pass')
     }
     return ldap
 
 def get_ldap_auth(user,password):
     ldap_info = get_ldap_info()
     conn = str(ldap_info['url'])+':'+str(ldap_info['port'])
-    conn = conn.replace('"','')
     basedn = str(ldap_info['prfx'])+user+","+str(ldap_info['base'])
-    basedn = basedn.replace('"','')
-
-    ld = ldap.initialize(conn)
 
     try:
+        ld = ldap.initialize(conn)
         ld.simple_bind_s(basedn,password)
         result = { 'username': user, 'dn':ld.whoami_s() }
         ld.unbind_s()
@@ -218,4 +217,21 @@ def get_ldap_auth(user,password):
     except ldap.LDAPError, e:
         ld.unbind_s()
         return False
+
+def get_ldap_userin(username):
+    ldap_info = get_ldap_info()
+    conn = str(ldap_info['url'])+':'+str(ldap_info['port'])
+    basedn = str(ldap_info['base'])
+    admn = str(ldap_info['admn'])
+    password = str(ldap_info['pass'])
+    sfilter = "(|(%s %s)(sAMAccountName=%s))" % (ldap_info['prfx'], username, username)
+
+    try:
+        ld = ldap.initialize(conn)
+        ld.protocol_version = ldap.VERSION3
+        ld.simple_bind_s(admn, password)
+        result = ld.search_s(basedn, ldap.SCOPE_SUBTREE, sfilter)
+        return True if len(result) > 0 else False
+    except ldap.LDAPError, e:
+        return None
 

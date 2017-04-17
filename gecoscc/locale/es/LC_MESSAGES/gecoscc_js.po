@@ -293,4 +293,3 @@ msgstr "Anterior"
 #~ msgid "Package not found in server repositories"
 #~ msgstr "Este paquete no se encuentra en los repositorios del servidor"
 
-
