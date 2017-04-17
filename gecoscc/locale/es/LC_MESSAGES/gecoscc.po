@@ -39,7 +39,7 @@ msgstr "Usuario modificado con éxito"
 
 #: gecoscc/forms.py:170 gecoscc/forms.py:171
 msgid "Add another"
-msgstr "Añadir otro"
+msgstr "Añadir otra"
 
 #: gecoscc/forms.py:220
 msgid "Variables updated successfully"
@@ -139,16 +139,12 @@ msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
 #: gecoscc/models.py:360
-msgid "This user can register workstation under these Organitation Units"
-msgstr ""
-"Este usuario puede registrar estaciones de trabajo bajo estas unidades "
-"organizativas"
+msgid "This user can manage workstations under these Organizational Units"
+msgstr "Este usuario puede administrar puestos en estas unidades organizativas"
 
 #: gecoscc/models.py:363
-msgid "Organitation Unit availables to register workstations by this user"
-msgstr ""
-"Unidades organizativas disponibles para que este usuario pueda registrar "
-"estaciones de trabajo"
+msgid "Organizational Units available to register workstations"
+msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
 
 #: gecoscc/models.py:369
 msgid "Cookbook ZIP"

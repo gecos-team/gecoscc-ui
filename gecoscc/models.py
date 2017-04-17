@@ -357,10 +357,10 @@ _('There is a user with this username: ${val}')
 
 class AdminUserOUManage(colander.MappingSchema):
     ou_managed = colander.SchemaNode(colander.List(),
-                                     title=_('This user can register workstation under these Organitation Units'),
+                                     title=_('This user can manage workstations under these Organizational Units'),
                                      widget=deferred_choices_widget)
     ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('Organitation Unit availables to register workstations by this user'),
+                                        title=_('Organizational Units available to register workstations'),
                                         widget=deferred_choices_widget)
 
 class CookbookUpload(colander.MappingSchema):
