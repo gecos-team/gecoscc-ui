@@ -64,7 +64,7 @@ class LoginViews(BaseView):
                         _("Please enter the correct username and password")),
                 }
 
-            if not user_authtype:
+            if not (user_authtype and user_authtype.has_key('authtype')):
                 self.request.userdb.add_authtype(username)
                 user_authtype = 'local'
 
