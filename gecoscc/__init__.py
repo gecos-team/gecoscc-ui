@@ -79,9 +79,7 @@ def route_config(config):
 def sockjs_config(config, global_config):
     settings = config.registry.settings
 
-#    url_items = urlsplit(settings['sockjs'])
-#    settings['sockjs'] = {'hostname':url_items.hostname, 'port':url_items.port}
-    settings['sockjs'] = settings['sockjs']
+    settings['sockjs_url'] = settings['sockjs_url']
 
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
