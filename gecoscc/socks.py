@@ -28,7 +28,7 @@ TOKEN = 'token'
 
 def get_manager():
     settings = get_current_registry().settings
-    return redis.Redis(**settings['redis.conf'])
+    return redis.Redis.from_url(**settings['sockjs'])
 
 
 def is_websockets_enabled():
