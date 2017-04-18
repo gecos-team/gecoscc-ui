@@ -73,7 +73,7 @@ class LoginViews(BaseView):
                 return {
                     'username': username,
                     'message': self.translate(
-                        _("gecoscc.ini LDAP configuration misplaced. Please contact your system administrator.")),
+                        _("gecoscc.ini LDAP configuration is wrong. Please contact your system administrator.")),
             }
 
             try:
