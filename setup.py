@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
-CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
+#CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = open(os.path.join(here, 'requirements.txt')).read().splitlines()
 test_requires = open(os.path.join(here, 'test_requirements.txt')).read().splitlines()
@@ -18,7 +18,7 @@ def get_version():
 setup(name='gecoscc',
       version=get_version(),
       description='gecoscc',
-      long_description=README + '\n\n' + CHANGES,
+      long_description=README,
       classifiers=[
           "Programming Language :: Python",
           "Framework :: Pylons",

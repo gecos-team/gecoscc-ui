@@ -139,7 +139,7 @@ class GecosNamespace(BaseNamespace):
 
         settings = get_current_registry().settings
 
-        r = redis.StrictRedis(**settings['redis.conf'])
+        r = redis.StrictRedis.from_url(**settings['sockjs'])
         r = r.pubsub()
 
         try:
