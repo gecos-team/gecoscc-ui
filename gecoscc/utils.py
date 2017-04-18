@@ -944,18 +944,6 @@ def getURLComponents(url):
 
     return components
 
-def is_ldap_user():
-
-    settings = get_current_registry().settings
-
-    ldap__url = settings.get('gecos.ldap.url')
-    ldap_port = settings.get('gecos.ldap.port')
-    ldap_base = settings.get('gecos.ldap.base')
-    ldap_user = settings.get('gecos.ldap.user')
-    ldap_pass = settings.get('gecos.ldap.pass')
-
-    return ldap_user
-
 def update_computers_of_user(db, user, api):
 	from gecoscc.api.chef_status import USERS_OHAI
 
