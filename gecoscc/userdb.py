@@ -224,7 +224,7 @@ def get_ldap_userin(username):
     basedn = str(ldap_info['base'])
     admn = str(ldap_info['admn'])
     password = str(ldap_info['pass'])
-    sfilter = "(|(%s %s)(sAMAccountName=%s))" % (ldap_info['prfx'], username, username)
+    sfilter = "(%s %s)" % (ldap_info['prfx'], username)
 
     try:
         ld = ldap.initialize(conn)
