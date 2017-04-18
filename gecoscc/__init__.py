@@ -33,6 +33,7 @@ from gecoscc.eventsmanager import get_jobstorage
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
 from gecoscc.socks import socketio_service
 
+from urlparse import urlsplit
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
@@ -77,7 +78,11 @@ def route_config(config):
 
 def sockjs_config(config, global_config):
     settings = config.registry.settings
-    settings['sockjs'] = json.loads(settings['sockjs'])
+
+#    url_items = urlsplit(settings['sockjs'])
+#    settings['sockjs'] = {'hostname':url_items.hostname, 'port':url_items.port}
+    settings['sockjs'] = settings['sockjs']
+
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
 
