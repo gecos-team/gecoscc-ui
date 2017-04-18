@@ -17,16 +17,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:57 gecoscc/forms.py:125 gecoscc/templates/login.jinja2:31
+#: gecoscc/forms.py:65 gecoscc/forms.py:132 gecoscc/templates/login.jinja2:31
 #: gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr ""
 
-#: gecoscc/forms.py:112
+#: gecoscc/forms.py:119
 msgid "User created successfully"
 msgstr ""
 
-#: gecoscc/forms.py:128 gecoscc/templates/bb-computer.html:116
+#: gecoscc/forms.py:135 gecoscc/templates/bb-computer.html:116
 #: gecoscc/templates/bb-groups-form.html:36 gecoscc/templates/bb-ou.html:61
 #: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:109
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
@@ -34,16 +34,46 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/forms.py:147 gecoscc/forms.py:175
+#: gecoscc/forms.py:153 gecoscc/forms.py:181
 msgid "User edited successfully"
 msgstr ""
 
-#: gecoscc/forms.py:164 gecoscc/forms.py:165
+#: gecoscc/forms.py:170 gecoscc/forms.py:171
 msgid "Add another"
 msgstr ""
 
-#: gecoscc/forms.py:214
+#: gecoscc/forms.py:220
 msgid "Variables updated successfully"
+msgstr ""
+
+#: gecoscc/forms.py:293 gecoscc/forms.py:296
+msgid "There was an error downloading zip file"
+msgstr ""
+
+#: gecoscc/forms.py:299
+#, python-format
+msgid "File is not a zip file: %s"
+msgstr ""
+
+#: gecoscc/forms.py:306
+msgid "No such file or directory: metadata.rb"
+msgstr ""
+
+#: gecoscc/forms.py:310
+msgid "No cookbook name or version found in metadata.rb"
+msgstr ""
+
+#: gecoscc/forms.py:321 gecoscc/views/admins.py:226
+msgid "here"
+msgstr ""
+
+#: gecoscc/forms.py:322
+#, python-format
+msgid "Upload cookbook enqueue. Visit logbook %s"
+msgstr ""
+
+#: gecoscc/forms.py:331
+msgid "Restore cookbook."
 msgstr ""
 
 #: gecoscc/models.py:94
@@ -294,8 +324,21 @@ msgstr ""
 msgid "Pending: %d"
 msgstr ""
 
-#: gecoscc/tasks.py:972 gecoscc/tasks.py:1116
+#: gecoscc/tasks.py:973 gecoscc/tasks.py:1117
 msgid "deleted"
+msgstr ""
+
+#: gecoscc/tasks.py:1275
+msgid "policy uploaded"
+msgstr ""
+
+#: gecoscc/tasks.py:1277
+msgid "policy uploading..."
+msgstr ""
+
+#: gecoscc/tasks.py:1306
+#, python-format
+msgid "Cookbook uploaded successfully %s %s"
 msgstr ""
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
@@ -357,6 +400,8 @@ msgstr ""
 #: gecoscc/templates/admins/list.jinja2:11
 #: gecoscc/templates/admins/ou_manage.jinja2:8
 #: gecoscc/templates/admins/ou_manage.jinja2:12
+#: gecoscc/templates/admins/upload.jinja2:8
+#: gecoscc/templates/admins/upload.jinja2:12
 #: gecoscc/templates/admins/variables.jinja2:8
 #: gecoscc/templates/admins/variables.jinja2:12
 msgid "Administrators"
@@ -394,6 +439,10 @@ msgid "Set variables"
 msgstr ""
 
 #: gecoscc/templates/base_navbar.jinja2:54
+msgid "Uploads"
+msgstr ""
+
+#: gecoscc/templates/base_navbar.jinja2:61
 msgid "Log out"
 msgstr ""
 
@@ -727,7 +776,7 @@ msgstr ""
 msgid "Policy"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:52
+#: gecoscc/templates/bb-jobs.html:52 gecoscc/templates/admins/restore.jinja2:17
 msgid "Action"
 msgstr ""
 
@@ -815,6 +864,7 @@ msgid "Actions"
 msgstr ""
 
 #: gecoscc/templates/bb-policies-list.html:35
+#: gecoscc/templates/admins/restore.jinja2:31
 msgid "Remove"
 msgstr ""
 
@@ -1091,6 +1141,30 @@ msgstr ""
 msgid "Select an Organisational Unit"
 msgstr ""
 
+#: gecoscc/templates/admins/restore.jinja2:9
+msgid "Restore previous version of Cookbook"
+msgstr ""
+
+#: gecoscc/templates/admins/restore.jinja2:15
+msgid "Cookbook Name"
+msgstr ""
+
+#: gecoscc/templates/admins/restore.jinja2:16
+msgid "Version"
+msgstr ""
+
+#: gecoscc/templates/admins/restore.jinja2:50
+msgid "Are you sure that you want to delete this cookbook version?"
+msgstr ""
+
+#: gecoscc/templates/admins/upload.jinja2:14
+msgid "Upload Cookbook"
+msgstr ""
+
+#: gecoscc/templates/admins/upload.jinja2:24
+msgid "Browser file or Download URL required."
+msgstr ""
+
 #: gecoscc/templates/server/connections.jinja2:8
 #: gecoscc/templates/server/log.jinja2:8 gecoscc/templates/server/status.jinja2:8
 #: gecoscc/templates/server/status.jinja2:11
@@ -1177,15 +1251,33 @@ msgstr ""
 msgid "Connections"
 msgstr ""
 
-#: gecoscc/views/admins.py:147
+#: gecoscc/views/admins.py:151
 msgid "User deleted unsuccessfully from chef"
 msgstr ""
 
-#: gecoscc/views/admins.py:149
+#: gecoscc/views/admins.py:153
 msgid "User deleted successfully"
 msgstr ""
 
-#: gecoscc/views/portal.py:64 gecoscc/views/portal.py:85 gecoscc/views/portal.py:91
+#: gecoscc/views/admins.py:199 gecoscc/views/admins.py:248
+msgid "Cookbook deleted unsuccessfully from chef"
+msgstr ""
+
+#: gecoscc/views/admins.py:227
+#, python-format
+msgid "Cookbook deleted successfully. Visit logbook %s"
+msgstr ""
+
+#: gecoscc/views/admins.py:241
+msgid "policy restored"
+msgstr ""
+
+#: gecoscc/views/admins.py:243
+#, python-format
+msgid "Cookbook deleted successfully %s"
+msgstr ""
+
+#: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69
 msgid "Please enter the correct username and password"
 msgstr ""
 

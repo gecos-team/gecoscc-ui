@@ -1,0 +1,52 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container" id="admin-container">
+        <h1>{{ gettext('Administrators') }}</h1>
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                {% if request.user.get('is_superuser') %}
+                    <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
+                {% endif %}
+                <li class="active">{{ gettext('Upload Cookbook') }}</li>
+            </ol>
+        {% endblock %}
+        {% block form_content %}
+            <div id="upload_errs" class="alert alert-danger hide">
+                <span></span>
+            </div>
+
+            <div class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ gettext("Browser file or Download URL required.") }}
+            </div>
+            {{ upload_form|safe }}
+        {% endblock %}
+        {# {% include "admins/restore.jinja2" %}  #}
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function () {
+                $('form').submit( function(evt) {
+                    var local  = $("input[type=file]").val();
+                    var remote = $("input[name='remote_file']").val();
+                    var filename = local ? local : remote;
+                    var extension = filename.split('.').pop().toLowerCase();
+                    switch(extension) {
+                        case 'zip': break;
+                        default:
+                            evt.preventDefault();
+                            $('#upload_errs span').text(gettext("File is not a zip file.")); 
+                            $('#upload_errs').removeClass('hide');
+                    } 
+                });
+            });
+        })(jQuery);
+    </script>
+{% endblock %}

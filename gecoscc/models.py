@@ -278,7 +278,6 @@ class User(Node, BaseUser):
 class Users(colander.SequenceSchema):
     users = User()
 
-
 class ChainedSelectWidget(SelectWidget):
 
     null_value = ['']
@@ -380,12 +379,29 @@ _('There is a user with this username: ${val}')
 
 class AdminUserOUManage(colander.MappingSchema):
     ou_managed = colander.SchemaNode(colander.List(),
-                                     title=_('This user can register workstation under these Organitation Units'),
+                                     title=_('This user can manage workstations under these Organizational Units'),
                                      widget=deferred_choices_widget)
     ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('Organitation Unit availables to register workstations by this user'),
+                                        title=_('Organizational Units available to register workstations'),
                                         widget=deferred_choices_widget)
 
+class CookbookUpload(colander.MappingSchema):
+    local_file = colander.SchemaNode(deform.FileData(),
+                                     widget=FileUploadWidget(filestore),
+                                     title=_('Cookbook ZIP'))
+    remote_file = colander.SchemaNode(colander.String(),
+                                      validator=colander.url,
+                                      missing=unicode(''),
+                                      title=_('URL download'))
+@colander.deferred
+def deferred_restore_widget(node, kw):
+    choices = kw.get('restore_choices')
+    return SelectWithDisabledOptions(values=choices)
+
+class CookbookRestore(colander.MappingSchema):
+    restore_versions = colander.SchemaNode(colander.List(),
+                                           title=_('Restore previous version of cookbook'),
+                                           widget=deferred_restore_widget)
 
 class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
