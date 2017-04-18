@@ -163,6 +163,18 @@ msgstr ""
 msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 
+#: gecoscc/models.py:369
+msgid "Cookbook ZIP"
+msgstr ""
+
+#: gecoscc/models.py:373
+msgid "URL download"
+msgstr ""
+
+#: gecoscc/models.py:381
+msgid "Restore previous version of cookbook"
+msgstr ""
+
 #: gecoscc/models.py:396
 msgid "uri"
 msgstr ""
