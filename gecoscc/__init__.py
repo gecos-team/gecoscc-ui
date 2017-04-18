@@ -205,19 +205,9 @@ def jinja2_config(config):
 #            })
 
 def celery_config(config):
-    from urlparse import urlparse
     settings = config.registry.settings
     settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
-    if not settings.get('BROKER_URL', ''):
-        parsed_uri = urlparse(settings['redis_uri'])
-        settings['BROKER_URL'] = settings['redis_uri']
-        settings['CELERY_RESULT_BACKEND'] = "redis"
-        settings['CELERY_REDIS_HOST'] = parsed_uri.hostname
-        settings['CELERY_REDIS_PORT'] = parsed_uri.port
-        settings['CELERY_REDIS_DB'] = parsed_uri.path.strip('/')
-        if parsed_uri.password:
-            settings['CELERY_REDIS_PASSWORD'] = parsed_uri.password
-
+    settings['BROKER_URL'] = settings['CELERY_BROKER_URL']
 
 
 def locale_config(config):
