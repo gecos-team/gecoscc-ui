@@ -33,6 +33,7 @@ from gecoscc.eventsmanager import get_jobstorage
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
 from gecoscc.socks import socketio_service
 
+from urlparse import urlsplit
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
@@ -77,7 +78,9 @@ def route_config(config):
 
 def sockjs_config(config, global_config):
     settings = config.registry.settings
-    settings['redis.conf'] = json.loads(settings['redis.conf'])
+
+    settings['sockjs_url'] = settings['sockjs_url']
+
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
 
@@ -179,45 +182,11 @@ def jinja2_config(config):
     """)
 
 
-#def celery_config(config):
-#    settings = config.registry.settings
-#    settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
-#    if not settings.get('BROKER_URL', ''):
-#
-#        parsed_uri = pymongo.uri_parser.parse_uri(settings['mongo_uri'])
-#
-#        settings['BROKER_URL'] = settings['mongo_uri']
-#        settings['CELERY_RESULT_BACKEND'] = "mongodb"
-#        settings['CELERY_MONGODB_BACKEND_SETTINGS'] = {
-#            "host": parsed_uri.get('nodelist')[0][0],
-#            "port": parsed_uri.get('nodelist')[0][1],
-#            "database": parsed_uri.get('database'),
-#            "taskmeta_collection": "celery_taskmeta",
-#        }
-#        if parsed_uri.get('username', ''):
-#            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-#                "user": parsed_uri.get('username'),
-#                "password": parsed_uri.get("password"),
-#            })
-#        if parsed_uri.get('options', ''):
-#            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-#                "options": parsed_uri.get('options'),
-#            })
 
 def celery_config(config):
-    from urlparse import urlparse
     settings = config.registry.settings
     settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
-    if not settings.get('BROKER_URL', ''):
-        parsed_uri = urlparse(settings['redis_uri'])
-        settings['BROKER_URL'] = settings['redis_uri']
-        settings['CELERY_RESULT_BACKEND'] = "redis"
-        settings['CELERY_REDIS_HOST'] = parsed_uri.hostname
-        settings['CELERY_REDIS_PORT'] = parsed_uri.port
-        settings['CELERY_REDIS_DB'] = parsed_uri.path.strip('/')
-        if parsed_uri.password:
-            settings['CELERY_REDIS_PASSWORD'] = parsed_uri.password
-
+    settings['BROKER_URL'] = settings['celery_broker_url']
 
 
 def locale_config(config):
