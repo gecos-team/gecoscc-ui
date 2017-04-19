@@ -189,7 +189,7 @@ def _get_chef_api(chef_url, username, chef_pem, chef_ssl_verify, chef_version = 
     return api
 
 
-def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@nobody.es', authtype='local'):
+def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@nobody.es'):
     username = toChefUsername(usrname)
     if password is None:
         password = password_generator()
