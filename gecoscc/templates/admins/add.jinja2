@@ -21,7 +21,7 @@
     <script type="text/javascript">
         (function($){
             $(document).ready(function () {
-                $("select[name='authtype']").change(function() {
+                $("select[name='cc_auth_type']").change(function() {
                     if(this.value == 'ldap') {
                         $("input[name='password']").prop('disabled', true);
                         $("input[name='repeat_password']").prop('disabled', true);

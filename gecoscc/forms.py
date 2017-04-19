@@ -91,7 +91,7 @@ class GecosTwoColumnsForm(GecosForm):
 class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
-                     'repeat_password', 'first_name', 'last_name', 'authtype',
+                     'repeat_password', 'first_name', 'last_name', 'cc_auth_type',
                      'ou_managed', 'ou_availables',)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
@@ -116,7 +116,7 @@ class AdminUserAddForm(BaseAdminUserForm):
         api = get_chef_api(settings, user)
 
         try:
-            create_chef_admin_user(api, settings, admin_user['username'], None, admin_user['email'], admin_user['authtype'])
+            create_chef_admin_user(api, settings, admin_user['username'], None, admin_user['email'], admin_user['cc_auth_type'])
             self.created_msg(_('User created successfully'))
             return True
         except ChefServerError as e:
@@ -142,7 +142,7 @@ class AdminUserEditForm(BaseAdminUserForm):
         schema.children[self.sorted_fields.index('repeat_password')] = schema.children[self.sorted_fields.index('repeat_password')].clone()
         schema.children[self.sorted_fields.index('password')].missing = ''
         schema.children[self.sorted_fields.index('repeat_password')].missing = ''
-        schema.children[self.sorted_fields.index('authtype')] = schema.children[self.sorted_fields.index('authtype')].clone()
+        schema.children[self.sorted_fields.index('cc_auth_type')] = schema.children[self.sorted_fields.index('cc_auth_type')].clone()
         self.children[self.sorted_fields.index('username')].widget.readonly = True
 
     def save(self, admin_user):

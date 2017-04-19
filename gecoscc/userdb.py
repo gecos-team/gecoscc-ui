@@ -79,17 +79,17 @@ class MongoUserDB(object):
         return user
 
     def get_authtype(self, username):
-        user_authtype = self.collection.find_one({'username': username},{'authtype': 1})
+        user_authtype = self.collection.find_one({'username': username},{'cc_auth_type': 1})
         if not user_authtype:
             raise UserDoesNotExist()
         return user_authtype
 
-    def login(self, username, password, authtype):
+    def login(self, username, password, cc_auth_type):
         user = self.get_user(username)
         password_dict = user.get('password', None)
-        authtype = str(authtype)
+        cc_auth_type = str(cc_auth_type)
 
-        if authtype == 'ldap':
+        if cc_auth_type == 'ldap':
             return get_ldap_auth(str(user['username']),password)
         else:
             if password_dict is None:
@@ -154,7 +154,7 @@ class MongoUserDB(object):
             'username': username
         }, {
             '$set': {
-                'authtype': 'local'
+                'cc_auth_type': 'local'
             }
         })
 

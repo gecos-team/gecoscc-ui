@@ -56,7 +56,7 @@
             });
         })(jQuery);
 
-        {% if instance.has_key('authtype') and instance['authtype'] == 'ldap' %}
+        {% if instance.has_key('cc_auth_type') and instance['cc_auth_type'] == 'ldap' %}
         $("input[name='password']").prop('disabled', true);
         $("input[name='repeat_password']").prop('disabled', true);
         {% endif %}

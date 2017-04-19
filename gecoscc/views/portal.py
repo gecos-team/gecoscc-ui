@@ -64,12 +64,12 @@ class LoginViews(BaseView):
                         _("Please enter the correct username and password")),
                 }
 
-            if not (user_authtype and user_authtype.has_key('authtype')):
+            if not (user_authtype and user_authtype.has_key('cc_auth_type')):
                 self.request.userdb.add_authtype(username)
                 user_authtype = 'local'
 
             ldap = get_ldap_info()
-            if ( ldap['url']  == None and user_authtype['authtype'] == 'ldap'):
+            if ( ldap['url']  == None and user_authtype['cc_auth_type'] == 'ldap'):
                 return {
                     'username': username,
                     'message': self.translate(
@@ -77,7 +77,7 @@ class LoginViews(BaseView):
             }
 
             try:
-                user = self.request.userdb.login(username, password, user_authtype['authtype'])
+                user = self.request.userdb.login(username, password, user_authtype['cc_auth_type'])
             except UserDoesNotExist:
                 return {
                     'username': username,

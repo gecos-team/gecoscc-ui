@@ -157,7 +157,7 @@ class URLExtend(object):
 class AdminUserValidator(object):
 
     def __call__(self, node, value):
-        if value['authtype'] == 'local':
+        if value['cc_auth_type'] == 'local':
             if not (value['password'] or value['repeat_password']):
                 node.raise_invalid(_('The passwords fields are required'))
 
@@ -167,7 +167,7 @@ class AdminUserValidator(object):
             if bool(value['password']):
                 value['password'] = create_password(value['password'])
             del value['repeat_password']
-        elif value['authtype'] == 'ldap':
+        elif value['cc_auth_type'] == 'ldap':
             from gecoscc.userdb import get_ldap_userin
             exists = get_ldap_userin(value['username'])
             if exists == False:
@@ -367,7 +367,7 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
-    authtype = colander.SchemaNode(colander.String(),
+    cc_auth_type = colander.SchemaNode(colander.String(),
                                    default='local',
                                    widget=deform.widget.SelectWidget(values=AUTH_TYPES),
                                    title=_('Auth type'))
