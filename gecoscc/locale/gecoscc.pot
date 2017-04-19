@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.1.11\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-04-07 11:22+0200\n"
+"POT-Creation-Date: 2017-04-17 17:39+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -84,66 +84,82 @@ msgstr ""
 msgid "Only lowercase letters, numbers or dots"
 msgstr ""
 
-#: gecoscc/models.py:161
+#: gecoscc/models.py:162
+msgid "The passwords fields are required"
+msgstr ""
+
+#: gecoscc/models.py:165
 msgid "The passwords do not match"
 msgstr ""
 
-#: gecoscc/models.py:218 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:174
+msgid "No LDAP user found"
+msgstr ""
+
+#: gecoscc/models.py:176
+msgid "LDAP communication problems"
+msgstr ""
+
+#: gecoscc/models.py:230 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr ""
 
-#: gecoscc/models.py:222
+#: gecoscc/models.py:234
 msgid "Value"
 msgstr ""
 
-#: gecoscc/models.py:226 gecoscc/templates/bb-computer.html:63
+#: gecoscc/models.py:238 gecoscc/templates/bb-computer.html:63
 #: gecoscc/templates/bb-computer.html:170 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr ""
 
-#: gecoscc/models.py:233 gecoscc/templates/bb-user.html:40
+#: gecoscc/models.py:245 gecoscc/templates/bb-user.html:40
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr ""
 
-#: gecoscc/models.py:237 gecoscc/templates/bb-user.html:44
+#: gecoscc/models.py:249 gecoscc/templates/bb-user.html:44
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr ""
 
-#: gecoscc/models.py:332 gecoscc/templates/bb-user.html:36
+#: gecoscc/models.py:349 gecoscc/templates/bb-user.html:36
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr ""
 
-#: gecoscc/models.py:338 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:355 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr ""
 
-#: gecoscc/models.py:343
+#: gecoscc/models.py:361
 msgid "Repeat the password"
 msgstr ""
 
-#: gecoscc/models.py:347 gecoscc/templates/bb-user.html:50
+#: gecoscc/models.py:366 gecoscc/templates/bb-user.html:50
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr ""
 
-#: gecoscc/models.py:354
+#: gecoscc/models.py:374 gecoscc/models.py:442
+msgid "Auth type"
+msgstr ""
+
+#: gecoscc/models.py:377
 msgid "There is a user with this email: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:355
+#: gecoscc/models.py:378
 msgid "There is a user with this username: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:360
+#: gecoscc/models.py:383
 msgid "This user can register workstation under these Organitation Units"
 msgstr ""
 
-#: gecoscc/models.py:363
+#: gecoscc/models.py:386
 msgid "Organitation Unit availables to register workstations by this user"
 msgstr ""
 
@@ -159,167 +175,163 @@ msgstr ""
 msgid "Restore previous version of cookbook"
 msgstr ""
 
-#: gecoscc/models.py:390
+#: gecoscc/models.py:396
 msgid "uri"
 msgstr ""
 
-#: gecoscc/models.py:393
+#: gecoscc/models.py:399
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:396
+#: gecoscc/models.py:402
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:399
+#: gecoscc/models.py:405
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:402
+#: gecoscc/models.py:408
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:408
+#: gecoscc/models.py:414
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:410
+#: gecoscc/models.py:416
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:416
+#: gecoscc/models.py:422
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:419
+#: gecoscc/models.py:425
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:422
+#: gecoscc/models.py:428
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:425
+#: gecoscc/models.py:431
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:434
+#: gecoscc/models.py:440
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:436
-msgid "Auth type"
-msgstr ""
-
-#: gecoscc/models.py:440
+#: gecoscc/models.py:446
 msgid "Specific conf"
 msgstr ""
 
-#: gecoscc/models.py:442
+#: gecoscc/models.py:448
 msgid "Auth LDAP"
 msgstr ""
 
-#: gecoscc/models.py:443 gecoscc/models.py:444
+#: gecoscc/models.py:449 gecoscc/models.py:450
 msgid "Auth Active directory"
 msgstr ""
 
-#: gecoscc/models.py:487 gecoscc/templates/bb-computer.html:65
+#: gecoscc/models.py:493 gecoscc/templates/bb-computer.html:65
 msgid "Desktop"
 msgstr ""
 
-#: gecoscc/models.py:488 gecoscc/templates/bb-computer.html:66
+#: gecoscc/models.py:494 gecoscc/templates/bb-computer.html:66
 msgid "Laptop"
 msgstr ""
 
-#: gecoscc/models.py:489 gecoscc/templates/bb-computer.html:67
+#: gecoscc/models.py:495 gecoscc/templates/bb-computer.html:67
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:490 gecoscc/templates/bb-computer.html:68
+#: gecoscc/models.py:496 gecoscc/templates/bb-computer.html:68
 msgid "Tablet"
 msgstr ""
 
-#: gecoscc/models.py:531
+#: gecoscc/models.py:537
 msgid "Laser"
 msgstr ""
 
-#: gecoscc/models.py:532
+#: gecoscc/models.py:538
 msgid "Ink"
 msgstr ""
 
-#: gecoscc/models.py:533
+#: gecoscc/models.py:539
 msgid "Dot matrix"
 msgstr ""
 
-#: gecoscc/models.py:537
+#: gecoscc/models.py:543
 msgid "Network"
 msgstr ""
 
-#: gecoscc/models.py:538
+#: gecoscc/models.py:544
 msgid "Local"
 msgstr ""
 
-#: gecoscc/models.py:542
+#: gecoscc/models.py:548
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:543
+#: gecoscc/models.py:549
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:544
+#: gecoscc/models.py:550
 msgid "Kerberos-AD"
 msgstr ""
 
-#: gecoscc/models.py:592
+#: gecoscc/models.py:598
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:593
+#: gecoscc/models.py:599
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:594
+#: gecoscc/models.py:600
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:595
+#: gecoscc/models.py:601
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:596
+#: gecoscc/models.py:602
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:600
+#: gecoscc/models.py:606
 msgid "System mounts (fstab)"
 msgstr ""
 
-#: gecoscc/models.py:601
+#: gecoscc/models.py:607
 msgid "User space mounts (gvfs)"
 msgstr ""
 
-#: gecoscc/models.py:641
+#: gecoscc/models.py:647
 msgid "Processing"
 msgstr ""
 
-#: gecoscc/models.py:644
+#: gecoscc/models.py:650
 msgid "Applying changes"
 msgstr ""
 
-#: gecoscc/models.py:647
+#: gecoscc/models.py:653
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:650 gecoscc/models.py:653
+#: gecoscc/models.py:656 gecoscc/models.py:659
 msgid "There were errors"
 msgstr ""
 
-#: gecoscc/tasks.py:882 gecoscc/tasks.py:973 gecoscc/tasks.py:1117
+#: gecoscc/tasks.py:881 gecoscc/tasks.py:972 gecoscc/tasks.py:1116
 msgid "type"
 msgstr ""
 
-#: gecoscc/tasks.py:941 gecoscc/api/chef_status.py:110
+#: gecoscc/tasks.py:940 gecoscc/api/chef_status.py:110
 #, python-format
 msgid "Pending: %d"
 msgstr ""
@@ -1121,7 +1133,7 @@ msgstr ""
 msgid "Set Organitation Unit managed by this user"
 msgstr ""
 
-#: gecoscc/templates/admins/edit.jinja2:42
+#: gecoscc/templates/admins/edit.jinja2:43
 msgid "Are you sure that you want to delete this user?"
 msgstr ""
 
@@ -1281,7 +1293,13 @@ msgstr ""
 msgid "Please enter the correct username and password"
 msgstr ""
 
-#: gecoscc/views/portal.py:74
+#: gecoscc/views/portal.py:76
+msgid ""
+"gecoscc.ini LDAP configuration misplaced. Please contact your system "
+"administrator."
+msgstr ""
+
+#: gecoscc/views/portal.py:96
 msgid "Welcome ${username}"
 msgstr ""
 

@@ -962,3 +962,4 @@ def update_computers_of_user(db, user, api):
                 user['computers'].append(node['_id'])
 
     return user
+
