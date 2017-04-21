@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2017-01-25 11:15+0100\n"
+"POT-Creation-Date: 2017-04-21 13:31+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -90,53 +90,53 @@ msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 msgid "Only the super admin can cut this object"
 msgstr "Solo el super administrador puede cortar este objeto"
 
-#: gecoscc/static/js/app.js:322
+#: gecoscc/static/js/app.js:369
 msgid "New element"
 msgstr "Nuevo elemento"
 
-#: gecoscc/static/js/app.js:327
+#: gecoscc/static/js/app.js:374
 msgid "User"
 msgstr "Usuario"
 
-#: gecoscc/static/js/app.js:328
+#: gecoscc/static/js/app.js:375
 msgid "Organisational Unit"
 msgstr "Unidad organizativa"
 
-#: gecoscc/static/js/app.js:329
+#: gecoscc/static/js/app.js:376
 msgid "Group"
 msgstr "Grupo"
 
-#: gecoscc/static/js/app.js:330
+#: gecoscc/static/js/app.js:377
 msgid "Workstation"
 msgstr "Estación de trabajo"
 
-#: gecoscc/static/js/app.js:331
+#: gecoscc/static/js/app.js:378
 msgid "Printer"
 msgstr "Impresora"
 
-#: gecoscc/static/js/app.js:332
+#: gecoscc/static/js/app.js:379
 msgid "Remote Storage"
 msgstr "Almacenamiento Remoto"
 
-#: gecoscc/static/js/app.js:333
+#: gecoscc/static/js/app.js:380
 msgid "Software Repository"
 msgstr "Repositorio de Software"
 
-#: gecoscc/static/js/app.js:379
+#: gecoscc/static/js/app.js:426
 msgid "First level OUs can only add new OUs."
 msgstr ""
 "En el primer nivel de unidades organizativas solo pueden ser añadidas "
 "nuevas unidades organizativas"
 
-#: gecoscc/static/js/app.js:393
+#: gecoscc/static/js/app.js:440
 msgid "Domain is not Gecos."
 msgstr "El dominio no es Gecos."
 
-#: gecoscc/static/js/app.js:394
+#: gecoscc/static/js/app.js:441
 msgid "Only local users can be added."
 msgstr "Solo los usuarios locales pueden ser añadidos."
 
-#: gecoscc/static/js/app.js:535
+#: gecoscc/static/js/app.js:582
 msgid "Policy"
 msgstr "Política"
 
@@ -199,10 +199,18 @@ msgstr "Horas"
 msgid "Minutes"
 msgstr "Minutos"
 
-#: gecoscc/static/js/i18n.js:70
+#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 #, fuzzy
 msgid "x04"
-msgstr ""
+msgid_plural "x04"
+msgstr[0] ""
+msgstr[1] ""
+
+#: gecoscc/static/js/ou.js:100
+#, fuzzy
+#| msgid "Only the super admin can cut this object"
+msgid "Only the super admin can delete this object"
+msgstr "Solo el super administrador puede eliminar este objeto"
 
 #: gecoscc/static/js/policies-form-generator.js:126
 msgid "Policy successfully saved."
@@ -233,7 +241,7 @@ msgstr "Más"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:560
 msgid "Loading"
 msgstr "Cargando"
 
@@ -251,17 +259,17 @@ msgstr "Borrar una UO es una acción permanente. También eliminará todos sus h
 msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 
-#: gecoscc/templates/bb-jobs.html:127
-msgid "Search"
-msgstr "Buscar"
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid "Package not found in server repositories"
+msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:129
-msgid "Next"
-msgstr "Siguiente"
-
-#: gecoscc/templates/bb-jobs.html:130
-msgid "Previous"
-msgstr "Anterior"
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1009
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid ""
+"contains items that are outside your scope, please consult a global "
+"administrator if you need more information."
+msgstr ""
 
 #~ msgid "Add new root OU"
 #~ msgstr "Añadir nueva UO raíz"
@@ -293,4 +301,12 @@ msgstr "Anterior"
 #~ msgid "Package not found in server repositories"
 #~ msgstr "Este paquete no se encuentra en los repositorios del servidor"
 
+#~ msgid "Search"
+#~ msgstr "Buscar"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
+#~ msgid "Previous"
+#~ msgstr "Anterior"
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-01-25 11:15+0100\n"
+"POT-Creation-Date: 2017-04-21 13:31+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -89,51 +89,51 @@ msgstr ""
 msgid "Only the super admin can cut this object"
 msgstr ""
 
-#: gecoscc/static/js/app.js:322
+#: gecoscc/static/js/app.js:369
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:327
+#: gecoscc/static/js/app.js:374
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:328
+#: gecoscc/static/js/app.js:375
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:329
+#: gecoscc/static/js/app.js:376
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:330
+#: gecoscc/static/js/app.js:377
 msgid "Workstation"
 msgstr ""
 
-#: gecoscc/static/js/app.js:331
+#: gecoscc/static/js/app.js:378
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:332
+#: gecoscc/static/js/app.js:379
 msgid "Remote Storage"
 msgstr ""
 
-#: gecoscc/static/js/app.js:333
+#: gecoscc/static/js/app.js:380
 msgid "Software Repository"
 msgstr ""
 
-#: gecoscc/static/js/app.js:379
+#: gecoscc/static/js/app.js:426
 msgid "First level OUs can only add new OUs."
 msgstr ""
 
-#: gecoscc/static/js/app.js:393
+#: gecoscc/static/js/app.js:440
 msgid "Domain is not Gecos."
 msgstr ""
 
-#: gecoscc/static/js/app.js:394
+#: gecoscc/static/js/app.js:441
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:535
+#: gecoscc/static/js/app.js:582
 msgid "Policy"
 msgstr ""
 
@@ -194,9 +194,15 @@ msgstr ""
 msgid "Minutes"
 msgstr ""
 
-#: gecoscc/static/js/i18n.js:70
+#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 #, fuzzy
 msgid "x04"
+msgid_plural "x04"
+msgstr[0] ""
+msgstr[1] ""
+
+#: gecoscc/static/js/ou.js:100
+msgid "Only the super admin can delete this object"
 msgstr ""
 
 #: gecoscc/static/js/policies-form-generator.js:126
@@ -228,7 +234,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:560
 msgid "Loading"
 msgstr ""
 
@@ -244,6 +250,18 @@ msgstr ""
 
 #: gecoscc/static/js/tree.js:67
 msgid "Loading nodes..."
+msgstr ""
+
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid "Package not found in server repositories"
+msgstr ""
+
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1009
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid ""
+"contains items that are outside your scope, please consult a global "
+"administrator if you need more information."
 msgstr ""
 
 #~ msgid "Add new root OU"
@@ -286,12 +304,5 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Package not found in server repositories"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "contains items that are outside your "
-#~ "scope, please consult a global "
-#~ "administrator if you need more "
-#~ "information."
 #~ msgstr ""
 
