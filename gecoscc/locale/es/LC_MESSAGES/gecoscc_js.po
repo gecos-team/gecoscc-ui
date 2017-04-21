@@ -207,8 +207,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: gecoscc/static/js/ou.js:100
-#, fuzzy
-#| msgid "Only the super admin can cut this object"
 msgid "Only the super admin can delete this object"
 msgstr "Solo el super administrador puede eliminar este objeto"
 
