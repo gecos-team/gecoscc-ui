@@ -87,8 +87,20 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if($button.hasClass('admin')==true && data.models.length == 0){
                         App.instances.noMaintenance[that.model.get('id')] = true;
                     }
-
-
+                    
+                    var $button = $('#delete');
+                    if($button.hasClass('admin')==false && (path === 'root' || path.split(',').length === 2)) {
+                        $button.removeClass('btn-danger');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click');
+                        $button.css('margin-right','5px');
+                        $button.click(function (e){
+                            e.preventDefault();
+                            App.showAlert('warning',gettext('Only the super admin can delete this object'));
+                        });
+                        App.instances.noMaintenance[that.model.get('id')] = false;
+                    }
                 }
             });
             //END CHECK IS EMPTY

@@ -1,14 +1,14 @@
-# Translations template for PROJECT.
+# Translations template for gecoscc.
 # Copyright (C) 2017 ORGANIZATION
-# This file is distributed under the same license as the PROJECT project.
+# This file is distributed under the same license as the gecoscc project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PROJECT VERSION\n"
+"Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-01-25 11:15+0100\n"
+"POT-Creation-Date: 2017-04-21 13:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -48,8 +48,8 @@ msgstr ""
 
 #: gecoscc/static/js/app-utils.js:174
 msgid ""
-"Someone has changed this object while you were working on it, please "
-"reload before applying any changes."
+"Someone has changed this object while you were working on it, please reload "
+"before applying any changes."
 msgstr ""
 
 #: gecoscc/static/js/app-utils.js:184
@@ -68,8 +68,7 @@ msgstr ""
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:299
-#: gecoscc/static/js/tree-views-renderer.js:88
+#: gecoscc/static/js/app-utils.js:299 gecoscc/static/js/tree-views-renderer.js:88
 msgid "Delete"
 msgstr ""
 
@@ -89,51 +88,51 @@ msgstr ""
 msgid "Only the super admin can cut this object"
 msgstr ""
 
-#: gecoscc/static/js/app.js:322
+#: gecoscc/static/js/app.js:369
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:327
+#: gecoscc/static/js/app.js:374
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:328
+#: gecoscc/static/js/app.js:375
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:329
+#: gecoscc/static/js/app.js:376
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:330
+#: gecoscc/static/js/app.js:377
 msgid "Workstation"
 msgstr ""
 
-#: gecoscc/static/js/app.js:331
+#: gecoscc/static/js/app.js:378
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:332
+#: gecoscc/static/js/app.js:379
 msgid "Remote Storage"
 msgstr ""
 
-#: gecoscc/static/js/app.js:333
+#: gecoscc/static/js/app.js:380
 msgid "Software Repository"
 msgstr ""
 
-#: gecoscc/static/js/app.js:379
+#: gecoscc/static/js/app.js:426
 msgid "First level OUs can only add new OUs."
 msgstr ""
 
-#: gecoscc/static/js/app.js:393
+#: gecoscc/static/js/app.js:440
 msgid "Domain is not Gecos."
 msgstr ""
 
-#: gecoscc/static/js/app.js:394
+#: gecoscc/static/js/app.js:441
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:535
+#: gecoscc/static/js/app.js:582
 msgid "Policy"
 msgstr ""
 
@@ -194,8 +193,14 @@ msgstr ""
 msgid "Minutes"
 msgstr ""
 
-#: gecoscc/static/js/i18n.js:70
+#: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 msgid "x04"
+msgid_plural "x04"
+msgstr[0] ""
+msgstr[1] ""
+
+#: gecoscc/static/js/ou.js:100
+msgid "Only the super admin can delete this object"
 msgstr ""
 
 #: gecoscc/static/js/policies-form-generator.js:126
@@ -227,7 +232,7 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:550
+#: gecoscc/static/js/tree-views-renderer.js:113 gecoscc/static/js/tree.js:560
 msgid "Loading"
 msgstr ""
 
@@ -236,24 +241,22 @@ msgid "Nodes can not be moved between domains."
 msgstr ""
 
 #: gecoscc/static/js/tree-views.js:251
-msgid ""
-"Deleting an OU is a permanent action. It will also delete all its "
-"children."
+msgid "Deleting an OU is a permanent action. It will also delete all its children."
 msgstr ""
 
 #: gecoscc/static/js/tree.js:67
 msgid "Loading nodes..."
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:127
-msgid "Search"
-msgstr "Buscar"
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid "Package not found in server repositories"
+msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:129
-msgid "Next"
-msgstr "Siguiente"
-
-#: gecoscc/templates/bb-jobs.html:130
-msgid "Previous"
-msgstr "Anterior"
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1009
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
+msgid ""
+"contains items that are outside your scope, please consult a global "
+"administrator if you need more information."
+msgstr ""
 

@@ -70,6 +70,8 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
         path = obj['path']
+        if (path == 'root' or len(path.split(',')) == 2) and request.method == 'DELETE':
+            raise HTTPForbidden()
         if '_id' in obj:
             path = '%s,%s' % (path, obj['_id'])
         if not is_path_right(request, path, ou_type):
