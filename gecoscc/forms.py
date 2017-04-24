@@ -9,7 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
+import os, errno
 import time
 import re
 import glob
@@ -240,10 +240,10 @@ class CookbookUploadForm(GecosForm):
         logger.debug("forms.py ::: CookbookUpload - rootdir = %s" % rootdir)
         uploadir = rootdir + self.username + "/uploads/" + str(int(time.time())) + "/"
         logger.debug("forms.py ::: CookbookUpload - uploadir = %s" % uploadir)
-        if not os.path.exists(uploadir):
-           os.makedirs(uploadir)
 
         try:
+            if not os.path.exists(uploadir):
+                os.makedirs(uploadir)
             if upload['local_file']:
                 f = upload['local_file']
                 with open('/tmp/' + f['filename'], 'wb') as zipped: 
@@ -299,7 +299,11 @@ class CookbookUploadForm(GecosForm):
                 self.created_msg(_('File is not a zip file: %s') % zipped.name, 'danger')
         except OSError as e:
                 error = True
-                self.created_msg(e.message, 'danger')
+                if e.errno == errno.EACCES:
+                    self.created_msg(_('Permission denied: %s') % uploadir, 'danger')
+                else:
+                    logger.error("forms.py ::: CookbookUpload - Error = %s" % e.strerror)
+                    self.created_msg(_('There was an error attempting to upload the cookbook. Please contact an administrator'), 'danger')
         except IOError as e:
                 logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
                 error = True

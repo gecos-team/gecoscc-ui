@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-04-07 11:22+0200\n"
+"POT-Creation-Date: 2017-04-24 17:51+0200\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -54,24 +54,39 @@ msgstr ""
 msgid "File is not a zip file: %s"
 msgstr ""
 
+#: gecoscc/forms.py:303
+#, python-format
+msgid "Permission denied: %s"
+msgstr "Problemas de permisos para crear carpeta: %s"
+
 #: gecoscc/forms.py:306
+msgid ""
+"There was an error attempting to upload the cookbook. Please contact an "
+"administrator"
+msgstr "Hubo un problema al subir el archivo de políticas. Por favor, contacte con un administrador."
+
+#: gecoscc/forms.py:310
 msgid "No such file or directory: metadata.rb"
 msgstr ""
 
-#: gecoscc/forms.py:310
+#: gecoscc/forms.py:314
 msgid "No cookbook name or version found in metadata.rb"
-msgstr "No se encuentra el nombre o versión del archivo de políticas en metadata.rb"
+msgstr ""
+"No se encuentra el nombre o versión del archivo de políticas en "
+"metadata.rb"
 
-#: gecoscc/forms.py:321 gecoscc/views/admins.py:226
+#: gecoscc/forms.py:325 gecoscc/views/admins.py:226
 msgid "here"
 msgstr "aquí"
 
-#: gecoscc/forms.py:322
+#: gecoscc/forms.py:326
 #, python-format
 msgid "Upload cookbook enqueue. Visit logbook %s"
-msgstr "Orden de subida e importación de archivo de políticas pendiente. Visite bitácora %s"
+msgstr ""
+"Orden de subida e importación de archivo de políticas pendiente. Visite "
+"bitácora %s"
 
-#: gecoscc/forms.py:331
+#: gecoscc/forms.py:335
 msgid "Restore cookbook."
 msgstr "Restaurar archivo de políticas"
 
@@ -335,7 +350,8 @@ msgstr "Política subida"
 msgid "policy uploading..."
 msgstr "Actualizando política..."
 
-#: gecoscc/tasks.py:1306
+#: gecoscc/tasks.py:1324
+#, python-format
 msgid "Cookbook uploaded successfully %s %s"
 msgstr "Archivo de políticas actualizado con éxito %s %s"
 

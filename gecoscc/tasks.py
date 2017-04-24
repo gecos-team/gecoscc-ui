@@ -1276,9 +1276,27 @@ def cookbook_upload(user, objtype, obj, computers=None):
                                           administrator_username=user['username'],
                                           message=self._('policy uploading...'))
 
+    userdir = "%s/%s/" % (self.app.conf.get('firstboot_api.media'), user['username']) 
+    admincert = userdir + 'chef_user.pem'
+    knifeconf = userdir + '/knife.rb'
+
+
+    if not os.path.isfile(knifeconf):
+       chefurl = self.app.conf.get('chef.url') + '/organizations/default'    
+       textfile = """
+log_level                :info
+log_location             STDOUT
+node_name                "%s"
+client_key               "%s"
+chef_server_url          "%s"
+ssl_verify_mode          :verify_none
+""" % (user['username'],admincert,chefurl)
+     
+       with open(knifeconf,'w') as file: 
+           file.write(textfile)
     
-    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'], self.app.conf.get('knifeconf'))
-    cmd_import = self.app.conf.get('cmd_import') % (self.app.conf.get('adminuser'),self.app.conf.get('admincert'))
+    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'], knifeconf)
+    cmd_import = self.app.conf.get('cmd_import') % (user['username'], admincert)
     self.log("debug", "tasks.py ::: cmd_upload = {0}".format(cmd_upload))
     self.log("debug", "tasks.py ::: cmd_import = {0}".format(cmd_import))
 
