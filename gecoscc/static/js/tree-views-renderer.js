@@ -59,12 +59,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         treeContainerPost =
             '    </div>\n' +
             '</div>\n',
-        emptyContainer =
-            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
-            '    <div class="tree-name"><a href="#ou/<%= id %>/new">\n' +
-            '        <span class="fa fa-plus"></span> ' + gettext('Add new') + '\n' +
-            '    </a></div>\n' +
-            '</div>',
         treeItem =
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
@@ -100,7 +94,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         this._templates = {
             containerPre: _.template(treeContainerPre),
             containerPost: _.template(treeContainerPost),
-            emptyContainer: _.template(emptyContainer),
             item: _.template(treeItem),
             pagItem: _.template(paginationItem),
             emptyTree: _.template(emptyTree),
@@ -225,10 +218,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 if (data.showNext) {
                     html += this._templates.pagItem({ type: "down" });
                 }
-            } else {
-                html += this._templates.emptyContainer(json);
-            }
-
+            } 
+            
             return html + this._templates.containerPost(json);
         };
     };

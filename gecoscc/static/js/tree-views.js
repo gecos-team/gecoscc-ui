@@ -196,11 +196,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         _deleteOU: function () {
             var model = new App.OU.Models.OUModel({ id: this });
-            model.destroy({
-                success: function () {
-                    App.instances.tree.reloadTree();
-                }
-            });
+            model.fetch({ success: function() {
+                model.destroy({
+                    success: function () {
+                        App.instances.tree.reloadTree();
+                    }
+               });
+            }});
         },
 
         _pasteOU: function (evt) {
@@ -256,7 +258,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (App.instances.cut === undefined) {
                 $html.find("a.text-warning").parent("li").remove();
             }
-
+            
+            var node = App.instances.tree.findNodeById(ouId),
+                path = node.path || node.get("path");          
+            
+            if ($("#tree-container").hasClass('admin') == false && (path === 'root' || path.split(',').length === 2)) {
+                $html.find("a.text-danger").parent("li").remove();
+            }
+            
             $html.find("a.text-warning").click(function (evt) {
                 evt.preventDefault();
                 _.bind(that._pasteOU, ouId)();
