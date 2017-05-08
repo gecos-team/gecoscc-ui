@@ -901,7 +901,7 @@ class ChefTask(Task):
                 force_update = error_last_saved or error_last_chef_client
                 node, updated = self.update_node(user, computer, obj, objold, node, action, macrojob_id, job_ids_by_computer, force_update)
                 if job_ids_by_computer:
-                    job_ids_by_order.append(job_ids_by_computer[-1])
+                    job_ids_by_order += job_ids_by_computer
                 if not updated:
                     save_node_and_free(node)
                     continue
