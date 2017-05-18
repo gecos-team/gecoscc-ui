@@ -49,11 +49,13 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .on("click", function (evt) {
                     evt.preventDefault();
                     var keyword = $search.val().trim();
+                    var search_by = $('input:radio[name=search_by]:checked').val();
+                    
                     //empty search reload tree
                     if (!keyword) {
                         App.instances.tree.loadFromPath("root");
                     } else {
-                        App.instances.router.navigate("search/" + keyword,
+                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by,
                                                   { trigger: true });
                         $("#tree-close-search-btn").show();
                     }

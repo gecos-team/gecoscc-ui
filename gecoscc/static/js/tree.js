@@ -127,14 +127,18 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.keyword)) {
                 throw "Search collections require a keyword attribute";
             }
+            if (!_.isString(options.search_by)) {
+                throw "Search collections require a 'search by' attribute";
+            }
             this.keyword = options.keyword;
+            this.search_by = options.search_by;
         },
 
         paginator_core: {
             type: "GET",
             dataType: "json",
             url: function () {
-                return "/api/nodes/?iname=" + this.keyword;
+                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by;
             },
             statusCode: {
                 403: function() {

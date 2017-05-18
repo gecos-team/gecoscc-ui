@@ -31,6 +31,8 @@ from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_us
 USERS_OLD = 'ohai_gecos.users_old'
 USERS_OHAI = 'ohai_gecos.users'
 
+NETWORK_INTERFACES = 'network.interfaces'
+
 
 @resource(path='/chef/status/',
           description='Chef callback API')
@@ -69,6 +71,10 @@ class ChefStatusResource(BaseAPI):
         gcc_link = node.attributes.get('gcc_link')
         self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
 
+        # Update IP address
+        ipaddress = node.attributes.get('ipaddress')
+        self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
+        
         reserve_node = False
         if job_status:
             node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
@@ -113,16 +119,38 @@ class ChefStatusResource(BaseAPI):
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
 
+        # Check users
         users_old = self.get_attr(node, USERS_OLD)
         users = self.get_attr(node, USERS_OHAI)
         if not users_old or users_old != users:
             if not reserve_node:
                 node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
             return self.check_users(node, api)
+        
+        # Save node and free
         if job_status:
             save_node_and_free(node)
+            
+            
+            
         return {'ok': True}
 
+    def get_ip_addresses(self, chef_node, api):
+        ip_addresses = []
+        interfaces = self.get_attr(node, NETWORK_INTERFACES)
+        for name, data in interfaces:
+            if name is "lo":
+                # Ingore loopback interface
+                continue
+            
+            for address, adata in data["addresses"]:
+                if adata["family"] == "inet":
+                    # IPv4 address
+                    ip_addresses.append(address)
+
+        return ip_addresses
+            
+        
     def check_users(self, chef_node, api):
         node_collection = self.request.db.nodes
 

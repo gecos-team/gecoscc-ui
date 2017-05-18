@@ -107,12 +107,48 @@ class ResourcePaginatedReadOnly(BaseAPI):
                 }
             })
 
+    def set_username_filter(self, query):
+        if 'iname' in self.request.GET:
+            # Look for users with that username (or similar)
+            users = self.request.db.nodes.find({"type": "user", "name": {
+                    '$regex': u'.*{0}.*'.format(self.request.GET.get('iname')),
+                    '$options': '-i'
+                }})
+            
+            # Merge the list of computers
+            computer_ids = []
+            for user in users:
+                computer_ids = computer_ids + user['computers']
+
+            # Append the list of computers to the query
+            query.append({
+                "_id": {
+                    "$in": computer_ids
+                }
+            })    
+            
     def get_objects_filter(self):
         query = []
         if not self.request.method == 'GET':
             return []
 
-        self.set_name_filter(query)
+        if 'search_by' in self.request.GET:
+            search_by = self.request.GET.get('search_by')
+            if search_by == 'ip':
+                # Search by IPv4 address
+                self.set_name_filter(query, 'ipaddress')
+
+            elif search_by == 'username':
+                # Search by username
+                self.set_username_filter(query)
+
+            else:
+                # Default: search by node name
+                self.set_name_filter(query)
+            
+        else:
+            # Default: search by node name
+            self.set_name_filter(query)
 
         if 'oids' in self.request.GET:
             oid_filters = oids_filter(self.request)

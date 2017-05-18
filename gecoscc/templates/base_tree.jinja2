@@ -24,7 +24,19 @@
                     </span>
                     <input id="tree-search" type="text" class="form-control" placeholder="{{ gettext('Search') }}">
                     <span class="input-group-btn">
-                        <button id="tree-search-btn" class="btn btn-primary" type="button"><span class="fa fa-search"></span></button>
+                        <button id="tree-search-setup-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
+                        <button id="tree-search-btn" class="btn btn-primary dropdown-toggle" type="button"><span class="fa fa-search"></span></button>
+                          <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-setup-btn">
+                            <li class="list-unstyled radio">
+                              <label class="radio"><input type="radio" name="search_by" checked value="nodename">{{ gettext('Name') }}</label>
+                            </li>
+                            <li class="list-unstyled radio">
+                              <label class="radio"><input type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
+                            </li>
+                            <li class="list-unstyled radio">
+                              <label class="radio"><input type="radio" name="search_by" value="username">{{ gettext('Username') }}</label>
+                            </li> 
+                          </ul>                        
                     </span>
                 </div>
             </div>
