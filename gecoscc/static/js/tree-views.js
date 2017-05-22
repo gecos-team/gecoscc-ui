@@ -48,11 +48,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     evt.preventDefault();
                     var keyword = $("#tree-search").val().trim();
                     var search_by = $('input:radio[name=search_by]:checked').val();
-                    var search_filter = ['ou'];
-                    $("input:checkbox[name=filter_type]:checked").each(function ()
-                    {
-                        search_filter.push($(this).val());
-                    });
+                    var search_filter = App.instances.tree.getSearchFilter();
 
                     // If all the elements are selected do not filter
                     if (search_filter.length == 7) {
@@ -63,7 +59,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (!keyword) {
                         App.instances.tree.loadFromPath("root", App.tree.currentView.activeNode, false, search_filter);
                     } else {
-                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by,
+                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by+"&searchfilter="+search_filter,
                                                   { trigger: true });
                         $("#tree-close-search-btn").show();
                     }

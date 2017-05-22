@@ -135,15 +135,19 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.search_by)) {
                 throw "Search collections require a 'search by' attribute";
             }
+            if (!_.isString(options.search_filter)) {
+                throw "Search collections require a 'search filter' attribute";
+            }
             this.keyword = options.keyword;
             this.search_by = options.search_by;
+            this.search_filter = options.search_filter;
         },
 
         paginator_core: {
             type: "GET",
             dataType: "json",
             url: function () {
-                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by;
+                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by+"&type="+this.search_filter;
             },
             statusCode: {
                 403: function() {
@@ -214,11 +218,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
 
-            var search_filter = ['ou'];
-            $("input:checkbox[name=filter_type]:checked").each(function ()
-            {
-                search_filter.push($(this).val());
-            });                  
+            var search_filter = App.instances.tree.getSearchFilter();
                 
             node.paginatedChildren = new Models.Container({ path: path, search_filter: search_filter.join() });
             node.paginatedChildren.goTo(1, {
@@ -353,9 +353,23 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return nodes;
         },
 
+        getSearchFilter: function() {
+            var search_filter = ['ou'];
+            $("input:checkbox[name=filter_type]:checked").each(function ()
+            {
+                search_filter.push($(this).val());
+            });   
+            return search_filter;
+        },
+        
         loadFromPath: function (path, childToShow, silent, search_filter) {
             var that, nodes, promises, unknownIds;
-            this.search_filter = search_filter;
+            if (typeof search_filter !== 'undefined') {
+                this.search_filter = search_filter;
+            }
+            else {
+                var search_filter = this.getSearchFilter();
+            }
 
             if (path === "root") { return [this.reloadTree()]; }
 
