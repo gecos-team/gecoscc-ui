@@ -35,8 +35,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function () {
-            var $search = $("#tree-search");
-
             this.renderer = new Views.Renderer({
                 $el: this.$el,
                 model: this.model
@@ -48,12 +46,22 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    var keyword = $search.val().trim();
+                    var keyword = $("#tree-search").val().trim();
                     var search_by = $('input:radio[name=search_by]:checked').val();
-                    
+                    var search_filter = ['ou'];
+                    $("input:checkbox[name=filter_type]:checked").each(function ()
+                    {
+                        search_filter.push($(this).val());
+                    });
+
+                    // If all the elements are selected do not filter
+                    if (search_filter.length == 7) {
+                        search_filter = []
+                    }
+
                     //empty search reload tree
                     if (!keyword) {
-                        App.instances.tree.loadFromPath("root");
+                        App.instances.tree.loadFromPath("root", App.tree.currentView.activeNode, false, search_filter);
                     } else {
                         App.instances.router.navigate("search/" + keyword + "?searchby="+search_by,
                                                   { trigger: true });
@@ -67,6 +75,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
             });
 
+            $("input:checkbox[name=filter_type]").change(function(evt) {
+                $("#tree-search-btn").click();
+            });            
+            
             $("#tree-close-search-btn")
                 .hide()
                 .click(function (evt) {
@@ -96,7 +108,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         stopPropagation: function (evt) {
             evt.stopPropagation();
         },
-
+        
         editNode: function (evt) {
             var $el = $(evt.target).parents(".tree-node").first(),
                 that = this,

@@ -65,7 +65,13 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             var id = this.model.get("id");
 
-            var page = new App.Tree.Models.Container({path:path+','+id});
+            var search_filter = ['ou'];
+            $("input:checkbox[name=filter_type]:checked").each(function ()
+            {
+                search_filter.push($(this).val());
+            });            
+            
+            var page = new App.Tree.Models.Container({path:path+','+id, search_filter: search_filter.join()});
 
             page.goTo(1, {
                 success: function (data) {

@@ -86,7 +86,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // maxdepth must be zero for pagination to work because in the
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
-                return "/api/nodes/?maxdepth=0&path=" + this.path;
+                return "/api/nodes/?maxdepth=0&path=" + this.path +
+                    ((this.search_filter.length > 0)?"&type=" + this.search_filter:'');
             },
             statusCode: {
                 403: function() {
@@ -113,7 +114,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.path)) {
                 throw "Container collections require a path attribute";
             }
+            if (!_.isString(options.search_filter)) {
+                throw "Container collections require a search_filter attribute";
+            }
             this.path = options.path;
+            this.search_filter = options.search_filter;
         },
 
         parse: function (response) {
@@ -152,12 +157,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         parser: new TreeModel(),
 
         defaults: {
-            tree: null
+            tree: null,
+            search_filter: [],
         },
 
         initialize: function (options) {
             var that = this,
                 parent;
+            this.search_filter = [];
             this.listenTo(App, 'action_change', function (result) {
                 that.updateNodeById(result.objectId);
             });
@@ -176,6 +183,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         getUrl: function (options) {
             var params =  ["pagesize=99999"];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
+            if (this.search_filter.length > 0) { params.push("type=" + this.search_filter); }
             if (_.has(options, "oids")) {
                 params.push("oids=" + options.oids);
             } else {
@@ -206,7 +214,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
 
-            node.paginatedChildren = new Models.Container({ path: path });
+            var search_filter = ['ou'];
+            $("input:checkbox[name=filter_type]:checked").each(function ()
+            {
+                search_filter.push($(this).val());
+            });                  
+                
+            node.paginatedChildren = new Models.Container({ path: path, search_filter: search_filter.join() });
             node.paginatedChildren.goTo(1, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
@@ -339,8 +353,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return nodes;
         },
 
-        loadFromPath: function (path, childToShow, silent) {
+        loadFromPath: function (path, childToShow, silent, search_filter) {
             var that, nodes, promises, unknownIds;
+            this.search_filter = search_filter;
 
             if (path === "root") { return [this.reloadTree()]; }
 

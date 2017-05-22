@@ -22,9 +22,16 @@ from gecoscc.permissions import api_login_required
 def nodes_type_filter(request):
     type = request.GET.get('type')
     if type:
-        return {
-            'type': type,
-        }
+        if ',' in type:
+            types = type.split(',')
+            return {
+                'type': { '$in': types },
+            }
+
+        else:
+            return {
+                'type': type,
+            }
     return {}
 
 

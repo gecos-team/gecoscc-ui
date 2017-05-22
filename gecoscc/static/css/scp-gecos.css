@@ -136,6 +136,12 @@ footer {
     padding-left: 0px;
 }
 
+.dropdown .btn {
+    border-radius: 0;
+    border-left: 0;
+    margin-right: -4px;
+}
+
 
 #tree-selection-info {
     position: fixed;
