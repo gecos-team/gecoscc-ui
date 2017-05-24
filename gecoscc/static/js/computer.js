@@ -213,6 +213,41 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             return [days, gettext("Days"), hours, gettext("Hours"), minutes, gettext("Minutes")].join(" ");
         },
 
+
+        ohaiTreeDataSource: function(parentData, callback) {
+            var ohai = this.model.get("ohai");
+
+            if (typeof(parentData.content) !== 'undefined') {
+                ohai = parentData.content;
+            }
+            
+            var childNodesArray = []
+            for( var name in ohai ) {
+                if (Array.isArray(ohai[name]) || (typeof(ohai[name])) === 'object') {
+                    // Folder
+                    var cssClass = "tree-json-object";
+                    if (Array.isArray(ohai[name])) {
+                        cssClass = "tree-json-array";
+                    }
+                    
+                    childNodesArray.push( { "name": name+":", "type": "folder", content: ohai[name], "attr": {"hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                }
+                else {
+                    // Item
+                    var name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                    if (Array.isArray(ohai))
+                        name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                
+                    childNodesArray.push( { "name": name_value, "type": "item", "attr": { "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } )
+                }
+            }
+            
+            
+            callback({
+              data: childNodesArray
+            });
+        },
+        
         onRender: function () {
             this.$el.find('[data-toggle="tooltip"]').tooltip();
             this.checkErrors();
@@ -246,6 +281,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+            
+            // OHAI JSON tree rendering
+            this.$el.find("#ohai_tree").tree({ dataSource: this.ohaiTreeDataSource, model: this.model, folderSelect: false });
+            
         },
 
         saveForm: function (evt) {

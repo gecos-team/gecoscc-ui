@@ -22,6 +22,7 @@
            <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/respond-1.1.0.min.js"></script>
         <![endif]-->
 
+        
         {% block extraheader %}{% endblock %}
     </head>
     <body class="{% block bodyclass %}{% endblock %}">
@@ -96,6 +97,7 @@
         <script src="{{ request.application_url }}/static/js/i18n.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/bootstrap-3.0.2.min.js"></script>
         <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/fuelux.js"></script>
 
         <script>
             $(document).ready(function () {
