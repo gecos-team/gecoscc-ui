@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-22 17:32+0200\n"
+"POT-Creation-Date: 2017-05-25 14:03+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -123,9 +123,9 @@ msgstr ""
 msgid "Last name"
 msgstr ""
 
-#: gecoscc/models.py:332 gecoscc/templates/base_tree.jinja2:38
-#: gecoscc/templates/bb-user.html:36 gecoscc/templates/login.jinja2:26
-#: gecoscc/templates/admins/list.jinja2:31 gecoscc/views/reports.py:79
+#: gecoscc/models.py:332 gecoscc/templates/bb-user.html:36
+#: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
+#: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr ""
 
@@ -461,49 +461,47 @@ msgstr ""
 msgid "Search"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:32 gecoscc/templates/bb-computer.html:57
-#: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
-#: gecoscc/templates/bb-policies-list.html:6 gecoscc/templates/bb-printer.html:13
-#: gecoscc/templates/bb-repository.html:13 gecoscc/templates/bb-storage.html:12
-#: gecoscc/templates/settings.jinja2:62 gecoscc/templates/server/status.jinja2:67
-#: gecoscc/views/reports.py:93
-msgid "Name"
+#: gecoscc/templates/base_tree.jinja2:32
+msgid "Station"
 msgstr ""
 
 #: gecoscc/templates/base_tree.jinja2:35 gecoscc/templates/bb-computer.html:29
 msgid "IP address"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:48
-msgid "Show only"
-msgstr ""
-
-#: gecoscc/templates/base_tree.jinja2:51 gecoscc/templates/bb-groups-form.html:11
-#: gecoscc/templates/bb-new-element.html:34
-msgid "Group"
-msgstr ""
-
-#: gecoscc/templates/base_tree.jinja2:54 gecoscc/templates/bb-computer.html:12
-#: gecoscc/templates/bb-jobs.html:43
-msgid "Workstation"
-msgstr ""
-
-#: gecoscc/templates/base_tree.jinja2:57 gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/base_tree.jinja2:38 gecoscc/templates/bb-jobs.html:43
 #: gecoscc/templates/bb-new-element.html:12 gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:60 gecoscc/templates/bb-new-element.html:42
-#: gecoscc/templates/bb-printer.html:3
-msgid "Printer"
+#: gecoscc/templates/base_tree.jinja2:48
+msgid "Show only"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:63 gecoscc/templates/bb-storage.html:3
-msgid "Remote Storage"
+#: gecoscc/templates/base_tree.jinja2:51 gecoscc/templates/bb-computer.html:104
+#: gecoscc/templates/bb-groups-multi-widget.html:3
+#: gecoscc/templates/bb-user.html:79
+msgid "Groups"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:66 gecoscc/templates/bb-repository.html:3
-msgid "Repository"
+#: gecoscc/templates/base_tree.jinja2:54
+msgid "Stations"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:57 gecoscc/templates/reports.jinja2:15
+msgid "Users"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:60
+msgid "Printers"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:63
+msgid "Storages"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:66
+msgid "Repositories"
 msgstr ""
 
 #: gecoscc/templates/base_tree.jinja2:183
@@ -565,6 +563,10 @@ msgstr ""
 msgid "Policies"
 msgstr ""
 
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:43
+msgid "Workstation"
+msgstr ""
+
 #: gecoscc/templates/bb-computer.html:13 gecoscc/templates/bb-groups-form.html:12
 #: gecoscc/templates/bb-jobs.html:22 gecoscc/templates/bb-ou.html:12
 #: gecoscc/templates/bb-printer.html:4 gecoscc/templates/bb-repository.html:4
@@ -603,6 +605,14 @@ msgstr ""
 msgid "Former network connection restored because current one does not work properly"
 msgstr ""
 
+#: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-groups-form.html:21
+#: gecoscc/templates/bb-ou.html:43 gecoscc/templates/bb-policies-list.html:6
+#: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
+#: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
+#: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
+msgid "Name"
+msgstr ""
+
 #: gecoscc/templates/bb-computer.html:58 gecoscc/templates/bb-computer.html:77
 #: gecoscc/templates/bb-computer.html:83 gecoscc/templates/bb-groups-form.html:22
 #: gecoscc/templates/bb-ou.html:44 gecoscc/templates/bb-printer.html:14
@@ -639,12 +649,6 @@ msgstr ""
 
 #: gecoscc/templates/bb-computer.html:91
 msgid "Describe the workstation here..."
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:104
-#: gecoscc/templates/bb-groups-multi-widget.html:3
-#: gecoscc/templates/bb-user.html:79
-msgid "Groups"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:106 gecoscc/templates/bb-user.html:81
@@ -713,6 +717,11 @@ msgstr ""
 #: gecoscc/templates/bb-computer.html:208 gecoscc/templates/bb-groups-form.html:49
 #: gecoscc/templates/bb-ou.html:74 gecoscc/templates/bb-user.html:103
 msgid "Policies list"
+msgstr ""
+
+#: gecoscc/templates/bb-groups-form.html:11
+#: gecoscc/templates/bb-new-element.html:34
+msgid "Group"
 msgstr ""
 
 #: gecoscc/templates/bb-groups-members.html:1
@@ -828,6 +837,10 @@ msgstr ""
 
 #: gecoscc/templates/bb-new-element.html:24 gecoscc/templates/bb-ou.html:11
 msgid "Organisational Unit"
+msgstr ""
+
+#: gecoscc/templates/bb-new-element.html:42 gecoscc/templates/bb-printer.html:3
+msgid "Printer"
 msgstr ""
 
 #: gecoscc/templates/bb-new-element.html:48
@@ -978,6 +991,10 @@ msgstr ""
 msgid "PPD URI"
 msgstr ""
 
+#: gecoscc/templates/bb-repository.html:3
+msgid "Repository"
+msgstr ""
+
 #: gecoscc/templates/bb-repository.html:29
 msgid "Url"
 msgstr ""
@@ -1025,6 +1042,10 @@ msgstr ""
 
 #: gecoscc/templates/bb-staging-report.html:22
 msgid "Discard changes"
+msgstr ""
+
+#: gecoscc/templates/bb-storage.html:3
+msgid "Remote Storage"
 msgstr ""
 
 #: gecoscc/templates/bb-storage.html:13
@@ -1089,10 +1110,6 @@ msgstr ""
 
 #: gecoscc/templates/login.jinja2:24
 msgid "GECOS CC Login"
-msgstr ""
-
-#: gecoscc/templates/reports.jinja2:15
-msgid "Users"
 msgstr ""
 
 #: gecoscc/templates/reports.jinja2:15 gecoscc/templates/reports.jinja2:16
