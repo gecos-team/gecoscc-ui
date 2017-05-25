@@ -479,16 +479,18 @@ legend {
     margin-right: 3px;
 }
 
+/*
 .fuelux .tree .tree-item {
     margin-left: 15px !important;
 }
+*/
 
 .tree-fa:before { 
   content: "\f196";
 }
 
 
-.fuelux .tree .tree-open > .tree-branch-header > .tree-branch-name > .tree-fa:before {
+.fuelux .tree .tree-open > .tree-branch-header > .tree-fa:before {
   content: "\f147" !important;
 }
 
@@ -532,4 +534,13 @@ legend {
 
 .fuelux .tree-json-string {
   color: #cc0000;
+}
+
+#ohai_tree_header {
+    margin-bottom: 3px;
+}
+
+#ohai_tree {
+    height: 500px;
+    overflow: auto;
 }
