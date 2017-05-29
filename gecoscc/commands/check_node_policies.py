@@ -23,6 +23,7 @@ from optparse import make_option
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
 from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
+from bson.objectid import ObjectId
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -69,11 +70,16 @@ class Command(BaseCommand):
     
     def command(self):
         # Initialization
-        self.api = _get_chef_api(self.settings.get('chef.url'),
-                            toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.version'))
+        #self.api = _get_chef_api(self.settings.get('chef.url'),
+        #                    toChefUsername(self.options.chef_username),
+        #                    self.options.chef_pem, self.settings.get('chef.version'))
 
         self.db = self.pyramid.db
+        self.referenced_data_type = {}
+        self.referenced_data_type['storage_can_view'] = 'storage'
+        self.referenced_data_type['repository_can_view'] = 'repository'
+        self.referenced_data_type['printer_can_view'] = 'printer'
+        
         
         # Get all the policies structures
         logger.info('Getting all the policies structures from database...')
@@ -132,10 +138,20 @@ class Command(BaseCommand):
                         
                       
                     logger.info('Checking policy: %s'%(policydata[namefield]))
+                    if 'DEPRECATED' in policydata[namefield]:
+                        logger.warning('Using deprecated policy: %s'%(policydata[namefield]))
+                        
+                    
                     logger.debug('Node policy data: %s'%(json.dumps(node['policies'][str(policy)])))
                     
+                    is_emitter_policy = False
+                    emitter_policy_slug = None
+                    if "is_emitter_policy" in policydata:
+                        is_emitter_policy = policydata["is_emitter_policy"]
+                        emitter_policy_slug = policydata["slug"]
+                    
                     # Check object
-                    self.check_object_property(policydata['schema'], nodedata, None)
+                    self.check_object_property(policydata['schema'], nodedata, None, is_emitter_policy, emitter_policy_slug)
                             
         else:
             logger.debug('No policies in this node.')
@@ -169,7 +185,7 @@ class Command(BaseCommand):
             logger.error('Bad property value: %s (not a number) for property %s'%(nodedata, property))
             
             
-    def check_string_property(self, schema, nodedata, property):
+    def check_string_property(self, schema, nodedata, property, is_emitter, emitter_policy_slug):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -187,8 +203,28 @@ class Command(BaseCommand):
             if ( len(schema['enum']) > 0 ) and  not (nodedata in schema['enum']):
                 logger.error('Bad property value: %s (not in enumeration %s) for property %s'%(nodedata, schema['enum'], property))
                 
+        if is_emitter:
+            # Check if referenced node exists in database
+            if  emitter_policy_slug == 'package_profile_res':
+                ref_nodes = self.db.software_profiles.find({"_id" : ObjectId(nodedata)})    
+                found = False
+                for ref_nodes in ref_nodes:        
+                    found = True
+                    logger.debug('Referenced node %s for property %s is a %s'%(nodedata, property, 'package_profile'))
             
-    def check_object_property(self, schema, nodedata, propertyname):
+            else:
+                ref_nodes = self.db.nodes.find({"_id" : ObjectId(nodedata)})    
+                found = False
+                for ref_nodes in ref_nodes:        
+                    found = True
+                    logger.debug('Referenced node %s for property %s is a %s node'%(nodedata, property, ref_nodes["type"]))
+                    if ref_nodes["type"] != self.referenced_data_type[emitter_policy_slug]:
+                        logger.error('Bad data type in referenced node %s for property %s (%s != %s)'%(nodedata, property, ref_nodes["type"], self.referenced_data_type[emitter_policy_slug]))
+                
+            if not found:
+                logger.error('Can\'t find referenced node %s for property %s'%(nodedata, property))
+            
+    def check_object_property(self, schema, nodedata, propertyname, is_emitter, emitter_policy_slug):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -223,13 +259,13 @@ class Command(BaseCommand):
                 continue;
             
             if type == 'array':
-                self.check_array_property(schema['properties'][str(property)], nodedata[str(property)], name)
+                self.check_array_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
                 
             elif type == 'string':
-                self.check_string_property(schema['properties'][str(property)], nodedata[str(property)], name)
+                self.check_string_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
             
             elif type == 'object':
-                self.check_object_property(schema['properties'][str(property)], nodedata[str(property)], name)
+                self.check_object_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
         
             elif (type == 'number') or (type == 'integer'):
                 self.check_number_property(schema['properties'][str(property)], nodedata[str(property)], name)
@@ -240,9 +276,18 @@ class Command(BaseCommand):
             else:
                 logger.error('Unknown property type found: %s'%(type))
             
+        # Reverse check
+        for property in nodedata.keys():
+            name = str(property)
+            if propertyname is not None:
+                name = "%s.%s"%(propertyname, property)
+                
+            if not str(property) in schema['properties'].keys():
+                logger.warning('\tProperty in database that doesn\'t exist in schema anymore: %s'%(name))
+        
             
 
-    def check_array_property(self, schema, nodedata, propertyname):
+    def check_array_property(self, schema, nodedata, propertyname, is_emitter, emitter_policy_slug):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -266,13 +311,13 @@ class Command(BaseCommand):
         for value in nodedata:
             name = '%s[%s]'%(propertyname, count)
             if type == 'array':
-                self.check_array_property(schema['items'], value, name)
+                self.check_array_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
                 
             elif type == 'string':
-                self.check_string_property(schema['items'], value, name)
+                self.check_string_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
             
             elif type == 'object':
-                self.check_object_property(schema['items'], value, name)
+                self.check_object_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
         
             elif (type == 'number') or (type == 'integer'):
                 self.check_number_property(schema['items'], value, name)
