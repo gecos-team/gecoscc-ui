@@ -116,6 +116,7 @@ class Command(BaseCommand):
         '''        
         logger.info('Checking node: %s type:%s path: %s'%(node['name'], node['type'], node['path']))
         
+        # Check policies
         if 'policies' in node:
             # Check the policies data
             for policy in node['policies']:
@@ -155,6 +156,74 @@ class Command(BaseCommand):
                             
         else:
             logger.debug('No policies in this node.')
+        
+        # Check referenced nodes
+        if node['type'] == 'user':
+            # Check computers
+            new_id_list = self.check_referenced_nodes(node['computers'], ['computer'], 'computers')
+            difference = set(node['computers']).difference(set(new_id_list))
+            if len(difference) > 0:
+                logger.info('FIX: remove %s references'%(difference))
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'computers': new_id_list}})
+            
+            # Check memberof
+            new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
+            difference = set(node['memberof']).difference(set(new_id_list))
+            if len(difference) > 0:
+                logger.info('FIX: remove %s references'%(difference))
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
+            
+            
+        if node['type'] == 'computer':
+            # Check memberof
+            new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
+            difference = set(node['memberof']).difference(set(new_id_list))
+            if len(difference) > 0:
+                logger.info('FIX: remove %s references'%(difference))
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
+
+            
+        if node['type'] == 'group':
+            # Check memberof
+            new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
+            difference = set(node['memberof']).difference(set(new_id_list))
+            if len(difference) > 0:
+                logger.info('FIX: remove %s references'%(difference))
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
+                
+            
+            # Check members
+            new_id_list = self.check_referenced_nodes(node['members'], ['user', 'computer'], 'members')
+            difference = set(node['members']).difference(set(new_id_list))
+            if len(difference) > 0:
+                logger.info('FIX: remove %s references'%(difference))
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
+
+        
+        
+    def check_referenced_nodes(self, id_list, possible_types, property):
+        '''
+        Check if the nodes with ID in the id_list exists in the database
+        and its types belong to the possible_types list
+        '''           
+        
+        new_id_list = []
+        for id in id_list:
+            ref_nodes = self.db.nodes.find({ "_id" : id })    
+            found = False
+            for ref_nodes in ref_nodes:        
+                found = True
+                logger.debug('Referenced node %s for property %s is a %s node'%(id, property, ref_nodes["type"]))
+                if not (ref_nodes["type"] in possible_types):
+                    logger.error('Bad data type in referenced node %s for property %s (%s not in %s)'%(nodedata, property, ref_nodes["type"], possible_types))
+                
+            if not found:
+                logger.error('Can\'t find referenced node %s for property %s'%(id, property))                
+                continue
+                
+            new_id_list.append(id)
+        
+        return new_id_list
         
         
     def check_boolean_property(self, schema, nodedata, property):
