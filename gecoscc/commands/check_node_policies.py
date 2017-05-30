@@ -17,6 +17,7 @@ import subprocess
 import json
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
+from chef import Node as ChefNode
 from getpass import getpass
 from optparse import make_option
 
@@ -70,9 +71,9 @@ class Command(BaseCommand):
     
     def command(self):
         # Initialization
-        #self.api = _get_chef_api(self.settings.get('chef.url'),
-        #                    toChefUsername(self.options.chef_username),
-        #                    self.options.chef_pem, self.settings.get('chef.version'))
+        self.api = _get_chef_api(self.settings.get('chef.url'),
+                            toChefUsername(self.options.chef_username),
+                            self.options.chef_pem, self.settings.get('chef.version'))
 
         self.db = self.pyramid.db
         self.referenced_data_type = {}
@@ -94,6 +95,32 @@ class Command(BaseCommand):
         root_nodes = self.db.nodes.find({"path" : "root"})    
         for root in root_nodes:        
             self.check_node_and_subnodes(root)
+        
+        logger.info('Checking chef node references...')
+        # Check the references to Chef nodes
+        computers = self.db.nodes.find({"type" : "computer"})    
+        for computer in computers:  
+            if "node_chef_id" in computer:
+                # Check Chef node
+                computer_node = ChefNode(computer['node_chef_id'], self.api)
+                logger.info("Computer: %s Chef ID: %s"%(computer['name'], computer['node_chef_id']))
+                if not computer_node.exists:
+                    logger.error("No Chef node with ID %s!"%(computer['node_chef_id']))
+                
+            else:
+                logger.error("No Chef ID in '%s' computer!"%(computer['name']))
+
+                
+        logger.info('Checking MongoDB computer references...')
+        # Check the references to computer nodes
+        for node_id in ChefNode.list():
+            found = False
+            computers = self.db.nodes.find({"node_chef_id" : node_id})    
+            for computer in computers:   
+                found = True
+                
+            if not found:
+                logger.error("No computer node for Chef ID: '%s'!"%(node_id))
         
         
         logger.info('END ;)')
