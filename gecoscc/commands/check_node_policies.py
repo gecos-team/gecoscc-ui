@@ -215,7 +215,7 @@ class Command(BaseCommand):
                 found = True
                 logger.debug('Referenced node %s for property %s is a %s node'%(id, property, ref_nodes["type"]))
                 if not (ref_nodes["type"] in possible_types):
-                    logger.error('Bad data type in referenced node %s for property %s (%s not in %s)'%(nodedata, property, ref_nodes["type"], possible_types))
+                    logger.error('Bad data type in referenced node %s for property %s (%s not in %s)'%(id, property, ref_nodes["type"], possible_types))
                 
             if not found:
                 logger.error('Can\'t find referenced node %s for property %s'%(id, property))                
