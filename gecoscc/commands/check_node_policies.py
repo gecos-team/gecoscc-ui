@@ -141,7 +141,7 @@ class Command(BaseCommand):
         '''
         Check the policies applied to a node
         '''        
-        logger.info('Checking node: %s type:%s path: %s'%(node['name'], node['type'], node['path']))
+        logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
         
         # Check policies
         if 'policies' in node:
@@ -165,7 +165,7 @@ class Command(BaseCommand):
                         continue;
                         
                       
-                    logger.info('Checking policy: %s'%(policydata[namefield]))
+                    logger.info('Checking node: "%s" Checking policy: "%s"'%(node['name'], policydata[namefield]))
                     if 'DEPRECATED' in policydata[namefield]:
                         logger.warning('Using deprecated policy: %s'%(policydata[namefield]))
                         
