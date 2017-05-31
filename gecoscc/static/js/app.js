@@ -666,6 +666,11 @@ var App;
                 user.set("computers", computers);
             }
         });
+        
+        $(window).on('beforeunload', function () {
+            App.instances.message_manager.silent_disconnect();
+        });
+        
     }
     App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));
