@@ -25,6 +25,7 @@ from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
 from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
 from bson.objectid import ObjectId
+from gecoscc.models import Policy
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -90,11 +91,18 @@ class Command(BaseCommand):
         for policy in dbpolicies:
             logger.debug('Addig to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
             self.policiesdata[str(policy['_id'])] = policy
+            
+            # Check policy slug field (must be unique)
             if policy['slug'] in self.slug_check:
                 logger.error("There are more than one policy with '%s' slug!"%(policy['slug']))
             else:
                 self.slug_check[policy['slug']] = policy
                 
+            # Check policy serialization
+            try:
+                logger.debug('Serialized policy: %s'%(json.dumps(Policy().serialize(policy))))
+            except Exception as err:
+                logger.error('Policy %s with slug %s can\'t be serialized: %s'%(policy['_id'], policy['slug'], str(err)))
                 
         
         logger.info('Checking tree...')
