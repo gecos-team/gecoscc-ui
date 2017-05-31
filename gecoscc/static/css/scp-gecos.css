@@ -544,3 +544,18 @@ legend {
     height: 500px;
     overflow: auto;
 }
+
+#ohai_tree-expand {
+    padding-top: 5px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    padding-bottom: 1px !important;
+}
+
+#ohai_tree-compress {
+    padding-top: 5px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    padding-bottom: 1px !important;
+}
+
