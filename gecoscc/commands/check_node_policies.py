@@ -74,7 +74,7 @@ class Command(BaseCommand):
         # Initialization
         self.api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.version'))
+                            self.options.chef_pem, False, self.settings.get('chef.version'))
 
         self.db = self.pyramid.db
         self.referenced_data_type = {}
