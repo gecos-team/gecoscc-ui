@@ -51,6 +51,7 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.JobCollection = Backbone.Paginator.requestPager.extend({
         model: Models.JobModel,
         archived: false,
+        parent: '',
         paginator_core: {
             type: "GET",
             dataType: "json",
@@ -59,7 +60,12 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
                 return "/api/jobs/";
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         },
         paginator_ui: {
             firstPage: 1,
@@ -73,10 +79,13 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
             page: function () { return this.currentPage; },
             pagesize: function () { return this.perPage; },
             status:  function () { return this.status; },
-            archived:  function () { return this.archived; }
+            archived:  function () { return this.archived; },
+            parentId: function() { return this.parentId; },
+            total: function() { return this.total;},
         },
         parse: function (response) {
             this.totalPages = response.pages;
+            this.total = response.total;
             return response.jobs;
         }
     });

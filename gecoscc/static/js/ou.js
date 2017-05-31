@@ -49,13 +49,61 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #submit": "saveForm",
             "click #delete": "deleteModel",
             "change input": "validate",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click #cut": "cutModel"
         },
 
         policiesList: undefined,
 
         onBeforeRender: function () {
+            var that = this;
             var path = this.model.get("path");
+
+            //CHECK IS EMPTY
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
+            var id = this.model.get("id");
+
+            var page = new App.Tree.Models.Container({path:path+','+id});
+
+            page.goTo(1, {
+                success: function (data) {
+                    var $button = $('#cut');
+                    if($button.hasClass('admin')==false && data.models.length != 0){
+                        $button.removeClass('btn-warning');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click');
+                        $button.css('margin-right','5px');
+                        $button.click(function (e){
+                            e.preventDefault();
+                            App.showAlert('warning',gettext('Only the super admin can cut this object'));
+                        });
+                        App.instances.noMaintenance[that.model.get('id')] = false;
+
+                    }
+
+                    if($button.hasClass('admin')==true && data.models.length == 0){
+                        App.instances.noMaintenance[that.model.get('id')] = true;
+                    }
+                    
+                    var $button = $('#delete');
+                    if($button.hasClass('admin')==false && (path === 'root' || path.split(',').length === 2)) {
+                        $button.removeClass('btn-danger');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click');
+                        $button.css('margin-right','5px');
+                        $button.click(function (e){
+                            e.preventDefault();
+                            App.showAlert('warning',gettext('Only the super admin can delete this object'));
+                        });
+                        App.instances.noMaintenance[that.model.get('id')] = false;
+                    }
+                }
+            });
+            //END CHECK IS EMPTY
 
             if (this.model.get("isEditable") !== undefined) { return; }
 

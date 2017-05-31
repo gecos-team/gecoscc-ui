@@ -11,8 +11,6 @@
 
 import json
 import requests
-import gzip
-import os
 import tempfile
 import tarfile
 import re
@@ -20,9 +18,9 @@ import re
 import xml.etree.ElementTree as ET
 
 try:
-   from cStringIO import StringIO
+    from cStringIO import StringIO
 except ImportError:
-   from StringIO import StringIO
+    from StringIO import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import PrinterModel
@@ -30,8 +28,9 @@ from gecoscc.command_util import get_setting
 
 PPD = 'PPD'
 PRINTER = 'printer'
-
+DRIVER = 'driver'
 postscript_re = re.compile(u'Postscript', re.IGNORECASE)
+
 
 class Command(BaseCommand):
     def command(self):
@@ -58,7 +57,6 @@ class Command(BaseCommand):
 
             tar = tarfile.open(temp.name)
             members = tar.getmembers()
-
             for member in members:
                 path = member.name.split('/')
                 model = ''
@@ -69,7 +67,7 @@ class Command(BaseCommand):
                 except IndexError:
                     continue
 
-                if ext == 'xml' and path[-2] == PRINTER:
+                if ext == 'xml' and (path[-2] == PRINTER or path[-2] == DRIVER):
                     xml_file = tar.extractfile(member)
                     manufacturer, model = self.parse_model_xml(xml_file.read())
 
@@ -90,20 +88,13 @@ class Command(BaseCommand):
         removed = collection.remove({'model': {'$nin': models}})
         print 'Removed %d printers.\n\n' % removed['n']
 
-
     def parse_model_xml(self, xml):
         manufacturer = ''
         model = ''
         root = ET.fromstring(xml)
-        is_model_postscript = False
-        for driver in root.getiterator('id'):
-            is_driver_postscript = postscript_re.search(driver.text) is not None
-            is_model_postscript =  is_model_postscript or is_driver_postscript
-        if not is_model_postscript:
-            return None, None
-
         for m in root.findall('make'):
             manufacturer = m.text.capitalize()
+
         for m in root.findall('model'):
             model = m.text
         return manufacturer, model

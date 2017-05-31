@@ -8,6 +8,8 @@
 <link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/select2.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/select2-bootstrap.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/jquery.dataTables.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/dataTables.bootstrap.min.css" rel="stylesheet">
 {% block moreheader %}{% endblock %}
 {% endblock %}
 
@@ -26,7 +28,7 @@
                     </span>
                 </div>
             </div>
-            <div id="tree-container">
+            <div id="tree-container" {% if request.user and request.user.get('is_superuser') %}class="admin"{% endif %}>
                 <div id="tree-selection-info" class="col-sm-3"></div>
                 <div id="ex-tree" class="tree bootstrap-admin-panel-content bootstrap-admin-no-table-panel-content collapse in"></div>
             </div>
@@ -127,6 +129,24 @@
 
     <div id="staging-modal-viewport"></div>
     <div id="staging-modal-changes"></div>
+
+    <div id="maintenance-modal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="MaintenanceModalLabel">{{ gettext('This action requires a little time') }}</h4>
+          </div>
+          <div class="modal-body">
+              {{ gettext('Is the website maintenance?') }}
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('No') }}</button>
+            <button type="button" class="btn btn-primary" id="set-maintenance">{{ gettext('Yes') }}</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
 {% endblock %}
 
 {% block extrajs %}

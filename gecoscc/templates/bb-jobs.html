@@ -1,12 +1,12 @@
 <div class="panel-heading">
     <div class="text-muted bootstrap-admin-box-title">
-        {{ gettext('My tasks') }}
+        {{ gettext('My actions') }}
         <span class="filters <% if (!isMaximized) { print('hide'); } %>">
-            <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Tasks') }}</a> |
-            <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Tasks') }}</a> |
-            <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Tasks') }}</a> |
-            <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Tasks') }}</a> |
-            <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Tasks') }}</a>
+            <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Actions') }}</a> |
+            <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Actions') }}</a> |
+            <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Actions') }}</a> |
+            <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Actions') }}</a> |
+            <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Actions') }}</a>
         </span>
         <span class="filters <% if (!isMaximized) { print('hide'); } %>">
             <a href="#" id="tasksActives" class="<% if (!archived) { print('active'); } %>">{{ gettext('Active') }}</a> |
@@ -22,25 +22,41 @@
     <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
         <span class="fa fa-refresh"></span>
     </button>
-    <button class="btn btn-xs btn-default pull-right archiveTasks" title="{{ gettext('Archive Tasks') }}">
+    <button class="btn btn-xs btn-default pull-right archiveTasks <% if (parentId) { print('hide'); } %>" title="{{ gettext('Archive Tasks') }}">
         <span class="fa fa-archive"></span>
+    </button>
+    <button id="backstack" class="btn btn-xs btn-default pull-right backstack <% if (!parentId) { print('hide'); } %>" title="{{ gettext('Backstrack') }}">
+        <span class="fa fa-reply"></span>
     </button>
 </div>
 <div class="bootstrap-admin-panel-content table-responsive">
-    <table class="table table-striped table-bordered">
+    <table id="macrojobs" class="table table-striped table-bordered">
         <thead class="long <% if (!isMaximized) { print('hide'); } %>">
             <tr>
                 <th>
-                    {{ gettext("Emiter node") }}
+                    {{ gettext("Date") }}
+                </th>
+                <th>
+                    {{ gettext("Origin") }}
                 </th>
                 <th>
                     {{ gettext("Workstation") }} / {{ gettext("User") }}
                 </th>
+                <% if (parentId) { %>
                 <th>
-                    {{ gettext("Policy") }}
+                        {{ gettext("Policy") }}
+                </th>
+                <% } %>
+                <% if (!parentId) { %>
+                <th>
+                        {{ gettext("Action") }}
                 </th>
                 <th>
-                    {{ gettext("Trace") }}
+                    {{ gettext("ID") }}
+                </th>
+                <% } %>
+                <th>
+                    {{ gettext("Status") }}
                 </th>
             </tr>
         </thead>
@@ -50,15 +66,31 @@
                                 if (item.status==='errors') { %> danger <% }
                                 if (item.status==='warnings') { %> warning <% } %>">
                 <td>
+                    <%= item.created %>
+                </td>
+                <td>
                     <span class="fa fa-<%= getIcon(item) %>"></span>
                     <%= item.objname %>
                 </td>
                 <td class="long <% if (!isMaximized) { print('hide'); } %>">
-                    <%= item.computername %>
+                    <% if (parentId) { %>
+                        <%= item.computername %>
+                    <% } else { %>
+                        <%= item.administrator_username %>
+                    <% } %>
                 </td>
                 <td>
                     <%= item['policyname_' + App.language] || item.policyname %>
                 </td>
+                <% if (!parentId) { %>
+                <td>
+                    <% if (item.parent==='None' && item.childs > 0) { %>
+                        <a href="#" id="tasksChilds" class="<% if (parentId) { print('active'); } %>"><%= item._id %></a>
+                    <% } else { %>
+                        <%= item._id %>
+                    <% } %>
+                </td>
+                <% } %>
                 <td style="max-width: <%= screen.width / 2 %>px">
                     <span class="fa <% if (item.status==='finished') { %> fa-check<% }
                                         else if (item.status==='errors') { %> fa-times<% }
@@ -71,6 +103,11 @@
         <% }); %>
         </tbody>
     </table>
+
+    <div class="pull-left total <% if (!isMaximized) { print('hide'); } %>">
+        <span>{{ gettext('Total') }}: <%= total %></span>
+    </div>
+
     <% if (showPaginator) { %>
         <ul class="pagination pull-right <% if (!isMaximized) { print('hide'); } %>">
             <li <% if (!prev) { print('class="disabled"'); } %>>
@@ -101,6 +138,3 @@
         </ul>
     <% } %>
 </div>
-
-
-

@@ -11,6 +11,7 @@
 #
 
 import cgi
+import os
 
 from bson import ObjectId
 from copy import deepcopy
@@ -27,13 +28,14 @@ from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
 from gecoscc.socks import invalidate_change, invalidate_delete
 from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
-                           oids_filter, check_unique_node_name_by_type_at_domain)
+                           oids_filter, check_unique_node_name_by_type_at_domain,
+                           visibility_object_related, visibility_group,
+                           RESOURCES_EMITTERS_TYPES, get_object_related_list)
 
-from gecoscc.i18n import gettext as _
-                           
+import gettext
 import logging
 logger = logging.getLogger(__name__)
-                           
+
 SAFE_METHODS = ('GET', 'OPTIONS', 'HEAD',)
 UNSAFE_METHODS = ('POST', 'PUT', 'PATCH', 'DELETE', )
 SCHEMA_METHODS = ('POST', 'PUT', )
@@ -46,6 +48,10 @@ class BaseAPI(object):
     def __init__(self, request):
         self.request = request
         self.collection = self.get_collection()
+        localedir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'locale')
+        gettext.bindtextdomain('gecoscc', localedir)
+        gettext.textdomain('gecoscc')
+        self._ = gettext.gettext                                
 
     def parse_item(self, item):
         return self.schema_detail().serialize(item)
@@ -147,7 +153,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
 
         if objects_filter:
             mongo_query = {
-                '$and':  objects_filter,
+                '$and': objects_filter,
             }
         else:
             mongo_query = {}
@@ -168,6 +174,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
             'pages': pages,
             'page': page,
             self.collection_name: parsed_objects,
+            'total': nodes_count,
         }
 
     def get(self):
@@ -178,8 +185,15 @@ class ResourcePaginatedReadOnly(BaseAPI):
         node = self.collection.find_one(collection_filter)
         if not node:
             raise HTTPNotFound()
+        node = self.parse_item(node)
+        if node.get('type', None) in RESOURCES_EMITTERS_TYPES:
+            node['is_assigned'] = self.is_assigned(node)
+            return node
+        return node
 
-        return self.parse_item(node)
+    def is_assigned(self, related_object):
+        node_with_related_object = get_object_related_list(self.request.db, related_object)
+        return bool(node_with_related_object.count())
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
@@ -201,7 +215,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
     def pre_save(self, obj, old_obj=None):
         if old_obj and 'name' in old_obj:
             obj['name'] = old_obj['name']
-        
+
         # Check he policies "object_related_list" attribute
         if 'policies' in obj:
             policies = obj['policies']
@@ -209,9 +223,9 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 # Get the policy
                 policyobj = self.request.db.policies.find_one({"_id": ObjectId(str(policy))})
                 if policyobj is None:
-                    logger.warning("Unknown policy: %s"%(str(policy)))
+                    logger.warning("Unknown policy: %s" % (str(policy)))
                 else:
-                    # Get the related object collection 
+                    # Get the related object collection
                     ro_collection = None
                     if policyobj['slug'] == 'printer_can_view':
                         ro_collection = self.request.db.nodes
@@ -224,22 +238,21 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                     elif policyobj['slug'] == 'package_profile_res':
                         ro_collection = self.request.db.software_profiles
                     else:
-                        logger.warning("Unrecognized slug: %s"%(str(policyobj['slug'])))
-                        
+                        logger.warning("Unrecognized slug: %s" % (str(policyobj['slug'])))
+
                     # Check the related objects
                     if ro_collection is not None:
                         ro_list = policies[str(policy)]['object_related_list']
                         for ro_id in ro_list:
                             ro_obj = ro_collection.find_one({"_id": ObjectId(str(ro_id))})
                             if ro_obj is None:
-                                logger.error("Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
-                                self.request.errors.add('body', 'object', "Can't find related object: %s:%s"%(str(policyobj['slug']), str(ro_id)))
+                                logger.error("Can't find related object: %s:%s" % (str(policyobj['slug']), str(ro_id)))
+                                self.request.errors.add('body', 'object', "Can't find related object: %s:%s" % (str(policyobj['slug']), str(ro_id)))
                                 return None
-                        
-                
+
         else:
             logger.debug("No policies in this object")
-            
+
         return obj
 
     def post_save(self, obj, old_obj=None):
@@ -385,9 +398,8 @@ class TreeResourcePaginated(ResourcePaginated):
     def check_unique_node_name_by_type_at_domain(self, obj):
         unique = check_unique_node_name_by_type_at_domain(self.request.db.nodes, obj)
         if not unique:
-            self.request.errors.add(
-                        'body', 'name',
-                        "Name must be unique in domain.")
+            self.request.errors.add('body', 'name',
+                                    "Name must be unique in domain.")
         return unique
 
     def integrity_validation(self, obj, real_obj=None):
@@ -428,10 +440,14 @@ class TreeResourcePaginated(ResourcePaginated):
 class TreeLeafResourcePaginated(TreeResourcePaginated):
 
     def check_memberof_integrity(self, obj):
-        """ Check if memberof ids already exists"""
+        """ Check if memberof ids already exists or if the group is out of scope"""
         if 'memberof' not in obj:
             return True
-
+        obj_validated = visibility_group(self.request.db, obj)
+        if obj != obj_validated:
+            self.request.errors.add(unicode(obj[self.key]), 'memberof',
+                                    "There is a group out of scope.")
+            return False
         for group_id in obj['memberof']:
             group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
@@ -439,7 +455,19 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     unicode(obj[self.key]), 'memberof',
                     "The group {0} doesn't exist".format(unicode(group_id)))
                 return False
+        return True
 
+    def check_policies_integrity(self, obj, is_moved=False):
+        """
+        Check if the policie is out of scope
+        """
+        obj_original = deepcopy(obj)
+        visibility_object_related(self.request.db, obj)
+        if not is_moved:
+            if obj != obj_original:
+                self.request.errors.add(unicode(obj[self.key]), 'policies',
+                                        "The related object is out of scope")
+                return False
         return True
 
     def integrity_validation(self, obj, real_obj=None):
@@ -447,6 +475,10 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             obj, real_obj)
         result = result and self.check_memberof_integrity(obj)
         result = result and self.check_unique_node_name_by_type_at_domain(obj)
+        if real_obj is not None and real_obj['path'] == obj['path']:
+            result = result and self.check_policies_integrity(obj)
+        else:
+            result = result and self.check_policies_integrity(obj, is_moved=True)
         return result
 
     def computers_to_group(self, obj):
@@ -510,3 +542,37 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
             filters.append({'path': get_filter_nodes_parents_ou(self.request.db,
                                                                 ou_id, item_id)})
         return filters
+
+    def check_obj_is_related(self, obj):
+        '''
+        Check if the emitter object is related with any object
+        '''
+        if obj.get('_id'):
+            if obj['type'] == 'printer':
+                slug = 'printer_can_view'
+            elif obj['type'] == 'repository':
+                slug = 'repository_can_view'
+            elif obj['type'] == 'storage':
+                slug = 'storage_can_view'
+            elif obj['type'] == 'group':
+                members_group = obj['members']
+                if not members_group:
+                    return True
+                return False
+
+            policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
+            nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
+                                                                % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
+
+            if nodes_related_with_obj.count() == 0:
+                return True
+
+            return False
+        return True
+
+    def integrity_validation(self, obj, real_obj=None):
+        result = super(PassiveResourcePaginated, self).integrity_validation(
+            obj, real_obj)
+        result = result and (self.request.user.get('is_superuser', False) or self.check_obj_is_related(obj))
+
+        return result

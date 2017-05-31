@@ -26,6 +26,9 @@ from gecoscc.userdb import UserDoesNotExist
 from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
 from gecoscc.command_util import get_setting
+from gecoscc.models import PRINTER_TYPE
+from gecoscc.models import PRINTER_CONN_TYPE
+from gecoscc.models import PRINTER_OPPOLICY_TYPE
 
 
 logger = logging.getLogger(__name__)
@@ -36,8 +39,12 @@ logger = logging.getLogger(__name__)
 def home(context, request):
     return {
         'websockets_enabled': json.dumps(is_websockets_enabled()),
-        'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db)
+        'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db),
+        'printer_type': PRINTER_TYPE,
+        'printer_conn_type': PRINTER_CONN_TYPE,
+        'printer_oppolicy_type': PRINTER_OPPOLICY_TYPE
     }
+
 
 
 class LoginViews(BaseView):

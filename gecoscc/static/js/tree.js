@@ -87,6 +87,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
                 return "/api/nodes/?maxdepth=0&path=" + this.path;
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
             }
         },
 
@@ -130,7 +135,12 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             dataType: "json",
             url: function () {
                 return "/api/nodes/?iname=" + this.keyword;
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         }
     });
 

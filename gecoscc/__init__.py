@@ -33,6 +33,7 @@ from gecoscc.eventsmanager import get_jobstorage
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
 from gecoscc.socks import socketio_service
 
+from urlparse import urlsplit
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
@@ -53,6 +54,8 @@ def route_config(config):
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
+    config.add_route('admin_upload','/admins/upload/{username}/', factory=SuperUserFactory)
+    config.add_route('admin_restore','/admins/restore/{name}/{version}/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
@@ -75,7 +78,9 @@ def route_config(config):
 
 def sockjs_config(config, global_config):
     settings = config.registry.settings
-    settings['redis.conf'] = json.loads(settings['redis.conf'])
+
+    settings['sockjs_url'] = settings['sockjs_url']
+
     config.add_route('socket_io', 'socket.io/*remaining')
     config.add_view(socketio_service, route_name='socket_io')
 
@@ -177,30 +182,11 @@ def jinja2_config(config):
     """)
 
 
+
 def celery_config(config):
     settings = config.registry.settings
     settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
-    if not settings.get('BROKER_URL', ''):
-
-        parsed_uri = pymongo.uri_parser.parse_uri(settings['mongo_uri'])
-
-        settings['BROKER_URL'] = settings['mongo_uri']
-        settings['CELERY_RESULT_BACKEND'] = "mongodb"
-        settings['CELERY_MONGODB_BACKEND_SETTINGS'] = {
-            "host": parsed_uri.get('nodelist')[0][0],
-            "port": parsed_uri.get('nodelist')[0][1],
-            "database": parsed_uri.get('database'),
-            "taskmeta_collection": "celery_taskmeta",
-        }
-        if parsed_uri.get('username', ''):
-            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-                "user": parsed_uri.get('username'),
-                "password": parsed_uri.get("password"),
-            })
-        if parsed_uri.get('options', ''):
-            settings['CELERY_MONGODB_BACKEND_SETTINGS'].update({
-                "options": parsed_uri.get('options'),
-            })
+    settings['BROKER_URL'] = settings['celery_broker_url']
 
 
 def locale_config(config):

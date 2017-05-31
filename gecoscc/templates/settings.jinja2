@@ -70,6 +70,12 @@
                       }
                     }
                 }
+                {% elif setting.type == "Mimetypes" %}
+                  "type": "array",
+                  "items": {
+                  "title": "{{ gettext('Mime Types') }}",
+                  "type": "string"
+                }
                 {% else %}
                 "type": "{{ setting.type }}"
                 {% endif %}            
@@ -96,6 +102,8 @@
             {% if setting.type == "URLs" %}
             {{ setting.value|safe }}
             {% elif setting.type == "Profiles" %}
+            {{ setting.value|safe }}
+	    {% elif setting.type == "Mimetypes" %}
             {{ setting.value|safe }}
             {% else %}
             "{{ setting.value }}"
@@ -190,7 +198,8 @@
                     "update_error_interval",
                     "printers___urls",
                     "repositories",
-                    "software_profiles"
+                    "software_profiles",
+                    "mimetypes"
                 ],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: function (values) {

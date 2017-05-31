@@ -14,6 +14,7 @@ import json
 import pymongo
 
 from cornice.resource import resource
+from bson import ObjectId
 
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Job, Jobs
@@ -42,6 +43,12 @@ class JobResource(ResourcePaginatedReadOnly):
         filters = super(JobResource, self).get_objects_filter()
         administrator_username = self.request.user['username']
         filters.append({'administrator_username': administrator_username})
+        # Only macrojobs
+        parentId = self.request.GET.get('parentId', None)
+        if parentId:
+            filters.append({'parent': ObjectId(parentId)})
+        else:
+            filters.append({'parent': {'$exists': True, '$eq': None}})
         status = self.request.GET.get('status', '')
         if status:
             filters.append({'status': status})

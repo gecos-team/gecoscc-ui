@@ -49,7 +49,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click button#delete": "deleteModel",
             "click button#save": "save",
             "click button.refresh": "refresh",
-            "click ul.pagination a": "goToPage"
+            "click ul.pagination a": "goToPage",
+            "click #cut": "cutModel"
         },
 
         policiesList: undefined,
@@ -85,7 +86,13 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 aux = new View(aux);
                 this.$el.find("#members").html(aux.render().el);
             } else {
-                $.ajax("/api/nodes/?oids=" + oids).done(function (response) {
+                $.ajax({url: "/api/nodes/?oids=" + oids, 
+                      statusCode: {
+                        403: function() {
+                          forbidden_access();
+                        }
+                      }
+                }).done(function (response) {
                     var items = response.nodes,
                         members = {},
                         view;
@@ -140,6 +147,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.canMove();
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }

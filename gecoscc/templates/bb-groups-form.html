@@ -34,6 +34,7 @@
                         <button class="btn btn-primary" type="submit" id="save">{{ gettext('Save') }}</button>
                         <% if (typeof id !== "undefined") { %>
                             <button class="btn btn-danger pull-right" id="delete">{{ gettext('Delete') }}</button>
+                            <button id="cut" class="pull-right btn btn-warning {% if request.user and request.user.get('is_superuser') %}admin{% endif %}">{{ gettext('Cut') }}</button>
                         <% } %>
                     </div></div>
                      <% } %>

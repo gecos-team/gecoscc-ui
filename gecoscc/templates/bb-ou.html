@@ -58,7 +58,8 @@
                         <a href="#" class="btn btn-default">{{ gettext ('Cancel') }}</a>
                         <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                         <% if (typeof id !== "undefined") { %>
-                            <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
+                            <button id="delete" class="pull-right btn btn-danger {% if request.user and request.user.get('is_superuser') %}admin{% endif %}">{{ gettext('Delete') }}</button>
+                            <button id="cut" class="pull-right btn btn-warning {% if request.user and request.user.get('is_superuser') %}admin{% endif %}">{{ gettext('Cut') }}</button>
                         <% } %>
                     </div></div>
                     <% } %>

@@ -15,9 +15,15 @@
 * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 */
 
+// Function to manage a 403 error code in any AJAX call.
+function forbidden_access() {
+    $("#forbidden-modal").modal({backdrop: 'static'});
+}
+
 // This file creates the global App variable, it should be loaded as soon as
 // possible
 var App;
+
 
 (function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
@@ -46,6 +52,7 @@ var App;
         events: {
             "click #maximize": "maximize",
             "click #minimize": "minimize",
+            "click #tasksChilds": "tasksChilds",
             "click button.refresh": "refresh",
             "click ul.pagination a": "goToPage",
             "click span.filters #tasksAll": "tasksAll",
@@ -55,9 +62,16 @@ var App;
             "click span.filters #tasksWarnings": "tasksWarnings",
             "click span.filters #tasksActives": "tasksActives",
             "click span.filters #tasksArchived": "tasksArchived",
-            "click button.archiveTasks": "archiveTasks"
+            "click button.archiveTasks": "archiveTasks",
+            "click button.backstack": "backstack"
         },
 
+        backstack: function () {                                
+            this.collection.status = '';
+            this.collection.archived = false;
+            this.collection.parentId = '';
+            this.tasksFilter();
+        },
         refresh: function () {
             App.instances.job_collection.fetch();
             App.instances.job_statistics.fetch();
@@ -69,36 +83,48 @@ var App;
         tasksAll: function (evt) {
             evt.preventDefault();
             this.collection.status = '';
+            this.collection.archived = false;
             this.tasksFilter();
         },
         tasksProcessing: function (evt) {
             evt.preventDefault();
             this.collection.status = 'processing';
+            this.collection.archived = false;
             this.tasksFilter();
         },
         tasksFinished: function (evt) {
             evt.preventDefault();
             this.collection.status = 'finished';
+            this.collection.archived = false;
             this.tasksFilter();
         },
         tasksErrors: function (evt) {
             evt.preventDefault();
             this.collection.status = 'errors';
+            this.collection.archived = false;
             this.tasksFilter();
         },
         tasksWarnings: function (evt) {
             evt.preventDefault();
             this.collection.status = 'warnings';
+            this.collection.archived = false;
             this.tasksFilter();
         },
         tasksActives: function (evt) {
             evt.preventDefault();
+            this.collection.status = '';
             this.collection.archived = false;
             this.tasksFilter();
         },
         tasksArchived: function (evt) {
             evt.preventDefault();
+            this.collection.status = '';
             this.collection.archived = true;
+            this.tasksFilter();
+        },
+        tasksChilds: function (evt) {
+            evt.preventDefault();
+            this.collection.parentId = evt.currentTarget.innerHTML;
             this.tasksFilter();
         },
         archiveTasks: function (evt) {
@@ -124,6 +150,7 @@ var App;
             events.find(".long").removeClass("hide");
             events.addClass("maximize");
             this.isMaximized = true;
+            this.render();
         },
         minimize: function (evt) {
             var events = this.$el;
@@ -139,7 +166,9 @@ var App;
             this.isMaximized = false;
             this.collection.status = '';
             this.collection.archived = false;
+            this.collection.parentId = '';
             this.tasksFilter();
+            this.render();
         },
         serializeData: function () {
             var paginator = [],
@@ -168,7 +197,9 @@ var App;
                 "showPaginator": paginator.length > 1,
                 "isMaximized": this.isMaximized,
                 "status": this.collection.status,
-                "archived": this.collection.archived
+                "parentId":this.collection.parentId,
+                "archived": this.collection.archived,
+                "total": this.collection.total,
             };
         },
         goToPage: function (evt) {
@@ -263,10 +294,22 @@ var App;
             "ou/:containerid/:type/:itemid": "loadItem",
             "ou/:containerid/:type/:itemid/policy": "newPolicy",
             "ou/:containerid/:type/:itemid/policy/:policyid": "loadPolicy",
-            "search/:keyword": "search"
+            "search/:keyword": "search",
+            "logbook": "logbook"                                
         },
 
         controller: {
+            logbook: function () {
+                if (_.isUndefined(App.instances.job_collection)) {
+                    App.instances.job_collection = new App.Job.Models.JobCollection();
+                    App.instances.job_collection.fetch();
+                }
+                var jview = new JobsView({collection: App.instances.job_collection});
+                App.events.show(jview);
+                var events = App.events.$el;
+                var button = events.find("#maximize");
+                button.click();
+            },
             loadHome: function () {
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
@@ -297,7 +340,11 @@ var App;
                 App.alerts.close();
                 App.main.show(App.instances.loaderView);
                 if (_.isUndefined(model)) {
-                    $.ajax("/api/nodes/" + id + '/').done(function (response) {
+                    $.ajax({ url:"/api/nodes/" + id + '/', statusCode: {
+                        403: function() {
+                          forbidden_access();
+                        }
+					}}).done(function (response) {
                         parent = _.last(response.path.split(','));
                         url = "ou/" + parent + "/" + response.type + "/" + id;
                         App.instances.router.navigate(url, { trigger: true });
@@ -583,7 +630,9 @@ var App;
             App.instances.job_statistics = new App.Job.Models.JobStatistics();
             App.instances.job_statistics.fetch();
         }
-        App.events.show(new JobsView({collection: App.instances.job_collection}));
+        if (! (Backbone.history.getFragment() == 'logbook')) {
+            App.events.show(new JobsView({collection: App.instances.job_collection}));
+        }
     });
 
     if (window.websocketsEnabled) {
@@ -617,6 +666,11 @@ var App;
                 user.set("computers", computers);
             }
         });
+        
+        $(window).on('beforeunload', function () {
+            App.instances.message_manager.silent_disconnect();
+        });
+        
     }
     App.instances.cut = undefined;
 }(Backbone, jQuery, _, gettext, MessageManager));

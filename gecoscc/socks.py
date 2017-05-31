@@ -28,7 +28,7 @@ TOKEN = 'token'
 
 def get_manager():
     settings = get_current_registry().settings
-    return redis.Redis(**settings['redis.conf'])
+    return redis.Redis.from_url(settings['sockjs_url'])
 
 
 def is_websockets_enabled():
@@ -139,7 +139,7 @@ class GecosNamespace(BaseNamespace):
 
         settings = get_current_registry().settings
 
-        r = redis.StrictRedis(**settings['redis.conf'])
+        r = redis.StrictRedis.from_url(settings['sockjs_url'])
         r = r.pubsub()
 
         try:

@@ -67,7 +67,7 @@ class Command(BaseCommand):
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem)
+                            self.options.chef_pem, self.settings.get('chef.ssl.verify'), self.settings.get('chef.version'))
         ou_name = 'ou_0'
         ou = self.create_root_ou(ou_name)
         for node_id in ChefNode.list():

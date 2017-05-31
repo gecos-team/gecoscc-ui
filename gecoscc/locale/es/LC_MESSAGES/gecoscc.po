@@ -6,12 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-<<<<<<< HEAD
-"POT-Creation-Date: 2015-06-30 11:16+0200\n"
-=======
-"POT-Creation-Date: 2015-06-03 17:51+0200\n"
->>>>>>> 21f990f05cacaa842db251c96e408870682569d1
-"PO-Revision-Date: 2013-11-14 10:24+0100\n"
+"POT-Creation-Date: 2017-04-24 17:51+0200\n"
+"PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
@@ -20,34 +16,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:55 gecoscc/forms.py:121 gecoscc/templates/login.jinja2:31
-#: gecoscc/templates/settings.jinja2:127
+#: gecoscc/forms.py:65 gecoscc/forms.py:132 gecoscc/templates/login.jinja2:31
+#: gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr "Enviar"
 
-#: gecoscc/forms.py:108
+#: gecoscc/forms.py:119
 msgid "User created successfully"
 msgstr "Usuario creado con éxito"
 
-#: gecoscc/forms.py:124 gecoscc/templates/bb-computer.html:110
+#: gecoscc/forms.py:135 gecoscc/templates/bb-computer.html:116
 #: gecoscc/templates/bb-groups-form.html:36 gecoscc/templates/bb-ou.html:61
-#: gecoscc/templates/bb-policy.html:14 gecoscc/templates/bb-printer.html:107
+#: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:109
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
-#: gecoscc/templates/bb-user.html:90
+#: gecoscc/templates/bb-user.html:90 gecoscc/templates/server/status.jinja2:93
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/forms.py:142 gecoscc/forms.py:170
+#: gecoscc/forms.py:153 gecoscc/forms.py:181
 msgid "User edited successfully"
 msgstr "Usuario modificado con éxito"
 
-#: gecoscc/forms.py:159 gecoscc/forms.py:160
+#: gecoscc/forms.py:170 gecoscc/forms.py:171
 msgid "Add another"
-msgstr "Añadir otro"
+msgstr "Añadir otra"
 
-#: gecoscc/forms.py:209
+#: gecoscc/forms.py:220
 msgid "Variables updated successfully"
 msgstr "Variables actualizadas con éxito"
+
+#: gecoscc/forms.py:293 gecoscc/forms.py:296
+msgid "There was an error downloading zip file"
+msgstr ""
+
+#: gecoscc/forms.py:299
+#, python-format
+msgid "File is not a zip file: %s"
+msgstr ""
+
+#: gecoscc/forms.py:303
+#, python-format
+msgid "Permission denied: %s"
+msgstr "Problemas de permisos para crear carpeta: %s"
+
+#: gecoscc/forms.py:306
+msgid ""
+"There was an error attempting to upload the cookbook. Please contact an "
+"administrator"
+msgstr "Hubo un problema al subir el archivo de políticas. Por favor, contacte con un administrador."
+
+#: gecoscc/forms.py:310
+msgid "No such file or directory: metadata.rb"
+msgstr ""
+
+#: gecoscc/forms.py:314
+msgid "No cookbook name or version found in metadata.rb"
+msgstr ""
+"No se encuentra el nombre o versión del archivo de políticas en "
+"metadata.rb"
+
+#: gecoscc/forms.py:325 gecoscc/views/admins.py:226
+msgid "here"
+msgstr "aquí"
+
+#: gecoscc/forms.py:326
+#, python-format
+msgid "Upload cookbook enqueue. Visit logbook %s"
+msgstr ""
+"Orden de subida e importación de archivo de políticas pendiente. Visite "
+"bitácora %s"
+
+#: gecoscc/forms.py:335
+msgid "Restore cookbook."
+msgstr "Restaurar archivo de políticas"
 
 #: gecoscc/models.py:94
 msgid "There is some object with this value: ${val}"
@@ -61,220 +102,258 @@ msgstr "Solo letras minúsculas, números o puntos"
 msgid "The passwords do not match"
 msgstr "Las contraseñas con coinciden"
 
-#: gecoscc/models.py:215 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:218 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr "Clave"
 
-#: gecoscc/models.py:219
+#: gecoscc/models.py:222
 msgid "Value"
 msgstr "Valor"
 
-#: gecoscc/models.py:223 gecoscc/templates/bb-computer.html:57
-#: gecoscc/templates/bb-computer.html:164 gecoscc/templates/bb-printer.html:67
+#: gecoscc/models.py:226 gecoscc/templates/bb-computer.html:63
+#: gecoscc/templates/bb-computer.html:170 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr "Tipo"
 
-#: gecoscc/models.py:229 gecoscc/templates/bb-user.html:40
+#: gecoscc/models.py:233 gecoscc/templates/bb-user.html:40
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr "Nombre"
 
-#: gecoscc/models.py:233 gecoscc/templates/bb-user.html:44
+#: gecoscc/models.py:237 gecoscc/templates/bb-user.html:44
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr "Apellidos"
 
-#: gecoscc/models.py:326 gecoscc/templates/bb-user.html:36
+#: gecoscc/models.py:332 gecoscc/templates/bb-user.html:36
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr "Nombre de usuario"
 
-#: gecoscc/models.py:332 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:338 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr "Contraseña"
 
-#: gecoscc/models.py:337
+#: gecoscc/models.py:343
 msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
-#: gecoscc/models.py:341 gecoscc/templates/bb-user.html:50
+#: gecoscc/models.py:347 gecoscc/templates/bb-user.html:50
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: gecoscc/models.py:348
+#: gecoscc/models.py:354
 msgid "There is a user with this email: ${val}"
 msgstr "Hay un usuario con este correo electrónico: ${val}"
 
-#: gecoscc/models.py:349
+#: gecoscc/models.py:355
 msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
-#: gecoscc/models.py:354
-msgid "This user can register workstation under these Organitation Units"
-msgstr ""
-"Este usuario puede registrar estaciones de trabajo bajo estas unidades "
-"organizativas"
+#: gecoscc/models.py:360
+msgid "This user can manage workstations under these Organizational Units"
+msgstr "Este usuario puede administrar puestos en estas unidades organizativas"
 
-#: gecoscc/models.py:357
-msgid "Organitation Unit availables to register workstations by this user"
-msgstr ""
-"Unidades organizativas disponibles para que este usuario pueda registrar "
-"estaciones de trabajo"
+#: gecoscc/models.py:363
+msgid "Organizational Units available to register workstations"
+msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
 
-#: gecoscc/models.py:367
+#: gecoscc/models.py:369
+msgid "Cookbook ZIP"
+msgstr "Archivo de políticas (.zip)"
+
+#: gecoscc/models.py:373
+msgid "URL download"
+msgstr "URL de descarga"
+
+#: gecoscc/models.py:381
+msgid "Restore previous version of cookbook"
+msgstr "Eliminar la última versión del archivo de politicas"
+
+#: gecoscc/models.py:390
 msgid "uri"
 msgstr "uri"
 
-#: gecoscc/models.py:370
+#: gecoscc/models.py:393
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:373
+#: gecoscc/models.py:396
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:376
+#: gecoscc/models.py:399
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:379
+#: gecoscc/models.py:402
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:385
+#: gecoscc/models.py:408
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:387
+#: gecoscc/models.py:410
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:393
+#: gecoscc/models.py:416
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:396
+#: gecoscc/models.py:419
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:399
+#: gecoscc/models.py:422
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:402
+#: gecoscc/models.py:425
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:411
+#: gecoscc/models.py:434
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:413
+#: gecoscc/models.py:436
 msgid "Auth type"
 msgstr "Tipo de autenticación"
 
-#: gecoscc/models.py:417
+#: gecoscc/models.py:440
 msgid "Specific conf"
 msgstr "Configuración específica"
 
-#: gecoscc/models.py:419
+#: gecoscc/models.py:442
 msgid "Auth LDAP"
 msgstr "Autenticación LDAP"
 
-#: gecoscc/models.py:420 gecoscc/models.py:421
+#: gecoscc/models.py:443 gecoscc/models.py:444
 msgid "Auth Active directory"
 msgstr "Autenticación Active directory"
 
-#: gecoscc/models.py:461 gecoscc/templates/bb-computer.html:59
+#: gecoscc/models.py:487 gecoscc/templates/bb-computer.html:65
 msgid "Desktop"
 msgstr "Sobremesa"
 
-#: gecoscc/models.py:462 gecoscc/templates/bb-computer.html:60
+#: gecoscc/models.py:488 gecoscc/templates/bb-computer.html:66
 msgid "Laptop"
 msgstr "Portátil"
 
-#: gecoscc/models.py:463 gecoscc/templates/bb-computer.html:61
+#: gecoscc/models.py:489 gecoscc/templates/bb-computer.html:67
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:464 gecoscc/templates/bb-computer.html:62
+#: gecoscc/models.py:490 gecoscc/templates/bb-computer.html:68
 msgid "Tablet"
 msgstr "Tableta"
 
-#: gecoscc/models.py:500 gecoscc/templates/bb-printer.html:69
+#: gecoscc/models.py:531
 msgid "Laser"
 msgstr "Láser"
 
-#: gecoscc/models.py:501 gecoscc/templates/bb-printer.html:70
+#: gecoscc/models.py:532
 msgid "Ink"
 msgstr "Tinta"
 
-#: gecoscc/models.py:502 gecoscc/templates/bb-printer.html:71
+#: gecoscc/models.py:533
 msgid "Dot matrix"
 msgstr "Matricial"
 
-#: gecoscc/models.py:506 gecoscc/templates/bb-printer.html:35
+#: gecoscc/models.py:537
 msgid "Network"
 msgstr "En red"
 
-#: gecoscc/models.py:507 gecoscc/templates/bb-printer.html:36
+#: gecoscc/models.py:538
 msgid "Local"
 msgstr "Local"
 
-#: gecoscc/models.py:511 gecoscc/templates/bb-printer.html:52
+#: gecoscc/models.py:542
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:512 gecoscc/templates/bb-printer.html:53
+#: gecoscc/models.py:543
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:557
+#: gecoscc/models.py:544
+msgid "Kerberos-AD"
+msgstr ""
+
+#: gecoscc/models.py:592
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:558
+#: gecoscc/models.py:593
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:559
+#: gecoscc/models.py:594
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:560
+#: gecoscc/models.py:595
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:561
+#: gecoscc/models.py:596
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:565
+#: gecoscc/models.py:600
 msgid "System mounts (fstab)"
 msgstr "En el arranque del sistema (fstab)"
 
-#: gecoscc/models.py:566
+#: gecoscc/models.py:601
 msgid "User space mounts (gvfs)"
 msgstr "En espacio de usuario (gvfs)"
 
-#: gecoscc/models.py:597
+#: gecoscc/models.py:641
 msgid "Processing"
 msgstr "Procesando"
 
-#: gecoscc/models.py:600
+#: gecoscc/models.py:644
 msgid "Applying changes"
 msgstr "Aplicando cambios"
 
-#: gecoscc/models.py:603
+#: gecoscc/models.py:647
 msgid "Changes applied"
 msgstr "Cambios aplicados"
 
-#: gecoscc/models.py:606 gecoscc/models.py:609
+#: gecoscc/models.py:650 gecoscc/models.py:653
 msgid "There were errors"
 msgstr "Se produjeron errores"
+
+#: gecoscc/tasks.py:882 gecoscc/tasks.py:973 gecoscc/tasks.py:1117
+msgid "type"
+msgstr "Tipo"
+
+#: gecoscc/tasks.py:941 gecoscc/api/chef_status.py:110
+#, python-format
+msgid "Pending: %d"
+msgstr "Pendientes: %d"
+
+#: gecoscc/tasks.py:973 gecoscc/tasks.py:1117
+msgid "deleted"
+msgstr "Borrado"
+
+#: gecoscc/tasks.py:1275
+msgid "policy uploaded"
+msgstr "Política subida"
+
+#: gecoscc/tasks.py:1277
+msgid "policy uploading..."
+msgstr "Actualizando política..."
+
+#: gecoscc/tasks.py:1324
+#, python-format
+msgid "Cookbook uploaded successfully %s %s"
+msgstr "Archivo de políticas actualizado con éxito %s %s"
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
 msgid "Control Center"
@@ -284,10 +363,10 @@ msgstr "Centro de Control"
 msgid "Are you sure?"
 msgstr "¿Estás seguro?"
 
-#: gecoscc/templates/base.jinja2:39 gecoscc/templates/bb-computer.html:107
+#: gecoscc/templates/base.jinja2:39 gecoscc/templates/bb-computer.html:113
 #: gecoscc/templates/bb-groups-form.html:33 gecoscc/templates/bb-ou.html:58
-#: gecoscc/templates/bb-policies-add.html:47
-#: gecoscc/templates/bb-policy.html:11 gecoscc/templates/bb-printer.html:104
+#: gecoscc/templates/bb-policies-add.html:52
+#: gecoscc/templates/bb-policy.html:17 gecoscc/templates/bb-printer.html:106
 #: gecoscc/templates/bb-repository.html:68 gecoscc/templates/bb-storage.html:26
 #: gecoscc/templates/bb-user.html:87
 msgid "Cancel"
@@ -305,7 +384,8 @@ msgstr "Problemas de conexión"
 msgid "There are problems to connect with the server, please reload page."
 msgstr "Hay problemas de conexión con el servidor, por favor recarga la página."
 
-#: gecoscc/templates/base.jinja2:54 gecoscc/templates/settings.jinja2:146
+#: gecoscc/templates/base.jinja2:54 gecoscc/templates/base.jinja2:79
+#: gecoscc/templates/settings.jinja2:154
 msgid "Reload page"
 msgstr "Recargar página"
 
@@ -313,7 +393,15 @@ msgstr "Recargar página"
 msgid "Redis server is stopped, please contact an administrator."
 msgstr "El servidor Redis está parado, por favor contacta con un administrador."
 
-#: gecoscc/templates/base.jinja2:116
+#: gecoscc/templates/base.jinja2:75
+msgid "Forbidden access"
+msgstr "Acceso no permitido"
+
+#: gecoscc/templates/base.jinja2:77
+msgid "Probably the user session has expired due to inactivity."
+msgstr "Probablemente la sesión del usuario ha expirado por inactividad."
+
+#: gecoscc/templates/base.jinja2:130
 msgid "Add new root OU"
 msgstr "Añadir nueva UO raíz"
 
@@ -329,48 +417,77 @@ msgstr "Inicio"
 #: gecoscc/templates/admins/list.jinja2:11
 #: gecoscc/templates/admins/ou_manage.jinja2:8
 #: gecoscc/templates/admins/ou_manage.jinja2:12
+#: gecoscc/templates/admins/upload.jinja2:8
+#: gecoscc/templates/admins/upload.jinja2:12
 #: gecoscc/templates/admins/variables.jinja2:8
 #: gecoscc/templates/admins/variables.jinja2:12
 msgid "Administrators"
 msgstr "Administradores"
 
 #: gecoscc/templates/base_navbar.jinja2:26
-#: gecoscc/templates/settings.jinja2:114 gecoscc/templates/settings.jinja2:117
+#: gecoscc/templates/settings.jinja2:122 gecoscc/templates/settings.jinja2:125
 msgid "Settings"
 msgstr "Configuración"
 
-#: gecoscc/templates/base_navbar.jinja2:29 gecoscc/templates/reports.jinja2:10
+#: gecoscc/templates/base_navbar.jinja2:28 gecoscc/templates/bb-jobs.html:59
+#: gecoscc/templates/server/connections.jinja2:26
+msgid "Status"
+msgstr "Estado"
+
+#: gecoscc/templates/base_navbar.jinja2:31 gecoscc/templates/reports.jinja2:10
 msgid "Reports"
 msgstr "Informes"
 
-#: gecoscc/templates/base_navbar.jinja2:33 gecoscc/templates/bb-policy.html:5
+#: gecoscc/templates/base_navbar.jinja2:35 gecoscc/templates/bb-policy.html:11
 msgid "Help"
 msgstr "Ayuda"
 
-#: gecoscc/templates/base_navbar.jinja2:38
+#: gecoscc/templates/base_navbar.jinja2:40
 msgid "User options"
 msgstr "Opciones de usuario"
 
-#: gecoscc/templates/base_navbar.jinja2:41
+#: gecoscc/templates/base_navbar.jinja2:43
 msgid "Edit profile"
 msgstr "Editar perfil"
 
-#: gecoscc/templates/base_navbar.jinja2:46
+#: gecoscc/templates/base_navbar.jinja2:48
 #: gecoscc/templates/admins/edit.jinja2:27
 #: gecoscc/templates/admins/variables.jinja2:15
 msgid "Set variables"
 msgstr "Establecer variables"
 
-#: gecoscc/templates/base_navbar.jinja2:52
+#: gecoscc/templates/base_navbar.jinja2:54
+msgid "Uploads"
+msgstr "Subir Archivo de políticas"
+
+#: gecoscc/templates/base_navbar.jinja2:61
 msgid "Log out"
 msgstr "Salir"
 
-#: gecoscc/templates/base_tree.jinja2:23
+#: gecoscc/templates/base_tree.jinja2:25
 #: gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr "Buscar"
 
-#: gecoscc/templates/base_tree.jinja2:206 gecoscc/templates/bb-computer.html:93
+#: gecoscc/templates/base_tree.jinja2:138
+msgid "This action requires a little time"
+msgstr "Esta acción puede llevar un tiempo"
+
+#: gecoscc/templates/base_tree.jinja2:141
+msgid "Is the website maintenance?"
+msgstr "¿Esta el portal en mantenimiento?"
+
+#: gecoscc/templates/base_tree.jinja2:144
+#: gecoscc/templates/admins/list.jinja2:49
+msgid "No"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:145
+#: gecoscc/templates/admins/list.jinja2:47
+msgid "Yes"
+msgstr "Si"
+
+#: gecoscc/templates/base_tree.jinja2:226 gecoscc/templates/bb-computer.html:99
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
 msgstr "Cargando"
@@ -397,6 +514,7 @@ msgstr ""
 
 #: gecoscc/templates/bb-change-alert.html:24
 #: gecoscc/templates/bb-staging-report.html:30
+#: gecoscc/templates/server/status.jinja2:53
 msgid "Close"
 msgstr "Cerrar"
 
@@ -414,7 +532,7 @@ msgstr "Características de la estación de trabajo"
 msgid "Policies"
 msgstr "Políticas"
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:37
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:43
 msgid "Workstation"
 msgstr "Estación de trabajo"
 
@@ -458,21 +576,29 @@ msgstr ""
 msgid "Last connection"
 msgstr "Última conexión"
 
-#: gecoscc/templates/bb-computer.html:51
+#: gecoscc/templates/bb-computer.html:47
+msgid ""
+"Former network connection restored because current one does not work "
+"properly"
+msgstr ""
+"Se ha restaurado  una configuración de red anterior porque la actual no "
+"funciona correctamente"
+
+#: gecoscc/templates/bb-computer.html:57
 #: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
 #: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
-#: gecoscc/views/reports.py:93
+#: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
 msgid "Name"
 msgstr "Nombre"
 
-#: gecoscc/templates/bb-computer.html:52 gecoscc/templates/bb-computer.html:71
-#: gecoscc/templates/bb-computer.html:77
+#: gecoscc/templates/bb-computer.html:58 gecoscc/templates/bb-computer.html:77
+#: gecoscc/templates/bb-computer.html:83
 #: gecoscc/templates/bb-groups-form.html:22 gecoscc/templates/bb-ou.html:44
-#: gecoscc/templates/bb-printer.html:14 gecoscc/templates/bb-printer.html:20
-#: gecoscc/templates/bb-printer.html:26 gecoscc/templates/bb-printer.html:43
-#: gecoscc/templates/bb-printer.html:92 gecoscc/templates/bb-printer.html:98
+#: gecoscc/templates/bb-printer.html:14 gecoscc/templates/bb-printer.html:44
+#: gecoscc/templates/bb-printer.html:50 gecoscc/templates/bb-printer.html:58
+#: gecoscc/templates/bb-printer.html:64 gecoscc/templates/bb-printer.html:82
 #: gecoscc/templates/bb-repository.html:14
 #: gecoscc/templates/bb-repository.html:24
 #: gecoscc/templates/bb-repository.html:30
@@ -487,98 +613,106 @@ msgstr "Nombre"
 msgid "e.g."
 msgstr "Ej:"
 
-#: gecoscc/templates/bb-computer.html:52
+#: gecoscc/templates/bb-computer.html:58
 msgid "John's laptop"
 msgstr "Portátil de Juan"
 
-#: gecoscc/templates/bb-computer.html:70 gecoscc/templates/bb-printer.html:97
+#: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:63
 #: gecoscc/views/reports.py:95
 msgid "Registry number"
 msgstr "Número de registro"
 
-#: gecoscc/templates/bb-computer.html:76 gecoscc/templates/bb-printer.html:91
+#: gecoscc/templates/bb-computer.html:82 gecoscc/templates/bb-printer.html:57
 #: gecoscc/views/reports.py:96
 msgid "Serial number"
 msgstr "Número de serie"
 
-#: gecoscc/templates/bb-computer.html:84 gecoscc/templates/bb-user.html:66
+#: gecoscc/templates/bb-computer.html:90 gecoscc/templates/bb-user.html:66
 msgid "Commentaries"
 msgstr "Comentarios"
 
-#: gecoscc/templates/bb-computer.html:85
+#: gecoscc/templates/bb-computer.html:91
 msgid "Describe the workstation here..."
 msgstr "Describe la estación de trabajo aquí"
 
-#: gecoscc/templates/bb-computer.html:98
+#: gecoscc/templates/bb-computer.html:104
 #: gecoscc/templates/bb-groups-multi-widget.html:3
 #: gecoscc/templates/bb-user.html:79
 msgid "Groups"
 msgstr "Grupos"
 
-#: gecoscc/templates/bb-computer.html:100 gecoscc/templates/bb-user.html:81
+#: gecoscc/templates/bb-computer.html:106 gecoscc/templates/bb-user.html:81
 msgid "If you want to add any group, please execute the changes"
 msgstr "Si tu quieres añadir un grupo, por favor encola los cambios"
 
-#: gecoscc/templates/bb-computer.html:108
+#: gecoscc/templates/bb-computer.html:114
 #: gecoscc/templates/bb-groups-form.html:34 gecoscc/templates/bb-ou.html:59
-#: gecoscc/templates/bb-policy.html:12 gecoscc/templates/bb-printer.html:105
+#: gecoscc/templates/bb-policy.html:18 gecoscc/templates/bb-printer.html:107
 #: gecoscc/templates/bb-repository.html:69 gecoscc/templates/bb-storage.html:27
 #: gecoscc/templates/bb-tree-selection.html:21
 #: gecoscc/templates/bb-user.html:88
 msgid "Save"
 msgstr "Guardar"
 
-#: gecoscc/templates/bb-computer.html:111 gecoscc/templates/bb-user.html:91
+#: gecoscc/templates/bb-computer.html:117
+#: gecoscc/templates/bb-groups-form.html:37 gecoscc/templates/bb-ou.html:62
+#: gecoscc/templates/bb-printer.html:110
+#: gecoscc/templates/bb-repository.html:72 gecoscc/templates/bb-storage.html:30
+#: gecoscc/templates/bb-user.html:91
 msgid "Cut"
 msgstr "Cortar"
 
-#: gecoscc/templates/bb-computer.html:123
+#: gecoscc/templates/bb-computer.html:129
 msgid "Workstation specifications (Ohai)"
 msgstr "Características de la estación de trabajo (Ohai)"
 
-#: gecoscc/templates/bb-computer.html:129 gecoscc/views/reports.py:97
+#: gecoscc/templates/bb-computer.html:135 gecoscc/views/reports.py:97
 msgid "Node chef id"
 msgstr "Id del nodo chef"
 
-#: gecoscc/templates/bb-computer.html:139
+#: gecoscc/templates/bb-computer.html:145
+#: gecoscc/templates/server/status.jinja2:69
 msgid "CPU"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:143
+#: gecoscc/templates/bb-computer.html:149
 msgid "RAM"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:149
+#: gecoscc/templates/bb-computer.html:155
 #: gecoscc/templates/bb-repository.html:23
 msgid "Distribution"
 msgstr "Distribución"
 
-#: gecoscc/templates/bb-computer.html:153
+#: gecoscc/templates/bb-computer.html:159
 msgid "Kernel"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:159
+#: gecoscc/templates/bb-computer.html:165
 msgid "File system"
 msgstr "Sistema de ficheros"
 
-#: gecoscc/templates/bb-computer.html:163
+#: gecoscc/templates/bb-computer.html:169
+#: gecoscc/templates/server/status.jinja2:30
 msgid "Device"
 msgstr "Dispositivo"
 
-#: gecoscc/templates/bb-computer.html:165
+#: gecoscc/templates/bb-computer.html:171
+#: gecoscc/templates/server/status.jinja2:31
 msgid "Mount point"
 msgstr "Punto de montaje"
 
-#: gecoscc/templates/bb-computer.html:166
+#: gecoscc/templates/bb-computer.html:172
+#: gecoscc/templates/server/status.jinja2:33
 msgid "Used"
 msgstr "Usado"
 
-#: gecoscc/templates/bb-computer.html:184
+#: gecoscc/templates/bb-computer.html:190
 msgid "Data retrieved from workstation"
 msgstr "Datos extraidos del puesto"
 
-#: gecoscc/templates/bb-computer.html:202
-#: gecoscc/templates/bb-groups-form.html:48 gecoscc/templates/bb-ou.html:73
+#: gecoscc/templates/bb-computer.html:208
+#: gecoscc/templates/bb-groups-form.html:49 gecoscc/templates/bb-ou.html:74
 #: gecoscc/templates/bb-user.html:103
 msgid "Policies list"
 msgstr "Lista de políticas"
@@ -622,28 +756,28 @@ msgid "Completed tasks"
 msgstr "Tareas completadas"
 
 #: gecoscc/templates/bb-jobs.html:3
-msgid "My tasks"
-msgstr "Mis tareas"
+msgid "My actions"
+msgstr "Mis Acciones"
 
 #: gecoscc/templates/bb-jobs.html:5
-msgid "All Tasks"
-msgstr "Todas las tareas"
+msgid "All Actions"
+msgstr "Todas las Acciones"
 
 #: gecoscc/templates/bb-jobs.html:6
-msgid "Processing Tasks"
-msgstr "Tareas en proceso"
+msgid "Processing Actions"
+msgstr "Acciones en proceso"
 
 #: gecoscc/templates/bb-jobs.html:7
-msgid "Finished Tasks"
-msgstr "Tareas finalizadas"
+msgid "Finished Actions"
+msgstr "Acciones finalizadas"
 
 #: gecoscc/templates/bb-jobs.html:8
-msgid "Warnings Tasks"
-msgstr "Tareas con advertencias"
+msgid "Warnings Actions"
+msgstr "Acciones con advertencias"
 
 #: gecoscc/templates/bb-jobs.html:9
-msgid "Errors Tasks"
-msgstr "Tareas con errores"
+msgid "Errors Actions"
+msgstr "Acciones fallidas"
 
 #: gecoscc/templates/bb-jobs.html:12
 msgid "Active"
@@ -665,22 +799,38 @@ msgstr "Minimizar"
 msgid "Archive Tasks"
 msgstr "Archivar Tareas"
 
-#: gecoscc/templates/bb-jobs.html:34
-msgid "Emiter node"
-msgstr "Nodo emisor"
+#: gecoscc/templates/bb-jobs.html:28
+msgid "Backstrack"
+msgstr "Volver"
 
-#: gecoscc/templates/bb-jobs.html:37 gecoscc/templates/bb-new-element.html:12
+#: gecoscc/templates/bb-jobs.html:37
+msgid "Date"
+msgstr "Fecha"
+
+#: gecoscc/templates/bb-jobs.html:40
+msgid "Origin"
+msgstr "Origen"
+
+#: gecoscc/templates/bb-jobs.html:43 gecoscc/templates/bb-new-element.html:12
 #: gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr "Usuario"
 
-#: gecoscc/templates/bb-jobs.html:40
+#: gecoscc/templates/bb-jobs.html:47
 msgid "Policy"
 msgstr "Política"
 
-#: gecoscc/templates/bb-jobs.html:43
-msgid "Trace"
-msgstr "Traza"
+#: gecoscc/templates/bb-jobs.html:52 gecoscc/templates/admins/restore.jinja2:17
+msgid "Action"
+msgstr "Acciones"
+
+#: gecoscc/templates/bb-jobs.html:55
+msgid "ID"
+msgstr "ID"
+
+#: gecoscc/templates/bb-jobs.html:108
+msgid "Total"
+msgstr "Total"
 
 #: gecoscc/templates/bb-new-element.html:4
 msgid "Add new element"
@@ -726,16 +876,28 @@ msgstr "Información extra"
 msgid "Add policy to"
 msgstr "Añadir política a"
 
+#: gecoscc/templates/bb-policies-add.html:25
+#: gecoscc/templates/bb-policies-list.html:18
+#: gecoscc/templates/bb-policy.html:5
+msgid "Additive"
+msgstr "Aditiva"
+
 #: gecoscc/templates/bb-policies-add.html:27
+#: gecoscc/templates/bb-policies-list.html:20
+#: gecoscc/templates/bb-policy.html:7
+msgid "Overriding"
+msgstr "Dominante"
+
+#: gecoscc/templates/bb-policies-add.html:32
 msgid "Add"
 msgstr "Añadir"
 
-#: gecoscc/templates/bb-policies-add.html:32
+#: gecoscc/templates/bb-policies-add.html:37
 msgid "External"
 msgstr "Externa"
 
-#: gecoscc/templates/bb-policies-add.html:40
-#: gecoscc/templates/bb-policies-list.html:23
+#: gecoscc/templates/bb-policies-add.html:45
+#: gecoscc/templates/bb-policies-list.html:29
 msgid "No supported OS"
 msgstr "Ningún SO soportado"
 
@@ -747,89 +909,94 @@ msgstr "SSOO soportados"
 msgid "Actions"
 msgstr "Acciones"
 
-#: gecoscc/templates/bb-policies-list.html:29
+#: gecoscc/templates/bb-policies-list.html:35
+#: gecoscc/templates/admins/restore.jinja2:31
 msgid "Remove"
-msgstr "Quitar"
+msgstr "Eliminar"
 
-#: gecoscc/templates/bb-policies-list.html:32
+#: gecoscc/templates/bb-policies-list.html:38
 msgid "Edit"
 msgstr "Editar"
 
-#: gecoscc/templates/bb-policies-list.html:36
+#: gecoscc/templates/bb-policies-list.html:42
 msgid "View"
 msgstr "Ver"
 
-#: gecoscc/templates/bb-policies-list.html:48
+#: gecoscc/templates/bb-policies-list.html:54
 msgid "Empty!"
 msgstr "¡Vacío!"
 
-#: gecoscc/templates/bb-policies-list.html:48
+#: gecoscc/templates/bb-policies-list.html:54
 msgid "There are no policies assigned to this resource yet."
 msgstr "No hay aún políticas asignadas a este recurso."
 
-#: gecoscc/templates/bb-policies-list.html:50
+#: gecoscc/templates/bb-policies-list.html:56
 msgid "If you want to add any policy, please execute the changes"
 msgstr "Si tu quieres añadir una política, por favor encola los cambios"
 
-#: gecoscc/templates/bb-policies-list.html:58
+#: gecoscc/templates/bb-policies-list.html:64
 msgid "Add a policy to this resource"
 msgstr "Añade una política a este recurso"
 
-#: gecoscc/templates/bb-policy.html:3
+#: gecoscc/templates/bb-policy.html:9
 msgid "Configure policy:"
 msgstr "Configuración de la política:"
 
-#: gecoscc/templates/bb-policy.html:17
+#: gecoscc/templates/bb-policy.html:23
 msgid "Back"
 msgstr "Atrás"
 
+#: gecoscc/templates/bb-printer.html:14
+msgid "Make and model"
+msgstr "Marca y modelo"
+
 #: gecoscc/templates/bb-printer.html:19
-msgid "Description"
-msgstr "Descripción"
-
-#: gecoscc/templates/bb-printer.html:20
-msgid "The one of the accounting deparment"
-msgstr "La del departamento de cuentas"
-
-#: gecoscc/templates/bb-printer.html:25
-msgid "Location"
-msgstr "Ubicación"
-
-#: gecoscc/templates/bb-printer.html:33
-msgid "Connection type"
-msgstr "Tipo de conexión"
-
-#: gecoscc/templates/bb-printer.html:42
-msgid "Printer path"
-msgstr "Ruta a la impresora"
-
-#: gecoscc/templates/bb-printer.html:43
-msgid "http://workstation_name:631/ipp/port1"
-msgstr "http://nombre_estacion_de_trabajo:631/ipp/puerto1"
-
-#: gecoscc/templates/bb-printer.html:50
-msgid "Operation Policy"
-msgstr "Directiva de operación"
-
-#: gecoscc/templates/bb-printer.html:59
-msgid "PPD URI"
-msgstr ""
-
-#: gecoscc/templates/bb-printer.html:77
 msgid "Manufacturer"
 msgstr "Marca"
 
-#: gecoscc/templates/bb-printer.html:78
+#: gecoscc/templates/bb-printer.html:20
 msgid "Select manufacturer"
 msgstr "Selecciona marca"
 
-#: gecoscc/templates/bb-printer.html:83
+#: gecoscc/templates/bb-printer.html:25
 msgid "Model"
 msgstr "Modelo"
 
-#: gecoscc/templates/bb-printer.html:84
+#: gecoscc/templates/bb-printer.html:26
 msgid "Select model"
 msgstr "Selecciona modelo"
+
+#: gecoscc/templates/bb-printer.html:43
+msgid "Description"
+msgstr "Descripción"
+
+#: gecoscc/templates/bb-printer.html:44
+msgid "Main printer at sales department"
+msgstr "Impresora principal en ventas"
+
+#: gecoscc/templates/bb-printer.html:49
+msgid "Location"
+msgstr "Ubicación"
+
+#: gecoscc/templates/bb-printer.html:71
+msgid "Connection type"
+msgstr "Tipo de conexión"
+
+#: gecoscc/templates/bb-printer.html:81
+msgid "Printer path"
+msgstr "Ruta a la impresora"
+
+#: gecoscc/templates/bb-printer.html:82
+msgid "http://workstation_name:631/ipp/port1"
+msgstr "http://nombre_estacion_de_trabajo:631/ipp/puerto1"
+
+#: gecoscc/templates/bb-printer.html:89
+msgid "Operation Policy"
+msgstr "Directiva de operación"
+
+#: gecoscc/templates/bb-printer.html:99
+msgid "PPD URI"
+msgstr ""
 
 #: gecoscc/templates/bb-repository.html:3
 msgid "Repository"
@@ -970,11 +1137,15 @@ msgstr "Estaciones de trabajo"
 msgid "Packages"
 msgstr "Paquetes"
 
-#: gecoscc/templates/settings.jinja2:142
+#: gecoscc/templates/settings.jinja2:76
+msgid "Mime Types"
+msgstr ""
+
+#: gecoscc/templates/settings.jinja2:150
 msgid "Saving problems"
 msgstr "Problemas al guardar"
 
-#: gecoscc/templates/settings.jinja2:144
+#: gecoscc/templates/settings.jinja2:152
 msgid "There was a problem saving the data"
 msgstr "Ha ocurrido un problema al intentar guardar los datos"
 
@@ -999,15 +1170,7 @@ msgstr "Editar %(username)s"
 msgid "Set Organitation Unit managed by this user"
 msgstr "Establecer las unidades organizativas que puede administrar este usuario"
 
-#: gecoscc/templates/admins/edit.jinja2:33
-msgid "Set like superuser"
-msgstr "Establecer como superusuario"
-
-#: gecoscc/templates/admins/edit.jinja2:37
-msgid "Remove like superuser"
-msgstr "Eliminar permisos de superusuario"
-
-#: gecoscc/templates/admins/edit.jinja2:53
+#: gecoscc/templates/admins/edit.jinja2:42
 msgid "Are you sure that you want to delete this user?"
 msgstr "¿Estás seguro de que quieres borrar este usuario?"
 
@@ -1023,39 +1186,153 @@ msgstr "Correo electrónico"
 msgid "Is superuser?"
 msgstr "¿Es superusuario?"
 
-#: gecoscc/templates/admins/list.jinja2:47
-msgid "Yes"
-msgstr "Si"
-
-#: gecoscc/templates/admins/list.jinja2:49
-msgid "No"
-msgstr ""
-
 #: gecoscc/templates/admins/ou_manage.jinja2:52
 msgid "Select an Organisational Unit"
 msgstr "Selecciona una Unidad Organizativa"
 
-#: gecoscc/views/admins.py:46
-msgid "Now the user is a super user"
-msgstr "Ahora el usuario es un superusuario"
+#: gecoscc/templates/admins/restore.jinja2:9
+msgid "Restore previous version of Cookbook"
+msgstr "Eliminar la última versión del archivo de politicas"
 
-#: gecoscc/views/admins.py:49
-msgid "Now the user is not a super user"
-msgstr "Ahora el usuario no es un superusuario"
+#: gecoscc/templates/admins/restore.jinja2:15
+msgid "Cookbook Name"
+msgstr "Nombre del archivo de políticas"
 
-#: gecoscc/views/admins.py:156
+#: gecoscc/templates/admins/restore.jinja2:16
+msgid "Version"
+msgstr ""
+
+#: gecoscc/templates/admins/restore.jinja2:50
+msgid "Are you sure that you want to delete this cookbook version?"
+msgstr "¿Estás seguro de que quieres borrar este archivo de políticas?"
+
+#: gecoscc/templates/admins/upload.jinja2:14
+msgid "Upload Cookbook"
+msgstr "Subir Archivo de política"
+
+#: gecoscc/templates/admins/upload.jinja2:24
+msgid "Browser file or Download URL required."
+msgstr "Archivo o URL de descarga requerido"
+
+#: gecoscc/templates/server/connections.jinja2:8
+#: gecoscc/templates/server/log.jinja2:8
+#: gecoscc/templates/server/status.jinja2:8
+#: gecoscc/templates/server/status.jinja2:11
+msgid "Servers"
+msgstr "Servidor de claves"
+
+#: gecoscc/templates/server/connections.jinja2:11
+msgid "Server connections"
+msgstr "Última conexión"
+
+#: gecoscc/templates/server/connections.jinja2:21
+msgid "Service"
+msgstr "Dispositivo"
+
+#: gecoscc/templates/server/connections.jinja2:22
+msgid "Local IP address"
+msgstr "Dirección IP"
+
+#: gecoscc/templates/server/connections.jinja2:23
+msgid "Local port"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:24
+msgid "Remote IP address"
+msgstr ""
+
+#: gecoscc/templates/server/connections.jinja2:25
+msgid "Remote port"
+msgstr "Almacenamiento remoto"
+
+#: gecoscc/templates/server/log.jinja2:11
+msgid "Server log"
+msgstr "Servidor de claves"
+
+#: gecoscc/templates/server/log.jinja2:23
+msgid "Process"
+msgstr "Procesando"
+
+#: gecoscc/templates/server/log.jinja2:24
+msgid "Number of bytes"
+msgstr ""
+
+#: gecoscc/templates/server/log.jinja2:48
+#: gecoscc/templates/server/status.jinja2:95
+msgid "Log"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:24
+msgid "Disk usage detail"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:32
+msgid "Size"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:34
+msgid "FS Type"
+msgstr "Tipo de autenticación"
+
+#: gecoscc/templates/server/status.jinja2:35
+msgid "Options"
+msgstr "Opciones de usuario"
+
+#: gecoscc/templates/server/status.jinja2:68
+msgid "IP Address"
+msgstr "Dirección IP"
+
+#: gecoscc/templates/server/status.jinja2:70
+msgid "CPU Load"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:71
+msgid "RAM Load"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:72
+msgid "Disk usage"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:86
+msgid "Unknown"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:96
+msgid "Connections"
+msgstr "Última conexión"
+
+#: gecoscc/views/admins.py:151
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:158
+#: gecoscc/views/admins.py:153
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
-#: gecoscc/views/portal.py:56 gecoscc/views/portal.py:62
+#: gecoscc/views/admins.py:199 gecoscc/views/admins.py:248
+msgid "Cookbook deleted unsuccessfully from chef"
+msgstr "Archivo de políticas borrado insatisfactoriamente de chef"
+
+#: gecoscc/views/admins.py:227
+#, python-format
+msgid "Cookbook deleted successfully. Visit logbook %s"
+msgstr "Archivo de políticas borrado con éxito. Visite bitácora %s"
+
+#: gecoscc/views/admins.py:241
+msgid "policy restored"
+msgstr "Política restaurada"
+
+#: gecoscc/views/admins.py:243
+#, python-format
+msgid "Cookbook deleted successfully %s"
+msgstr "Archivo de políticas borrado con éxito %s"
+
+#: gecoscc/views/portal.py:63 gecoscc/views/portal.py:69
 msgid "Please enter the correct username and password"
 msgstr "Por favor, introduzca el nombre de usuario y contraseña correctos"
 
-#: gecoscc/views/portal.py:67
+#: gecoscc/views/portal.py:74
 msgid "Welcome ${username}"
 msgstr "Bienvenido ${username}"
 
@@ -1067,16 +1344,100 @@ msgstr "Identificador"
 msgid "Phone"
 msgstr "Teléfono"
 
-#: gecoscc/views/settings.py:156
+#: gecoscc/views/settings.py:167
 msgid "Software Profiles policy not found"
 msgstr "No se encuentra la política de Perfiles de Software"
 
-#: gecoscc/views/settings.py:181
+#: gecoscc/views/settings.py:192
 #, python-format
 msgid "Software Profile in use: %s"
 msgstr "Perfil de Software en uso: %s"
 
-#: gecoscc/views/settings.py:187
+#: gecoscc/views/settings.py:198
 msgid "Settings modified successfully"
 msgstr "Configuración modificada con éxito"
+
+#~ msgid "Set like superuser"
+#~ msgstr "Establecer como superusuario"
+
+#~ msgid "Remove like superuser"
+#~ msgstr "Eliminar permisos de superusuario"
+
+#~ msgid "Now the user is a super user"
+#~ msgstr "Ahora el usuario es un superusuario"
+
+#~ msgid "Now the user is not a super user"
+#~ msgstr "Ahora el usuario no es un superusuario"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
+#~ msgid "Previous"
+#~ msgstr "Anterior"
+
+#~ msgid "records per page"
+#~ msgstr "Registros por página"
+
+#~ msgid "My tasks"
+#~ msgstr "Mis tareas"
+
+#~ msgid "All Tasks"
+#~ msgstr "Todas las tareas"
+
+#~ msgid "Processing Tasks"
+#~ msgstr "Tareas en proceso"
+
+#~ msgid "Errors Tasks"
+#~ msgstr "Tareas con errores"
+
+#~ msgid "Created"
+#~ msgstr "Creación"
+
+#~ msgid "Emiter node"
+#~ msgstr "Nodo emisor"
+
+#~ msgid "Order"
+#~ msgstr "Orden"
+
+#~ msgid "Trace"
+#~ msgstr "Traza"
+
+#~ msgid "repository"
+#~ msgstr "repositorio"
+
+#~ msgid "user"
+#~ msgstr "usuario"
+
+#~ msgid "printer"
+#~ msgstr "impresora"
+
+#~ msgid "computer"
+#~ msgstr "puesto de trabajo"
+
+#~ msgid "storage"
+#~ msgstr "almacenamiento"
+
+#~ msgid "group"
+#~ msgstr "grupo"
+
+#~ msgid "changed"
+#~ msgstr "Modificación"
+
+#~ msgid "deleted"
+#~ msgstr "eliminado"
+
+#~ msgid "This is a macrojob: %d pending childs"
+#~ msgstr "Orden: %d subtareas pendientes"
+
+#~ msgid "ou"
+#~ msgstr "unidad organizativa"
+
+#~ msgid "created"
+#~ msgstr "Creación"
+
+#~ msgid "detached"
+#~ msgstr "Desvinculado"
+
+#~ msgid "Cookbook deleted successfully"
+#~ msgstr "Cookbook borrado con éxito"
 

@@ -11,65 +11,7 @@
                 <div class="col-md-4 col-sm-12 col-xs-12">
                     <div class="form-group">
                         <label for="name">{{ gettext('Name') }}</label>
-                        <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} HP LaserJet 3000" value="<%= name %>">
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-12 col-xs-12">
-                    <div class="form-group">
-                        <label for="description">{{ gettext('Description') }}</label>
-                        <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('The one of the accounting deparment') }}" value="<%= description %>">
-                    </div>
-                </div>
-                <div class="col-md-4 col-sm-12 col-xs-12">
-                    <div class="form-group">
-                        <label for="location">{{ gettext('Location') }}</label>
-                        <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Dep002" value="<%= location %>">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label>{{ gettext('Connection type') }}</label>
-                        <select id="connection" class="form-control" required>
-                            <option value="network" <% if (connection === "network") { print("selected"); } %>>{{ gettext('Network') }}</option>
-                            <option value="local" <% if (connection === "local") { print("selected"); } %>>{{ gettext('Local') }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-9 col-sm-8 col-xs-12">
-                    <div class="form-group">
-                        <label for="uri">{{ gettext('Printer path') }}</label>
-                        <input id="uri" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://workstation_name:631/ipp/port1') }}" value="<%= uri %>" required>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-3 col-sm-4 col-xs-12">
-                    <div class="form-group">
-                        <label>{{ gettext('Operation Policy') }}</label>
-                        <select id="oppolicy" class="form-control" required>
-                            <option value="default" <% if (oppolicy === "default") { print("selected"); } %>>{{ gettext('Default') }}</option>
-                            <option value="authenticated" <% if (oppolicy === "authenticated") { print("selected"); } %>>{{ gettext('Authenticated') }}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="col-md-9 col-sm-8 col-xs-12">
-                    <div class="form-group">
-                        <label for="ppd_uri">{{ gettext('PPD URI') }}</label>
-                        <input id="ppd_uri" type="text" class="form-control urlExtend" value="<%= ppd_uri %>">
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-4">
-                    <div class="form-group">
-                        <label for="type">{{ gettext('Type') }}</label>
-                        <select id="type" class="form-control">
-                            <option value="laser" <% if (printtype === "laser") { print("selected"); } %>>{{ gettext('Laser') }}</option>
-                            <option value="ink" <% if (printtype === "ink") { print("selected"); } %>>{{ gettext('Ink') }}</option>
-                            <option value="matrix" <% if (printtype === "matrix") { print("selected"); } %>>{{ gettext('Dot matrix') }}</option>
-                        </select>
+                        <input id="name" required type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Make and model') }}" value="<%= name %>">
                     </div>
                 </div>
                 <div class="col-sm-4">
@@ -82,6 +24,30 @@
                     <div class="form-group">
                         <label for="model">{{ gettext('Model') }}</label>
                         <input id="model" type="text" class="form-control" required placeholder="{{ gettext('Select model') }}" disabled="disabled" value="<%= model %>">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="form-group">
+						<label for="type">{{ gettext('Type') }}</label>
+						<select id="type" class="form-control">
+							{% for key, value in printer_type.iteritems() %}
+								<option value="{{ key }}" <% if (printtype === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12 col-xs-12">
+                    <div class="form-group">
+                        <label for="description">{{ gettext('Description') }}</label>
+                        <input id="description" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('Main printer at sales department') }}" value="<%= description %>">
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12 col-xs-12">
+                    <div class="form-group">
+                        <label for="location">{{ gettext('Location') }}</label>
+                        <input id="location" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} Sales Department" value="<%= location %>">
                     </div>
                 </div>
             </div>
@@ -99,12 +65,49 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-4 col-xs-12">
+                    <div class="form-group">
+						<label>{{ gettext('Connection type') }}</label>
+						<select id="connection" class="form-control" required>
+							{% for key, value in printer_conn_type.iteritems() %}
+								<option value="{{ key }}" <% if (connection === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
+                    </div>
+                </div>
+                <div class="col-md-9 col-sm-8 col-xs-12">
+                    <div class="form-group">
+                        <label for="uri">{{ gettext('Printer path') }}</label>
+                        <input id="uri" type="text" class="form-control" placeholder="{{ gettext('e.g.') }} {{ gettext('http://workstation_name:631/ipp/port1') }}" value="<%= uri %>" required>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 col-sm-4 col-xs-12">
+                    <div class="form-group">
+						<label>{{ gettext('Operation Policy') }}</label>
+						<select id="oppolicy" class="form-control" required>
+							{% for key, value in printer_oppolicy_type.iteritems() %}
+								<option value="{{ key }}" <% if (oppolicy === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
+							{% endfor %}
+						</select>
+                    </div>
+                </div>
+                <div class="col-md-9 col-sm-8 col-xs-12">
+                    <div class="form-group">
+                        <label for="ppd_uri">{{ gettext('PPD URI') }}</label>
+                        <input id="ppd_uri" type="text" class="form-control urlExtend" value="<%= ppd_uri %>">
+                    </div>
+                </div>
+            </div>
             <% if (isEditable) { %>
             <div class="row"><div class="col-sm-12">
                 <a href="/" class="btn btn-default">{{ gettext('Cancel') }}</a>
                 <button id="submit" type="submit" class="btn btn-primary">{{ gettext('Save') }}</button>
                 <% if (typeof id !== "undefined") { %>
                     <button id="delete" class="pull-right btn btn-danger">{{ gettext('Delete') }}</button>
+                    <button id="cut" class="pull-right btn btn-warning {% if request.user and request.user.get('is_superuser') %}admin{% endif %}">{{ gettext('Cut') }}</button>
                 <% } %>
             </div></div>
             <% } %>

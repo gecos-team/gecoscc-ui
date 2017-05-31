@@ -462,3 +462,15 @@ legend {
 .btn.refresh, .btn.archiveTasks {
     margin-right: 3px;
 }
+
+.no-admin-message{
+    float: right;
+    margin-right: 85px;
+}
+
+.total {
+    color: #428bca;
+    margin: 20px 0px;
+    padding: 6px 12px;
+    font-size: 16px;
+}

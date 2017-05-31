@@ -40,6 +40,12 @@
                                             <dd><%= uptime %></dd>
                                             <dt>{{ gettext('Last connection') }}</dt>
                                             <dd class="label connection-label <%= labelClass %>"><%= last_connection %></dd>
+                                            <% if (!gcc_link) { %>
+                                            <i style="color: #f0ad4e; font-size: 22px; top:6px"
+                                               class="glyphicon glyphicon-warning-sign"
+                                               data-toggle="tooltip"
+                                               title="{{ gettext('Former network connection restored because current one does not work properly') }}"></i>
+                                            <% } %>
                                         </dl>
                                     </div>
                                 </div>

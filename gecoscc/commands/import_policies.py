@@ -159,7 +159,7 @@ class Command(BaseCommand):
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem)
+                            self.options.chef_pem, self.settings.get('chef.ssl.verify'), self.settings.get('chef.version'))
         cookbook_name = self.settings['chef.cookbook_name']
 
         cookbook = get_cookbook(api, cookbook_name)
@@ -201,6 +201,7 @@ class Command(BaseCommand):
             path = value.pop('path')
 
             support_os = value['properties']['support_os']['default']
+            is_mergeable = value.pop('is_mergeable', False)
 
             del value['properties']['support_os']
 
@@ -231,6 +232,7 @@ class Command(BaseCommand):
                 'targets': targets,
                 'is_emitter_policy': False,
                 'support_os': support_os,
+                'is_mergeable': is_mergeable,
             }
 
             for lan in languages:
@@ -255,7 +257,8 @@ class Command(BaseCommand):
                     'targets': POLICY_EMITTER_TARGETS[slug],
                     'is_emitter_policy': True,
                     'schema': schema,
-                    'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default']
+                    'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default'],
+                    'is_mergeable': True
                 }
                 for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
@@ -281,7 +284,8 @@ class Command(BaseCommand):
             'targets': SPROFILES_URL_TARGETS,
             'is_emitter_policy': True,
             'schema': schema,
-            'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default']
+            'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default'],
+            'is_mergeable': True
         }
         for lan in languages:
             policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]

@@ -25,9 +25,8 @@ from gecoscc.models import Job
 from gecoscc.models import User
 from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            apply_policies_to_user, remove_policies_of_computer,
-                           reserve_node_or_raise, save_node_and_free)
+                           reserve_node_or_raise, save_node_and_free, update_computers_of_user)
 from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_user, update_tree
-
 
 USERS_OLD = 'ohai_gecos.users_old'
 USERS_OHAI = 'ohai_gecos.users'
@@ -64,6 +63,12 @@ class ChefStatusResource(BaseAPI):
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
         job_status = node.attributes.get('job_status')
+
+        # After chef-client run, a report handler calls /api/chef_status
+        # Previously, gcc_link attribute of chef node is updated by network policies
+        gcc_link = node.attributes.get('gcc_link')
+        self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
+
         reserve_node = False
         if job_status:
             node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
@@ -74,16 +79,36 @@ class ChefStatusResource(BaseAPI):
                 job = self.collection.find_one({'_id': ObjectId(job_id)})
                 if not job:
                     continue
+                # Parent
+                macrojob = self.collection.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 if job_status['status'] == 0:
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'finished',
                                                      'last_update': datetime.datetime.utcnow()}})
+                    # Decrement number of children in parent
+                    if macrojob and 'counter' in macrojob:
+                        macrojob['counter'] -= 1
+                elif job_status['status'] == 2:
+                    self.collection.update({'_id': job['_id']},
+                                           {'$set': {'status': 'warnings',
+                                                     'message': job_status.get('message', 'Warning'),
+                                                     'last_update': datetime.datetime.utcnow()}})
+                    if macrojob:                                
+                        macrojob['status'] = 'warnings'
                 else:
                     chef_client_error = True
                     self.collection.update({'_id': job['_id']},
                                            {'$set': {'status': 'errors',
                                                      'message': job_status.get('message', 'Error'),
                                                      'last_update': datetime.datetime.utcnow()}})
+                    if macrojob:                                
+                        macrojob['status'] = 'errors'
+                # Update parent                                 
+                if macrojob:
+                    self.collection.update({'_id': macrojob['_id']},                                                                
+                                           {'$set': {'counter': macrojob['counter'],
+                                                     'message': self._("Pending: %d") % macrojob['counter'],
+                                                     'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})
             self.request.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
@@ -93,12 +118,12 @@ class ChefStatusResource(BaseAPI):
         if not users_old or users_old != users:
             if not reserve_node:
                 node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
-            return self.check_users(node)
+            return self.check_users(node, api)
         if job_status:
             save_node_and_free(node)
         return {'ok': True}
 
-    def check_users(self, chef_node):
+    def check_users(self, chef_node, api):
         node_collection = self.request.db.nodes
 
         users_old = self.get_attr(chef_node, USERS_OLD)
@@ -126,7 +151,9 @@ class ChefStatusResource(BaseAPI):
                                              'type': 'user',
                                              'lock': node.get('lock', ''),
                                              'source': node.get('source', '')})
-                user['computers'].append(node['_id'])
+
+                user = update_computers_of_user(self.request.db, user, api)
+
                 del user['_id']
                 user_id = node_collection.insert(user)
                 user = node_collection.find_one({'_id': user_id})
@@ -150,7 +177,7 @@ class ChefStatusResource(BaseAPI):
             user = node_collection.find_one({'name': username,
                                              'type': 'user',
                                              'path': get_filter_in_domain(node)})
-            computers = user['computers']
+            computers = user['computers'] if user else []
             if node['_id'] in computers:
                 users_remove_policies.append(deepcopy(user))
                 computers.remove(node['_id'])
@@ -160,7 +187,7 @@ class ChefStatusResource(BaseAPI):
         if reload_clients:
             update_tree(node.get('path', ''))
 
-        chef_node.normal.set_dotted('ohai_gecos.users_old', users)
+        chef_node.normal.set_dotted(USERS_OLD, users)
         save_node_and_free(chef_node)
 
         for user in users_recalculate_policies:

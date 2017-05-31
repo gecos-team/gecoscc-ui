@@ -197,6 +197,9 @@ class Group(Node):
     # groupmembers = ObjectIdList(missing=[], default=[])
 
     # Node objects
+    type = colander.SchemaNode(colander.String(),
+                               default='group',
+                               validator=colander.OneOf(['group']))
     members = ObjectIdList(missing=[], default=[])
 
     memberof = ObjectIdList(missing=[], default=[])
@@ -212,17 +215,18 @@ class Groups(colander.SequenceSchema):
 class Setting(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     key = colander.SchemaNode(colander.String(),
-                                     title=_('Key'),
-                                     default='',
-                                     missing='')
+                              title=_('Key'),
+                              default='',
+                              missing='')
     value = colander.SchemaNode(colander.String('UTF-8'),
-                                    title=_('Value'),
-                                    default='',
-                                    missing='')
+                                title=_('Value'),
+                                default='',
+                                missing='')
     type = colander.SchemaNode(colander.String(),
-                                    title=_('Type'),
-                                    default='',
-                                    missing='')
+                               title=_('Type'),
+                               default='',
+                               missing='')
+
 
 class BaseUser(colander.MappingSchema):
     first_name = colander.SchemaNode(colander.String(),
@@ -236,6 +240,9 @@ class BaseUser(colander.MappingSchema):
 
 
 class User(Node, BaseUser):
+    type = colander.SchemaNode(colander.String(),
+                               default='user',
+                               validator=colander.OneOf(['user']))
     email = colander.SchemaNode(colander.String(),
                                 validator=colander.Email(),
                                 default='',
@@ -247,8 +254,8 @@ class User(Node, BaseUser):
                                   default='',
                                   missing='')
     commentaries = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')								 								  
+                                       default='',
+                                       missing='')
     memberof = ObjectIdList(missing=[], default=[])
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
@@ -258,7 +265,6 @@ class User(Node, BaseUser):
 
 class Users(colander.SequenceSchema):
     users = User()
-
 
 class ChainedSelectWidget(SelectWidget):
 
@@ -351,12 +357,29 @@ _('There is a user with this username: ${val}')
 
 class AdminUserOUManage(colander.MappingSchema):
     ou_managed = colander.SchemaNode(colander.List(),
-                                     title=_('This user can register workstation under these Organitation Units'),
+                                     title=_('This user can manage workstations under these Organizational Units'),
                                      widget=deferred_choices_widget)
     ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('Organitation Unit availables to register workstations by this user'),
+                                        title=_('Organizational Units available to register workstations'),
                                         widget=deferred_choices_widget)
 
+class CookbookUpload(colander.MappingSchema):
+    local_file = colander.SchemaNode(deform.FileData(),
+                                     widget=FileUploadWidget(filestore),
+                                     title=_('Cookbook ZIP'))
+    remote_file = colander.SchemaNode(colander.String(),
+                                      validator=colander.url,
+                                      missing=unicode(''),
+                                      title=_('URL download'))
+@colander.deferred
+def deferred_restore_widget(node, kw):
+    choices = kw.get('restore_choices')
+    return SelectWithDisabledOptions(values=choices)
+
+class CookbookRestore(colander.MappingSchema):
+    restore_versions = colander.SchemaNode(colander.List(),
+                                           title=_('Restore previous version of cookbook'),
+                                           widget=deferred_restore_widget)
 
 class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
@@ -436,6 +459,9 @@ class AdminUserVariables(colander.MappingSchema):
 
 
 class OrganisationalUnit(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='ou',
+                               validator=colander.OneOf(['ou']))
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
@@ -466,6 +492,9 @@ COMPUTER_FAMILY = {
 
 
 class Computer(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='computer',
+                               validator=colander.OneOf(['computer']))
     memberof = ObjectIdList(missing=[], default=[])
     family = colander.SchemaNode(colander.String(),
                                  default='desktop',
@@ -478,8 +507,8 @@ class Computer(Node):
                                  default='',
                                  missing='')
     commentaries = colander.SchemaNode(colander.String(),
-                                 default='',
-                                 missing='')								 
+                                       default='',
+                                       missing='')
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})
@@ -490,6 +519,8 @@ class Computer(Node):
                                            default=False)
     error_last_chef_client = colander.SchemaNode(RealBoolean(),
                                                  default=False)
+    gcc_link = colander.SchemaNode(RealBoolean(),
+                                   default=True)
 
 
 class Computers(colander.SequenceSchema):
@@ -510,10 +541,14 @@ PRINTER_CONN_TYPE = {
 PRINTER_OPPOLICY_TYPE = {
     'default': _('Default'),
     'authenticated': _('Authenticated'),
+    'kerberos-ad': _('Kerberos-AD'),
 }
 
 
 class Printer(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='printer',
+                               validator=colander.OneOf(['printer']))
     printtype = colander.SchemaNode(colander.String(),
                                     default='laser',
                                     validator=colander.OneOf(
@@ -568,6 +603,9 @@ STORAGE_MOUNT_TYPE = {
 
 
 class Storage(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='storage',
+                               validator=colander.OneOf(['storage']))
     uri = colander.SchemaNode(colander.String(),
                               default='')
 
@@ -577,6 +615,9 @@ class Storages(colander.SequenceSchema):
 
 
 class Repository(Node):
+    type = colander.SchemaNode(colander.String(),
+                               default='repository',
+                               validator=colander.OneOf(['repository']))
     uri = colander.SchemaNode(colander.String())
     components = StringList(missing=[], default=[])
     distribution = colander.SchemaNode(colander.String(),
@@ -633,6 +674,15 @@ class Job(colander.MappingSchema):
                                   default='',
                                   missing='')
     type = colander.SchemaNode(colander.String())
+    parent = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+    childs = colander.SchemaNode(colander.Integer(),
+                                  default=0,
+                                  missing=0)
+    counter = colander.SchemaNode(colander.Integer(),
+                                  default=0,
+                                  missing=0)
     op = colander.SchemaNode(colander.String(),
                              validator=colander.OneOf(
                                  ['created', 'changed', 'deleted']))
@@ -659,6 +709,7 @@ class Policy(colander.MappingSchema):
     is_emitter_policy = colander.SchemaNode(RealBoolean(),
                                             default=False)
     support_os = StringList(missing=[], default=[])
+    is_mergeable = colander.SchemaNode(RealBoolean())
 
 
 class Policies(colander.SequenceSchema):

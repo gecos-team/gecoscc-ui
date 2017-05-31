@@ -21,7 +21,12 @@
         <ul id="new-policies" class="list-unstyled">
             <% _.each(items, function (policy) { %>
                 <li id="<%= policy.id %>">
-                    <span class="fa fa-cogs"></span> <%= policy['name_' + App.language] || policy.name %>
+                    <% if (policy['is_mergeable']) { %>
+                        <span class="fa fa-random" title="{{ gettext('Additive') }}"></span>
+                    <% } else { %>
+                        <span class="fa fa-long-arrow-right" title="{{ gettext('Overriding') }}"></span>
+                    <% } %>
+                     <%= policy['name_' + App.language] || policy.name %>
                     <% if (!resource.policyCollection.get(policy.id) && !_.some(resource.master_policies, function (a, k) { return k === policy.id;})) {  %>
                     <button class="btn btn-primary btn-xs pull-right add-policy-btn">
                         <span class="fa fa-plus"></span> {{ gettext('Add') }}

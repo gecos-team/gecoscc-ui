@@ -67,6 +67,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     }
                     model.set("support_os", p.support_os);
                     model.set("schema", p.schema);
+                    model.set("is_mergeable", p.is_mergeable);
                 });
                 that.trigger("policiesloaded");
             });
@@ -76,7 +77,18 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             var that = this,
                 promise;
 
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+
+            _.each(this.get("policies")[id],function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
+
             this.get("policyCollection").remove(id);
+
             delete this.get("policies")[id];
 
             promise = this.saveWithToken();
@@ -89,6 +101,15 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         addPolicy: function (policyModel, values) {
             var that = this,
                 promise;
+
+            if(typeof App.instances.refresh == 'undefined'){
+                App.instances.refresh = {};
+            }
+            _.each(values,function(obj){
+                _.each(obj,function(idAttach){
+                    App.instances.refresh[idAttach] = false;
+                });
+            });
 
             this.get("policyCollection").add(policyModel);
             this.get("policies")[policyModel.get("id")] = values;
@@ -109,6 +130,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         defaults: {
             name: "",
             name_es: "",
+            is_mergeable: false,
             schema: {},
             values: {}
         },
@@ -158,7 +180,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         paginator_core: {
             type: "GET",
             dataType: "json",
-            url: "/api/policies/"
+            url: "/api/policies/",
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         },
 
         paginator_ui: {
@@ -201,7 +228,12 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
             dataType: "json",
             url: function () {
                 return "/api/policies/?iname=" + this.keyword;
-            }
+            },
+            statusCode: {
+                403: function() {
+                    forbidden_access();
+                }
+            }			
         }
     });
 });
