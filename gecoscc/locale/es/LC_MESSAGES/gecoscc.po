@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-04-24 17:51+0200\n"
+"POT-Creation-Date: 2017-05-25 14:03+0200\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -63,7 +63,9 @@ msgstr "Problemas de permisos para crear carpeta: %s"
 msgid ""
 "There was an error attempting to upload the cookbook. Please contact an "
 "administrator"
-msgstr "Hubo un problema al subir el archivo de políticas. Por favor, contacte con un administrador."
+msgstr ""
+"Hubo un problema al subir el archivo de políticas. Por favor, contacte "
+"con un administrador."
 
 #: gecoscc/forms.py:310
 msgid "No such file or directory: metadata.rb"
@@ -333,7 +335,7 @@ msgstr "Se produjeron errores"
 msgid "type"
 msgstr "Tipo"
 
-#: gecoscc/tasks.py:941 gecoscc/api/chef_status.py:110
+#: gecoscc/tasks.py:941 gecoscc/api/chef_status.py:123
 #, python-format
 msgid "Pending: %d"
 msgstr "Pendientes: %d"
@@ -469,25 +471,68 @@ msgstr "Salir"
 msgid "Search"
 msgstr "Buscar"
 
-#: gecoscc/templates/base_tree.jinja2:138
+#: gecoscc/templates/base_tree.jinja2:32
+msgid "Station"
+msgstr "Puesto"
+
+#: gecoscc/templates/base_tree.jinja2:35 gecoscc/templates/bb-computer.html:29
+msgid "IP address"
+msgstr "Dirección IP"
+
+#: gecoscc/templates/base_tree.jinja2:38 gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/bb-new-element.html:12 gecoscc/templates/bb-user.html:11
+msgid "User"
+msgstr "Usuario"
+
+#: gecoscc/templates/base_tree.jinja2:48
+msgid "Show only"
+msgstr "Mostrar sólo"
+
+#: gecoscc/templates/base_tree.jinja2:51 gecoscc/templates/bb-computer.html:104
+#: gecoscc/templates/bb-groups-multi-widget.html:3
+#: gecoscc/templates/bb-user.html:79
+msgid "Groups"
+msgstr "Grupos"
+
+#: gecoscc/templates/base_tree.jinja2:54
+msgid "Stations"
+msgstr "Puestos"
+
+#: gecoscc/templates/base_tree.jinja2:57 gecoscc/templates/reports.jinja2:15
+msgid "Users"
+msgstr "Usuarios"
+
+#: gecoscc/templates/base_tree.jinja2:60
+msgid "Printers"
+msgstr "Impresoras"
+
+#: gecoscc/templates/base_tree.jinja2:63
+msgid "Storages"
+msgstr "Almacenamientos"
+
+#: gecoscc/templates/base_tree.jinja2:66
+msgid "Repositories"
+msgstr "Repositorios"
+
+#: gecoscc/templates/base_tree.jinja2:183
 msgid "This action requires a little time"
 msgstr "Esta acción puede llevar un tiempo"
 
-#: gecoscc/templates/base_tree.jinja2:141
+#: gecoscc/templates/base_tree.jinja2:186
 msgid "Is the website maintenance?"
 msgstr "¿Esta el portal en mantenimiento?"
 
-#: gecoscc/templates/base_tree.jinja2:144
+#: gecoscc/templates/base_tree.jinja2:189
 #: gecoscc/templates/admins/list.jinja2:49
 msgid "No"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:145
+#: gecoscc/templates/base_tree.jinja2:190
 #: gecoscc/templates/admins/list.jinja2:47
 msgid "Yes"
 msgstr "Si"
 
-#: gecoscc/templates/base_tree.jinja2:226 gecoscc/templates/bb-computer.html:99
+#: gecoscc/templates/base_tree.jinja2:271 gecoscc/templates/bb-computer.html:99
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
 msgstr "Cargando"
@@ -547,10 +592,6 @@ msgstr "Refrescar"
 #: gecoscc/templates/bb-computer.html:27
 msgid "Manufacturer and model"
 msgstr "Marca y modelo"
-
-#: gecoscc/templates/bb-computer.html:29
-msgid "IP address"
-msgstr "Dirección IP"
 
 #: gecoscc/templates/bb-computer.html:31
 msgid "Users that have logged in"
@@ -634,12 +675,6 @@ msgstr "Comentarios"
 #: gecoscc/templates/bb-computer.html:91
 msgid "Describe the workstation here..."
 msgstr "Describe la estación de trabajo aquí"
-
-#: gecoscc/templates/bb-computer.html:104
-#: gecoscc/templates/bb-groups-multi-widget.html:3
-#: gecoscc/templates/bb-user.html:79
-msgid "Groups"
-msgstr "Grupos"
 
 #: gecoscc/templates/bb-computer.html:106 gecoscc/templates/bb-user.html:81
 msgid "If you want to add any group, please execute the changes"
@@ -810,11 +845,6 @@ msgstr "Fecha"
 #: gecoscc/templates/bb-jobs.html:40
 msgid "Origin"
 msgstr "Origen"
-
-#: gecoscc/templates/bb-jobs.html:43 gecoscc/templates/bb-new-element.html:12
-#: gecoscc/templates/bb-user.html:11
-msgid "User"
-msgstr "Usuario"
 
 #: gecoscc/templates/bb-jobs.html:47
 msgid "Policy"
@@ -1120,10 +1150,6 @@ msgstr "Escribe comentarios acerca del usuario aquí..."
 #: gecoscc/templates/login.jinja2:24
 msgid "GECOS CC Login"
 msgstr ""
-
-#: gecoscc/templates/reports.jinja2:15
-msgid "Users"
-msgstr "Usuarios"
 
 #: gecoscc/templates/reports.jinja2:15 gecoscc/templates/reports.jinja2:16
 msgid "Export to CSV"

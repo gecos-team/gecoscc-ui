@@ -136,6 +136,12 @@ footer {
     padding-left: 0px;
 }
 
+.dropdown .btn {
+    border-radius: 0;
+    border-left: 0;
+    margin-right: -4px;
+}
+
 
 #tree-selection-info {
     position: fixed;
@@ -483,3 +489,21 @@ legend {
     padding: 6px 12px;
     font-size: 16px;
 }
+
+@media only screen and (max-width: 1200px) {
+
+#nav-tree .panel-heading {
+    padding: 10px 5px;
+}
+
+#nav-tree .btn {
+    padding: 6px 2px;
+}
+
+
+body {
+    padding-top: 120px !important;
+}
+
+}
+

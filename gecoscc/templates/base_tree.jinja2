@@ -24,19 +24,52 @@
                     </span>
                     <input id="tree-search" type="text" class="form-control" placeholder="{{ gettext('Search') }}">
                     <span class="input-group-btn">
-                        <button id="tree-search-setup-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
+                        <span class="dropdown">
+                            <button id="tree-search-setup-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
+                              <!-- Tree search dropdown menu -->
+                              <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-setup-btn">
+                                <li class="list-unstyled radio">
+                                  <label class="radio"><input type="radio" name="search_by" checked value="nodename">{{ gettext('Station') }}</label>
+                                </li>
+                                <li class="list-unstyled radio">
+                                  <label class="radio"><input type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
+                                </li>
+                                <li class="list-unstyled radio">
+                                  <label class="radio"><input type="radio" name="search_by" value="username">{{ gettext('User') }}</label>
+                                </li> 
+                              </ul>   
+                        </span>                          
+                        
+                        <span class="dropdown">
+                            <button id="tree-search-filter-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-filter"></span></button>
+                              <!--  Tree filter dropdown menu -->
+                              <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-filter-btn">
+                                <li class="list-unstyled checkbox">
+                                  <strong>{{ gettext('Show only') }}</strong>
+                                </li>
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="group">{{ gettext('Groups') }}</label>&nbsp;&nbsp;
+                                </li>
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="computer">{{ gettext('Stations') }}</label>&nbsp;&nbsp;
+                                </li>
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="user">{{ gettext('Users') }}</label>&nbsp;&nbsp;
+                                </li> 
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="printer">{{ gettext('Printers') }}</label>&nbsp;&nbsp;
+                                </li> 
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="storage">{{ gettext('Storages') }}</label>&nbsp;&nbsp;
+                                </li> 
+                                <li class="list-unstyled checkbox">
+                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="repository">{{ gettext('Repositories') }}</label>&nbsp;&nbsp;
+                                </li> 
+                              </ul>                              
+                        </span>
+                        
                         <button id="tree-search-btn" class="btn btn-primary dropdown-toggle" type="button"><span class="fa fa-search"></span></button>
-                          <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-setup-btn">
-                            <li class="list-unstyled radio">
-                              <label class="radio"><input type="radio" name="search_by" checked value="nodename">{{ gettext('Name') }}</label>
-                            </li>
-                            <li class="list-unstyled radio">
-                              <label class="radio"><input type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
-                            </li>
-                            <li class="list-unstyled radio">
-                              <label class="radio"><input type="radio" name="search_by" value="username">{{ gettext('Username') }}</label>
-                            </li> 
-                          </ul>                        
+                        
                     </span>
                 </div>
             </div>

@@ -599,14 +599,22 @@ var App;
                 });
             },
 
-            search: function (keyword, searchby) {
-                var res = searchby.split("=");
-                if (res[0] != 'searchby') {
+            search: function (keyword, parameters) {
+                var params = parameters.split('&');
+                var dparameters = []
+                for (var p in params) {
+                    var res = params[p].split("=");
+                    dparameters[res[0]] = res[1];
+                }
+
+                if (! 'searchby' in dparameters) {
                     throw "Search require a 'search by' attribute";
                 }
-                var search_by = res[1];
-                
-                var data = new App.Tree.Models.Search({ keyword: keyword, search_by: search_by }),
+                if (! 'searchfilter' in dparameters) {
+                    throw "Search require a 'search filter' attribute";
+                }
+
+                var data = new App.Tree.Models.Search({ keyword: keyword, search_by: dparameters['searchby'], search_filter: dparameters['searchfilter']}),
                     view = new App.Tree.Views.SearchResults({
                         collection: data,
                         treeView: App.tree.currentView
