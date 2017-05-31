@@ -242,7 +242,7 @@ class Command(BaseCommand):
                 
             
             # Check members
-            new_id_list = self.check_referenced_nodes(node['members'], ['user', 'computer'], 'members')
+            new_id_list = self.check_referenced_nodes(node['members'], ['user', 'computer', 'group'], 'members')
             difference = set(node['members']).difference(set(new_id_list))
             if len(difference) > 0:
                 logger.info('FIX: remove %s references'%(difference))
