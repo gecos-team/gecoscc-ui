@@ -36,7 +36,7 @@ def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
 
 class Command(BaseCommand):
     description = """
-       Get the IPv4 addresses or every Chef node and update the "ip_addresses" field of the MongoDB node.
+       Get the IPv4 address or every Chef node and update the "ipaddress" field of the MongoDB node.
     """
 
     usage = "usage: %prog config_uri update_ip_address --administrator user --key file.pem"
@@ -67,7 +67,7 @@ class Command(BaseCommand):
                             toChefUsername(self.options.chef_username),
                             self.options.chef_pem, self.settings.get('chef.version'))
                             
-        print('INFO: Update IPv4 addresses START!') 
+        print('INFO: Update IPv4 address START!') 
         db = self.pyramid.db
         computers = db.nodes.find({'type': 'computer'})
         for comp in computers:
@@ -78,5 +78,5 @@ class Command(BaseCommand):
             print('INFO: Update node: %s, set IP: %s'%(node_id, ipaddress)) 
             db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
         
-        print('INFO: Update IPv4 addresses END!') 
+        print('INFO: Update IPv4 address END!') 
         
