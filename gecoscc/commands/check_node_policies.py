@@ -86,9 +86,16 @@ class Command(BaseCommand):
         logger.info('Getting all the policies structures from database...')
         dbpolicies = self.db.policies.find()
         self.policiesdata = {}
+        self.slug_check = {}
         for policy in dbpolicies:
             logger.debug('Addig to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
             self.policiesdata[str(policy['_id'])] = policy
+            if policy['slug'] in self.slug_check:
+                logger.error("There are more than one policy with '%s' slug!"%(policy['slug']))
+            else:
+                self.slug_check[policy['slug']] = policy
+                
+                
         
         logger.info('Checking tree...')
         # Look for the root of the nodes tree
