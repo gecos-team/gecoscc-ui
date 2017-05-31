@@ -135,7 +135,14 @@ class Command(BaseCommand):
                 found = True
                 
             if not found:
-                logger.error("No computer node for Chef ID: '%s'!"%(node_id))
+                pclabel = "(No OHAI-GECOS data in the node)"
+                computer_node = ChefNode(node_id, self.api)
+                try:
+                    pclabel = "(pclabel = %s)"%( computer_node.attributes.get_dotted('ohai_gecos.pclabel') )
+                except KeyError:
+                    pass
+                        
+                logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
         
         logger.info('END ;)')
