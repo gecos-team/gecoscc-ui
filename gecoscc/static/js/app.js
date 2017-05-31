@@ -599,8 +599,14 @@ var App;
                 });
             },
 
-            search: function (keyword) {
-                var data = new App.Tree.Models.Search({ keyword: keyword }),
+            search: function (keyword, searchby) {
+                var res = searchby.split("=");
+                if (res[0] != 'searchby') {
+                    throw "Search require a 'search by' attribute";
+                }
+                var search_by = res[1];
+                
+                var data = new App.Tree.Models.Search({ keyword: keyword, search_by: search_by }),
                     view = new App.Tree.Views.SearchResults({
                         collection: data,
                         treeView: App.tree.currentView

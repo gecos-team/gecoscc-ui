@@ -52,6 +52,7 @@ class NodesResource(ResourcePaginatedReadOnly):
     """ Returns the nodes tree structure
 
     GET filters:
+        search_by: One of 'ip', 'nodename' or 'username'
         type (str): One of 'ou', 'user', 'printer', 'storage'
         path (str): The base path for the query (comma separated items)
         maxdepth (int): The max children levels to retrieve
