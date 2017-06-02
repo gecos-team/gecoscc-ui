@@ -80,9 +80,10 @@
         </div>
 
         <div id="events-container"></div>
+        <div id="events-summary-container"></div>
     </div>
 
-    <div class="col-sm-9 col-sm-offset-3">
+    <div class="col-sm-9 col-sm-offset-3" id="main-area">
         <div class="row">
             <div class="col-sm-9">
                 <div id="breadcrumb" class="navbar navbar-default bootstrap-admin-navbar-thin"></div>
@@ -247,6 +248,7 @@
     <script type="text/html" id="breadcrumb-template">{% include "bb-breadcrumb.html" %}</script>
     <script type="text/html" id="computer-template">{% include "bb-computer.html" %}</script>
     <script type="text/html" id="jobs-template">{% include "bb-jobs.html" %}</script>
+    <script type="text/html" id="jobs-summary-template">{% include "bb-jobs-summary.html" %}</script>
     <script type="text/html" id="groups-form-template">{% include "bb-groups-form.html" %}</script>
     <script type="text/html" id="groups-members-template">{% include "bb-groups-members.html" %}</script>
     <script type="text/html" id="groups-multi-widget-template">{% include "bb-groups-multi-widget.html" %}</script>
@@ -273,12 +275,58 @@
     </script>
 
     <script>
-        $(document).ready(function () {
+    
+        function removePx(value) {
+            if (! value)
+                return 0;
+        
+            return parseInt(value.replace(/[^-\d\.]/g, ''));
+        }
+    
+        function recalculateSidebarHeight() {
             // Sidebar heights
-            $('#sidebar').height($(window).height() - 131);
+            var baseHeight = 25;
+            var count = true;
+            $('#sidebar').parent().children().each( function () {
+                var elem = $(this);
+                if (elem.attr('id') == 'sidebar') {
+                    count = false;
+                }
+                
+                if (count) {
+                    var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+                    baseHeight += height;
+                }
+            });
+            $('#sidebar').height($(window).height() - baseHeight);            
+        }
+        
+        function recalculateBodyPadding() {
+            var elem = $('.navbar');
+            var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+            $('body').css('padding-top', height);
+        
+        }
+    
+        $(document).ready(function () {
+            // Recalculate sidebar height
+            recalculateSidebarHeight();
+            setTimeout(recalculateBodyPadding, 50);           
+            setTimeout(recalculateSidebarHeight, 100);           
+            
             $(window).on('resize', function () {
                 // Recalculate sidebar height
-                $('#sidebar').height($(window).height() - 131);
+                recalculateSidebarHeight();
+                setTimeout(recalculateBodyPadding, 50);           
+                setTimeout(recalculateSidebarHeight, 100);
+            });
+
+            $('.alert').on('close.bs.alert', function (e) {
+                setTimeout(recalculateSidebarHeight, 100);
             });
 
             var events = $("#events");

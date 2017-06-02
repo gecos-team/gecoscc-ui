@@ -28,7 +28,7 @@ var App;
 (function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
 
-    var HomeView, NewElementView, LoaderView, Router, JobsView;
+    var HomeView, NewElementView, LoaderView, Router, JobsView, JobsSummaryView;
 
     App = new Backbone.Marionette.Application();
 
@@ -39,6 +39,7 @@ var App;
         // sidebar
         tree: "#ex-tree",
         events: "#events-container",
+        eventsSummary: "#events-summary-container",
         // main area
         breadcrumb: "#breadcrumb",
         alerts: "#alerts-area",
@@ -48,9 +49,8 @@ var App;
     JobsView = Backbone.Marionette.ItemView.extend({
         template: "#jobs-template",
         id: 'events',
-        className: 'panel panel-default bootstrap-admin-no-table-panel',
+        className: 'panel panel-default bootstrap-admin-no-table-panel maximize',
         events: {
-            "click #maximize": "maximize",
             "click #minimize": "minimize",
             "click #tasksChilds": "tasksChilds",
             "click button.refresh": "refresh",
@@ -75,6 +75,7 @@ var App;
         refresh: function () {
             App.instances.job_collection.fetch();
             App.instances.job_statistics.fetch();
+            App.instances.myjob_statistics.fetch();
         },
         tasksFilter: function () {
             this.collection.currentPage = 1;
@@ -138,38 +139,20 @@ var App;
                 }
             });
         },
-        maximize: function (evt) {
-            var events = this.$el;
-            evt.preventDefault();
-            events.find("#maximize").addClass("hide");
-            events.find("#minimize").removeClass("hide");
-            events.find(".pagination").removeClass("hide");
-            events.find(".filters").removeClass("hide");
-            $(document.body).append(events);
-            events.find(".short").addClass("hide");
-            events.find(".long").removeClass("hide");
-            events.addClass("maximize");
-            this.isMaximized = true;
-            this.render();
-        },
+
         minimize: function (evt) {
-            var events = this.$el;
             evt.preventDefault();
-            events.find("#maximize").removeClass("hide");
-            events.find("#minimize").addClass("hide");
-            events.find(".pagination").addClass("hide");
-            events.find(".filters").addClass("hide");
-            $("#sidebar").append(events);
-            events.find(".short").removeClass("hide");
-            events.find(".long").addClass("hide");
-            events.removeClass("maximize");
-            this.isMaximized = false;
-            this.collection.status = '';
-            this.collection.archived = false;
-            this.collection.parentId = '';
-            this.tasksFilter();
-            this.render();
+            
+            // Hide maximized events container
+            $('#events-container').hide();            
+            
+            // Show events summary
+            $('#events-summary-container').show();
+            
+            // Show main area
+            $('#main-area').show();
         },
+        
         serializeData: function () {
             var paginator = [],
                 inRange = this.collection.pagesInRange,
@@ -195,7 +178,6 @@ var App;
                 "next": current !== total,
                 "pages": paginator,
                 "showPaginator": paginator.length > 1,
-                "isMaximized": this.isMaximized,
                 "status": this.collection.status,
                 "parentId":this.collection.parentId,
                 "archived": this.collection.archived,
@@ -224,7 +206,6 @@ var App;
             return false;
         },
         initialize: function () {
-            this.isMaximized = false;
             this.collection.status = '';
             this.collection.on('sync', function () {
                 this.render();
@@ -232,6 +213,77 @@ var App;
         }
     });
 
+    JobsSummaryView = Backbone.Marionette.ItemView.extend({
+        template: "#jobs-summary-template",
+        id: 'events_summary',
+        className: 'panel panel-default bootstrap-admin-no-table-panel',
+        events: {
+            "click #maximize": "maximize",
+            "click button.refresh": "refresh",
+            "click button.archiveTasks": "archiveTasks",
+        },
+
+        refresh: function () {
+            App.instances.job_collection.fetch();
+            App.instances.job_statistics.fetch();
+            App.instances.myjob_statistics.fetch();
+        },
+        
+        archiveTasks: function (evt) {
+            var that = this;
+            evt.preventDefault();
+            $.ajax({
+                url: '/api/archive_jobs/',
+                type: 'PUT',
+                success: function () {
+                    that.tasksFilter();
+                }
+            });
+        },        
+        
+        maximize: function (evt) {
+            evt.preventDefault();
+            
+            // Hide events summary
+            $('#events-summary-container').hide();
+            
+            // Hide main area
+            $('#main-area').hide();
+            
+            // Show maximized events container
+            $('#events-container').show();
+        },        
+        
+        
+
+        initialize: function () {
+            this.model.on('sync', function () {
+                this.render();
+            }, this);
+        },
+        serializeData: function () {
+            return {
+                "finished": this.model.attributes.finished,
+                "errors": this.model.attributes.errors,
+                "processing": this.model.attributes.processing,
+                "total": this.model.attributes.total
+            };
+        },
+        onRender: function () {
+            this.$el.find('.easyPieChart').each(function(){
+                var pieChart = $(this);
+                
+                pieChart.easyPieChart({
+                    animate: 1000,
+                    size: 60,                
+                    barColor:  pieChart.attr('bar-color')
+                });
+                
+            });
+        }
+    });
+    
+    
     HomeView = Backbone.Marionette.ItemView.extend({
         template: "#home-template",
 
@@ -304,12 +356,29 @@ var App;
                     App.instances.job_collection = new App.Job.Models.JobCollection();
                     App.instances.job_collection.fetch();
                 }
-                var jview = new JobsView({collection: App.instances.job_collection});
-                App.events.show(jview);
-                var events = App.events.$el;
-                var button = events.find("#maximize");
-                button.click();
+                if (_.isUndefined(App.instances.job_statistics)) {
+                    App.instances.job_statistics = new App.Job.Models.JobStatistics();
+                    App.instances.job_statistics.fetch();
+                }
+                if (_.isUndefined(App.instances.myjob_statistics)) {
+                    App.instances.myjob_statistics = new App.Job.Models.MyJobStatistics();
+                    App.instances.myjob_statistics.fetch();
+                }
+                
+                
+                App.events.show(new JobsView({collection: App.instances.job_collection}));
+                App.eventsSummary.show(new JobsSummaryView({model: App.instances.myjob_statistics}));                
+                
+                // Hide events summary
+                $('#events-summary-container').hide();
+                
+                // Hide main area
+                $('#main-area').hide();
+                
+                // Show maximized events container
+                $('#events-container').show();
             },
+            
             loadHome: function () {
                 App.alerts.close();
                 App.instances.breadcrumb.setSteps([]);
@@ -323,6 +392,10 @@ var App;
                 if (_.isUndefined(App.instances.job_statistics)) {
                     App.instances.job_statistics = new App.Job.Models.JobStatistics();
                     App.instances.job_statistics.fetch();
+                }
+                if (_.isUndefined(App.instances.myjob_statistics)) {
+                    App.instances.myjob_statistics = new App.Job.Models.MyJobStatistics();
+                    App.instances.myjob_statistics.fetch();
                 }
                 App.main.show(new HomeView({model: App.instances.job_statistics}));
             },
@@ -640,12 +713,14 @@ var App;
             App.instances.job_collection = new App.Job.Models.JobCollection();
             App.instances.job_collection.fetch();
         }
-        if (_.isUndefined(App.instances.job_statistics)) {
-            App.instances.job_statistics = new App.Job.Models.JobStatistics();
-            App.instances.job_statistics.fetch();
+        if (_.isUndefined(App.instances.myjob_statistics)) {
+            App.instances.myjob_statistics = new App.Job.Models.MyJobStatistics();
+            App.instances.myjob_statistics.fetch();
         }
         if (! (Backbone.history.getFragment() == 'logbook')) {
+            $("#events-container").hide();
             App.events.show(new JobsView({collection: App.instances.job_collection}));
+            App.eventsSummary.show(new JobsSummaryView({model: App.instances.myjob_statistics}));
         }
     });
 

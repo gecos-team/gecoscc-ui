@@ -157,8 +157,12 @@ footer {
 }
 
 #nav-tree {
-    height: 70%;
     overflow-y: hidden;
+    position: absolute;
+    top: 0px;
+    bottom: 150px;
+    left: 0px;
+    width: 95%;
 }
 
 #tree-container {
@@ -500,10 +504,64 @@ legend {
     padding: 6px 2px;
 }
 
-
-body {
-    padding-top: 120px !important;
 }
 
+.easyPieChart-text {
+    line-height: 1em;
+    padding-top: 15px;
 }
 
+.red-text {
+    color: #ee0f16;
+}
+
+.yellow-text {
+    color: #ffcc00;
+}
+
+.green-text {
+    color: #34b845;
+}
+
+.percentage {
+    color: #666666;
+    font-size: 0.7em;
+}
+
+#my-jobs-heading {
+    font-size: 0.8em;
+    width: 50%;
+    float: left;
+}
+
+#my-jobs-total {
+    color: #666666;
+}
+
+#events_summary {
+  position: absolute;
+  bottom: 0px;    
+  width: 95%;
+}
+
+#events_summary .bootstrap-admin-panel-content {
+    padding: 5px;
+}
+
+#events_summary .bootstrap-admin-panel-content {
+    padding: 5px;
+}
+
+#events_summary .row {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+
+#events_summary .col-sm-4 {
+    padding-left: 0px;
+}
+
+#events_summary .chart-bottom-heading {
+    font-size: 0.8em;
+    color: #666666;
+}

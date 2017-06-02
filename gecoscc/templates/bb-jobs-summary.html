@@ -1,0 +1,52 @@
+<div class="panel-heading">
+    <div id="my-jobs-heading" class="text-muted bootstrap-admin-box-title">
+        {{ gettext('My actions') }} - <br />
+        <span id="my-jobs-total">{{ gettext('Total') }} <%= total %> </span>
+    </div> &nbsp;
+    <button id="maximize" class="btn btn-xs btn-default pull-right" title="{{ gettext('Maximize') }}">
+        <span class="fa fa-plus"></span>
+    </button>
+    <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
+        <span class="fa fa-refresh"></span>
+    </button>
+    <button class="btn btn-xs btn-default pull-right archiveTasks" title="{{ gettext('Archive Tasks') }}">
+        <span class="fa fa-archive"></span>
+    </button>
+</div>
+<div class="bootstrap-admin-panel-content table-responsive">
+    <div class="row">
+        <div class="col-xs-4 col-sm-4 col-md-4">
+            <div class="easyPieChart" data-percent="<%= processing / total * 100 %>" bar-color="#ffcc00" style="width: 60px; height: 60px; line-height: 60px;">
+                <div class="yellow-text easyPieChart-text">
+                    <span class="fa fa-clock-o"></span><br />
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (processing / total * 100).toFixed(2) %><% } %>%</span>
+                </div>
+                <canvas width="60" height="60"></canvas>
+            </div>
+            <div class="chart-bottom-heading"><%= processing %> t.</div>
+        </div>
+
+        <div class="col-xs-4 col-sm-4 col-md-4">
+            <div class="easyPieChart" data-percent="<%= errors / total * 100 %>" bar-color="#ee0f16" style="width: 60px; height: 60px; line-height: 60px;">
+                <div class="red-text easyPieChart-text">
+                    <span class="fa fa-exclamation-circle"></span><br />
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (errors / total * 100).toFixed(2) %><% } %>%</span>
+                </div>
+                <canvas width="60" height="60"></canvas>
+            </div>
+            <div class="chart-bottom-heading"><%= errors %> t.</div>
+        </div>
+        <div class="col-xs-4 col-sm-4 col-md-4">
+            <div class="easyPieChart" data-percent="<%= finished / total * 100 %>" bar-color="#34b845" style="width: 60px; height: 60px; line-height: 60px;">
+                <div class="green-text easyPieChart-text">
+                    <span class="fa fa-check-circle"></span><br />
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (finished / total * 100).toFixed(2) %><% } %>%</span>
+                </div>
+                <canvas width="60" height="60"></canvas>
+             </div>
+            <div class="chart-bottom-heading"><%= finished %> t.</div>
+        </div>
+        <br />
+    </div>
+
+</div>
