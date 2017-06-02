@@ -186,7 +186,9 @@ footer {
     top: 0px;
     bottom: 150px;
     left: 0px;
-    width: 95%;
+    width: -moz-calc(100% - 20px);
+    width: -webkit-calc(100% - 20px);
+    width: calc(100% - 20px);
 }
 
 #tree-container {
@@ -565,7 +567,10 @@ legend {
 #events_summary {
   position: absolute;
   bottom: 0px;    
-  width: 95%;
+  width: -moz-calc(100% - 20px);
+  width: -webkit-calc(100% - 20px);
+  width: calc(100% - 20px);
+
 }
 
 #events_summary .bootstrap-admin-panel-content {
