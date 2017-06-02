@@ -49,7 +49,7 @@
 
 .fuelux .tree .tree-container .tree-container-content {
     margin-left: 23px;
-    border-left: solid 1px rgb(230, 230, 230);
+    border-left: solid 0.2em rgb(230, 230, 230);
 }
 
 /* tree-leaf and tree-pagination */
