@@ -78,8 +78,7 @@ footer {
     width: 4px;
     float: right;
     margin-right: -20px;
-    line-height: 100%;
-    padding-top: 55%;
+    text-align: middle;
     overflow: hidden;
 }
 

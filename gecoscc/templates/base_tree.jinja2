@@ -301,10 +301,12 @@
                     baseHeight += height;
                 }
             });
-            $('#sidebar').height($(window).height() - baseHeight);            
-            $('#main-area').height($(window).height() - baseHeight);      
+            $('#sidebar').height(Math.floor($(window).height() - baseHeight));      
+            $('#sidebar-right').css('line-height', Math.floor($(window).height() - baseHeight)+'px');      
             
-            $('#main-area').width( $( window ).width() - $('#sidebar').width() - 100 );
+            $('#main-area').height(Math.floor($(window).height() - baseHeight));      
+            
+            $('#main-area').width( Math.floor($( window ).width() - $('#sidebar').width() - 100) );
         }
         
         function recalculateBodyPadding() {
