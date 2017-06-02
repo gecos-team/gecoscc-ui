@@ -16,6 +16,7 @@
 {% block inner_content %}
     <!-- left, vertical navbar -->
     <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux">
+        <div id="sidebar-right"><span id="sidebar-size-handler" class="fa fa-th"></span></div>
         <div id="nav-tree" class="panel panel-default bootstrap-admin-no-table-panel">
             <div class="panel-heading">
                 <div class="input-group">
@@ -83,7 +84,7 @@
         <div id="events-summary-container"></div>
     </div>
 
-    <div class="col-sm-9 col-sm-offset-3" id="main-area">
+    <div id="main-area">
         <div class="row">
             <div class="col-sm-9">
                 <div id="breadcrumb" class="navbar navbar-default bootstrap-admin-navbar-thin"></div>
@@ -301,6 +302,9 @@
                 }
             });
             $('#sidebar').height($(window).height() - baseHeight);            
+            $('#main-area').height($(window).height() - baseHeight);      
+            
+            $('#main-area').width( $( window ).width() - $('#sidebar').width() - 100 );
         }
         
         function recalculateBodyPadding() {
@@ -313,6 +317,10 @@
         }
     
         $(document).ready(function () {
+            // Check minimum sidebar width
+            if ($('#sidebar').width() < 250) 
+                $('#sidebar').width( 250 );
+            
             // Recalculate sidebar height
             recalculateSidebarHeight();
             setTimeout(recalculateBodyPadding, 50);           
@@ -328,7 +336,33 @@
             $('.alert').on('close.bs.alert', function (e) {
                 setTimeout(recalculateSidebarHeight, 100);
             });
+            
+            $('#sidebar-size-handler').mousedown( function () {
+                $('#sidebar-right').addClass('resizing');
+            });
 
+            $(document.body).mouseup( function () {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    $('#sidebar-right').removeClass('resizing');
+                }
+            });
+            
+            $(document.body).mousemove(function( event ) {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    var sbposition = $('#sidebar').position();
+                    
+                    var newSidebarWidth = event.pageX - sbposition.left - 17;
+                    
+                    if (newSidebarWidth >= 250) {
+                        $('#sidebar').width( newSidebarWidth );
+                        
+                        $('#main-area').width( $( window ).width() - $('#sidebar').width() - 100 );
+                    }
+                        
+                }
+            });
+            
+            
             var events = $("#events");
             $("#maximize").click(function (evt) {
                 evt.preventDefault();

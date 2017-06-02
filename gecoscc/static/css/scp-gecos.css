@@ -72,12 +72,37 @@ footer {
     z-index: 3;
 }
 
+#sidebar-right {
+    background-color: #DDD;
+    height: 100%;
+    width: 4px;
+    float: right;
+    margin-right: -20px;
+    line-height: 100%;
+    padding-top: 55%;
+    overflow: hidden;
+}
+
+#sidebar-size-handler {
+    cursor:ew-resize;
+}
+
 @media (min-width: 768px) {
     #sidebar {
         position: fixed;
         padding-right: 30px;
     }
 }
+
+#main-area {
+    position: fixed;
+    right: 0;
+    width: 73%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 30px;
+}
+
 
 /* STAGING AREA */
 
