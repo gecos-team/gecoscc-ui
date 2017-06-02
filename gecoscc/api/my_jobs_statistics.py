@@ -34,8 +34,25 @@ class MyJobStatistics(BaseAPI):
 
     def get(self):
         administrator_username = self.request.user['username']
-    
-        return {'processing': self.collection.find({'status': 'processing', 'administrator_username': administrator_username, 'archived':False}).count(),
-                'finished': self.collection.find({'status': 'finished', 'administrator_username': administrator_username, 'archived':False}).count(),
-                'errors': self.collection.find({'status': 'errors', 'administrator_username': administrator_username, 'archived':False}).count(),
-                'total': self.collection.find({'administrator_username': administrator_username, 'archived':False}).count()}
+        
+        # Count micro-jobs and macro-jobs that doesn't have any child
+        base_filter = { 'administrator_username': administrator_username, 'archived':False, 'childs': {'$exists': True, '$eq': 0} }
+        
+        processing_filter = base_filter.copy()
+        processing_filter['status'] = 'processing'
+
+        finished_filter = base_filter.copy()
+        finished_filter['status'] = 'finished'
+
+        errors_filter = base_filter.copy()
+        errors_filter['status'] = 'errors'
+
+        nprocessing = self.collection.find(processing_filter).count()
+        nfinished = self.collection.find(finished_filter).count()
+        nerrors = self.collection.find(errors_filter).count()
+        ntotal = self.collection.find(base_filter).count()
+        
+        return {'processing': nprocessing,
+                'finished': nfinished,
+                'errors': nerrors,
+                'total': ntotal}

@@ -22,4 +22,4 @@ class Command(BaseCommand):
         db = self.pyramid.db
         jobs = db.jobs.find({'parent': {'$exists': False}})
         for job in jobs:
-            db.jobs.update({'_id': job['_id']}, {'$set': {'parent': None, 'archived': True}})
+            db.jobs.update({'_id': job['_id']}, {'$set': {'childs': 0, 'parent': None, 'archived': True}})
