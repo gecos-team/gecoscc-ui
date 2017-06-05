@@ -61,6 +61,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         groupsWidget: undefined,
         policiesList: undefined,
+        activeTab: undefined,
 
         ui: {
             groups: "div#groups-widget",
@@ -214,6 +215,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            if(!_.isUndefined(this.activeTab)) {
+                this.activeTab = this.activeTab;
+                this.$el.find('#' + this.activeTab.id + ' a[href="' + this.activeTab.firstElementChild.getAttribute('href') + '"]').tab('show');
+            }
             this.$el.find('[data-toggle="tooltip"]').tooltip();
             this.checkErrors();
 
@@ -238,7 +243,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.policiesList.render();
-
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
@@ -246,6 +250,27 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+        },
+        
+        refresh: function (evt) {
+
+            this.activeTab = this.$el.find('.nav-tabs li.active')[0];
+
+            var that = this;
+            if (!_.isUndefined(evt)) {
+                evt.preventDefault();
+            }
+            App.instances.staging.dropModel(this.model);
+            $("#alerts-area .alert").slideUp('fast', function () {
+                $(this).find("button.close").click();
+            });
+            $(this.el).fadeOut(function () {
+                that.model.fetch().done(function () {
+                    that.render();
+                }).done(function () {
+                    $(that.el).fadeIn();
+                });
+            });
         },
 
         saveForm: function (evt) {
@@ -255,7 +280,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 name: "#name",
                 family: "#family option:selected",
                 registry: "#registry",
-				commentaries: "#commentaries"
+                commentaries: "#commentaries"
             });
         }
     });
