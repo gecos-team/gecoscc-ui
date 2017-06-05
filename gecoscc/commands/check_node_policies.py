@@ -395,13 +395,17 @@ class Command(BaseCommand):
                 logger.error('Unknown property type found: %s'%(type))
             
         # Reverse check
-        for property in nodedata.keys():
-            name = str(property)
-            if propertyname is not None:
-                name = "%s.%s"%(propertyname, property)
-                
-            if not str(property) in schema['properties'].keys():
-                logger.warning('\tProperty in database that doesn\'t exist in schema anymore: %s'%(name))
+        if isinstance(nodedata, dict):
+            for property in nodedata.keys():
+                name = str(property)
+                if propertyname is not None:
+                    name = "%s.%s"%(propertyname, property)
+                    
+                if not str(property) in schema['properties'].keys():
+                    logger.warning('\tProperty in database that doesn\'t exist in schema anymore: %s'%(name))
+        else:
+            logger.error('\tProperty in database that isn\'t an object: %s'%(name))
+        
         
             
 
