@@ -142,21 +142,6 @@ class ChefStatusResource(BaseAPI):
             
         return {'ok': True}
 
-    def get_ip_addresses(self, chef_node, api):
-        ip_addresses = []
-        interfaces = self.get_attr(node, NETWORK_INTERFACES)
-        for name, data in interfaces:
-            if name is "lo":
-                # Ingore loopback interface
-                continue
-            
-            for address, adata in data["addresses"]:
-                if adata["family"] == "inet":
-                    # IPv4 address
-                    ip_addresses.append(address)
-
-        return ip_addresses
-            
         
     def check_users(self, chef_node, api):
         node_collection = self.request.db.nodes
