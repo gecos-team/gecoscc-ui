@@ -544,22 +544,6 @@ legend {
     padding: 6px 2px;
 }
 
-#tree_search_setup_drowpdown {
-    width: 150px;
-}
-
-.dropdown-column {
-    width: 100px;
-}
-
-.dropdown-column:last-child {
-    border-left: 0px solid #999999;
-}
-
-body {
-    padding-top: 120px !important;
-}
-
 }
 
 
