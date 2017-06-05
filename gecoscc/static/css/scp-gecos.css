@@ -72,12 +72,36 @@ footer {
     z-index: 3;
 }
 
+#sidebar-right {
+    background-color: #DDD;
+    height: 100%;
+    width: 4px;
+    float: right;
+    margin-right: -20px;
+    text-align: middle;
+    overflow: hidden;
+}
+
+#sidebar-size-handler {
+    cursor:ew-resize;
+}
+
 @media (min-width: 768px) {
     #sidebar {
         position: fixed;
         padding-right: 30px;
     }
 }
+
+#main-area {
+    position: fixed;
+    right: 0;
+    width: 73%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 30px;
+}
+
 
 /* STAGING AREA */
 
@@ -157,8 +181,14 @@ footer {
 }
 
 #nav-tree {
-    height: 70%;
     overflow-y: hidden;
+    position: absolute;
+    top: 0px;
+    bottom: 150px;
+    left: 0px;
+    width: -moz-calc(100% - 20px);
+    width: -webkit-calc(100% - 20px);
+    width: calc(100% - 20px);
 }
 
 #tree-container {
@@ -500,10 +530,67 @@ legend {
     padding: 6px 2px;
 }
 
-
-body {
-    padding-top: 120px !important;
 }
 
+.easyPieChart-text {
+    line-height: 1em;
+    padding-top: 15px;
 }
 
+.red-text {
+    color: #ee0f16;
+}
+
+.yellow-text {
+    color: #ffcc00;
+}
+
+.green-text {
+    color: #34b845;
+}
+
+.percentage {
+    color: #666666;
+    font-size: 0.7em;
+}
+
+#my-jobs-heading {
+    font-size: 0.8em;
+    width: 50%;
+    float: left;
+}
+
+#my-jobs-total {
+    color: #666666;
+}
+
+#events_summary {
+  position: absolute;
+  bottom: 0px;    
+  width: -moz-calc(100% - 20px);
+  width: -webkit-calc(100% - 20px);
+  width: calc(100% - 20px);
+
+}
+
+#events_summary .bootstrap-admin-panel-content {
+    padding: 5px;
+}
+
+#events_summary .bootstrap-admin-panel-content {
+    padding: 5px;
+}
+
+#events_summary .row {
+    margin-left: -5px;
+    margin-right: -5px;
+}
+
+#events_summary .col-sm-4 {
+    padding-left: 0px;
+}
+
+#events_summary .chart-bottom-heading {
+    font-size: 0.8em;
+    color: #666666;
+}

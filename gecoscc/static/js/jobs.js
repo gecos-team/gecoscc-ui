@@ -97,6 +97,15 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
             return obj;
         }
     });
+    Models.MyJobStatistics = Backbone.Model.extend({
+        url: function () {
+            return "/api/my-jobs-statistics/";
+        },
+        parse: function (obj) {
+            return obj;
+        }
+    });
+    
 });
 
 App.module("Job.Views", function (Views, App, Backbone, Marionette, $, _) {
