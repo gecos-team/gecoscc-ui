@@ -497,6 +497,7 @@ class ChefTask(Task):
         grouper = itemgetter(*mergeIdField)
         result = []
         for key, grp in groupby(sorted(input_data, key = grouper), grouper):
+           key = [key] if not isinstance(key,tuple) else key
            temp_dict = dict(zip(mergeIdField, key))
            temp_list = [d[mergeActionField] for d in grp]
            if opposite:
