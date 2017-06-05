@@ -36,7 +36,7 @@ class MyJobStatistics(BaseAPI):
         administrator_username = self.request.user['username']
         
         # Count micro-jobs and macro-jobs that doesn't have any child
-        base_filter = { 'administrator_username': administrator_username, 'archived':False, 'childs': {'$exists': True, '$eq': 0} }
+        base_filter = { 'administrator_username': administrator_username, 'archived':False, 'parent': {'$exists': True, '$ne': None} }
         
         processing_filter = base_filter.copy()
         processing_filter['status'] = 'processing'
