@@ -16,6 +16,7 @@
 {% block inner_content %}
     <!-- left, vertical navbar -->
     <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux">
+        <div id="sidebar-right"><span id="sidebar-size-handler" class="fa fa-th"></span></div>
         <div id="nav-tree" class="panel panel-default bootstrap-admin-no-table-panel">
             <div class="panel-heading">
                 <div class="input-group">
@@ -79,9 +80,10 @@
         </div>
 
         <div id="events-container"></div>
+        <div id="events-summary-container"></div>
     </div>
 
-    <div class="col-sm-9 col-sm-offset-3">
+    <div id="main-area">
         <div class="row">
             <div class="col-sm-9">
                 <div id="breadcrumb" class="navbar navbar-default bootstrap-admin-navbar-thin"></div>
@@ -246,6 +248,7 @@
     <script type="text/html" id="breadcrumb-template">{% include "bb-breadcrumb.html" %}</script>
     <script type="text/html" id="computer-template">{% include "bb-computer.html" %}</script>
     <script type="text/html" id="jobs-template">{% include "bb-jobs.html" %}</script>
+    <script type="text/html" id="jobs-summary-template">{% include "bb-jobs-summary.html" %}</script>
     <script type="text/html" id="groups-form-template">{% include "bb-groups-form.html" %}</script>
     <script type="text/html" id="groups-members-template">{% include "bb-groups-members.html" %}</script>
     <script type="text/html" id="groups-multi-widget-template">{% include "bb-groups-multi-widget.html" %}</script>
@@ -277,16 +280,64 @@
             evt.preventDefault();
         }
     
+        function removePx(value) {
+            if (! value)
+                return 0;
+        
+            return parseInt(value.replace(/[^-\d\.]/g, ''));
+        }
+    
+        function recalculateSidebarHeight() {
+            // Sidebar heights
+            var baseHeight = 25;
+            var count = true;
+            $('#sidebar').parent().children().each( function () {
+                var elem = $(this);
+                if (elem.attr('id') == 'sidebar') {
+                    count = false;
+                }
+                
+                if (count) {
+                    var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+                    baseHeight += height;
+                }
+            });
+            $('#sidebar').height(Math.floor($(window).height() - baseHeight));      
+            $('#sidebar-right').css('line-height', Math.floor($(window).height() - baseHeight)+'px');      
+            
+            $('#main-area').height(Math.floor($(window).height() - baseHeight));      
+            
+            $('#main-area').width( Math.floor($( window ).width() - $('#sidebar').width() - 100) );
+        }
+        
+        function recalculateBodyPadding() {
+            var elem = $('.navbar');
+            var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+            $('body').css('padding-top', height);
+        
+        }
     
         $(document).ready(function () {
-            // Sidebar heights
-            $('#sidebar').height($(window).height() - 131);
+            // Check minimum sidebar width
+            if ($('#sidebar').width() < 250) 
+                $('#sidebar').width( 250 );
+            
+            // Recalculate sidebar height
+            recalculateSidebarHeight();
+            setTimeout(recalculateBodyPadding, 50);           
+            setTimeout(recalculateSidebarHeight, 100);           
+            
             $(window).on('resize', function () {
                 // Recalculate sidebar height
-                $('#sidebar').height($(window).height() - 131);
+                recalculateSidebarHeight();
+                setTimeout(recalculateBodyPadding, 50);           
+                setTimeout(recalculateSidebarHeight, 100);
             });
 
-            
             // Search by form events
             $('.dropdown-menu input, .dropdown-menu label, .dropdown-menu').click(function(e) {
                 e.stopPropagation();
@@ -310,6 +361,36 @@
                 $('.filter_checkbox').prop('checked', true);
                 // Lock the filter
                 $('.filter_checkbox').click(preventDefaultAction);
+            });
+            
+
+            $('.alert').on('close.bs.alert', function (e) {
+                setTimeout(recalculateSidebarHeight, 100);
+            });
+            
+            $('#sidebar-size-handler').mousedown( function () {
+                $('#sidebar-right').addClass('resizing');
+            });
+
+            $(document.body).mouseup( function () {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    $('#sidebar-right').removeClass('resizing');
+                }
+            });
+            
+            $(document.body).mousemove(function( event ) {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    var sbposition = $('#sidebar').position();
+                    
+                    var newSidebarWidth = event.pageX - sbposition.left - 17;
+                    
+                    if (newSidebarWidth >= 250) {
+                        $('#sidebar').width( newSidebarWidth );
+                        
+                        $('#main-area').width( $( window ).width() - $('#sidebar').width() - 100 );
+                    }
+                        
+                }
             });
             
             
