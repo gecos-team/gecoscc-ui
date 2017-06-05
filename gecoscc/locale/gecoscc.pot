@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-25 14:03+0200\n"
+"POT-Creation-Date: 2017-06-05 12:31+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -326,28 +326,28 @@ msgstr ""
 msgid "There were errors"
 msgstr ""
 
-#: gecoscc/tasks.py:882 gecoscc/tasks.py:973 gecoscc/tasks.py:1117
+#: gecoscc/tasks.py:886 gecoscc/tasks.py:977 gecoscc/tasks.py:1121
 msgid "type"
 msgstr ""
 
-#: gecoscc/tasks.py:941 gecoscc/api/chef_status.py:123
+#: gecoscc/tasks.py:945 gecoscc/api/chef_status.py:123
 #, python-format
 msgid "Pending: %d"
 msgstr ""
 
-#: gecoscc/tasks.py:973 gecoscc/tasks.py:1117
+#: gecoscc/tasks.py:977 gecoscc/tasks.py:1121
 msgid "deleted"
 msgstr ""
 
-#: gecoscc/tasks.py:1275
+#: gecoscc/tasks.py:1279
 msgid "policy uploaded"
 msgstr ""
 
-#: gecoscc/tasks.py:1277
+#: gecoscc/tasks.py:1281
 msgid "policy uploading..."
 msgstr ""
 
-#: gecoscc/tasks.py:1324
+#: gecoscc/tasks.py:1328
 #, python-format
 msgid "Cookbook uploaded successfully %s %s"
 msgstr ""
@@ -423,7 +423,7 @@ msgstr ""
 msgid "Settings"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:28 gecoscc/templates/bb-jobs.html:59
+#: gecoscc/templates/base_navbar.jinja2:28 gecoscc/templates/bb-jobs.html:56
 #: gecoscc/templates/server/connections.jinja2:26
 msgid "Status"
 msgstr ""
@@ -457,70 +457,79 @@ msgstr ""
 msgid "Log out"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:25 gecoscc/templates/bb-policies-add.html:12
+#: gecoscc/templates/base_tree.jinja2:26 gecoscc/templates/bb-policies-add.html:12
 msgid "Search"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:32
-msgid "Station"
+#: gecoscc/templates/base_tree.jinja2:34
+msgid "Search by"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:35 gecoscc/templates/bb-computer.html:29
+#: gecoscc/templates/base_tree.jinja2:36 gecoscc/templates/bb-computer.html:57
+#: gecoscc/templates/bb-groups-form.html:21 gecoscc/templates/bb-ou.html:43
+#: gecoscc/templates/bb-policies-list.html:6 gecoscc/templates/bb-printer.html:13
+#: gecoscc/templates/bb-repository.html:13 gecoscc/templates/bb-storage.html:12
+#: gecoscc/templates/settings.jinja2:62 gecoscc/templates/server/status.jinja2:67
+#: gecoscc/views/reports.py:93
+msgid "Name"
+msgstr ""
+
+#: gecoscc/templates/base_tree.jinja2:39 gecoscc/templates/bb-computer.html:29
 msgid "IP address"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:38 gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/base_tree.jinja2:42 gecoscc/templates/bb-jobs.html:40
 #: gecoscc/templates/bb-new-element.html:12 gecoscc/templates/bb-user.html:11
 msgid "User"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:48
+#: gecoscc/templates/base_tree.jinja2:47
 msgid "Show only"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:51 gecoscc/templates/bb-computer.html:104
+#: gecoscc/templates/base_tree.jinja2:49 gecoscc/templates/bb-computer.html:104
 #: gecoscc/templates/bb-groups-multi-widget.html:3
 #: gecoscc/templates/bb-user.html:79
 msgid "Groups"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:54
+#: gecoscc/templates/base_tree.jinja2:52
 msgid "Stations"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:57 gecoscc/templates/reports.jinja2:15
+#: gecoscc/templates/base_tree.jinja2:55 gecoscc/templates/reports.jinja2:15
 msgid "Users"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:60
+#: gecoscc/templates/base_tree.jinja2:58
 msgid "Printers"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:63
+#: gecoscc/templates/base_tree.jinja2:61
 msgid "Storages"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:66
+#: gecoscc/templates/base_tree.jinja2:64
 msgid "Repositories"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:183
+#: gecoscc/templates/base_tree.jinja2:184
 msgid "This action requires a little time"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:186
+#: gecoscc/templates/base_tree.jinja2:187
 msgid "Is the website maintenance?"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:189 gecoscc/templates/admins/list.jinja2:49
+#: gecoscc/templates/base_tree.jinja2:190 gecoscc/templates/admins/list.jinja2:49
 msgid "No"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:190 gecoscc/templates/admins/list.jinja2:47
+#: gecoscc/templates/base_tree.jinja2:191 gecoscc/templates/admins/list.jinja2:47
 msgid "Yes"
 msgstr ""
 
-#: gecoscc/templates/base_tree.jinja2:271 gecoscc/templates/bb-computer.html:99
+#: gecoscc/templates/base_tree.jinja2:273 gecoscc/templates/bb-computer.html:99
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
 msgstr ""
@@ -563,14 +572,15 @@ msgstr ""
 msgid "Policies"
 msgstr ""
 
-#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:43
+#: gecoscc/templates/bb-computer.html:12 gecoscc/templates/bb-jobs.html:40
 msgid "Workstation"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:13 gecoscc/templates/bb-groups-form.html:12
-#: gecoscc/templates/bb-jobs.html:22 gecoscc/templates/bb-ou.html:12
-#: gecoscc/templates/bb-printer.html:4 gecoscc/templates/bb-repository.html:4
-#: gecoscc/templates/bb-storage.html:4 gecoscc/templates/bb-user.html:12
+#: gecoscc/templates/bb-jobs-summary.html:9 gecoscc/templates/bb-jobs.html:19
+#: gecoscc/templates/bb-ou.html:12 gecoscc/templates/bb-printer.html:4
+#: gecoscc/templates/bb-repository.html:4 gecoscc/templates/bb-storage.html:4
+#: gecoscc/templates/bb-user.html:12
 msgid "Reload"
 msgstr ""
 
@@ -603,14 +613,6 @@ msgstr ""
 
 #: gecoscc/templates/bb-computer.html:47
 msgid "Former network connection restored because current one does not work properly"
-msgstr ""
-
-#: gecoscc/templates/bb-computer.html:57 gecoscc/templates/bb-groups-form.html:21
-#: gecoscc/templates/bb-ou.html:43 gecoscc/templates/bb-policies-list.html:6
-#: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
-#: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
-#: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
-msgid "Name"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:58 gecoscc/templates/bb-computer.html:77
@@ -755,8 +757,20 @@ msgstr ""
 msgid "Completed tasks"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:3
+#: gecoscc/templates/bb-jobs-summary.html:3 gecoscc/templates/bb-jobs.html:3
 msgid "My actions"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs-summary.html:4 gecoscc/templates/bb-jobs.html:105
+msgid "Total"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs-summary.html:6
+msgid "Maximize"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs-summary.html:12 gecoscc/templates/bb-jobs.html:22
+msgid "Archive Tasks"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:5
@@ -788,43 +802,31 @@ msgid "Archived"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:16
-msgid "Maximize"
-msgstr ""
-
-#: gecoscc/templates/bb-jobs.html:19
 msgid "Minimize"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:25
-msgid "Archive Tasks"
-msgstr ""
-
-#: gecoscc/templates/bb-jobs.html:28
 msgid "Backstrack"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:37
+#: gecoscc/templates/bb-jobs.html:34
 msgid "Date"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:40
+#: gecoscc/templates/bb-jobs.html:37
 msgid "Origin"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:47
+#: gecoscc/templates/bb-jobs.html:44
 msgid "Policy"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:52 gecoscc/templates/admins/restore.jinja2:17
+#: gecoscc/templates/bb-jobs.html:49 gecoscc/templates/admins/restore.jinja2:17
 msgid "Action"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:55
+#: gecoscc/templates/bb-jobs.html:52
 msgid "ID"
-msgstr ""
-
-#: gecoscc/templates/bb-jobs.html:108
-msgid "Total"
 msgstr ""
 
 #: gecoscc/templates/bb-new-element.html:4
