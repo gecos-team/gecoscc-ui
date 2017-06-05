@@ -71,10 +71,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 }
             });
 
-            $("input:checkbox[name=filter_type]").change(function(evt) {
-                $("#tree-search-btn").click();
-            });            
-            
             $("#tree-close-search-btn")
                 .hide()
                 .click(function (evt) {

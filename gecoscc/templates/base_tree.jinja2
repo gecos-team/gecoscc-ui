@@ -26,48 +26,47 @@
                     <span class="input-group-btn">
                         <span class="dropdown">
                             <button id="tree-search-setup-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
-                              <!-- Tree search dropdown menu -->
-                              <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-setup-btn">
-                                <li class="list-unstyled radio">
-                                  <label class="radio"><input type="radio" name="search_by" checked value="nodename">{{ gettext('Station') }}</label>
-                                </li>
-                                <li class="list-unstyled radio">
-                                  <label class="radio"><input type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
-                                </li>
-                                <li class="list-unstyled radio">
-                                  <label class="radio"><input type="radio" name="search_by" value="username">{{ gettext('User') }}</label>
-                                </li> 
-                              </ul>   
+                            <!-- Tree search dropdown menu -->
+                            <div class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-setup-btn">
+                                <div id="tree_search_setup_drowpdown"class="row-fluid"">
+                                    <div class="col-xs-6 dropdown-column">
+                                        <div class="column-title">{{ gettext('Seach by') }}</div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_nodename" type="radio" name="search_by" checked value="nodename">{{ gettext('Name') }}</label>
+                                        </div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_ip" type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
+                                        </div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_username" type="radio" name="search_by" value="username">{{ gettext('User') }}</label>
+                                        </div> 
+                                    </div>
+                                    
+                                    <div class="col-xs-6 dropdown-column">
+                                        <div class="column-title">{{ gettext('Show only') }}</div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="group">{{ gettext('Groups') }}</label>&nbsp;&nbsp;
+                                        </div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="computer">{{ gettext('Stations') }}</label>&nbsp;&nbsp;
+                                        </div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="user">{{ gettext('Users') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="printer">{{ gettext('Printers') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="storage">{{ gettext('Storages') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="repository">{{ gettext('Repositories') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        
+                                    </div>
+                                </div>
+                            </div>
                         </span>                          
-                        
-                        <span class="dropdown">
-                            <button id="tree-search-filter-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-filter"></span></button>
-                              <!--  Tree filter dropdown menu -->
-                              <ul class="dropdown-menu pull-right tree-dropdown" aria-labelledby="tree-search-filter-btn">
-                                <li class="list-unstyled checkbox">
-                                  <strong>{{ gettext('Show only') }}</strong>
-                                </li>
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="group">{{ gettext('Groups') }}</label>&nbsp;&nbsp;
-                                </li>
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="computer">{{ gettext('Stations') }}</label>&nbsp;&nbsp;
-                                </li>
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="user">{{ gettext('Users') }}</label>&nbsp;&nbsp;
-                                </li> 
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="printer">{{ gettext('Printers') }}</label>&nbsp;&nbsp;
-                                </li> 
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="storage">{{ gettext('Storages') }}</label>&nbsp;&nbsp;
-                                </li> 
-                                <li class="list-unstyled checkbox">
-                                  <label class="checkbox"><input type="checkbox" name="filter_type" checked value="repository">{{ gettext('Repositories') }}</label>&nbsp;&nbsp;
-                                </li> 
-                              </ul>                              
-                        </span>
-                        
                         <button id="tree-search-btn" class="btn btn-primary dropdown-toggle" type="button"><span class="fa fa-search"></span></button>
                         
                     </span>
@@ -273,6 +272,12 @@
     </script>
 
     <script>
+    
+        function preventDefaultAction(evt) {
+            evt.preventDefault();
+        }
+    
+    
         $(document).ready(function () {
             // Sidebar heights
             $('#sidebar').height($(window).height() - 131);
@@ -281,6 +286,33 @@
                 $('#sidebar').height($(window).height() - 131);
             });
 
+            
+            // Search by form events
+            $('.dropdown-menu input, .dropdown-menu label, .dropdown-menu').click(function(e) {
+                e.stopPropagation();
+            });            
+            $('#search_by_nodename').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Unlock the filter
+                $('.filter_checkbox').unbind( "click", preventDefaultAction )
+            });
+
+            $('#search_by_ip').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Lock the filter
+                $('.filter_checkbox').click(preventDefaultAction);
+            });
+
+            $('#search_by_username').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Lock the filter
+                $('.filter_checkbox').click(preventDefaultAction);
+            });
+            
+            
             var events = $("#events");
             $("#maximize").click(function (evt) {
                 evt.preventDefault();
