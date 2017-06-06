@@ -386,24 +386,28 @@ class ChefTask(Task):
                         return True
         return False
 
-    def update_ws_mergeable_policy(self, node, field_chef, field_ui, policy, update_by_path, obj_ui):
+    def update_ws_mergeable_policy(self, node, action, field_chef, field_ui, policy, update_by_path, obj_ui):
         '''
         Updates node chef with a mergeable workstation policy
         '''
         self.log("debug","tasks.py:::update_ws_mergeable_policy - field_chef = {0}".format(field_chef))
-        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) is True:
+        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) or action == DELETED_POLICY_ACTION:
            
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
+            self.log("debug","tasks.py:::update_ws_mergeable_policy - node_updated_by = {0}".format(node_updated_by))
             nodes_ids = self.get_nodes_ids(node_updated_by)
+            self.log("debug","tasks.py:::update_ws_mergeable_policy - nodes_ids = {0}".format(nodes_ids))
         
-                  
+
             new_field_chef_value = []
+            self.log("debug","tasks.py:::update_ws_mergeable_policy - new_field_chef_value = {0}".format(new_field_chef_value))
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
             for updater_node in updater_nodes:
-                #if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
-                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
-            
-                                                                                                                                
+                if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
+                    new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
+                else: # support_os
+                    new_field_chef_value += obj_ui[field_ui]
+
             
             try:
                 node.attributes.set_dotted(field_chef,list(set(new_field_chef_value)))
@@ -415,13 +419,14 @@ class ChefTask(Task):
         return False
             
 
-    def update_user_mergeable_policy(self, node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
+    def update_user_mergeable_policy(self, node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
         '''
         Updates node chef with a mergeable user policy
         '''
-        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
+            self.log("debug","tasks.py:::update_user_mergeable_policy - nodes_ids = {0}".format(nodes_ids))
 
             new_field_chef_value = {}
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
@@ -450,7 +455,7 @@ class ChefTask(Task):
         Update node chef with a mergeable workstation emitter policy
         This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
         '''
-        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef):
+        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
 
@@ -467,7 +472,7 @@ class ChefTask(Task):
         Update node chef with a mergeable user emitter policy
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
-        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
 
@@ -543,17 +548,16 @@ class ChefTask(Task):
                 elif is_mergeable:
                     update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
 
-                    if action == DELETED_POLICY_ACTION:
-                        node.attributes.set_dotted(field_chef, obj_ui_field)
-                        is_policy_updated = True
-                    elif obj_ui.get('type', None) == 'storage':
+
+
+                    if obj_ui.get('type', None) == 'storage':
                         is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
                     elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
                         is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
                     elif not is_user_policy(field_chef):
-                        is_policy_updated = self.update_ws_mergeable_policy(node, field_chef, field_ui, policy, update_by_path, obj_ui)
+                        is_policy_updated = self.update_ws_mergeable_policy(node, action, field_chef, field_ui, policy, update_by_path, obj_ui)
                     elif is_user_policy(field_chef):
-                        is_policy_updated = self.update_user_mergeable_policy(node, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui)
+                        is_policy_updated = self.update_user_mergeable_policy(node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui)
 
                     if is_policy_updated:
                         updated = True

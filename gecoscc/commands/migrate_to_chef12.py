@@ -58,7 +58,7 @@ class Command(BaseCommand):
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.version'))
+                            self.options.chef_pem, False, self.settings.get('chef.version'))
                             
         print '============ CHECKING ADMINISTRATOR USERS ============='                  
         # Check if all the GECOS CC administrators
@@ -87,7 +87,8 @@ class Command(BaseCommand):
                 try:
                     create_chef_admin_user(api, self.settings, toChefUsername(admin_user['username']), chef_password, admin_user['email'])
                 except ChefServerError, e:
-                    print "User not created in chef, error was: %s" % e
+                    print "ERROR: User not created in chef, error was: %s" % e
+                    print "(Check /opt/opscode/embedded/service/opscode-erchef/log/requests.log* for more info)"
                     sys.exit(1)                
                             
                 chef_user = api['/users/%s' % toChefUsername(admin_user['username'])]
@@ -147,10 +148,7 @@ class Command(BaseCommand):
         
         # Check if all the clients have permissions over the computer node with the same name (if exists)
         print '============ CHECKING COMPUTERS ============='                  
-        computers = self.db.nodes.find_one({"type" : "computer"})
-        if not isinstance(computers, list):
-            computers = [computers]
-        
+        computers = self.db.nodes.find({"type" : "computer"})
         for computer in computers:
             print 'Checking computer: %s'%(computer['name'])
             

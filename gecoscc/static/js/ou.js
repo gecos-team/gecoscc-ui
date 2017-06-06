@@ -65,7 +65,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             var id = this.model.get("id");
 
-            var page = new App.Tree.Models.Container({path:path+','+id});
+            var search_filter = App.instances.tree.getSearchFilter();
+            var page = new App.Tree.Models.Container({path:path+','+id, search_filter: search_filter.join()});
 
             page.goTo(1, {
                 success: function (data) {

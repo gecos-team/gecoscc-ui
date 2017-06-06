@@ -51,7 +51,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    <div class="tree-container-header">\n' +
             '        <div class="tree-highlight">\n' +
             '            <span class="opener fa fa-<%= controlIcon %>-square-o"></span><span class="fa fa-<%= icon %>"></span>\n' +
-            '            <div class="tree-name"><%= name %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
+            '            <div class="tree-name" data-toggle="tooltip" data-placement="left" title="<%= name %>"><%= ((name.length > 20)?name.substr(0, 20)+"...":name) %> <span class="extra-opts fa fa-caret-right"></span></div>\n' +
             '            <input type="checkbox" class="tree-selection">\n' +
             '        </div>\n' +
             '    </div>\n' +
@@ -63,7 +63,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
             '        <span class="fa fa-<%= icon %>"></span>\n' +
-            '        <div class="tree-name"><%= name %></div>\n' +
+            '        <div class="tree-name" data-toggle="tooltip" data-placement="left" title="<%= name %>"><%= ((name.length > 20)?name.substr(0, 20)+"...":name) %></div>\n' +
             '        <input type="checkbox" class="tree-selection">\n' +
             '    </div>\n' +
             '</div>\n',

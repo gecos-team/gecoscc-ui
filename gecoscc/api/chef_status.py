@@ -28,8 +28,14 @@ from gecoscc.utils import (get_chef_api, get_filter_in_domain,
                            reserve_node_or_raise, save_node_and_free, update_computers_of_user)
 from gecoscc.socks import invalidate_jobs, invalidate_change, add_computer_to_user, update_tree
 
+import logging
+logger = logging.getLogger(__name__)
+
+
 USERS_OLD = 'ohai_gecos.users_old'
 USERS_OHAI = 'ohai_gecos.users'
+
+NETWORK_INTERFACES = 'network.interfaces'
 
 
 @resource(path='/chef/status/',
@@ -63,12 +69,19 @@ class ChefStatusResource(BaseAPI):
         api = get_chef_api(settings, self.request.user)
         node = Node(node_id, api)
         job_status = node.attributes.get('job_status')
+        logger.info("Saving status for node_id: %s username: %s" % (str(node_id), str(username)))
 
         # After chef-client run, a report handler calls /api/chef_status
         # Previously, gcc_link attribute of chef node is updated by network policies
         gcc_link = node.attributes.get('gcc_link')
+        logger.info("gcc_link: %s " % (str(gcc_link)))
         self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
 
+        # Update IP address
+        ipaddress = node.attributes.get('ipaddress')
+        logger.info("ipaddress: %s " % (str(ipaddress)))
+        self.request.db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
+        
         reserve_node = False
         if job_status:
             node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
@@ -113,16 +126,23 @@ class ChefStatusResource(BaseAPI):
             invalidate_jobs(self.request)
             node.attributes.set_dotted('job_status', {})
 
+        # Check users
         users_old = self.get_attr(node, USERS_OLD)
         users = self.get_attr(node, USERS_OHAI)
         if not users_old or users_old != users:
+            logger.info("Must check users!")
             if not reserve_node:
                 node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
             return self.check_users(node, api)
+        
+        # Save node and free
         if job_status:
+            logger.info("Save node data!")
             save_node_and_free(node)
+            
         return {'ok': True}
 
+        
     def check_users(self, chef_node, api):
         node_collection = self.request.db.nodes
 
