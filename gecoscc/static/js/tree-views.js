@@ -70,6 +70,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $("#tree-search-btn").click();
                 }
             });
+            
+            $('#tree_search_drowpdown').on('hidden.bs.dropdown', function () {
+                $("#tree-search-btn").click();
+            });                 
 
             $("#tree-close-search-btn")
                 .hide()
