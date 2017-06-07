@@ -28,7 +28,7 @@ var App;
 (function (Backbone, $, _, gettext, MessageManager) {
     "use strict";
 
-    var HomeView, NewElementView, LoaderView, Router, JobsView, JobsSummaryView;
+    var HomeView, NewElementView, LoaderView, Router, JobsView, JobsSummaryView, NotFoundView;
 
     App = new Backbone.Marionette.Application();
 
@@ -555,7 +555,16 @@ var App;
                             model.get("path")
                         );
                     }
+                    App.instances.cache.set(model.get('id'), model);
 
+                }).fail(function () {
+                    App.main.close(App.instances.loaderView);
+                    App.showAlert(
+                            "error",
+                            gettext("¡¡ OOOOOPSSS !! The url points to a non-existent object."),
+                            "<br/> - " + gettext("If you came here by clicking on a link in a view, refresh that view.")
+                    );
+                    return;
                 });
             },
 
@@ -569,7 +578,6 @@ var App;
                 if (_.isUndefined(model)) {
                     Model = this._typeClasses(type)[0];
                     model = new Model({ id: itemid });
-                    App.instances.cache.set(itemid, model);
                 } else {
                     skipFetch = true;
                 }

@@ -29,7 +29,14 @@
                                             <dt>{{ gettext('IP address') }}</dt>
                                             <dd><%= ipaddress %></dd>
                                             <dt>{{ gettext('Users that have logged in') }}</dt>
-                                            <dd><% if (users) { %><%= users %><% } else { %>{{ gettext('None')}}<% } %></dd>
+                                            <dd><% if (users) { %>
+                                                    <% users.forEach(function (user) { %>
+                                                        <a href="#ou/<%= _.last(user.path.split(',')) %>/user/<%= user._id %>"><%= user.name %></a> 
+                                                    <% }) %>
+                                                <% } else { %>
+                                                    {{ gettext('None')}}
+                                                <% } %>
+                                            </dd>
                                         </dl>
                                     </div>
                                     <div class="col-sm-5">
