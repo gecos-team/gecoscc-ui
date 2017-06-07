@@ -520,6 +520,84 @@ legend {
     font-size: 16px;
 }
 
+.fuelux .tree-branch-name .glyphicon {
+    margin-right: 3px;
+}
+
+.tree-fa:before { 
+  content: "\f196";
+}
+
+
+.fuelux .tree .tree-open > .tree-branch-header > .tree-fa:before {
+  content: "\f147" !important;
+}
+
+.fuelux .tree-json-object .glyphicon-folder-open:before {
+    content: "{";
+}
+
+.fuelux .tree .tree-json-object.tree-open > .tree-branch-children:after {
+    content: "}";
+}
+
+
+.fuelux .tree-json-object .glyphicon-folder-close:before {
+  content: "{}";
+}
+
+.fuelux .tree-json-array .glyphicon-folder-open:before {
+    content: "[";
+}
+
+.fuelux .tree .tree-json-array.tree-open > .tree-branch-children:after {
+    content: "]";
+}
+
+.fuelux .tree .tree-branch.tree-open {
+    border-left: 2px solid #cccccc;
+}
+
+
+.fuelux .tree-json-array .glyphicon-folder-close:before {
+  content: "[]";
+}
+
+.fuelux .tree-json-string:before {
+  content: "\"";
+}
+
+.fuelux .tree-json-string:after {
+  content: "\",";
+}
+
+.fuelux .tree-json-string {
+  color: #cc0000;
+}
+
+#ohai_tree_header {
+    margin-bottom: 3px;
+}
+
+#ohai_tree {
+    height: 500px;
+    overflow: auto;
+}
+
+#ohai_tree-expand {
+    padding-top: 5px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    padding-bottom: 1px !important;
+}
+
+#ohai_tree-compress {
+    padding-top: 5px !important;
+    padding-left: 6px !important;
+    padding-right: 6px !important;
+    padding-bottom: 1px !important;
+}
+
 
 #tree_search_setup_drowpdown {
     width: 300px;

@@ -214,6 +214,183 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             return [days, gettext("Days"), hours, gettext("Hours"), minutes, gettext("Minutes")].join(" ");
         },
 
+
+        ohaiTreeDataSource: function(parentData, callback) {
+            var ohai = this.model.get("ohai");
+            var path = '/';
+            var id_base = '';
+
+            if (typeof(parentData.content) !== 'undefined') {
+                ohai = parentData.content;
+                path = parentData.path + parentData.key + '/';
+                id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+            
+            var childNodesArray = []
+            for( var name in ohai ) {
+                var id = id_base + "_" + name.replace(/[^a-zA-Z0-9]/g, '_');
+                if (Array.isArray(ohai[name]) || (typeof(ohai[name])) === 'object') {
+                    // Folder
+                    var cssClass = "tree-json-object";
+                    if (Array.isArray(ohai[name])) {
+                        cssClass = "tree-json-array";
+                    }
+                    
+                    childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                }
+                else {
+                    // Item
+                    var name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                    if (Array.isArray(ohai))
+                        name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                
+                    childNodesArray.push( {"key": name, "path": path, "name": name_value, "type": "item", "attr": { "id": id, "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } )
+                }
+            }
+            
+            
+            callback({
+              data: childNodesArray
+            });
+        },
+        
+        ohaiTreeCloseAll: function(ohai_tree) {
+            // This is slow!
+            //ohai_tree.tree('closeAll');
+            
+            
+            var data = this.model.get("ohai");
+            for( var name in data ) {
+                var value = data[name];
+                if (Array.isArray(value) || typeof(value) === 'object') {
+                    var folderId = "_"+name.replace(/[^a-zA-Z0-9]/g, '_');
+                    ohai_tree.tree('refreshFolder', $('#'+folderId))
+                    ohai_tree.tree('closeFolder', $('#'+folderId))
+                }
+            }
+        },
+        
+        ohaiTreeDataSearch: function(ohai_tree, keyword, mode) {
+            var ohai = this.model.get("ohai");
+
+            // Get current selected item
+            var selectedItemPath = '/';
+            if (mode != 'initial') {
+                if (ohai_tree.tree('selectedItems').length > 0) {
+                    var selectedItem = ohai_tree.tree('selectedItems')[0];
+                    selectedItemPath = selectedItem.path + selectedItem.key;
+                }
+            }
+
+            
+            // Look for the next result
+            var result = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, ohai, selectedItemPath, '', false, mode);
+            var nextResultPath = result[0];
+            console.log('nextResultPath: '+nextResultPath);
+            
+            if (nextResultPath) {
+                // Result found
+                this.$el.find("#ohai_tree-search").css('background-color', 'white');
+                
+                // Close the tree
+                this.ohaiTreeCloseAll(ohai_tree);
+                
+                // Open the result
+                var parts = nextResultPath.substring(1).split("/");
+                for (var i = 1; i<=parts.length; i++) {
+                    var folderId = '#';
+                    for (var j = 0; j<i; j++) {
+                        folderId += '_'+parts[j].replace(/[^a-zA-Z0-9]/g, '_');
+                    }
+                    
+                    if (i<parts.length) {
+                        // Open container folder
+                        ohai_tree.tree('openFolder', $(folderId))
+                    }
+                    else {
+                        // Select result
+                        var attr = $(folderId).attr('haschildren');
+                        if (typeof attr !== typeof undefined) {
+                            ohai_tree.tree('selectFolder', $(folderId));
+                        }
+                        else {
+                            ohai_tree.tree('selectItem', $(folderId));
+                        }
+                        
+                        if ($(folderId).length <= 0) {
+                            alert('No se encuentra:' + folderId);
+                        }
+                        var top = $(folderId).position().top;
+                        //console.log('top: '+top+' scrolltop:'+ohai_tree.scrollTop());
+                        
+                        ohai_tree.scrollTop( ohai_tree.scrollTop() + $(folderId).position().top);
+                        
+                    }
+                }
+                
+                
+                
+                
+            }
+            else {
+                // No result
+                this.$el.find("#ohai_tree-search").css('background-color', 'red');
+            }
+            
+            
+        },
+        
+        ohaiTreeDataSearchNextResult: function(ohai_tree, keyword, data, selectedItemPath, path, passed, mode) {
+            if (data == null) {
+                return [false, passed];
+            }
+            
+            if (selectedItemPath == '/') {
+                passed = true;
+            }
+            
+            var keys = Object.keys(data);
+            if (mode == 'previous') {
+                keys = keys.reverse();
+            }
+            
+            for( var i=0; i<keys.length; i++ ) {
+                var name = keys[i];
+                var currentPath = path + '/' + name;
+                var value = data[name];
+                //console.log('currentPath: '+currentPath+' passed = '+passed);
+                
+                if (currentPath == selectedItemPath) {
+                    passed = true;
+                    continue;
+                }
+                
+                if (name.match(keyword) && passed) {
+                    // Next result found in key
+                    return [currentPath, passed];
+                }
+                 
+                if (Array.isArray(value) || typeof(value) === 'object') {
+                   var res = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, value, selectedItemPath, currentPath, passed, mode);
+                   if (res[0]) {
+                       return res;
+                   }
+                   else {
+                       passed = res[1];
+                   }
+                }
+                else if (typeof(value) === 'string' && value.match(keyword) && passed) {
+                    // Next result found in value
+                    return  [currentPath, passed];
+                }
+               
+            }
+            
+            return [false, passed];
+            
+        },        
+        
+        
         onRender: function () {
             if(!_.isUndefined(this.activeTab)) {
                 this.activeTab = this.activeTab;
@@ -250,6 +427,94 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+            
+            // OHAI JSON tree rendering
+            var ohai_tree = this.$el.find("#ohai_tree");
+            ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model });
+            var that = this;
+            
+            // OHAI JSON tree buttons
+            this.$el.find("#ohai_tree-expand")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    ohai_tree.tree('discloseAll');
+                });            
+
+            this.$el.find("#ohai_tree-compress")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    that.ohaiTreeCloseAll(ohai_tree);
+                });            
+
+                
+            var search_field = this.$el.find("#ohai_tree-search")
+            this.$el.find("#ohai_tree-close-search-btn")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    search_field.val('');
+                        $("#ohai_tree-close-search-btn").hide();
+                        $("#ohai_tree-next-search-btn").hide();
+                        $("#ohai_tree-previous-search-btn").hide();                    
+                });
+            
+            
+            this.$el.find("#ohai_tree-search-btn")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    var keyword = search_field.val().trim();
+                    if (!keyword) {
+                        // Disable search
+                        $("#ohai_tree-close-search-btn").hide();
+                        $("#ohai_tree-next-search-btn").hide();
+                        $("#ohai_tree-previous-search-btn").hide();
+                    }
+                    else {
+                        // Start search
+                        var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        
+                        that.ohaiTreeDataSearch(ohai_tree, keyword, 'initial');
+
+
+                        $("#ohai_tree-close-search-btn").show();
+                        $("#ohai_tree-next-search-btn").show();
+                        $("#ohai_tree-previous-search-btn").show();
+
+                    }
+                    
+                }); 
+
+            this.$el.find("#ohai_tree-next-search-btn")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    var keyword = search_field.val().trim();
+                    if (keyword) {
+                        // Next search result
+                        var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        that.ohaiTreeDataSearch(ohai_tree, keyword, 'next');
+                    }
+                    
+                });                 
+
+            this.$el.find("#ohai_tree-previous-search-btn")
+                .off("click")
+                .on("click", function (evt) {
+                    evt.preventDefault();
+                    var keyword = search_field.val().trim();
+                    if (keyword) {
+                        // Next search result
+                        var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        that.ohaiTreeDataSearch(ohai_tree, keyword, 'previous');
+                    }
+                    
+                });                 
+
+                
+                
         },
         
         refresh: function (evt) {

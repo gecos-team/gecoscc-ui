@@ -2,7 +2,7 @@
 
 {% block extraheader %}
 <!-- Tree CSS -->
-<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/fuelux_mod.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
 <link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
@@ -10,12 +10,13 @@
 <link href="{{request.application_url}}/static/css/select2-bootstrap.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/jquery.dataTables.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/dataTables.bootstrap.min.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
 {% block moreheader %}{% endblock %}
 {% endblock %}
 
 {% block inner_content %}
     <!-- left, vertical navbar -->
-    <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux">
+    <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux_mod">
         <div id="sidebar-right"><span id="sidebar-size-handler" class="fa fa-th"></span></div>
         <div id="nav-tree" class="panel panel-default bootstrap-admin-no-table-panel">
             <div class="panel-heading">

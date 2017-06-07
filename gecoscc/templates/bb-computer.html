@@ -194,9 +194,69 @@
                                     </a>
                                 </h4>
                             </div>
+                            
+                          
+                            
                             <div id="collapseOne" class="panel-collapse collapse">
-                                <div class="panel-body">
-                                    <pre><%= JSON.stringify(ohai, null, 4) %></pre>
+                                <div class="panel-body fuelux">
+                                    <div id="ohai_tree_header" class="row">
+                                        <div class="col-sm-6">
+                                            <div class="btn-group">
+                                                <button id="ohai_tree-expand" class="btn btn-info" type="button" data-toggle="tooltip" data-placement="left" title="{{ gettext('Expand all') }}"><svg 
+                                                    version="1.1" id="expand" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                                    width="22px" height="22px" viewBox="0 0 22 22" enable-background="new 0 0 22 22" xml:space="preserve">
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M0,2.25v6.5C0,9.99,1.01,11,2.25,11h6.5C9.99,11,11,9.99,11,8.75
+                                                        v-6.5C11,1.01,9.99,0,8.75,0h-6.5C1.01,0,0,1.01,0,2.25z M1,2.84C1,1.82,1.82,1,2.84,1h5.32C9.18,1,10,1.82,10,2.84v5.32
+                                                        C10,9.18,9.18,10,8.16,10H2.84C1.82,10,1,9.18,1,8.16V2.84z"/>
+                                                    <polygon fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="5,2 5,5 2,5 2,6 5,6 5,9 6,9 6,6 9,6 9,5 6,5 6,2 "/>
+                                                    <polygon fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="4,13 4,18 2,18 5.5,22 9,18 7,18 7,13 "/>
+                                                    <polygon fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="18,2 18,4 13,4 13,7 18,7 18,9 22,5.5 "/>
+                                                </svg></button>
+                                                <button id="ohai_tree-compress" class="btn btn-info" type="button" data-toggle="tooltip" data-placement="right" title="{{ gettext('Collapse all') }}"><svg 
+                                                    version="1.1" id="compress" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                                    width="22px" height="22px" viewBox="0 0 22 22" enable-background="new 0 0 22 22" xml:space="preserve">
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" d="M0,2.25v6.5C0,9.99,1.01,11,2.25,11h6.5C9.99,11,11,9.99,11,8.75
+                                                        v-6.5C11,1.01,9.99,0,8.75,0h-6.5C1.01,0,0,1.01,0,2.25z M1,2.84C1,1.82,1.82,1,2.84,1h5.32C9.18,1,10,1.82,10,2.84v5.32
+                                                        C10,9.18,9.18,10,8.16,10H2.84C1.82,10,1,9.18,1,8.16V2.84z"/>
+                                                    <polygon fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="4,17 4,22 7,22 7,17 9,17 5.5,13 2,17 "/>
+                                                    <polygon fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" points="17,2 13,5.5 17,9 17,7 22,7 22,4 17,4 "/>
+                                                    <rect x="2" y="5" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF" width="7" height="1"/>
+                                                </svg></button>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <span class="input-group-btn">
+                                                    <button id="ohai_tree-close-search-btn" class="btn btn-danger" type="button" style="display: none;"><span class="fa fa-times"></span></button>
+                                                </span>                                            
+                                                <input id="ohai_tree-search" class="form-control" placeholder="Buscar" type="text">
+                                                <span class="input-group-btn">
+                                                    <button id="ohai_tree-previous-search-btn" class="btn" type="button" style="display: none;"><span class="glyphicon glyphicon-chevron-up"></span></button>
+                                                    <button id="ohai_tree-next-search-btn" class="btn" type="button" style="display: none;"><span class="glyphicon glyphicon-chevron-down"></span></button>
+                                                    <button id="ohai_tree-search-btn" class="btn btn-primary" type="button"><span class="fa fa-search"></span></button>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <ul class="tree" role="tree" id="ohai_tree">
+                                        <li class="tree-branch hide" data-template="treebranch" role="treeitem" aria-expanded="false">
+                                          <div class="tree-branch-header">
+                                            <button class="icon-caret fa tree-fa"><span class="sr-only">Open</span></button>
+                                            <button type="button" class="tree-branch-name">
+                                              <span class="tree-label"></span>
+                                              <span class="glyphicon icon-folder glyphicon-folder-close"></span>
+                                            </button>
+                                          </div>
+                                          <ul class="tree-branch-children" role="group"></ul>
+                                          <div class="tree-loader" role="alert">Loading...</div>
+                                        </li>
+                                        <li class="tree-item hide" data-template="treeitem" role="treeitem">
+                                          <button type="button" class="tree-item-name">
+                                            <span class="glyphicon icon-item fueluxicon-bullet"></span>
+                                            <span class="tree-label"></span>
+                                          </button>
+                                        </li>
+                                    </ul>
                                 </div>
                             </div>
                         </div>
