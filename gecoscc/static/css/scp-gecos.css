@@ -609,3 +609,40 @@ legend {
     font-size: 0.8em;
     color: #666666;
 }
+
+.tree-node-flag {
+    display: block;
+}
+
+.tree-node-folder {
+    display: block;
+}
+
+.tree-node-user {
+    display: block;
+}
+
+.tree-node-desktop {
+    display: block;
+}
+
+.tree-node-print {
+    display: block;
+}
+
+.tree-node-group {
+    display: block;
+}
+
+.tree-node-hdd-o {
+    display: block;
+}
+
+.tree-node-archive {
+    display: block;
+}
+
+.tree-node-globe {
+    display: block;
+}
+

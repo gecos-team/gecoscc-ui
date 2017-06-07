@@ -60,7 +60,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             '    </div>\n' +
             '</div>\n',
         treeItem =
-            '<div class="tree-leaf tree-node" style="display: block;" id="<%= id %>">\n' +
+            '<div class="tree-leaf tree-node tree-node-<%= icon %>" id="<%= id %>">\n' +
             '    <div class="tree-highlight">\n' +
             '        <span class="fa fa-<%= icon %>"></span>\n' +
             '        <div class="tree-name" data-toggle="tooltip" data-placement="left" title="<%= name %>"><%= ((name.length > 20)?name.substr(0, 20)+"...":name) %></div>\n' +
