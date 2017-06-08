@@ -272,10 +272,8 @@ class Command(BaseCommand):
                 self.treatment_policy(policy)
 
     def set_packages_url(self, value):
-        value['properties']['package_list']['autocomplete_url'] = PACKAGE_POLICY_URL
-        value['properties']['package_list']['items']['enum'] = []
-        value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
-        value['properties']['pkgs_to_remove']['items']['enum'] = []
+        value['properties']['package_list']['items']['properties']['name']['autocomplete_url'] = PACKAGE_POLICY_URL
+        value['properties']['package_list']['items']['properties']['name']['enum'] = []
     
     def set_mimetypes_url(self, value):
         value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL

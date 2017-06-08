@@ -622,19 +622,19 @@ jsonform.elementTypes = {
     }
   },
   'select':{
-    'template':'<<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
+    'template':'<<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url) ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '> ' + '<% if (!(node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)) { %>' +
+      '> ' + '<% if (!((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)) { %>' +
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
       '<% }}}); %> ' + '<% } %> ' +
-      '</<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %>>',
+      '</<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)? "input" : "select") %>>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
-      var parent = node.parentNode.schemaElement,
+      var schemaElmnt = ((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)?node.parentNode.schemaElement:node.schemaElement),
           promise,
           pagesize = 30,
           more,
@@ -662,7 +662,7 @@ jsonform.elementTypes = {
           return slug === "package";
       };
 
-      if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
+      if (!schemaElmnt || _.isUndefined(schemaElmnt) || _.isUndefined(schemaElmnt.autocomplete_url)) { return; }
 
       if (node.value) {
         $(node.el).addClass("hidden");
@@ -672,7 +672,7 @@ jsonform.elementTypes = {
             data = {oids: node.value};
           }
         promise = $.ajax({
-          url: parent.autocomplete_url,
+          url: schemaElmnt.autocomplete_url,
           dataType: 'json',
           data: data
         });
@@ -750,7 +750,7 @@ jsonform.elementTypes = {
                   query.callback({results: cachedRequests[query.term]});
               } else {
                   $.ajax({
-                      url: parent.autocomplete_url,
+                      url: schemaElmnt.autocomplete_url,
                       dataType: 'json',
                       id : function (node) {
                         return node._id;
