@@ -27,7 +27,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             name: "",
             registry: "",
             family: "",
-            users: "",
+            users: [],
             uptime: "-",
             gcc_link: true,
             ipaddress: "",

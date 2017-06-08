@@ -12,6 +12,7 @@
 
 import urllib2
 
+from bson import ObjectId
 from cornice.resource import resource
 from chef import Node as ChefNode
 from chef import ChefError
@@ -42,16 +43,31 @@ class ComputerResource(TreeLeafResourcePaginated):
 
     def get(self):
         result = super(ComputerResource, self).get()
+        node_collection = self.request.db.nodes
+        
         if not result.get('node_chef_id', None):
             return result
         try:
             api = get_chef_api(self.request.registry.settings, self.request.user)
             computer_node = ChefNode(result['node_chef_id'], api)
             ohai = to_deep_dict(computer_node.attributes)
+            nodeid = result.get('_id',None)
+            usernames = [i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]
+            users = list(node_collection.find({
+                "$and": [
+                    { "$or": [{"name": {"$in": usernames}}] }, 
+                    { "type":"user"},
+                    { "computers": {"$elemMatch": {"$eq": ObjectId(nodeid)}}}
+                 ]
+            },{'_id':1,'name':1,'path':1}))
+            # ObjectId to string for JSON serialize
+            [d.update({'_id': str(d['_id'])}) for d in users]
+            
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
+            
             result.update({'ohai': ohai,
-                           'users': ','.join([i['username'] for i in ohai.get('ohai_gecos', {}).get('users', [])]),
+                           'users': users,
                            'uptime': ohai.get('uptime', ''),
                            #'gcc_link': ohai.get('gcc_link',True),
                            'ipaddress': ohai.get('ipaddress', ''),
