@@ -86,7 +86,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // maxdepth must be zero for pagination to work because in the
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
-                return "/api/nodes/?maxdepth=0&path=" + this.path;
+                return "/api/nodes/?maxdepth=0&path=" + this.path +
+                    ((this.search_filter.length > 0)?"&type=" + this.search_filter:'');
             },
             statusCode: {
                 403: function() {
@@ -113,7 +114,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.path)) {
                 throw "Container collections require a path attribute";
             }
+            if (!_.isString(options.search_filter)) {
+                throw "Container collections require a search_filter attribute";
+            }
             this.path = options.path;
+            this.search_filter = options.search_filter;
         },
 
         parse: function (response) {
@@ -130,15 +135,19 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.search_by)) {
                 throw "Search collections require a 'search by' attribute";
             }
+            if (!_.isString(options.search_filter)) {
+                throw "Search collections require a 'search filter' attribute";
+            }
             this.keyword = options.keyword;
             this.search_by = options.search_by;
+            this.search_filter = options.search_filter;
         },
 
         paginator_core: {
             type: "GET",
             dataType: "json",
             url: function () {
-                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by;
+                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by+"&type="+this.search_filter;
             },
             statusCode: {
                 403: function() {
@@ -152,12 +161,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         parser: new TreeModel(),
 
         defaults: {
-            tree: null
+            tree: null,
+            search_filter: [],
         },
 
         initialize: function (options) {
             var that = this,
                 parent;
+            this.search_filter = [];
             this.listenTo(App, 'action_change', function (result) {
                 that.updateNodeById(result.objectId);
             });
@@ -176,6 +187,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         getUrl: function (options) {
             var params =  ["pagesize=99999"];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
+            if (this.search_filter.length > 0) { params.push("type=" + this.search_filter); }
             if (_.has(options, "oids")) {
                 params.push("oids=" + options.oids);
             } else {
@@ -206,7 +218,9 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
 
-            node.paginatedChildren = new Models.Container({ path: path });
+            var search_filter = App.instances.tree.getSearchFilter();
+                
+            node.paginatedChildren = new Models.Container({ path: path, search_filter: search_filter.join() });
             node.paginatedChildren.goTo(1, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
@@ -338,83 +352,24 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             return nodes;
         },
-        
-        appySearchFilter: function() {
-                var iconClasses = {
-                    first: "flag",
-                    ou: "folder",
-                    user: "user",
-                    computer: "desktop",
-                    printer: "print",
-                    group: "group",
-                    storage: "hdd-o",
-                    repository: "archive",
-                    domain: "globe"
-                };
-            
-            // Get the appropiate styles sheet data
-            var gecos_css = false;
-            for (var i = 0; i < document.styleSheets.length; i++) {
-                var css = document.styleSheets[i];
-                if (css.href.match("scp-gecos.css$")) {
-                    gecos_css = css;
-                    break;
-                }
-            }
-            
-            // Check all the filters
-            $("input:checkbox[name=filter_type]").each(function ()
-            {
-                var checked = $(this).prop('checked')
-                var value = $(this).val();
-                
-                var nodeStyle = false;
-                for (var i = 0; i < gecos_css.cssRules.length; i++) {
-                    var stl = gecos_css.cssRules[i];
-                    if (stl.selectorText == (".tree-node-"+iconClasses[value])) {
-                        nodeStyle = stl;
-                        break;
-                    }
-                }                
-                
-                nodeStyle.style.display = ((checked)?'block':'none');
-                
-                // Check if the selected node belongs to this type
-                var selected_elem_type = false;
-                var selected_elem_classes = [];
-                $('#nav-tree').find('.tree-selected').each(function( index ) {
-                    var cssClasses = $( this ).attr("class");
-                    if (cssClasses)
-                        selected_elem_classes = cssClasses.split(' ');
-                });
-                for (var i = 0; i < selected_elem_classes.length; i++) {
-                    var cssClass = selected_elem_classes[i];
-                    
-                    if (cssClass.match("^tree-node-")) {
-                        var iconClass = cssClass.substr("tree-node-".length);
-                        for (var key in iconClasses) {
-                            var val = iconClasses[key];
-                            if (val == iconClass) {
-                                selected_elem_type = key;
-                            }
-                        } 
-                    }
-                }
-                
-                if (selected_elem_type == value && !checked) {
-                    // The selected tree node matches one of the hidden types
-                    App.instances.router.navigate("", {
-                        trigger: true
-                    });
-                }
-                
-            });   
-            
-            
-        },        
 
-        loadFromPath: function (path, childToShow, silent) {
+        getSearchFilter: function() {
+            var search_filter = ['ou'];
+            $("input:checkbox[name=filter_type]:checked").each(function ()
+            {
+                search_filter.push($(this).val());
+            });   
+            return search_filter;
+        },
+        
+        loadFromPath: function (path, childToShow, silent, search_filter) {
             var that, nodes, promises, unknownIds;
+            if (typeof search_filter !== 'undefined') {
+                this.search_filter = search_filter;
+            }
+            else {
+                var search_filter = this.getSearchFilter();
+            }
 
             if (path === "root") { return [this.reloadTree()]; }
 

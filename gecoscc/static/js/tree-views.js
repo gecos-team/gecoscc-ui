@@ -48,14 +48,18 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     evt.preventDefault();
                     var keyword = $("#tree-search").val().trim();
                     var search_by = $('input:radio[name=search_by]:checked').val();
+                    var search_filter = App.instances.tree.getSearchFilter();
 
-                    App.instances.tree.appySearchFilter();
-                    
+                    // If all the elements are selected do not filter
+                    if (search_filter.length == 7) {
+                        search_filter = []
+                    }
+
                     //empty search reload tree
                     if (!keyword) {
-                        App.instances.tree.loadFromPath("root", App.tree.currentView.activeNode);
+                        App.instances.tree.loadFromPath("root", App.tree.currentView.activeNode, false, search_filter);
                     } else {
-                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by,
+                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by+"&searchfilter="+search_filter,
                                                   { trigger: true });
                         $("#tree-close-search-btn").show();
                     }
@@ -68,7 +72,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             
             $('#tree_search_drowpdown').on('hidden.bs.dropdown', function () {
-                App.instances.tree.appySearchFilter();
+                $("#tree-search-btn").click();
             });                 
 
             $("#tree-close-search-btn")
