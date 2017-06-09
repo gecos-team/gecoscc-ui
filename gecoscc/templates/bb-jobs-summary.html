@@ -8,9 +8,6 @@
     <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
         <span class="fa fa-refresh"></span>
     </button>
-    <button class="btn btn-xs btn-default pull-right archiveTasks" title="{{ gettext('Archive Tasks') }}">
-        <span class="fa fa-archive"></span>
-    </button>
 </div>
 <div class="bootstrap-admin-panel-content table-responsive">
     <div class="row">
@@ -22,7 +19,7 @@
                 </div>
                 <canvas width="60" height="60"></canvas>
             </div>
-            <div class="chart-bottom-heading"><%= processing %> t.</div>
+            <div class="chart-bottom-heading"><%= processing %></div>
         </div>
 
         <div class="col-xs-4 col-sm-4 col-md-4">
@@ -33,7 +30,7 @@
                 </div>
                 <canvas width="60" height="60"></canvas>
             </div>
-            <div class="chart-bottom-heading"><%= errors %> t.</div>
+            <div class="chart-bottom-heading"><%= errors %></div>
         </div>
         <div class="col-xs-4 col-sm-4 col-md-4">
             <div class="easyPieChart" data-percent="<%= finished / total * 100 %>" bar-color="#34b845" style="width: 60px; height: 60px; line-height: 60px;">
@@ -43,7 +40,7 @@
                 </div>
                 <canvas width="60" height="60"></canvas>
              </div>
-            <div class="chart-bottom-heading"><%= finished %> t.</div>
+            <div class="chart-bottom-heading"><%= finished %></div>
         </div>
         <br />
     </div>
