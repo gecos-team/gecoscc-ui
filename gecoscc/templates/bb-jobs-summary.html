@@ -15,7 +15,7 @@
             <div class="easyPieChart" data-percent="<%= processing / total * 100 %>" bar-color="#ffcc00" style="width: 60px; height: 60px; line-height: 60px;">
                 <div class="yellow-text easyPieChart-text">
                     <span class="fa fa-clock-o"></span><br />
-                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (processing / total * 100).toFixed(2) %><% } %>%</span>
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= Math.ceil(processing / total * 100) %><% } %>%</span>
                 </div>
                 <canvas width="60" height="60"></canvas>
             </div>
@@ -26,7 +26,7 @@
             <div class="easyPieChart" data-percent="<%= errors / total * 100 %>" bar-color="#ee0f16" style="width: 60px; height: 60px; line-height: 60px;">
                 <div class="red-text easyPieChart-text">
                     <span class="fa fa-exclamation-circle"></span><br />
-                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (errors / total * 100).toFixed(2) %><% } %>%</span>
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= Math.ceil(errors / total * 100) %><% } %>%</span>
                 </div>
                 <canvas width="60" height="60"></canvas>
             </div>
@@ -36,7 +36,7 @@
             <div class="easyPieChart" data-percent="<%= finished / total * 100 %>" bar-color="#34b845" style="width: 60px; height: 60px; line-height: 60px;">
                 <div class="green-text easyPieChart-text">
                     <span class="fa fa-check-circle"></span><br />
-                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= (finished / total * 100).toFixed(2) %><% } %>%</span>
+                    <span class="percentage"><% if (!total) { %>0<% } else { %><%= Math.floor(finished / total * 100) %><% } %>%</span>
                 </div>
                 <canvas width="60" height="60"></canvas>
              </div>
