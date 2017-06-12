@@ -136,7 +136,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         paginate: function (evt) {
-            var that, $el, prev, node, page, searchId, id;
+            var that, $el, prev, node, page, searchId, id, path;
 
             that = this;
             $el = $(evt.target);
@@ -146,6 +146,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             prev = $el.data("pagination") === "up";
             $el = $el.parents(".tree-container").first();
             id = $el.attr("id");
+            path = $el.attr("data-path");
             node = this.model.get("tree").first(function (obj) {
                 return obj.model.id === id;
             });
@@ -153,11 +154,26 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (node.model.status === "paginated") {
                 page = node.model.paginatedChildren.currentPage;
                 page = prev ? page - 1 : page + 1;
+                if (page < 1) {
+                    page = 1;
+                }
+                
+                if (page > node.model.paginatedChildren.totalPages) {
+                    page = node.model.paginatedChildren.totalPages;
+                }
+                
+                // Only save current page for root node
+                if ("root" == path) {
+                    this.setCurrentPageforNode(id, page);
+                }
                 node.model.paginatedChildren.goTo(page, {
                     success: function () { that.model.trigger("change"); }
                 });
             } else {
                 searchId = $el.find(".tree-container").first().attr("id");
+                if ("root" == path) {
+                    this.setCurrentPageforNode(id, 0);
+                }
                 this.model.loadFromPath(node.model.path + ',' + id, searchId);
             }
         },
@@ -182,7 +198,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         openContainer: function (evt) {
             evt.stopPropagation();
             var $el, $content, $header, $icon, opened, cssclass;
-
+            
             $el = $(evt.target).parents(".tree-container").first();
             $content = $el.find(".tree-container-content").first();
             $header = $el.find(".tree-container-header").first();
@@ -190,10 +206,14 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             this._openContainerAux($el, $content, opened);
             if (opened) {
+                // Close
+                this.saveOpenNode($el.attr("id"));
                 $icon = $header.find(".fa-plus-square-o");
                 $content.show();
                 cssclass = "fa-minus-square-o";
             } else {
+                // Open
+                this.saveCloseNode($el.attr("id"));
                 $icon = $header.find(".fa-minus-square-o");
                 $content.hide();
                 cssclass = "fa-plus-square-o";
@@ -325,6 +345,106 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
             this.$el.find(".multiselected").removeClass("multiselected");
+        },
+        
+        /**
+         * Adds a node to the list of open nodes.
+         * @node_id Node ID to add to the list.
+         */
+        saveOpenNode: function(node_id) {
+            if (this.isNodeOpen(node_id)) {
+                // Already opened
+                return;
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            openNodes[username].push(node_id); 
+            Cookies.set('main_tree_opened_nodes',  JSON.stringify(openNodes));
+            
+        },
+        
+        /**
+         * Removes a node to the list of open nodes.
+         * @node_id Node ID to remove from the list.
+         */
+        saveCloseNode: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            if (openNodes[username].indexOf(node_id) < 0) {
+                return;
+            }
+            
+            openNodes[username].splice(openNodes[username].indexOf(node_id), 1);
+            Cookies.set('main_tree_opened_nodes',  JSON.stringify(openNodes));
+        },
+        
+        /**
+         * Checks if a node is in the list of open nodes.
+         * @node_id Node ID to check.
+         * @returns true if the node is in the list.
+         */
+        isNodeOpen: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            return (openNodes[username].indexOf(node_id) >= 0);
+        },
+        
+        /**
+         * Saves the curren page for a Node in the browser cookies.
+         * @node_id Node ID.
+         * @page Page number.
+         */
+        setCurrentPageforNode: function(node_id, page) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            nodePage[username][node_id] = page; 
+            Cookies.set('main_tree_node_pages',  JSON.stringify(nodePage));
+            
+        },
+        
+       
+        /**
+         * Get the current page of a Node from browser cookies.
+         * @node_id Node ID.
+         */
+        getCurrentPageforNode: function(node_id) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }            
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            return nodePage[username][node_id];
         }
+        
+        
+        
     });
 });
