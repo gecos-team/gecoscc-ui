@@ -98,6 +98,7 @@
         <script src="{{ request.application_url }}/static/js/libs/bootstrap-3.0.2.min.js"></script>
         <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/fuelux.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/js.cookie.js"></script>
 
         <script>
             $(document).ready(function () {
@@ -134,6 +135,13 @@
             {% else %}
             var emptyTree = "";
             {% endif %}
+            
+            {% if request.user %}
+            var username = "{{ request.user['username'] }}";
+            {% else %}
+            var username = false;
+            {% endif %}
+            
         </script>
         {% block extrajs %}{% endblock %}
     </body>
