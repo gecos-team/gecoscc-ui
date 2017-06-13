@@ -422,6 +422,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             nodes.newNode.status = "paginated";
             promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            for (var i = 2; i<path.parentPath.length; i++) {
+                var ppath = this.findNodeById(path.parentPath[i]);  
+                promises.push(this._addPaginatedChildrenToModel(ppath));
+            }
+            
             nodes.newNode = this.parser.parse(nodes.newNode);
             if (!_.isUndefined(nodes.oldNode)) {
                 nodes.oldNode.drop();
@@ -431,7 +436,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             var completePath = nodes.newNode.model.path.split(",");
             var rootId = completePath[1];
-            var root = that.findNodeById(rootId);                
+            var root = this.findNodeById(rootId);                
             
             
             if (!_.isUndefined(childToShow) && childToShow!=null) {
