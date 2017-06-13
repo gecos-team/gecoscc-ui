@@ -583,6 +583,8 @@ var App;
                 }
                 View = this._typeClasses(type)[1];
                 view = new View({ model: model });
+                
+                App.tree.currentView.activeNodeModel = model;
 
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);

@@ -23,6 +23,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         rendered: undefined,
         selectionInfoView: undefined,
         activeNode: null,
+        activeNodeModel: null,
 
         events: {
             "click a": "stopPropagation",
@@ -57,7 +58,27 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
                     //empty search reload tree
                     if (!keyword) {
-                        App.instances.tree.loadFromPath("root", App.tree.currentView.activeNode, false, search_filter);
+                        if (!_.isUndefined(App.tree.currentView.activeNode) 
+                            && !_.isUndefined(App.tree.currentView.activeNodeModel)
+                            && App.tree.currentView.activeNodeModel != null) {
+                            // There is an active node
+                            var model = App.tree.currentView.activeNodeModel;
+                            var path = "root";
+                            if (model.get) {
+                                path = model.get('path');
+                            }
+                            else {
+                                path = model.path;
+                            }
+                            
+                            App.instances.tree.loadFromPath(path, App.tree.currentView.activeNode, false, search_filter);
+                        }
+                        else {
+                            // Reload root
+                            App.instances.tree.loadFromPath("root", null, false, search_filter);
+                        }
+
+                        
                     } else {
                         App.instances.router.navigate("search/" + keyword + "?searchby="+search_by+"&searchfilter="+search_filter,
                                                   { trigger: true });

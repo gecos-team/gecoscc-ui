@@ -424,26 +424,26 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
             nodes.newNode = this.parser.parse(nodes.newNode);
             if (!_.isUndefined(nodes.oldNode)) {
-                nodes.newNode.children = nodes.oldNode.children;
-                nodes.newNode.model.children = nodes.oldNode.model.children;
                 nodes.oldNode.drop();
             }
             nodes.parentNode.addChild(nodes.newNode);
             promises.push(this.resolveUnknownNodes(unknownIds, true));
 
-            if (!_.isUndefined(childToShow)) {
+            var completePath = nodes.newNode.model.path.split(",");
+            var rootId = completePath[1];
+            var root = that.findNodeById(rootId);                
+            
+            
+            if (!_.isUndefined(childToShow) && childToShow!=null) {
                 promises[0].done(function () {
-                    var completePath = nodes.newNode.model.path.split(","),
-                        rootPath = completePath[1],
-                        domainPath,
-                        root;
+
+                    var  domainPath;
                     that.searchPageForNode(
                         nodes.newNode.model.paginatedChildren,
                         childToShow,
                         false
                     );
 
-                    root = that.findNodeById(rootPath);
                     if (completePath.length > 1 && !_.isUndefined(root)) {
                         domainPath = completePath[2] || nodes.newNode.model.id;
                         that.searchPageForNode(
@@ -456,22 +456,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             }
             else {
                 // Restore last saved page for root node
-                var root =  App.tree.currentView.$el.find(".tree-container").first();
-                if (jQuery.type(root) == "undefined" || root.attr('data-path') != "root") {
-                    // No root element!
-                    //console.log("No root element!");
-                    return;
-                }
-            
-                var rootId = root.attr('id');
-                var node = that.get("tree").first(function (obj) {
-                    return obj.model.id === rootId;
-                });
-
                 var page = App.tree.currentView.getCurrentPageforNode(rootId);
-                if (jQuery.type(page) != "undefined" && node.model.paginatedChildren.currentPage != page) {
+                if (jQuery.type(page) != "undefined" && root.paginatedChildren.currentPage != page) {
                     //console.log( "GOTO page: "+page );
-                    node.model.paginatedChildren.goToPage(page, {
+                    root.paginatedChildren.goToPage(page, {
                         success: function () { that.trigger("change"); }
                     }); 
                 }
