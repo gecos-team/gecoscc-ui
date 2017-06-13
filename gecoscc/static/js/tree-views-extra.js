@@ -232,7 +232,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             prev = $el.data("pagination") === "up";
 
             page = prev ? page - 1 : page + 1;
-            this.collection.goTo(page, {
+            this.collection.goToPage(page, {
                 success: function () { that.render(); }
             });
         }

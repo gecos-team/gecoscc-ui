@@ -166,7 +166,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 if ("root" == path) {
                     this.setCurrentPageforNode(id, page);
                 }
-                node.model.paginatedChildren.goTo(page, {
+                node.model.paginatedChildren.goToPage(page, {
                     success: function () { that.model.trigger("change"); }
                 });
             } else {
@@ -195,33 +195,86 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        openContainerForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            var header = elem.find(".tree-container-header").first();
+            var icon = header.find(".fa-plus-square-o");
+            
+            content.show();
+            icon.removeClass("fa-plus-square-o")
+                .addClass("fa-minus-square-o");   
+
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = false;
+            }
+                
+        },
+
+        closeContainerForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            var header = elem.find(".tree-container-header").first();
+            var icon = header.find(".fa-minus-square-o");
+            
+            content.hide();
+            icon.removeClass("fa-minus-square-o")
+                .addClass("fa-plus-square-o");      
+
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = true;
+            }                
+        },
+
+        
+        
         openContainer: function (evt) {
             evt.stopPropagation();
-            var $el, $content, $header, $icon, opened, cssclass;
+            var $el, $content, $header, isClosed, cssclass;
             
             $el = $(evt.target).parents(".tree-container").first();
-            $content = $el.find(".tree-container-content").first();
             $header = $el.find(".tree-container-header").first();
-            opened = $header.find(".fa-plus-square-o").length > 0;
+            $content = $el.find(".tree-container-content").first();
+            isClosed = $header.find(".fa-plus-square-o").length > 0;
 
-            this._openContainerAux($el, $content, opened);
-            if (opened) {
-                // Close
+            var that = this;
+
+            if (isClosed) {
+                // Check if we must close other nodes before opening this one
+                var path = $el.attr("data-path");
+                var pathElements = path.split(',');
+                $('#nav-tree').find(".fa-minus-square-o").each(function( index ) {
+                    var elem = $(this).parent().parent().parent();
+                    
+                    var id = elem.attr('id');
+                    if ( jQuery.inArray( id, pathElements) < 0 ) {
+                        that.saveCloseNode(id);
+                        that.closeContainerForNodeId(id);
+                    }
+                });                
+            }
+            
+            this._openContainerAux($el, $content, isClosed);
+            if (isClosed) {
+                // Open node
                 this.saveOpenNode($el.attr("id"));
-                $icon = $header.find(".fa-plus-square-o");
-                $content.show();
-                cssclass = "fa-minus-square-o";
+                this.openContainerForNodeId($el.attr("id"));
             } else {
-                // Open
+                // Close node
                 this.saveCloseNode($el.attr("id"));
-                $icon = $header.find(".fa-minus-square-o");
-                $content.hide();
-                cssclass = "fa-plus-square-o";
+                this.closeContainerForNodeId($el.attr("id"));
             }
 
-            $icon
-                .removeClass("fa-plus-square-o fa-minus-square-o")
-                .addClass(cssclass);
         },
 
         _deleteOU: function () {
@@ -318,6 +371,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $item.find(".tree-container-header").first().addClass("tree-selected");
             } else {
                 $item.addClass("tree-selected");
+            }
+
+            if ( !this.isNodeOpen(id) ) {
+                // Clear the saved state and recalculate the state for current selected node
+                this.clearSavedState();
+                this.calculateStateForNode(id);
             }
         },
 
@@ -442,7 +501,90 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             
             return nodePage[username][node_id];
-        }
+        },
+        
+        /**
+         * Clears the state saved in cookies.
+         */
+        clearSavedState: function() {
+            Cookies.remove('main_tree_node_pages');
+            Cookies.remove('main_tree_opened_nodes');
+        },
+        
+        /**
+         * Calculates the saved state for a selected node.
+         * @node_id Node ID.
+         */
+        calculateStateForNode: function(node_id) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }            
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            var root = this.$el.find(".tree-container").first();
+            if (jQuery.type(root) == "undefined" || root.attr('data-path') != "root") {
+                // No root element!
+                //console.log("No root element!");
+                return;
+            }
+            
+            var rootId = root.attr('id');
+            
+            // Calculate open nodes
+            var item = this.$el.find('#' + node_id);
+            if (item.length <= 0) {
+                // Element not found
+                //console.log("Element not found!");
+                return;
+            }
+            
+            if (!item.hasClass("tree-container")) {
+                // Find the container that contains the item
+                item = item.parents(".tree-container").first()
+            }
+            
+            
+            // The container ID if it's open
+            var isOpen = (item.find(".tree-container-header").first().find(".fa-minus-square-o").length > 0);
+            if (isOpen) {
+                this.saveOpenNode(node_id);
+            }
+
+            // Add the container path
+            var path = item.attr('data-path');
+            var parts = path.split(',');
+            for (var i = 0; i < parts.length; i++) {
+                var ou = parts[i];
+                if (ou != "root") {
+                    this.saveOpenNode(ou);
+                }
+            }
+            
+            // Calculate root node page
+            var node = this.model.get("tree").first(function (obj) {
+                return obj.model.id === rootId;
+            });
+
+            var page = 1;
+            if (node.model.status === "paginated") {
+                page = node.model.paginatedChildren.currentPage;   
+            }                
+            //console.log('Current page is: '+page);
+            
+            this.setCurrentPageforNode(rootId, page);
+            
+        },        
         
         
         

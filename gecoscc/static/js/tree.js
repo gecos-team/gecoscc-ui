@@ -79,6 +79,46 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.Container = Backbone.Paginator.requestPager.extend({
         model: Models.Node,
 
+        // There must be only one pagination running!
+        in_pagination: false,
+        currentLoadedPage: 1,
+
+        goToPage: function(page, params){
+            if (this.in_pagination) {
+                //console.log("Error, previous pagination in course!");
+                if (!_.isUndefined(params) && !_.isUndefined(params.error)) {
+                    params.error();
+                }                
+                
+                return;
+            }
+            
+            this.in_pagination = true;
+            var that = this;
+            
+            var paginationOk = function() {
+                //console.log("success!");
+                that.in_pagination = false;
+                that.currentLoadedPage = page;
+                if (!_.isUndefined(params) && !_.isUndefined(params.success)) {
+                    params.success();
+                }
+            }
+            
+            var paginationError = function() {
+                //console.log("error!");
+                that.in_pagination = false;
+                if (!_.isUndefined(params) && !_.isUndefined(params.error)) {
+                    params.error();
+                }
+            }            
+            
+            this.goTo(page, {
+                success: paginationOk,
+                error: paginationError
+            });
+        },
+        
         paginator_core: {
             type: "GET",
             dataType: "json",
@@ -221,7 +261,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var search_filter = App.instances.tree.getSearchFilter();
                 
             node.paginatedChildren = new Models.Container({ path: path, search_filter: search_filter.join() });
-            node.paginatedChildren.goTo(1, {
+            node.paginatedChildren.goToPage(1, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
             });
@@ -364,6 +404,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         
         loadFromPath: function (path, childToShow, silent, search_filter) {
             var that, nodes, promises, unknownIds;
+            //console.log("loadFromPath('"+path+"', '"+childToShow+"'");
+
             if (typeof search_filter !== 'undefined') {
                 this.search_filter = search_filter;
             }
@@ -412,6 +454,29 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     }
                 });
             }
+            else {
+                // Restore last saved page for root node
+                var root =  App.tree.currentView.$el.find(".tree-container").first();
+                if (jQuery.type(root) == "undefined" || root.attr('data-path') != "root") {
+                    // No root element!
+                    //console.log("No root element!");
+                    return;
+                }
+            
+                var rootId = root.attr('id');
+                var node = that.get("tree").first(function (obj) {
+                    return obj.model.id === rootId;
+                });
+
+                var page = App.tree.currentView.getCurrentPageforNode(rootId);
+                if (jQuery.type(page) != "undefined" && node.model.paginatedChildren.currentPage != page) {
+                    //console.log( "GOTO page: "+page );
+                    node.model.paginatedChildren.goToPage(page, {
+                        success: function () { that.trigger("change"); }
+                    }); 
+                }
+            }
+
             this.openPath(path.array);
             if (!silent) {
                 $.when.apply($, promises).done(function () {
@@ -509,9 +574,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             search = function () {
                 var node = paginatedCollection.get(nodeId),
-                    page = paginatedCollection.currentPage + 1;
+                    page = paginatedCollection.currentLoadedPage + 1;
                 if (_.isUndefined(node) && page <= paginatedCollection.totalPages) {
-                    paginatedCollection.goTo(page, {
+                    //console.log("GOTO: "+page+" NODE:"+nodeId);
+                    paginatedCollection.goToPage(page, {
                         success: function () { search(); }
                     });
                 } else if (!silent && !_.isUndefined(node)) {

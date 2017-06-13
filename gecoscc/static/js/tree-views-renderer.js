@@ -157,14 +157,36 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
 
                 if (_.isUndefined(treeNode)) {
-                    // Unloaded node, check if previously it was opened
-                    json.closed = !view.isNodeOpen(json.id);
-                    if (!json.closed) {
-                        this.model.loadFromPath(json.path + ',' + json.id);
+                    // Unloaded node
+                    json.closed = true;
+                    if (_.isNull(view.activeNode)) {
+                        // No element selected
                         
-                        treeNode = root.first({ strategy: 'breadth' }, function (n) {
-                            return n.model.id === json.id;
-                        });                        
+                        // check if this node was opened previously
+                        json.closed = !view.isNodeOpen(json.id);
+                        if (!json.closed) {
+                            this.model.loadFromPath(json.path + ',' + json.id);
+                            
+                            treeNode = root.first({ strategy: 'breadth' }, function (n) {
+                                return n.model.id === json.id;
+                            });                        
+                        }
+                    }
+                    else if (json.id == view.activeNode) {
+                        // check if this node was opened previously
+                        json.closed = !view.isNodeOpen(json.id);
+
+                        if (!json.closed) {
+                            var that = this;
+                            setTimeout(function(){ 
+                                that.model.loadFromPath(json.path + ',' + json.id);
+                                
+                                treeNode = root.first({ strategy: 'breadth' }, function (n) {
+                                    return n.model.id === json.id;
+                                });                        
+                                
+                            }, 100);                            
+                        }
                     }
                 } else {
                     json.closed = treeNode.model.closed;
@@ -192,13 +214,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             if (_.isUndefined(treeNode)) { return data; }
 
-            if (!_.isUndefined(savedPage) && savedPage != treeNode.model.paginatedChildren.currentPage) {
+            if (!_.isUndefined(savedPage) 
+                && savedPage != treeNode.model.paginatedChildren.currentPage
+                && _.isNull(view.activeNode)) {
+                    
                 setTimeout(function(){  
-                    treeNode.model.paginatedChildren.goTo(savedPage, {
+                    treeNode.model.paginatedChildren.goToPage(savedPage, {
                         success: function () { view.model.trigger("change"); }
                     }); 
                 }, 100);
-            }
+            }            
             
             if (treeNode.model.status === "paginated") {
                 paginatedChildren = treeNode.model.paginatedChildren;
