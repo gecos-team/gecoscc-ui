@@ -747,6 +747,8 @@ var App;
         App.instances.message_manager.bind('jobs', function (result) {
             if (result.username === window.GecosUtils.gecosUser.username) {
                 App.instances.job_collection.fetch();
+                App.instances.job_statistics.fetch();
+                App.instances.myjob_statistics.fetch();
             }
         });
         App.instances.message_manager.bind('update_tree', function (result) {
