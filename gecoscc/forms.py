@@ -92,6 +92,7 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
                      'repeat_password', 'first_name', 'last_name',
+                     'nav_tree_pagesize', 'policies_pagesize', 'jobs_pagesize', 'group_nodes_pagesize',
                      'ou_managed', 'ou_availables',)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
@@ -101,6 +102,10 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('nav_tree_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('policies_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('jobs_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('group_nodes_pagesize')].ignore_unique = self.ignore_unique
 
 
 class AdminUserAddForm(BaseAdminUserForm):

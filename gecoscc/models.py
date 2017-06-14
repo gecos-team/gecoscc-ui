@@ -349,7 +349,30 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
+    nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Navigation tree page size:'),
+                                  validator=colander.Range(1, 200))
+    policies_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=8,
+                                  missing=8,
+                                  title=_('Policies list page size:'),
+                                  validator=colander.Range(1, 200))
+    jobs_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=30,
+                                  missing=30,
+                                  title=_('Actions list page size:'),
+                                  validator=colander.Range(1, 200))
+    group_nodes_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Group nodes list page size:'),
+                                  validator=colander.Range(1, 200))
 
+
+
+                                       
 # Only to makemessages
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')

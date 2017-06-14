@@ -138,8 +138,17 @@
             
             {% if request.user %}
             var username = "{{ request.user['username'] }}";
+            var nav_tree_pagesize = {% if 'nav_tree_pagesize' in request.user %} {{ request.user['nav_tree_pagesize'] }} {% else %} 10 {% endif %};
+            var policies_pagesize = {% if 'policies_pagesize' in request.user %} {{ request.user['policies_pagesize'] }} {% else %} 8 {% endif %};
+            var jobs_pagesize = {% if 'jobs_pagesize' in request.user %} {{ request.user['jobs_pagesize'] }} {% else %} 30 {% endif %};
+            var group_nodes_pagesize = {% if 'group_nodes_pagesize' in request.user %} {{ request.user['group_nodes_pagesize'] }} {% else %} 10 {% endif %};
             {% else %}
             var username = false;
+            var nav_tree_pagesize = 10;
+            var policies_pagesize = 8;
+            var jobs_pagesize = 30;
+            var group_nodes_pagesize = 10;
+
             {% endif %}
             
         </script>

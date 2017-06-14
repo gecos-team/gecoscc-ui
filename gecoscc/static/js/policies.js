@@ -191,7 +191,7 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 8,
+            perPage: policies_pagesize,
             pagesInRange: 3,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10

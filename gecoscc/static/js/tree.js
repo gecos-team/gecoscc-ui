@@ -139,7 +139,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 10,
+            perPage: nav_tree_pagesize,
             pagesInRange: 1,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
