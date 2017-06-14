@@ -273,16 +273,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (isClosed) {
                 // Check if we must close other nodes before opening this one
                 var path = $el.attr("data-path");
-                var pathElements = path.split(',');
-                $('#nav-tree').find(".fa-minus-square-o").each(function( index ) {
-                    var elem = $(this).parent().parent().parent();
-                    
-                    var id = elem.attr('id');
-                    if ( jQuery.inArray( id, pathElements) < 0 ) {
-                        that.saveCloseNode(id);
-                        that.closeContainerForNodeId(id);
-                    }
-                });                
+                this.closeAllExcept(path);    
             }
             
             this._openContainerAux($el, $content, isClosed);
@@ -607,7 +598,30 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             
         },        
         
+        /**
+         * Closes all open nodes except the nodes that belongs a to certain path.
+         */
+        closeAllExcept: function (path) {
+            var that = this;
+            var pathElements = path.split(',');
+            $('#nav-tree').find(".fa-minus-square-o").each(function() {
+                var elem = $(this).parent().parent().parent();
+                
+                var id = elem.attr('id');
+                if ( jQuery.inArray( id, pathElements) < 0 ) {
+                    that.saveCloseNode(id);
+                    that.closeContainerForNodeId(id);
+                }
+            });
+        },
         
+        
+        /**
+         * Closes all open nodes.
+         */
+        closeAll: function () {
+            this.closeAllExcept("");
+        }
         
     });
 });

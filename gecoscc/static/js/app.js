@@ -570,7 +570,7 @@ var App;
 
             loadItem: function (containerid, type, itemid) {
                 var Model, model, View, view, skipFetch;
-
+                
                 this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
                 App.tree.currentView.highlightNodeById(itemid);
@@ -585,7 +585,7 @@ var App;
                 view = new View({ model: model });
                 
                 App.tree.currentView.activeNodeModel = model;
-
+                
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
                 model
@@ -603,6 +603,7 @@ var App;
 
                 if (skipFetch) {
                     // The object was cached
+                    App.tree.currentView.closeAllExcept(model.get("path"));
                     App.instances.tree.openAllContainersFrom(
                         _.last(model.get("path").split(',')),
                         true
@@ -610,6 +611,7 @@ var App;
                     App.instances.tree.trigger("change");
                     model.trigger("change");
                 } else {
+                    App.tree.currentView.closeAll();
                     this._fetchModel(model);
                 }
             },
