@@ -435,8 +435,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
             }
             
-            nodes.newNode.status = "paginated";
-            promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            if ($("#" + nodes.newNode.id).length > 0) {
+                nodes.newNode.status = "paginated";
+                promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            }
+            else {
+                promises = []
+            }
             
             // Reload all nodes of this path up to the root
             for (var i = 2; i<path.parentPath.length; i++) {

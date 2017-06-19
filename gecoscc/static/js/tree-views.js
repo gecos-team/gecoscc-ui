@@ -71,6 +71,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                                 path = model.path;
                             }
                             
+                            App.tree.currentView.closeAllExcept(path+','+App.tree.currentView.activeNode);
                             App.instances.tree.loadFromPath(path, App.tree.currentView.activeNode, false, search_filter);
                         }
                         else {
@@ -257,6 +258,28 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }                
         },
 
+        removeChildrenForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            content.empty();
+            
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.children = [];
+                for (var i=0; i<node.parent.children.length; i++) {
+                    if (node.parent.children[i].model.id == nodeId) {
+                        node.parent.children.splice(i, 1);
+                        break;
+                    }
+                }
+                
+            }                
+        },
+        
         
         
         openContainer: function (evt) {
@@ -611,6 +634,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 if ( jQuery.inArray( id, pathElements) < 0 ) {
                     that.saveCloseNode(id);
                     that.closeContainerForNodeId(id);
+                    that.removeChildrenForNodeId(id);
                 }
             });
         },
