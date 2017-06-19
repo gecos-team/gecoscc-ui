@@ -377,13 +377,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         _getNodesToLoad: function (path, unknownIds) {
             var nodes = {};
 
+            // Get the parent node of this node
             nodes.parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
                 return n.model.id === path.parentId;
             }) || this.get("tree");
+            
+            // Get this node from parent node children
             nodes.oldNode = _.find(nodes.parentNode.children, function (n) {
                 return n.model.id === path.last;
             });
 
+            // Get new node model
             nodes.newNode = this.getNodeModel(nodes.parentNode, nodes.oldNode, path.last);
             if (nodes.newNode.status === "unknown") {
                 unknownIds.push(path.last);
@@ -420,11 +424,27 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             unknownIds = this.makePath(path.parentPath);
             nodes = this._getNodesToLoad(path, unknownIds);
 
+            if (nodes.newNode.status === "unknown" 
+                && nodes.parentNode.model.status === "unknown") {
+                // Both this node and its parent are "unknown", probably 
+                // the user can't view the parentNode because of lacking permissions.
+                
+                var newNode = this.findNodeById(nodes.newNode.id);
+                if (!_.isUndefined(newNode)) {
+                    nodes.newNode = newNode;
+                }
+            }
+            
             nodes.newNode.status = "paginated";
             promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            
+            // Reload all nodes of this path up to the root
             for (var i = 2; i<path.parentPath.length; i++) {
-                var ppath = this.findNodeById(path.parentPath[i]);  
-                promises.push(this._addPaginatedChildrenToModel(ppath));
+                // Check if the node is visible in nav-tree
+                if ($("#" + path.parentPath[i]).length > 0) {
+                    var ppath = this.findNodeById(path.parentPath[i]);  
+                    promises.push(this._addPaginatedChildrenToModel(ppath));
+                }
             }
             
             nodes.newNode = this.parser.parse(nodes.newNode);
@@ -440,6 +460,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             
             
             if (!_.isUndefined(childToShow) && childToShow!=null) {
+                // Check if the child to show is an OU and must be reloaded
+                var cts = this.findNodeById(childToShow);
+                if (!_.isUndefined(cts) && cts.type == 'ou' 
+                    && App.tree.currentView.isNodeOpen(childToShow)) {
+                    promises.push(this._addPaginatedChildrenToModel(cts));
+                }                
+                
+                // Open the correct page to show the child
                 promises[0].done(function () {
 
                     var  domainPath;
