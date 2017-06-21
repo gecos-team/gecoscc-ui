@@ -209,7 +209,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return obj.model.id === id;
             });
 
-            if (!_.isUndefined(node)) {
+            if (!_.isUndefined(node) && node.children.length > 0) {
                 node.model.closed = !opened;
             } else {
                 $content.html(this.renderer._loader());
@@ -270,13 +270,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             if (!_.isUndefined(node)) {
                 node.children = [];
-                for (var i=0; i<node.parent.children.length; i++) {
-                    if (node.parent.children[i].model.id == nodeId) {
-                        node.parent.children.splice(i, 1);
-                        break;
-                    }
-                }
-                
             }                
         },
         
@@ -296,7 +289,16 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (isClosed) {
                 // Check if we must close other nodes before opening this one
                 var path = $el.attr("data-path");
-                this.closeAllExcept(path);    
+                this.closeAllExcept(path);  
+
+                // Remove active node
+                if (!_.isUndefined(App.tree.currentView.activeNode) 
+                    && !_.isUndefined(App.tree.currentView.activeNodeModel)
+                    && App.tree.currentView.activeNodeModel != null) {            
+                    App.tree.currentView.activeNode = null;
+                    App.tree.currentView.activeNodeModel = null;
+                }
+
             }
             
             this._openContainerAux($el, $content, isClosed);
@@ -568,13 +570,11 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             
             var root = this.$el.find(".tree-container").first();
-            if (jQuery.type(root) == "undefined" || root.attr('data-path') != "root") {
-                // No root element!
-                //console.log("No root element!");
-                return;
+            var rootId = false;
+            if (jQuery.type(root) != "undefined" && root.attr('data-path') == "root") {
+                // Only the super-admin users has root node
+                rootId = root.attr('id');
             }
-            
-            var rootId = root.attr('id');
             
             // Calculate open nodes
             var item = this.$el.find('#' + node_id);
@@ -586,7 +586,8 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             
             if (!item.hasClass("tree-container")) {
                 // Find the container that contains the item
-                item = item.parents(".tree-container").first()
+                item = item.parents(".tree-container").first();
+                node_id = item.attr('id');
             }
             
             
@@ -601,23 +602,25 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             var parts = path.split(',');
             for (var i = 0; i < parts.length; i++) {
                 var ou = parts[i];
-                if (ou != "root") {
+                if (ou != "root" && this.$el.find('#' + ou).length > 0) {
                     this.saveOpenNode(ou);
                 }
             }
             
-            // Calculate root node page
-            var node = this.model.get("tree").first(function (obj) {
-                return obj.model.id === rootId;
-            });
+            if (rootId) {
+                // Calculate root node page
+                var node = this.model.get("tree").first(function (obj) {
+                    return obj.model.id === rootId;
+                });
 
-            var page = 1;
-            if (node.model.status === "paginated") {
-                page = node.model.paginatedChildren.currentPage;   
-            }                
-            //console.log('Current page is: '+page);
-            
-            this.setCurrentPageforNode(rootId, page);
+                var page = 1;
+                if (node.model.status === "paginated") {
+                    page = node.model.paginatedChildren.currentPage;   
+                }                
+                //console.log('Current page is: '+page);
+                
+                this.setCurrentPageforNode(rootId, page);
+            }
             
         },        
         

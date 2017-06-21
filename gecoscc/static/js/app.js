@@ -545,12 +545,14 @@ var App;
                         isVisible = !_.isUndefined(App.instances.tree.findNodeById(model.id));
 
                     if (!isRoot && !isVisible) {
+                        App.tree.currentView.closeAllExcept(model.get("path"));
                         App.instances.tree.loadFromPath(
                             model.get("path"),
                             model.get("id"),
                             false
                         );
                     } else {
+                        App.tree.currentView.closeAllExcept(model.get("path"));
                         App.instances.tree.openPath(
                             model.get("path")
                         );
@@ -611,7 +613,6 @@ var App;
                     App.instances.tree.trigger("change");
                     model.trigger("change");
                 } else {
-                    App.tree.currentView.closeAll();
                     this._fetchModel(model);
                 }
             },
