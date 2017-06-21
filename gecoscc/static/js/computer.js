@@ -487,6 +487,13 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     
                 }); 
 
+            //click button when enter key is pressed
+            search_field.keyup(function (evt) {
+                if (evt.which === 13) {
+                    $("#ohai_tree-search-btn").click();
+                }
+            });                
+                
             this.$el.find("#ohai_tree-next-search-btn")
                 .off("click")
                 .on("click", function (evt) {
