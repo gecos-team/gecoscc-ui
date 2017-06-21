@@ -455,9 +455,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .on("click", function (evt) {
                     evt.preventDefault();
                     search_field.val('');
-                        $("#ohai_tree-close-search-btn").hide();
-                        $("#ohai_tree-next-search-btn").hide();
-                        $("#ohai_tree-previous-search-btn").hide();                    
+                    search_field.css('background-color', 'white');
+                    $("#ohai_tree-close-search-btn").hide();
+                    $("#ohai_tree-next-search-btn").hide();
+                    $("#ohai_tree-previous-search-btn").hide();                    
                 });
             
             
