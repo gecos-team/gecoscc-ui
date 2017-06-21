@@ -318,7 +318,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                         }
                         
                         if ($(folderId).length <= 0) {
-                            alert('No se encuentra:' + folderId);
+                            alert('Can\'t find:' + folderId);
                         }
                         var top = $(folderId).position().top;
                         //console.log('top: '+top+' scrolltop:'+ohai_tree.scrollTop());
@@ -362,10 +362,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 
                 if (currentPath == selectedItemPath) {
                     passed = true;
-                    continue;
                 }
-                
-                if (name.match(keyword) && passed) {
+                else if (name.match(keyword) && passed) {
                     // Next result found in key
                     return [currentPath, passed];
                 }
