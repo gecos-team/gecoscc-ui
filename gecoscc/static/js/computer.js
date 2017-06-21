@@ -436,14 +436,34 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    ohai_tree.tree('discloseAll');
+                    $(this).find(".normal").hide();
+                    $(this).find(".loading").show();
+                    
+                    var thisbutton = $(this);
+                    setTimeout(function(){ 
+                        ohai_tree.tree('discloseAll');
+                        thisbutton.find(".loading").hide();
+                        thisbutton.find(".normal").show();
+                    }, 10);
+
                 });            
 
             this.$el.find("#ohai_tree-compress")
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    that.ohaiTreeCloseAll(ohai_tree);
+                    
+                    $(this).find(".normal").hide();
+                    $(this).find(".loading").show();
+                    
+                    var thisbutton = $(this);
+                    setTimeout(function(){ 
+                        that.ohaiTreeCloseAll(ohai_tree);
+                        thisbutton.find(".loading").hide();
+                        thisbutton.find(".normal").show();
+                    }, 10);
+                    
+                    
                 });            
 
                 

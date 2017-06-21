@@ -598,6 +598,13 @@ legend {
     padding-bottom: 1px !important;
 }
 
+#ohai_tree-expand .loading, #ohai_tree-compress .loading {
+    display: none;
+    height: 28px;
+    width: 22px;
+    padding-top: 2px;
+}
+
 
 #tree_search_setup_drowpdown {
     width: 300px;
