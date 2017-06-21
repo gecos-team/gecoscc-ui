@@ -39,7 +39,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
         page: 0,
-        perPage: 10,
+        perPage: group_nodes_pagesize,
 
         ui: {
             policies: "div#policies div.bootstrap-admin-panel-content"

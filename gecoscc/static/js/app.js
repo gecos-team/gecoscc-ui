@@ -545,12 +545,14 @@ var App;
                         isVisible = !_.isUndefined(App.instances.tree.findNodeById(model.id));
 
                     if (!isRoot && !isVisible) {
+                        App.tree.currentView.closeAllExcept(model.get("path"));
                         App.instances.tree.loadFromPath(
                             model.get("path"),
                             model.get("id"),
                             false
                         );
                     } else {
+                        App.tree.currentView.closeAllExcept(model.get("path"));
                         App.instances.tree.openPath(
                             model.get("path")
                         );
@@ -570,7 +572,7 @@ var App;
 
             loadItem: function (containerid, type, itemid) {
                 var Model, model, View, view, skipFetch;
-
+                
                 this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
                 App.tree.currentView.highlightNodeById(itemid);
@@ -583,7 +585,9 @@ var App;
                 }
                 View = this._typeClasses(type)[1];
                 view = new View({ model: model });
-
+                
+                App.tree.currentView.activeNodeModel = model;
+                
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
                 model
@@ -601,6 +605,7 @@ var App;
 
                 if (skipFetch) {
                     // The object was cached
+                    App.tree.currentView.closeAllExcept(model.get("path"));
                     App.instances.tree.openAllContainersFrom(
                         _.last(model.get("path").split(',')),
                         true
@@ -745,6 +750,8 @@ var App;
         App.instances.message_manager.bind('jobs', function (result) {
             if (result.username === window.GecosUtils.gecosUser.username) {
                 App.instances.job_collection.fetch();
+                App.instances.job_statistics.fetch();
+                App.instances.myjob_statistics.fetch();
             }
         });
         App.instances.message_manager.bind('update_tree', function (result) {
