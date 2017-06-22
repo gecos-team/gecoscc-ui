@@ -549,7 +549,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)
-            object_changed.delay(self.request.user, 'group', group_without_policies, group, computers)
+            object_changed.delay(self.request.user, 'group', group_without_policies, group, 'changed', computers)
 
         for group_id in adds:
 
@@ -563,7 +563,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             }, multi=False)
             group = self.request.db.nodes.find_one({'_id': group_id})
             computers = self.computers_to_group(obj)
-            object_changed.delay(self.request.user, 'group', group, {}, computers)
+            object_changed.delay(self.request.user, 'group', group, {}, 'changed', computers)
 
         return super(TreeLeafResourcePaginated, self).post_save(obj, old_obj)
 
