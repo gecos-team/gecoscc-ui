@@ -286,7 +286,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             // Look for the next result
             var result = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, ohai, selectedItemPath, '', false, mode);
             var nextResultPath = result[0];
-            console.log('nextResultPath: '+nextResultPath);
+            // console.log('nextResultPath: '+nextResultPath);
             
             if (nextResultPath) {
                 // Result found
@@ -349,11 +349,20 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 passed = true;
             }
             
-            var keys = Object.keys(data);
             if (mode == 'previous') {
-                keys = keys.reverse();
+                var lastValue = [false, passed];
+                var current = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, data, '/', '', false, 'initial');
+                // console.log('current: '+current[0]+' selectedItemPath:'+selectedItemPath);
+                while (current[0] != selectedItemPath) {
+                    // console.log('current: '+current[0]+' selectedItemPath:'+selectedItemPath);
+                    lastValue = current;
+                    current = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, data, lastValue[0], '', false, 'next');
+                }
+                
+                return lastValue;
             }
             
+            var keys = Object.keys(data);
             for( var i=0; i<keys.length; i++ ) {
                 var name = keys[i];
                 var currentPath = path + '/' + name;
