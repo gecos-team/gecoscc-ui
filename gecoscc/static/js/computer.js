@@ -292,8 +292,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 // Render the new tree
                 ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model }); 
 
-                var start, end;
-                start = Date.now();
+//                var start, end;
+//                start = Date.now();
                 
                 // Open all the branches
                 while (!isAllDisclosed) {
@@ -301,10 +301,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
                 }
                 
-                end = Date.now();
-                console.log("discloseVisible: "+(end-start)+"ms");
-                
-                start = Date.now();
+//                end = Date.now();
+//                console.log("discloseVisible: "+(end-start)+"ms");
                 
                 // Replace the tree
                 var that = this;
@@ -314,10 +312,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     }
                 );
                 this.clearSavedState();
-                this.markAllNodesAsOpened();
-
-                end = Date.now();
-                console.log("markAllNodesAsOpened: "+(end-start)+"ms");
                 
                 tree_parent.find('#ohai_tree').remove();
                 tree_parent.append(ohai_tree);
@@ -559,34 +553,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
          */
         clearSavedState: function() {
             Cookies.remove('json_tree_opened_nodes');
-        },
-          
-        /**
-         * Mark all nodes as opened nodes.
-         */
-        markAllNodesAsOpened: function(nodesdata) {
-            var that = this;
-            
-            this.openNodesList = [];
-            
-            if(_.isUndefined(nodesdata)) {
-                // Start 
-                this.ohaiTreeDataSource({}, function(nodesdata) {
-                    that.markAllNodesAsOpened(nodesdata);
-                });
-            }
-            else if (nodesdata.data.length > 0) {
-                for (var i=0; i<nodesdata.data.length; i++) {
-                    var node = nodesdata.data[i];
-                    if (node.type == "folder") {
-                        var id_base = node.id_base + "_" + node.key.replace(/[^a-zA-Z0-9]/g, '_');
-                        this.saveOpenNode( id_base );
-                        this.ohaiTreeDataSource(node, function(nodesdata) {
-                            that.markAllNodesAsOpened(nodesdata);
-                        });
-                    }
-                }
-            }
         },
           
           
