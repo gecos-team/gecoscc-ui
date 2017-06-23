@@ -254,20 +254,52 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
         
+        
+        
+        ohaiTreeDiscloseAll: function(ohai_tree) {
+            // This is slow!
+            //ohai_tree.tree('discloseAll');
+
+            var isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
+            if (!isAllDisclosed) {
+                // Expanding the tree when its not visible is faster (because the browser doesn't need to draw the changes until the end), 
+                // so we will create a new one expand it and after that replace the current visible tree
+                var tree_parent = ohai_tree.parent();
+                var ohai_tree_original = ohai_tree;
+
+                // Create a new empty tree
+                ohai_tree = ohai_tree.clone();
+                ohai_tree.find( "li:not([data-template])" ).remove();
+                
+                // Render the new tree
+                ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model }); 
+
+                //var start, end;
+                //start = Date.now();
+                
+                // Open all the branches
+                while (!isAllDisclosed) {
+                    ohai_tree.tree('discloseVisible');
+                    isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
+                }
+                
+                //end = Date.now();
+                //console.log("discloseVisible: "+(end-start)+"ms");
+                
+                // Replace the tree
+                tree_parent.find('#ohai_tree').remove();
+                tree_parent.append(ohai_tree);
+            }
+                
+        },        
+        
         ohaiTreeCloseAll: function(ohai_tree) {
             // This is slow!
             //ohai_tree.tree('closeAll');
-            
-            
-            var data = this.model.get("ohai");
-            for( var name in data ) {
-                var value = data[name];
-                if (Array.isArray(value) || typeof(value) === 'object') {
-                    var folderId = "_"+name.replace(/[^a-zA-Z0-9]/g, '_');
-                    ohai_tree.tree('refreshFolder', $('#'+folderId))
-                    ohai_tree.tree('closeFolder', $('#'+folderId))
-                }
-            }
+
+            // Remove the tree data and render it again
+            ohai_tree.find( "li:not([data-template])" ).remove();
+            ohai_tree.tree('render');
         },
         
         ohaiTreeDataSearch: function(ohai_tree, keyword, mode) {
@@ -450,7 +482,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     
                     var thisbutton = $(this);
                     setTimeout(function(){ 
-                        ohai_tree.tree('discloseAll');
+                        var ohai_tree = that.$el.find("#ohai_tree");
+                        that.ohaiTreeDiscloseAll(ohai_tree);
                         thisbutton.find(".loading").hide();
                         thisbutton.find(".normal").show();
                     }, 10);
@@ -467,6 +500,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     
                     var thisbutton = $(this);
                     setTimeout(function(){ 
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeCloseAll(ohai_tree);
                         thisbutton.find(".loading").hide();
                         thisbutton.find(".normal").show();
@@ -503,7 +537,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     else {
                         // Start search
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
-                        
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'initial');
 
 
@@ -530,6 +564,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (keyword) {
                         // Next search result
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'next');
                     }
                     
@@ -543,6 +578,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (keyword) {
                         // Next search result
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'previous');
                     }
                     
