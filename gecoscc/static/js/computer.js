@@ -287,6 +287,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 //console.log("discloseVisible: "+(end-start)+"ms");
                 
                 // Replace the tree
+                ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', this.saveTreeStatus);
                 tree_parent.find('#ohai_tree').remove();
                 tree_parent.append(ohai_tree);
             }
@@ -432,6 +433,18 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             
         },        
         
+        saveTreeStatus: function(event, parentData) {
+            // parentData = Object { id_base: "_kernel", key: "modules", path: "/kernel/", name: "modules:", type: "folder", content: Object, attr: Object }
+            if (event.type == "disclosedFolder") {
+                // opened
+                console.log("Open folder");
+                
+            }
+            else {
+                // closed
+                console.log("Close folder");
+            }
+        },
         
         onRender: function () {
             if(!_.isUndefined(this.activeTab)) {
@@ -473,6 +486,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             // OHAI JSON tree rendering
             var ohai_tree = this.$el.find("#ohai_tree");
             ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model });
+            ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', this.saveTreeStatus);
             var that = this;
             
             // OHAI JSON tree buttons
