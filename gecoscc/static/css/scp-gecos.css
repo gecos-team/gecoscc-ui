@@ -86,6 +86,10 @@ footer {
     cursor:ew-resize;
 }
 
+#sidebar {
+    z-index: 10;
+}
+
 @media (min-width: 768px) {
     #sidebar {
         position: fixed;
@@ -181,7 +185,7 @@ footer {
 }
 
 #nav-tree {
-    overflow-y: hidden;
+    overflow: visible;
     position: absolute;
     top: 0px;
     bottom: 150px;
@@ -695,43 +699,6 @@ legend {
     color: #666666;
 }
 
-.tree-node-flag {
-    display: block;
-}
-
-.tree-node-folder {
-    display: block;
-}
-
-.tree-node-user {
-    display: block;
-}
-
-.tree-node-desktop {
-    display: block;
-}
-
-.tree-node-print {
-    display: block;
-}
-
-.tree-node-group {
-    display: block;
-}
-
-.tree-node-hdd-o {
-    display: block;
-}
-
-.tree-node-archive {
-    display: block;
-}
-
-.tree-node-globe {
-    display: block;
-}
-
 .tree-selected .tree-branch-name, .tree-selected .tree-item-name {
     background-color: #b9dff1 !important;
 }
-
