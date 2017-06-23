@@ -403,6 +403,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 
                 if (currentPath == selectedItemPath) {
                     passed = true;
+                    if (!Array.isArray(value) && typeof(value) !== 'object') {
+                        continue;
+                    }
                 }
                 else if (name.match(keyword) && passed) {
                     // Next result found in key

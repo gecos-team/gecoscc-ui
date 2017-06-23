@@ -731,6 +731,7 @@ legend {
     display: block;
 }
 
-.tree-selected .tree-branch-name {
+.tree-selected .tree-branch-name, .tree-selected .tree-item-name {
     background-color: #b9dff1 !important;
 }
+
