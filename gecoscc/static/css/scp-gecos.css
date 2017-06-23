@@ -600,7 +600,7 @@ legend {
 
 #ohai_tree-expand .loading, #ohai_tree-compress .loading {
     display: none;
-    height: 28px;
+    height: 27.5px;
     width: 22px;
     padding-top: 2px;
 }
