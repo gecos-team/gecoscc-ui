@@ -254,7 +254,25 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
         
-        
+        ohaiTreeDiscloseSaved: function(ohai_tree) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+           
+            
+            for (var i=0; i < openNodes[username].length; i++) {
+                var node_id = openNodes[username][i];
+                
+                ohai_tree.tree('openFolder', ohai_tree.find('#'+node_id));
+            }
+        },
         
         ohaiTreeDiscloseAll: function(ohai_tree) {
             // This is slow!
@@ -274,8 +292,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 // Render the new tree
                 ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model }); 
 
-                //var start, end;
-                //start = Date.now();
+                var start, end;
+                start = Date.now();
                 
                 // Open all the branches
                 while (!isAllDisclosed) {
@@ -283,11 +301,24 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
                 }
                 
-                //end = Date.now();
-                //console.log("discloseVisible: "+(end-start)+"ms");
+                end = Date.now();
+                console.log("discloseVisible: "+(end-start)+"ms");
+                
+                start = Date.now();
                 
                 // Replace the tree
-                ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', this.saveTreeStatus);
+                var that = this;
+                ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree',                
+                    function(event, parentData) {
+                        that.saveTreeStatus(event, parentData, that);
+                    }
+                );
+                this.clearSavedState();
+                this.markAllNodesAsOpened();
+
+                end = Date.now();
+                console.log("markAllNodesAsOpened: "+(end-start)+"ms");
+                
                 tree_parent.find('#ohai_tree').remove();
                 tree_parent.append(ohai_tree);
             }
@@ -301,6 +332,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             // Remove the tree data and render it again
             ohai_tree.find( "li:not([data-template])" ).remove();
             ohai_tree.tree('render');
+            this.clearSavedState();
         },
         
         ohaiTreeDataSearch: function(ohai_tree, keyword, mode) {
@@ -432,17 +464,144 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             return [false, passed];
             
         },        
+
+        checkCurrentComputer: function(computer_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = 0;
+            }
+
+            return (openNodes['current'] == this.model.get("id"))
+        },
         
-        saveTreeStatus: function(event, parentData) {
-            // parentData = Object { id_base: "_kernel", key: "modules", path: "/kernel/", name: "modules:", type: "folder", content: Object, attr: Object }
+        /**
+         * Adds a node to the list of open nodes.
+         * @node_id Node ID to add to the list.
+         */
+        saveOpenNode: function(node_id) {
+            if (this.isNodeOpen(node_id)) {
+                // Already opened
+                return;
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            openNodes[username].push(node_id); 
+            Cookies.set('json_tree_opened_nodes',  JSON.stringify(openNodes));
+            
+        },
+        
+        /**
+         * Removes a node to the list of open nodes.
+         * @node_id Node ID to remove from the list.
+         */
+        saveCloseNode: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            if (openNodes[username].indexOf(node_id) < 0) {
+                return;
+            }
+            
+            openNodes[username].splice(openNodes[username].indexOf(node_id), 1);
+            Cookies.set('json_tree_opened_nodes',  JSON.stringify(openNodes));
+        },
+                
+                
+        /**
+         * Checks if a node is in the list of open nodes.
+         * @node_id Node ID to check.
+         * @returns true if the node is in the list.
+         */
+        isNodeOpen: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            return (openNodes[username].indexOf(node_id) >= 0);
+        },
+          
+        /**
+         * Clears the state saved in cookies.
+         */
+        clearSavedState: function() {
+            Cookies.remove('json_tree_opened_nodes');
+        },
+          
+        /**
+         * Mark all nodes as opened nodes.
+         */
+        markAllNodesAsOpened: function(nodesdata) {
+            var that = this;
+            
+            this.openNodesList = [];
+            
+            if(_.isUndefined(nodesdata)) {
+                // Start 
+                this.ohaiTreeDataSource({}, function(nodesdata) {
+                    that.markAllNodesAsOpened(nodesdata);
+                });
+            }
+            else if (nodesdata.data.length > 0) {
+                for (var i=0; i<nodesdata.data.length; i++) {
+                    var node = nodesdata.data[i];
+                    if (node.type == "folder") {
+                        var id_base = node.id_base + "_" + node.key.replace(/[^a-zA-Z0-9]/g, '_');
+                        this.saveOpenNode( id_base );
+                        this.ohaiTreeDataSource(node, function(nodesdata) {
+                            that.markAllNodesAsOpened(nodesdata);
+                        });
+                    }
+                }
+            }
+        },
+          
+          
+        /**
+         * Open and close node handler.
+         */
+        saveTreeStatus: function(event, parentData, that) {
+            var id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
             if (event.type == "disclosedFolder") {
                 // opened
-                console.log("Open folder");
-                
+                that.saveOpenNode(id_base);
             }
             else {
                 // closed
-                console.log("Close folder");
+                that.saveCloseNode(id_base);
             }
         },
         
@@ -484,10 +643,25 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             
             // OHAI JSON tree rendering
+            var that = this;
             var ohai_tree = this.$el.find("#ohai_tree");
             ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model });
-            ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', this.saveTreeStatus);
-            var that = this;
+            
+            if (this.checkCurrentComputer(this.model.get("id"))) {
+                // Reloading the same computer
+                this.ohaiTreeDiscloseSaved(ohai_tree);
+                this.$el.find("#ohai-json").click();
+            }
+            else {
+                // The user has selected a new computer
+                this.clearSavedState();
+            }
+            
+            ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', 
+               function(event, parentData) {
+                    that.saveTreeStatus(event, parentData, that);
+               }
+            );
             
             // OHAI JSON tree buttons
             this.$el.find("#ohai_tree-expand")
