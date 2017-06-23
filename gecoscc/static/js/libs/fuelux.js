@@ -3218,21 +3218,31 @@
 					$loader.removeClass( 'hide hidden' ); // jQuery deprecated hide in 3.0. Use hidden instead. Leaving hide here to support previous markup
 				}
 
+                // jQuery deprecated hide in 3.0. Use hidden instead. Leaving hide here to support previous markup
+                if (jQuery.type( self.treebranchTemplate ) === "undefined") {
+                    self.treebranchTemplate = self.$element.find( '[data-template=treebranch]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' );
+                }
+                if (jQuery.type( self.treeitemTemplate ) === "undefined") {
+                    self.treeitemTemplate = self.$element.find( '[data-template=treeitem]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' );
+                }
+                if (jQuery.type( self.treeoverflowTemplate ) === "undefined") {
+                    self.treeoverflowTemplate = self.$element.find( '[data-template=treeoverflow]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' );
+                }
 
 				this.options.dataSource( treeData ? treeData : {}, function( items ) {
 					$.each( items.data, function( index, value ) {
 						var $entity;
 
 						if ( value.type === 'folder' ) {
-							$entity = self.$element.find( '[data-template=treebranch]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' ); // jQuery deprecated hide in 3.0. Use hidden instead. Leaving hide here to support previous markup
+							$entity = self.treebranchTemplate.clone();
 							$entity.data( value );
 							$entity.find( '.tree-branch-name > .tree-label' ).html( value.text || value.name );
 						} else if ( value.type === 'item' ) {
-							$entity = self.$element.find( '[data-template=treeitem]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' ); // jQuery deprecated hide in 3.0. Use hidden instead. Leaving hide here to support previous markup
+							$entity = self.treeitemTemplate.clone();
 							$entity.find( '.tree-item-name > .tree-label' ).html( value.text || value.name );
 							$entity.data( value );
 						} else if ( value.type === 'overflow' ) {
-							$entity = self.$element.find( '[data-template=treeoverflow]:eq(0)' ).clone().removeClass( 'hide hidden' ).removeData( 'template' ).removeAttr( 'data-template' ); // jQuery deprecated hide in 3.0. Use hidden instead. Leaving hide here to support previous markup
+							$entity = self.treeoverflowTemplate.clone();
 							$entity.find( '.tree-overflow-name > .tree-label' ).html( value.text || value.name );
 							$entity.data( value );
 						}
