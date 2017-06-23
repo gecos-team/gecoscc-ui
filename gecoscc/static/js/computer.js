@@ -551,6 +551,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             //click button when enter key is pressed
             search_field.keyup(function (evt) {
+                search_field.css('background-color', 'white');
                 if (evt.which === 13) {
                     $("#ohai_tree-search-btn").click();
                 }
