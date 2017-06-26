@@ -575,8 +575,8 @@ legend {
   content: "\",";
 }
 
-.fuelux .tree-json-string {
-  color: #cc0000;
+.fuelux .tree-json-string, .fuelux .tree-json-number {
+  color: #2aabb0;
 }
 
 #ohai_tree_header {
