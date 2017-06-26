@@ -602,6 +602,13 @@ legend {
     padding-bottom: 1px !important;
 }
 
+#ohai_tree-expand .loading, #ohai_tree-compress .loading {
+    display: none;
+    height: 27.5px;
+    width: 22px;
+    padding-top: 2px;
+}
+
 
 #tree_search_setup_drowpdown {
     width: 300px;
@@ -690,4 +697,8 @@ legend {
 #events_summary .chart-bottom-heading {
     font-size: 0.8em;
     color: #666666;
+}
+
+.tree-selected .tree-branch-name, .tree-selected .tree-item-name {
+    background-color: #b9dff1 !important;
 }
