@@ -494,19 +494,21 @@ class ChefTask(Task):
         from itertools import groupby
         from operator import itemgetter
 
+        self.log("debug","tasks.py ::: group_by_multiple_key - input_data = {0}".format(input_data))
         grouper = itemgetter(*mergeIdField)
         result = []
         for key, grp in groupby(sorted(input_data, key = grouper), grouper):
-           key = [key] if not isinstance(key,tuple) else key
-           temp_dict = dict(zip(mergeIdField, key))
-           temp_list = [d[mergeActionField] for d in grp]
+           temp_dict = dict({mergeActionField:[]})
+           for d in grp:
+              aux = d.copy()
+              temp_dict[mergeActionField] += [aux.pop(mergeActionField)]
+              temp_dict.update(aux)
            if opposite:
               # Incoherence in node
-              # temp_list = ['add','remove'] 
-              if len(temp_list) > 1:
+              # temp_dict[mergeActionField] = ['add','remove']
+              if len(temp_dict[mergeActionField]) > 1:
                   continue
-   
-           temp_dict[mergeActionField] = temp_list[-1]
+           temp_dict[mergeActionField] = temp_dict[mergeActionField][-1]
            result.append(temp_dict)
         self.log("debug","tasks.py ::: group_by_multiple_key - result = {0}".format(result))
         return result    
@@ -530,11 +532,12 @@ class ChefTask(Task):
 
         return True if updates else False
         
-    def get_merge_policies(self, node, action, mergeIdField, mergeActionField, policy, obj, objold, obj_ui_field, field_chef, obj_ui, field_ui, update_by_path):
+    def get_merge_policies(self, node, action, computer, mergeIdField, mergeActionField, policy, obj, objold, obj_ui_field, field_chef, obj_ui, field_ui, update_by_path):
         '''
         This function merge policies.
         '''
         self.log("debug","Starting get_merge_policies...")
+        self.log("debug","tasks.py ::: get_merge_policies - obj = {0}".format(obj))
         self.log("debug","tasks.py ::: get_merge_policies - objold = {0}".format(objold))
         self.log("debug","tasks.py ::: get_merge_policies - obj_ui_field = {0}".format(obj_ui_field))
         self.log("debug","tasks.py ::: get_merge_policies - obj_ui = {0}".format(obj_ui))
@@ -544,19 +547,38 @@ class ChefTask(Task):
 
         # Checking changes in policy
         sanitized_obj_ui_field = self.group_by_multiple_keys(obj_ui_field, mergeIdField, mergeActionField, True)
-        # objold = {} when change tree branch
+        # objold = {} when object is moved from branch (cut & paste)
+        # objold = None
+        if objold is None:
+            objold = {}
+            
         objold_ui = objold.get('policies',{}).get(unicode(policy['_id']), {})
-        objold_ui_field = objold_ui.get(field_ui, []) 
-
+        self.log("debug","tasks.py ::: get_merge_policies - objold_ui  = {0}".format(objold_ui))
+        if callable(field_ui):
+            objold_ui_field = field_ui(objold_ui, obj=objold, node=node, field_chef=field_chef)
+            self.log("debug","tasks.py ::: get_merge_policies - objold_ui_field  = {0}".format(objold_ui_field))
+        else:
+            objold_ui_field = objold_ui.get(field_ui, [])
+            
+        # A same user belonging to different computers located in different non-hierarchical OUs between them 
+        # when appliying not user policy
+        if not is_user_policy(field_chef) and obj['type'] == 'ou':
+            computers_of_ou = self.db.nodes.find({'path': get_filter_nodes_belonging_ou(obj['_id']),'type': 'computer'})
+            computers_of_ou = [c['_id'] for c in computers_of_ou]
+            self.log("debug","tasks.py ::: get_merge_policies - computer = {0}".format(computer['_id']))
+            self.log("debug","tasks.py ::: get_merge_policies - computers_of_ou = {0}".format(computers_of_ou))
+            if computer['_id'] not in computers_of_ou:
+                self.update_node_updated_by(node, field_chef, obj, DELETED_POLICY_ACTION, update_by_path, [])
+                return False
+                
         if self.has_changed_policy(node, field_chef, sanitized_obj_ui_field, obj_ui_field, objold_ui_field) or action == DELETED_POLICY_ACTION:
             # Nodes has changed this policy
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
             self.log("debug","tasks.py ::: get_merge_policies - nodes_ids = {0}".format(nodes_ids))
 
-            # Order by path (hierarchy)
+            # Order by path (hierarchy) and names (groups)
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]}).sort([('path',1),('name',1)])
-
            
             innode = inhierarchy = []
             lasts = []
@@ -565,7 +587,10 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: get_merge_policies - updater_node['name'] = {0}".format(updater_node['name']))
 
                 # At node: Removing opposites actions
-                innode = updater_node['policies'][unicode(policy['_id'])][field_ui]
+                if callable(field_ui):
+                    innode = field_ui(updater_node['policies'][unicode(policy['_id'])], obj=updater_node, node=node, field_chef=field_chef)
+                else:
+                    innode = updater_node['policies'][unicode(policy['_id'])][field_ui]
                 self.log("debug","tasks.py ::: get_merge_policies - innode = {0}".format(innode))
                 nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
                 self.log("debug","tasks.py ::: get_merge_policies - nodupes_innode = {0}".format(nodupes_innode))
@@ -684,7 +709,11 @@ class ChefTask(Task):
                     # New merge algorithm
                     mergeIdField = None
                     mergeActionField = None
-                    field_ui_from_policy = nested_lookup(field_ui, policy)
+                    if callable(field_ui):
+                        search_field = field_chef.split('.')[-1]
+                        field_ui_from_policy = nested_lookup(search_field, policy)
+                    else:
+                        field_ui_from_policy = nested_lookup(field_ui, policy)
                     self.log("debug","tasks.py ::: update_node_from_rules - is_mergeable: field_ui_from_policy = {0}".format(field_ui_from_policy))
                     if len(field_ui_from_policy) > 0:
                         # nested_lookup return list and is already list
@@ -697,7 +726,7 @@ class ChefTask(Task):
                             self.log("debug","tasks.py ::: update_node_from_rules - is_mergeable: mergeActionField = {0}".format(mergeActionField))
 
                     if mergeIdField and mergeActionField:
-                        is_policy_updated = self.get_merge_policies(node, action, mergeIdField, mergeActionField, policy, obj, objold, obj_ui_field, field_chef, obj_ui, field_ui, update_by_path)
+                        is_policy_updated = self.get_merge_policies(node, action, computer, mergeIdField, mergeActionField, policy, obj, objold, obj_ui_field, field_chef, obj_ui, field_ui, update_by_path)
                     # Old merge algorithm
                     elif obj_ui.get('type', None) == 'storage':
                         is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
