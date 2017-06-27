@@ -254,20 +254,79 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
         
+        ohaiTreeDiscloseSaved: function(ohai_tree) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+           
+            
+            for (var i=0; i < openNodes[username].length; i++) {
+                var node_id = openNodes[username][i];
+                
+                ohai_tree.tree('openFolder', ohai_tree.find('#'+node_id));
+            }
+        },
+        
+        ohaiTreeDiscloseAll: function(ohai_tree) {
+            // This is slow!
+            //ohai_tree.tree('discloseAll');
+
+            var isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
+            if (!isAllDisclosed) {
+                // Expanding the tree when its not visible is faster (because the browser doesn't need to draw the changes until the end), 
+                // so we will create a new one expand it and after that replace the current visible tree
+                var tree_parent = ohai_tree.parent();
+                var ohai_tree_original = ohai_tree;
+
+                // Create a new empty tree
+                ohai_tree = ohai_tree.clone();
+                ohai_tree.find( "li:not([data-template])" ).remove();
+                
+                // Render the new tree
+                ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model }); 
+
+//                var start, end;
+//                start = Date.now();
+                
+                // Open all the branches
+                while (!isAllDisclosed) {
+                    ohai_tree.tree('discloseVisible');
+                    isAllDisclosed = ohai_tree.find( ".tree-branch:not('.tree-open, .hidden, .hide')" ).length === 0;
+                }
+                
+//                end = Date.now();
+//                console.log("discloseVisible: "+(end-start)+"ms");
+                
+                // Replace the tree
+                var that = this;
+                ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree',                
+                    function(event, parentData) {
+                        that.saveTreeStatus(event, parentData, that);
+                    }
+                );
+                this.clearSavedState();
+                
+                tree_parent.find('#ohai_tree').remove();
+                tree_parent.append(ohai_tree);
+            }
+                
+        },        
+        
         ohaiTreeCloseAll: function(ohai_tree) {
             // This is slow!
             //ohai_tree.tree('closeAll');
-            
-            
-            var data = this.model.get("ohai");
-            for( var name in data ) {
-                var value = data[name];
-                if (Array.isArray(value) || typeof(value) === 'object') {
-                    var folderId = "_"+name.replace(/[^a-zA-Z0-9]/g, '_');
-                    ohai_tree.tree('refreshFolder', $('#'+folderId))
-                    ohai_tree.tree('closeFolder', $('#'+folderId))
-                }
-            }
+
+            // Remove the tree data and render it again
+            ohai_tree.find( "li:not([data-template])" ).remove();
+            ohai_tree.tree('render');
+            this.clearSavedState();
         },
         
         ohaiTreeDataSearch: function(ohai_tree, keyword, mode) {
@@ -286,7 +345,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             // Look for the next result
             var result = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, ohai, selectedItemPath, '', false, mode);
             var nextResultPath = result[0];
-            console.log('nextResultPath: '+nextResultPath);
+            // console.log('nextResultPath: '+nextResultPath);
             
             if (nextResultPath) {
                 // Result found
@@ -318,7 +377,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                         }
                         
                         if ($(folderId).length <= 0) {
-                            alert('No se encuentra:' + folderId);
+                            alert('Can\'t find:' + folderId);
                         }
                         var top = $(folderId).position().top;
                         //console.log('top: '+top+' scrolltop:'+ohai_tree.scrollTop());
@@ -349,11 +408,20 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 passed = true;
             }
             
-            var keys = Object.keys(data);
             if (mode == 'previous') {
-                keys = keys.reverse();
+                var lastValue = [false, passed];
+                var current = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, data, '/', '', false, 'initial');
+                // console.log('current: '+current[0]+' selectedItemPath:'+selectedItemPath);
+                while (current[0] != selectedItemPath) {
+                    // console.log('current: '+current[0]+' selectedItemPath:'+selectedItemPath);
+                    lastValue = current;
+                    current = this.ohaiTreeDataSearchNextResult(ohai_tree, keyword, data, lastValue[0], '', false, 'next');
+                }
+                
+                return lastValue;
             }
             
+            var keys = Object.keys(data);
             for( var i=0; i<keys.length; i++ ) {
                 var name = keys[i];
                 var currentPath = path + '/' + name;
@@ -362,10 +430,11 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 
                 if (currentPath == selectedItemPath) {
                     passed = true;
-                    continue;
+                    if (!Array.isArray(value) && typeof(value) !== 'object') {
+                        continue;
+                    }
                 }
-                
-                if (name.match(keyword) && passed) {
+                else if (name.match(keyword) && passed) {
                     // Next result found in key
                     return [currentPath, passed];
                 }
@@ -389,7 +458,118 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             return [false, passed];
             
         },        
+
+        checkCurrentComputer: function(computer_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = 0;
+            }
+
+            return (openNodes['current'] == this.model.get("id"))
+        },
         
+        /**
+         * Adds a node to the list of open nodes.
+         * @node_id Node ID to add to the list.
+         */
+        saveOpenNode: function(node_id) {
+            if (this.isNodeOpen(node_id)) {
+                // Already opened
+                return;
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            openNodes[username].push(node_id); 
+            Cookies.set('json_tree_opened_nodes',  JSON.stringify(openNodes));
+            
+        },
+        
+        /**
+         * Removes a node to the list of open nodes.
+         * @node_id Node ID to remove from the list.
+         */
+        saveCloseNode: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            if (openNodes[username].indexOf(node_id) < 0) {
+                return;
+            }
+            
+            openNodes[username].splice(openNodes[username].indexOf(node_id), 1);
+            Cookies.set('json_tree_opened_nodes',  JSON.stringify(openNodes));
+        },
+                
+                
+        /**
+         * Checks if a node is in the list of open nodes.
+         * @node_id Node ID to check.
+         * @returns true if the node is in the list.
+         */
+        isNodeOpen: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('json_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('json_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            if (jQuery.type(openNodes['current']) == "undefined") {
+                openNodes['current'] = this.model.get("id");
+            }
+            
+            
+            return (openNodes[username].indexOf(node_id) >= 0);
+        },
+          
+        /**
+         * Clears the state saved in cookies.
+         */
+        clearSavedState: function() {
+            Cookies.remove('json_tree_opened_nodes');
+        },
+          
+          
+        /**
+         * Open and close node handler.
+         */
+        saveTreeStatus: function(event, parentData, that) {
+            var id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
+            if (event.type == "disclosedFolder") {
+                // opened
+                that.saveOpenNode(id_base);
+            }
+            else {
+                // closed
+                that.saveCloseNode(id_base);
+            }
+        },
         
         onRender: function () {
             if(!_.isUndefined(this.activeTab)) {
@@ -429,23 +609,61 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
             
             // OHAI JSON tree rendering
+            var that = this;
             var ohai_tree = this.$el.find("#ohai_tree");
             ohai_tree.tree({ dataSource: this.ohaiTreeDataSource, model: this.model });
-            var that = this;
+            
+            if (this.checkCurrentComputer(this.model.get("id"))) {
+                // Reloading the same computer
+                this.ohaiTreeDiscloseSaved(ohai_tree);
+                this.$el.find("#ohai-json").click();
+            }
+            else {
+                // The user has selected a new computer
+                this.clearSavedState();
+            }
+            
+            ohai_tree.on('disclosedFolder.fu.tree closed.fu.tree', 
+               function(event, parentData) {
+                    that.saveTreeStatus(event, parentData, that);
+               }
+            );
             
             // OHAI JSON tree buttons
             this.$el.find("#ohai_tree-expand")
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    ohai_tree.tree('discloseAll');
+                    $(this).find(".normal").hide();
+                    $(this).find(".loading").show();
+                    
+                    var thisbutton = $(this);
+                    setTimeout(function(){ 
+                        var ohai_tree = that.$el.find("#ohai_tree");
+                        that.ohaiTreeDiscloseAll(ohai_tree);
+                        thisbutton.find(".loading").hide();
+                        thisbutton.find(".normal").show();
+                    }, 10);
+
                 });            
 
             this.$el.find("#ohai_tree-compress")
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    that.ohaiTreeCloseAll(ohai_tree);
+                    
+                    $(this).find(".normal").hide();
+                    $(this).find(".loading").show();
+                    
+                    var thisbutton = $(this);
+                    setTimeout(function(){ 
+                        var ohai_tree = that.$el.find("#ohai_tree");
+                        that.ohaiTreeCloseAll(ohai_tree);
+                        thisbutton.find(".loading").hide();
+                        thisbutton.find(".normal").show();
+                    }, 10);
+                    
+                    
                 });            
 
                 
@@ -455,9 +673,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .on("click", function (evt) {
                     evt.preventDefault();
                     search_field.val('');
-                        $("#ohai_tree-close-search-btn").hide();
-                        $("#ohai_tree-next-search-btn").hide();
-                        $("#ohai_tree-previous-search-btn").hide();                    
+                    search_field.css('background-color', 'white');
+                    $("#ohai_tree-close-search-btn").hide();
+                    $("#ohai_tree-next-search-btn").hide();
+                    $("#ohai_tree-previous-search-btn").hide();                    
                 });
             
             
@@ -475,7 +694,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     else {
                         // Start search
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
-                        
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'initial');
 
 
@@ -487,6 +706,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     
                 }); 
 
+            //click button when enter key is pressed
+            search_field.keyup(function (evt) {
+                search_field.css('background-color', 'white');
+                if (evt.which === 13) {
+                    $("#ohai_tree-search-btn").click();
+                }
+            });                
+                
             this.$el.find("#ohai_tree-next-search-btn")
                 .off("click")
                 .on("click", function (evt) {
@@ -495,6 +722,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (keyword) {
                         // Next search result
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'next');
                     }
                     
@@ -508,6 +736,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (keyword) {
                         // Next search result
                         var keyword = new RegExp(keyword.replace(/\./g, '\\.'), "i");
+                        var ohai_tree = that.$el.find("#ohai_tree");
                         that.ohaiTreeDataSearch(ohai_tree, keyword, 'previous');
                     }
                     

@@ -5,7 +5,7 @@
     </div>
 <% } %>
 <% _.each(items, function (item) { %>
-    <div class="tree-leaf tree-node tree-node-<%= item.icon %>" id="<%= item.id %>">
+    <div class="tree-leaf tree-node" style="display: block;" id="<%= item.id %>">
         <div class="tree-highlight">
             <span class="fa fa-<%= item.icon %>"></span>
             <div class="tree-name"><%= item.name %></div>

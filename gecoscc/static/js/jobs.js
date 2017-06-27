@@ -70,7 +70,7 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 30,
+            perPage: jobs_pagesize,
             pagesInRange: 3,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
