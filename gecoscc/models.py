@@ -744,6 +744,14 @@ class Policies(colander.SequenceSchema):
 
 class Package(colander.MappingSchema):
     name = colander.SchemaNode(colander.String())
+    repository = colander.SchemaNode(colander.String())
+    version = colander.SchemaNode(colander.String())
+    architecture = colander.SchemaNode(colander.String())
+    description = colander.SchemaNode(colander.String())
+    depends = colander.SchemaNode(colander.String())
+    provides = colander.SchemaNode(colander.String())
+    conflicts = colander.SchemaNode(colander.String())
+    replaces = colander.SchemaNode(colander.String())
 
 
 class Packages(colander.SequenceSchema):

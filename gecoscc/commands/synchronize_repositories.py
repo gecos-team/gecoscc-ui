@@ -15,6 +15,7 @@ import gzip
 import threading
 
 from BeautifulSoup import BeautifulSoup
+from optparse import make_option
 
 try:
    from cStringIO import StringIO
@@ -27,53 +28,133 @@ from gecoscc.command_util import get_setting
 
 PACKAGES_FILE = 'Packages.gz'
 PACKAGE_NAME_TOKEN = 'Package'
+VERSION_TOKEN = 'Version'
+ARCHITECTURE_TOKEN = 'Architecture'
+DESCRIPTION_TOKEN = 'Description'
+DEPENDS_TOKEN = 'Depends'
+PROVIDES_TOKEN = 'Provides'
+CONFLICTS_TOKEN = 'Conflicts'
+REPLACES_TOKEN = 'Replaces'
+
+
 
 class Command(BaseCommand):
+    description = """
+       Import package data from repositories defined in gecosc.ini to MongoDB.
+
+       If the -c option is used, all the data in MongoDB is cleaned before importing. Otherwise only new pagkages are imported.
+    """
+
+    usage = "usage: %prog config_uri synchronize_repositories [-c]"
+
+    option_list = [
+        make_option(
+            '-c', '--clean',
+            dest='clean',
+            action='store_true',
+            default=False,
+            help='Clean all data in MongoDB before importing'
+        ),
+    ]
+
+    required_options = (
+    )
+
+
     def command(self):
+        # Clean the database if necessary
+        if self.options.clean:
+            print('Cleaning MongoDB data before importing...')
+            self.db.packages.drop()
+            
+        else:
+            print('Adding package information to existing data...')
+            
+    
         packages = []
-        packages_urls = []
+        packages_urls = {}
         repositories = json.loads(get_setting('repositories', self.settings, self.db))
         num_packages = 0
 
+        # Fetch repositories packages files
         for repo in repositories:
             print '\n\n\nFetching: ', repo
             dists_url = repo + 'dists/'
             repo_packages = self.get_packages_urls(dists_url)
-            packages_urls.extend(repo_packages)
+            packages_urls[repo] = repo_packages
 
         print '\n\n\nLooking for new packages...'
-        for url in packages_urls:
-            try:
-                r = requests.get(url)
-            except requests.exceptions.RequestException:
-                print "Error downloading file: ", url
-                continue
+        for repo in packages_urls:
+            for url in packages_urls[repo]:
+                try:
+                    r = requests.get(url)
+                except requests.exceptions.RequestException:
+                    print "Error downloading file: ", url
+                    continue
 
-            packages_list = gzip.GzipFile(fileobj=StringIO(r.content), mode='rb')
-            package_model = Package()
-            package = {}
+                packages_list = gzip.GzipFile(fileobj=StringIO(r.content), mode='rb')
+                package_model = Package()
+                package = {}
+                package['repository'] = repo
+                
+                try:
+                    for line in packages_list:
+                        if line.strip() == '':
+                            if 'name' in package:
+                                packages.append(package['name'])
 
-            try:
-                for line in packages_list:
-                    try:
-                        key_value = self.parse_line(line)
-                    except IndexError:
-                        continue
+                                new_package = package_model.serialize(package)
+                                db_package = self.db.packages.find_one(
+                                    {
+                                     'name': package['name'], 
+                                     'version': package['version'], 
+                                     'architecture': package['architecture'],
+                                     'repository': package['repository']
+                                    })
 
-                    if key_value['key'] == PACKAGE_NAME_TOKEN:
-                        package['name'] = key_value['value']
-                        packages.append(package['name'])
+                                if not db_package:
+                                    self.db.packages.insert(package)
+                                    num_packages += 1
+                                    print "Imported package:", package['name'], " ", package['version'], " ", package['architecture']
+                                
+                            package = {}
+                            package['repository'] = repo
+                                
+                                
+                        else:
+                            try:
+                                key_value = self.parse_line(line)
+                            except IndexError:
+                                continue
 
-                        new_package = package_model.serialize(package)
-                        db_package = self.db.packages.find_one({'name': package['name']})
+                            if key_value['key'] == PACKAGE_NAME_TOKEN:
+                                package['name'] = key_value['value']
+                                
+                            if key_value['key'] == VERSION_TOKEN:
+                                package['version'] = key_value['value']
 
-                        if not db_package:
-                            self.db.packages.insert(new_package)
-                            num_packages += 1
-                            print "Imported package:", package['name']
-            except IOError:
-                print "Error decompressing file:", url
-                continue
+                            if key_value['key'] == ARCHITECTURE_TOKEN:
+                                package['architecture'] = key_value['value']
+
+                            if key_value['key'] == DESCRIPTION_TOKEN:
+                                package['description'] = key_value['value']
+
+                            if key_value['key'] == DEPENDS_TOKEN:
+                                package['depends'] = key_value['value']
+
+                            if key_value['key'] == PROVIDES_TOKEN:
+                                package['provides'] = key_value['value']
+
+                            if key_value['key'] == CONFLICTS_TOKEN:
+                                package['conflicts'] = key_value['value']
+
+                            if key_value['key'] == REPLACES_TOKEN:
+                                package['replaces'] = key_value['value']
+                            
+                            
+                except IOError:
+                    print "Error decompressing file:", url
+                    continue
 
         print '\n\nImported %d packages' % num_packages
 
