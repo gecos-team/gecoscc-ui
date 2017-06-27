@@ -40,7 +40,7 @@ REPLACES_TOKEN = 'Replaces'
 
 class Command(BaseCommand):
     description = """
-       Import package data from repositories defined in gecosc.ini to MongoDB.
+       Import package data from repositories defined in GECOS CC to MongoDB.
 
        If the -c option is used, all the data in MongoDB is cleaned before importing. Otherwise only new pagkages are imported.
     """
@@ -103,19 +103,83 @@ class Command(BaseCommand):
                             if 'name' in package:
                                 packages.append(package['name'])
 
-                                new_package = package_model.serialize(package)
-                                db_package = self.db.packages.find_one(
-                                    {
-                                     'name': package['name'], 
-                                     'version': package['version'], 
-                                     'architecture': package['architecture'],
-                                     'repository': package['repository']
-                                    })
+                                db_package = self.db.packages.find_one({'name': package['name']})
 
+                                newVersion = {'version': package['version']}
+                                
+                                if 'description' in package:
+                                    newVersion['description'] = package['description']
+
+                                if 'depends' in package:
+                                    newVersion['depends'] = package['depends']
+
+                                if 'provides' in package:
+                                    newVersion['provides'] = package['provides']
+
+                                if 'conflicts' in package:
+                                    newVersion['conflicts'] = package['conflicts']
+
+                                if 'replaces' in package:
+                                    newVersion['replaces'] = package['replaces']
+
+                                
+                                newArchitecture = { 'architecture': package['architecture'], 'versions': [ newVersion ] }
+                                newRepository = {'repository': package['repository'], 'architectures': [ newArchitecture ] }                                
+                                
                                 if not db_package:
-                                    self.db.packages.insert(package)
+                                    # Create new package record
+                                    newPackage = {'name': package['name'], 'repositories': [ newRepository ]}
+                                    
+                                    # Check with collander
+                                    new_package = package_model.serialize(newPackage)
+
+                                    self.db.packages.insert(newPackage)
                                     num_packages += 1
                                     print "Imported package:", package['name'], " ", package['version'], " ", package['architecture']
+                                    
+                                else:
+                                    # Update existing package record
+                                    
+                                    # Check package repository
+                                    current_repo = None
+                                    for repodata in db_package['repositories']:
+                                        if repodata['repository'] == package['repository']:
+                                            current_repo = repodata
+                                            break
+                                    
+                                    if current_repo is None:
+                                        # Add new repository
+                                        db_package['repositories'].append(newRepository)
+                                    
+                                    else:
+                                        # Check package architecture
+                                        current_arch = None
+                                        for archdata in current_repo['architectures']:
+                                            if archdata['architecture'] == package['architecture']:
+                                                current_arch = archdata
+                                                break
+
+                                        if current_arch is None:
+                                            # Add new architecture
+                                            current_repo['architectures'].append(newArchitecture)
+                                            
+                                        else:
+                                            # Check version
+                                            current_ver = None
+                                            for verdata in current_arch['versions']:
+                                                if verdata['version'] == package['version']:
+                                                    current_ver = verdata
+                                                    break
+                                            
+                                            if current_ver is None:
+                                                # Add new version
+                                                current_arch['versions'].append(newVersion)
+                                                
+                                    # Update
+                                    self.db.packages.update({'name':package['name']},{'$set': db_package})
+                                    
+                                    print "Updated package:", package['name'], " ", package['version'], " ", package['architecture']
+
                                 
                             package = {}
                             package['repository'] = repo

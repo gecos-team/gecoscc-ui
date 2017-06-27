@@ -741,18 +741,35 @@ class Policy(colander.MappingSchema):
 class Policies(colander.SequenceSchema):
     policies = Policy()
 
+    
+class PackageVersion(colander.MappingSchema):
+    version = colander.SchemaNode(colander.String(), missing='', default='')
+    description = colander.SchemaNode(colander.String(), missing='', default='')
+    depends = colander.SchemaNode(colander.String(), missing='', default='')
+    provides = colander.SchemaNode(colander.String(), missing='', default='')
+    conflicts = colander.SchemaNode(colander.String(), missing='', default='')
+    replaces = colander.SchemaNode(colander.String(), missing='', default='')
 
+class PackageVersions(colander.SequenceSchema):
+    versions = PackageVersion()      
+    
+class PackageArchitecture(colander.MappingSchema):
+    architecture = colander.SchemaNode(colander.String(), missing='', default='')
+    versions = PackageVersions(missing=[], default=[])
+
+class PackageArchitectures(colander.SequenceSchema):
+    architectures = PackageArchitecture()    
+
+class PackageRepository(colander.MappingSchema):
+    repository = colander.SchemaNode(colander.String(), missing='', default='')
+    architectures = PackageArchitectures(missing=[], default=[])
+
+class PackageRepositories(colander.SequenceSchema):
+    repositories = PackageRepository()    
+    
 class Package(colander.MappingSchema):
-    name = colander.SchemaNode(colander.String())
-    repository = colander.SchemaNode(colander.String())
-    version = colander.SchemaNode(colander.String())
-    architecture = colander.SchemaNode(colander.String())
-    description = colander.SchemaNode(colander.String())
-    depends = colander.SchemaNode(colander.String())
-    provides = colander.SchemaNode(colander.String())
-    conflicts = colander.SchemaNode(colander.String())
-    replaces = colander.SchemaNode(colander.String())
-
+    name = colander.SchemaNode(colander.String(), missing='', default='')
+    repositories = PackageRepositories(missing=[], default=[])
 
 class Packages(colander.SequenceSchema):
     packages = Package()
