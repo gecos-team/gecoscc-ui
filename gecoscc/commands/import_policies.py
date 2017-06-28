@@ -274,6 +274,8 @@ class Command(BaseCommand):
     def set_packages_url(self, value):
         value['properties']['package_list']['items']['properties']['name']['autocomplete_url'] = PACKAGE_POLICY_URL
         value['properties']['package_list']['items']['properties']['name']['enum'] = []
+        value['properties']['package_list']['items']['properties']['version']['autocomplete_url'] = 'javascript:calculateVersions'
+        value['properties']['package_list']['items']['properties']['version']['enum'] = []
     
     def set_mimetypes_url(self, value):
         value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL

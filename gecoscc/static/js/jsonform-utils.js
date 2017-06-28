@@ -1,0 +1,85 @@
+/*
+* Copyright 2017, Junta de Andalucia
+* http://www.juntadeandalucia.es/
+*
+* Authors:
+*   Abraham Macias <amacias@solutia-it.es>
+*
+* All rights reserved - EUPL License V 1.1
+* https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
+*/
+
+function calculateVersions(node, query) {
+    var package_name = $(node.parentNode.children[0].el).find("input").last().val();
+    //console.log('package_name is: '+package_name+" query.term:"+query.term);
+    
+    $.ajax({
+        url: '/api/packages/',
+        dataType: 'json',
+        id : function (node) {
+            return node._id;
+        },
+        data:  {
+            package_name: package_name
+        },
+        type: 'GET',
+        success: function(data) {
+            node.schemaElement.enum = [];
+            node.schemaElement.enum.push('lastest');
+            var options = [];
+            options.push( {
+                text: 'lastest',
+                value: 'lastest',
+                id: 'lastest'
+            });      
+            options.push( {
+                text: 'current',
+                value: 'current',
+                id: 'current'
+            });    
+            
+            if(query.term.length > 0){
+                options.push({id: query.term, text: query.term, value: query.term });
+                node.schemaElement.enum.push(query.term);
+            }
+            
+            
+            if (jQuery.type(data) !== "undefined" && data.name == package_name) {
+                // Check repositories
+                for (var i = 0; i<data.repositories.length; i++) {
+                    var repo = data.repositories[i];
+                    
+                    // Check architectures
+                    for (var j = 0; j<repo.architectures.length; j++) {
+                        var arch = repo.architectures[j];
+                        
+                        // Check versions
+                        for (var k = 0; k<arch.versions.length; k++) {
+                            var ver = arch.versions[k];
+                            
+                            if ( jQuery.inArray(ver.version, node.schemaElement.enum) < 0 ) {
+                                node.schemaElement.enum.push(ver.version);
+                                options.push( {
+                                    text: ver.version,
+                                    value: ver.version,
+                                    id: ver.version
+                                });
+                                
+                            }
+                            
+                        }                        
+                        
+                    }
+                    
+                    
+                }
+                
+            }
+            
+            
+            query.callback({results: options, more: false});
+
+        }
+    });
+    
+}
