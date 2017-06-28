@@ -24,8 +24,15 @@ function calculateVersions(node, query) {
         },
         type: 'GET',
         success: function(data) {
-            node.schemaElement.enum = [];
-            node.schemaElement.enum.push('lastest');
+            if (jQuery.type(node.schemaElement.enum) === "undefined")
+                node.schemaElement.enum = [];
+            
+            if (!jQuery.inArray('lastest', node.schemaElement.enum))
+                node.schemaElement.enum.push('lastest');
+            
+            if (!jQuery.inArray('current', node.schemaElement.enum))
+                node.schemaElement.enum.push('current');
+        
             var options = [];
             options.push( {
                 text: 'lastest',
@@ -59,11 +66,16 @@ function calculateVersions(node, query) {
                             
                             if ( jQuery.inArray(ver.version, node.schemaElement.enum) < 0 ) {
                                 node.schemaElement.enum.push(ver.version);
-                                options.push( {
+                            }
+                            
+                            var this_option = {
                                     text: ver.version,
                                     value: ver.version,
                                     id: ver.version
-                                });
+                                };
+                            
+                            if ( jQuery.inArray(this_option, options) < 0 ) {
+                                options.push( this_option );
                                 
                             }
                             
