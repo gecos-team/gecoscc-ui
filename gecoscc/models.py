@@ -174,11 +174,6 @@ class AdminUserValidator(object):
                 node.raise_invalid(_('No LDAP user found'))
             elif exists == None:
                 node.raise_invalid(_('LDAP communication problems'))
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 4a6c0892d0833a9cfe21807594ed227625efa37c
 
 class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
