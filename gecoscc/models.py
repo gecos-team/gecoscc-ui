@@ -157,13 +157,28 @@ class URLExtend(object):
 class AdminUserValidator(object):
 
     def __call__(self, node, value):
+        if value['cc_auth_type'] == 'local':
+            if not (value['password'] or value['repeat_password']):
+                node.raise_invalid(_('The passwords fields are required'))
+
         if value['password'] != value['repeat_password']:
             node.raise_invalid(_('The passwords do not match'))
         from gecoscc.userdb import create_password
         if bool(value['password']):
             value['password'] = create_password(value['password'])
         del value['repeat_password']
+        elif value['cc_auth_type'] == 'ldap':
+            from gecoscc.userdb import get_ldap_userin
+            exists = get_ldap_userin(value['username'])
+            if exists == False:
+                node.raise_invalid(_('No LDAP user found'))
+            elif exists == None:
+                node.raise_invalid(_('LDAP communication problems'))
+<<<<<<< HEAD
+=======
 
+
+>>>>>>> 4a6c0892d0833a9cfe21807594ed227625efa37c
 
 class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
@@ -325,6 +340,10 @@ def deferred_choices_widget(node, kw):
     choices = kw.get('ou_choices')
     return ChainedSelectWidget(values=choices)
 
+AUTH_TYPES = (
+    ('ldap', 'ldap'),
+    ('local', 'local')
+)
 
 class AdminUser(BaseUser):
     validator = AdminUserValidator()
@@ -337,18 +356,25 @@ class AdminUser(BaseUser):
     password = colander.SchemaNode(colander.String(),
                                    title=_('Password'),
                                    widget=deform.widget.PasswordWidget(),
-                                   validator=colander.Length(min=6))
+                                   validator=colander.Length(min=6),
+                                   missing='')
     repeat_password = colander.SchemaNode(colander.String(),
                                           default='',
                                           title=_('Repeat the password'),
                                           widget=deform.widget.PasswordWidget(),
-                                          validator=colander.Length(min=6))
+                                          validator=colander.Length(min=6),
+                                          missing='')
     email = colander.SchemaNode(colander.String(),
                                 title=_('Email'),
                                 validator=colander.All(
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
+    cc_auth_type = colander.SchemaNode(colander.String(),
+                                default='local',
+                                widget=deform.widget.SelectWidget(values=AUTH_TYPES),
+                                title=_('Auth type'))
+
     nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
                                   default=10,
                                   missing=10,
@@ -370,9 +396,10 @@ class AdminUser(BaseUser):
                                   title=_('Group nodes list page size:'),
                                   validator=colander.Range(1, 200))
 
+                                   default='local',
+                                   widget=deform.widget.SelectWidget(values=AUTH_TYPES),
+                                   title=_('Auth type'))
 
-
-                                       
 # Only to makemessages
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')

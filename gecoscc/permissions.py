@@ -41,7 +41,8 @@ def http_basic_login_required(request):
             raise e
         username, password = authorization.replace('Basic ', '').decode('base64').split(':')
         try:
-            user = request.userdb.login(username, password)
+            user_authtype = request.userdb.get_authtype(username)
+            user          = request.userdb.login(username, password, user_authtype)
             if not user:
                 raise e
         except UserDoesNotExist:
