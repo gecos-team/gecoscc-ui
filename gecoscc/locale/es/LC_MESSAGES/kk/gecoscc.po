@@ -1,0 +1,1033 @@
+# Spanish translations for GECOSCC-UI.
+# Copyright (C) 2014 Junta de Andalucia
+# This file is distributed under the same license as the gecoscc project.
+# Alejandro Blanco <ablanco@yaco.es>, 2014.
+msgid ""
+msgstr ""
+"Project-Id-Version: gecoscc 0.0\n"
+"Report-Msgid-Bugs-To: pmartin@yaco.es\n"
+"POT-Creation-Date: 2017-07-04 13:51+0200\n"
+"PO-Revision-Date: 2017-03-15 11:15+0100\n"
+"Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
+
+#~ msgid "Set like superuser"
+#~ msgstr "Establecer como superusuario"
+
+#~ msgid "Remove like superuser"
+#~ msgstr "Eliminar permisos de superusuario"
+
+#~ msgid "Now the user is a super user"
+#~ msgstr "Ahora el usuario es un superusuario"
+
+#~ msgid "Now the user is not a super user"
+#~ msgstr "Ahora el usuario no es un superusuario"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
+#~ msgid "Previous"
+#~ msgstr "Anterior"
+
+#~ msgid "records per page"
+#~ msgstr "Registros por página"
+
+#~ msgid "My tasks"
+#~ msgstr "Mis tareas"
+
+#~ msgid "All Tasks"
+#~ msgstr "Todas las tareas"
+
+#~ msgid "Processing Tasks"
+#~ msgstr "Tareas en proceso"
+
+#~ msgid "Errors Tasks"
+#~ msgstr "Tareas con errores"
+
+#~ msgid "Created"
+#~ msgstr "Creación"
+
+#~ msgid "Emiter node"
+#~ msgstr "Nodo emisor"
+
+#~ msgid "Order"
+#~ msgstr "Orden"
+
+#~ msgid "Trace"
+#~ msgstr "Traza"
+
+#~ msgid "repository"
+#~ msgstr "repositorio"
+
+#~ msgid "user"
+#~ msgstr "usuario"
+
+#~ msgid "printer"
+#~ msgstr "impresora"
+
+#~ msgid "computer"
+#~ msgstr "puesto de trabajo"
+
+#~ msgid "storage"
+#~ msgstr "almacenamiento"
+
+#~ msgid "group"
+#~ msgstr "grupo"
+
+#~ msgid "changed"
+#~ msgstr "Modificación"
+
+#~ msgid "deleted"
+#~ msgstr "Borrado"
+
+#~ msgid "This is a macrojob: %d pending childs"
+#~ msgstr "Orden: %d subtareas pendientes"
+
+#~ msgid "ou"
+#~ msgstr "unidad organizativa"
+
+#~ msgid "created"
+#~ msgstr "Creación"
+
+#~ msgid "detached"
+#~ msgstr "Desvinculado"
+
+#~ msgid "Cookbook deleted successfully"
+#~ msgstr "Cookbook borrado con éxito"
+
+#~ msgid "Station"
+#~ msgstr "Puesto"
+
+#~ msgid "Submit"
+#~ msgstr "Enviar"
+
+#~ msgid "User created successfully"
+#~ msgstr "Usuario creado con éxito"
+
+#~ msgid "Delete"
+#~ msgstr "Borrar"
+
+#~ msgid "User edited successfully"
+#~ msgstr "Usuario modificado con éxito"
+
+#~ msgid "Add another"
+#~ msgstr "Añadir otra"
+
+#~ msgid "Variables updated successfully"
+#~ msgstr "Variables actualizadas con éxito"
+
+#~ msgid "There was an error downloading zip file"
+#~ msgstr ""
+
+#~ msgid "File is not a zip file: %s"
+#~ msgstr ""
+
+#~ msgid "Permission denied: %s"
+#~ msgstr "Problemas de permisos para crear carpeta: %s"
+
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "No such file or directory: metadata.rb"
+#~ msgstr ""
+
+#~ msgid "No cookbook name or version found in metadata.rb"
+#~ msgstr ""
+
+#~ msgid "here"
+#~ msgstr "aquí"
+
+#~ msgid "Upload cookbook enqueue. Visit logbook %s"
+#~ msgstr ""
+
+#~ msgid "Restore cookbook."
+#~ msgstr "Restaurar archivo de políticas"
+
+#~ msgid "There is some object with this value: ${val}"
+#~ msgstr "Hay algún objeto con este valor: ${val}"
+
+#~ msgid "Only lowercase letters, numbers or dots"
+#~ msgstr "Solo letras minúsculas, números o puntos"
+
+#~ msgid "The passwords do not match"
+#~ msgstr "Las contraseñas con coinciden"
+
+#~ msgid "Key"
+#~ msgstr "Clave"
+
+#~ msgid "Value"
+#~ msgstr "Valor"
+
+#~ msgid "Type"
+#~ msgstr "Tipo"
+
+#~ msgid "First name"
+#~ msgstr "Nombre"
+
+#~ msgid "Last name"
+#~ msgstr "Apellidos"
+
+#~ msgid "Username"
+#~ msgstr "Nombre de usuario"
+
+#~ msgid "Password"
+#~ msgstr "Contraseña"
+
+#~ msgid "Repeat the password"
+#~ msgstr "Repite la contraseña"
+
+#~ msgid "Email"
+#~ msgstr "Correo electrónico"
+
+#~ msgid "Navigation tree page size:"
+#~ msgstr "Tamaño de página del árbol de navegación:"
+
+#~ msgid "Policies list page size:"
+#~ msgstr "Tamaño de página de la lista de políticas:"
+
+#~ msgid "Actions list page size:"
+#~ msgstr "Tamaño de página de la lista de acciones:"
+
+#~ msgid "Group nodes list page size:"
+#~ msgstr "Tamaño de página de la lista de nodos que pertenecen a un grupo:"
+
+#~ msgid "There is a user with this email: ${val}"
+#~ msgstr "Hay un usuario con este correo electrónico: ${val}"
+
+#~ msgid "There is a user with this username: ${val}"
+#~ msgstr "Hay un usuario con este nombre de usuario: ${val}"
+
+#~ msgid "This user can manage workstations under these Organizational Units"
+#~ msgstr "Este usuario puede administrar puestos en estas unidades organizativas"
+
+#~ msgid "Organizational Units available to register workstations"
+#~ msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
+
+#~ msgid "Cookbook ZIP"
+#~ msgstr "Archivo de políticas (.zip)"
+
+#~ msgid "URL download"
+#~ msgstr "URL de descarga"
+
+#~ msgid "Restore previous version of cookbook"
+#~ msgstr "Eliminar la última versión del archivo de politicas"
+
+#~ msgid "uri"
+#~ msgstr "uri"
+
+#~ msgid "base"
+#~ msgstr ""
+
+#~ msgid "base group"
+#~ msgstr ""
+
+#~ msgid "binddn"
+#~ msgstr ""
+
+#~ msgid "bindpwd"
+#~ msgstr ""
+
+#~ msgid "FQDN"
+#~ msgstr ""
+
+#~ msgid "WORKGROUP"
+#~ msgstr ""
+
+#~ msgid "SSSD conf"
+#~ msgstr ""
+
+#~ msgid "KRB5 conf"
+#~ msgstr ""
+
+#~ msgid "SMB conf"
+#~ msgstr ""
+
+#~ msgid "PAM conf"
+#~ msgstr ""
+
+#~ msgid "URI ntp"
+#~ msgstr ""
+
+#~ msgid "Auth type"
+#~ msgstr "Tipo de autenticación"
+
+#~ msgid "Specific conf"
+#~ msgstr "Configuración específica"
+
+#~ msgid "Auth LDAP"
+#~ msgstr "Autenticación LDAP"
+
+#~ msgid "Auth Active directory"
+#~ msgstr "Autenticación Active directory"
+
+#~ msgid "Desktop"
+#~ msgstr "Sobremesa"
+
+#~ msgid "Laptop"
+#~ msgstr "Portátil"
+
+#~ msgid "Netbook"
+#~ msgstr ""
+
+#~ msgid "Tablet"
+#~ msgstr "Tableta"
+
+#~ msgid "Laser"
+#~ msgstr "Láser"
+
+#~ msgid "Ink"
+#~ msgstr "Tinta"
+
+#~ msgid "Dot matrix"
+#~ msgstr "Matricial"
+
+#~ msgid "Network"
+#~ msgstr "En red"
+
+#~ msgid "Local"
+#~ msgstr "Local"
+
+#~ msgid "Default"
+#~ msgstr ""
+
+#~ msgid "Authenticated"
+#~ msgstr ""
+
+#~ msgid "Kerberos-AD"
+#~ msgstr ""
+
+#~ msgid "FTP"
+#~ msgstr ""
+
+#~ msgid "SSHFS"
+#~ msgstr ""
+
+#~ msgid "NFS"
+#~ msgstr ""
+
+#~ msgid "SAMBA v3"
+#~ msgstr ""
+
+#~ msgid "SAMBA v4"
+#~ msgstr ""
+
+#~ msgid "System mounts (fstab)"
+#~ msgstr "En el arranque del sistema (fstab)"
+
+#~ msgid "User space mounts (gvfs)"
+#~ msgstr "En espacio de usuario (gvfs)"
+
+#~ msgid "Processing"
+#~ msgstr "Procesando"
+
+#~ msgid "Applying changes"
+#~ msgstr "Aplicando cambios"
+
+#~ msgid "Changes applied"
+#~ msgstr "Cambios aplicados"
+
+#~ msgid "There were errors"
+#~ msgstr "Se produjeron errores"
+
+#~ msgid "type"
+#~ msgstr "Tipo"
+
+#~ msgid "Pending: %d"
+#~ msgstr "Pendientes: %d"
+
+#~ msgid "policy uploaded"
+#~ msgstr "Política subida"
+
+#~ msgid "policy uploading..."
+#~ msgstr "Actualizando política..."
+
+#~ msgid "Cookbook uploaded successfully %s %s"
+#~ msgstr "Archivo de políticas actualizado con éxito %s %s"
+
+#~ msgid "Control Center"
+#~ msgstr "Centro de Control"
+
+#~ msgid "Are you sure?"
+#~ msgstr "¿Estás seguro?"
+
+#~ msgid "Cancel"
+#~ msgstr "Cancelar"
+
+#~ msgid "Yes, continue"
+#~ msgstr "Sí, adelante"
+
+#~ msgid "Connection problems"
+#~ msgstr "Problemas de conexión"
+
+#~ msgid "There are problems to connect with the server, please reload page."
+#~ msgstr "Hay problemas de conexión con el servidor, por favor recarga la página."
+
+#~ msgid "Reload page"
+#~ msgstr "Recargar página"
+
+#~ msgid "Redis server is stopped, please contact an administrator."
+#~ msgstr "El servidor Redis está parado, por favor contacta con un administrador."
+
+#~ msgid "Forbidden access"
+#~ msgstr "Acceso no permitido"
+
+#~ msgid "Probably the user session has expired due to inactivity."
+#~ msgstr "Probablemente la sesión del usuario ha expirado por inactividad."
+
+#~ msgid "Add new root OU"
+#~ msgstr "Añadir nueva UO raíz"
+
+#~ msgid "Home"
+#~ msgstr "Inicio"
+
+#~ msgid "Administrators"
+#~ msgstr "Administradores"
+
+#~ msgid "Settings"
+#~ msgstr "Configuración"
+
+#~ msgid "Status"
+#~ msgstr "Estado"
+
+#~ msgid "Reports"
+#~ msgstr "Informes"
+
+#~ msgid "Help"
+#~ msgstr "Ayuda"
+
+#~ msgid "User options"
+#~ msgstr "Opciones de usuario"
+
+#~ msgid "Edit profile"
+#~ msgstr "Editar perfil"
+
+#~ msgid "Set variables"
+#~ msgstr "Establecer variables"
+
+#~ msgid "Uploads"
+#~ msgstr "Subir Archivo de políticas"
+
+#~ msgid "Log out"
+#~ msgstr "Salir"
+
+#~ msgid "Search"
+#~ msgstr "Buscar"
+
+#~ msgid "Search by"
+#~ msgstr "Buscar por"
+
+#~ msgid "Name"
+#~ msgstr "Nombre"
+
+#~ msgid "IP address"
+#~ msgstr "Dirección IP"
+
+#~ msgid "User"
+#~ msgstr "Usuario"
+
+#~ msgid "Show only"
+#~ msgstr "Mostrar sólo"
+
+#~ msgid "Groups"
+#~ msgstr "Grupos"
+
+#~ msgid "Stations"
+#~ msgstr "Puestos"
+
+#~ msgid "Users"
+#~ msgstr "Usuarios"
+
+#~ msgid "Printers"
+#~ msgstr "Impresoras"
+
+#~ msgid "Storages"
+#~ msgstr "Almacenamientos"
+
+#~ msgid "Repositories"
+#~ msgstr "Repositorios"
+
+#~ msgid "This action requires a little time"
+#~ msgstr "Esta acción puede llevar un tiempo"
+
+#~ msgid "Is the website maintenance?"
+#~ msgstr "¿Esta el portal en mantenimiento?"
+
+#~ msgid "No"
+#~ msgstr ""
+
+#~ msgid "Yes"
+#~ msgstr "Si"
+
+#~ msgid "Loading"
+#~ msgstr "Cargando"
+
+#~ msgid "The following nodes have changed:"
+#~ msgstr "Los siguientes nodos han cambiado:"
+
+#~ msgid "Modified by"
+#~ msgstr "Modificado por"
+
+#~ msgid "Deleted by"
+#~ msgstr "Borrado por"
+
+#~ msgid "Close"
+#~ msgstr "Cerrar"
+
+#~ msgid "Information"
+#~ msgstr "Información"
+
+#~ msgid "Workstation specifications"
+#~ msgstr "Características de la estación de trabajo"
+
+#~ msgid "Policies"
+#~ msgstr "Políticas"
+
+#~ msgid "Workstation"
+#~ msgstr "Estación de trabajo"
+
+#~ msgid "Reload"
+#~ msgstr "Refrescar"
+
+#~ msgid "Manufacturer and model"
+#~ msgstr "Marca y modelo"
+
+#~ msgid "Users that have logged in"
+#~ msgstr "Usuarios que han accedido"
+
+#~ msgid "None"
+#~ msgstr "Ninguno"
+
+#~ msgid "Gecos cc id"
+#~ msgstr "Id de Gecos cc"
+
+#~ msgid "Uptime"
+#~ msgstr ""
+
+#~ msgid "Last connection"
+#~ msgstr "Última conexión"
+
+#~ msgid "e.g."
+#~ msgstr "Ej:"
+
+#~ msgid "John's laptop"
+#~ msgstr "Portátil de Juan"
+
+#~ msgid "Registry number"
+#~ msgstr "Número de registro"
+
+#~ msgid "Serial number"
+#~ msgstr "Número de serie"
+
+#~ msgid "Commentaries"
+#~ msgstr "Comentarios"
+
+#~ msgid "Describe the workstation here..."
+#~ msgstr "Describe la estación de trabajo aquí"
+
+#~ msgid "If you want to add any group, please execute the changes"
+#~ msgstr "Si tu quieres añadir un grupo, por favor encola los cambios"
+
+#~ msgid "Save"
+#~ msgstr "Guardar"
+
+#~ msgid "Cut"
+#~ msgstr "Cortar"
+
+#~ msgid "Workstation specifications (Ohai)"
+#~ msgstr "Características de la estación de trabajo (Ohai)"
+
+#~ msgid "Node chef id"
+#~ msgstr "Id del nodo chef"
+
+#~ msgid "CPU"
+#~ msgstr ""
+
+#~ msgid "RAM"
+#~ msgstr ""
+
+#~ msgid "Distribution"
+#~ msgstr "Distribución"
+
+#~ msgid "Kernel"
+#~ msgstr ""
+
+#~ msgid "File system"
+#~ msgstr "Sistema de ficheros"
+
+#~ msgid "Device"
+#~ msgstr "Dispositivo"
+
+#~ msgid "Mount point"
+#~ msgstr "Punto de montaje"
+
+#~ msgid "Used"
+#~ msgstr "Usado"
+
+#~ msgid "Data retrieved from workstation"
+#~ msgstr "Datos extraidos del puesto"
+
+#~ msgid "Expand all"
+#~ msgstr "Expandir todo"
+
+#~ msgid "Collapse all"
+#~ msgstr "Contraer todo"
+
+#~ msgid "Policies list"
+#~ msgstr "Lista de políticas"
+
+#~ msgid "Group"
+#~ msgstr "Grupo"
+
+#~ msgid "Nodes that belong to this group"
+#~ msgstr "Nodos que pertenecen a este grupo"
+
+#~ msgid "Service and tasks status"
+#~ msgstr "Estado del servicio y tareas"
+
+#~ msgid "Processing tasks"
+#~ msgstr "Tareas en proceso"
+
+#~ msgid "out of"
+#~ msgstr "de"
+
+#~ msgid "Failed tasks"
+#~ msgstr "Tareas fallidas"
+
+#~ msgid "Completed tasks"
+#~ msgstr "Tareas completadas"
+
+#~ msgid "My actions"
+#~ msgstr "Mis Acciones"
+
+#~ msgid "Total"
+#~ msgstr "Total"
+
+#~ msgid "Maximize"
+#~ msgstr "Maximizar"
+
+#~ msgid "All Actions"
+#~ msgstr "Todas las Acciones"
+
+#~ msgid "Processing Actions"
+#~ msgstr "Acciones en proceso"
+
+#~ msgid "Finished Actions"
+#~ msgstr "Acciones finalizadas"
+
+#~ msgid "Warnings Actions"
+#~ msgstr "Acciones con advertencias"
+
+#~ msgid "Errors Actions"
+#~ msgstr "Acciones fallidas"
+
+#~ msgid "Active"
+#~ msgstr "Activas"
+
+#~ msgid "Archived"
+#~ msgstr "Archivadas"
+
+#~ msgid "Minimize"
+#~ msgstr "Minimizar"
+
+#~ msgid "Archive Tasks"
+#~ msgstr "Archivar Tareas"
+
+#~ msgid "Backstrack"
+#~ msgstr "Volver"
+
+#~ msgid "Date"
+#~ msgstr "Fecha"
+
+#~ msgid "Origin"
+#~ msgstr "Origen"
+
+#~ msgid "Policy"
+#~ msgstr "Política"
+
+#~ msgid "Action"
+#~ msgstr "Acciones"
+
+#~ msgid "ID"
+#~ msgstr "ID"
+
+#~ msgid "Add new element"
+#~ msgstr "Añade un nuevo elemento"
+
+#~ msgid "Domain"
+#~ msgstr "Dominio"
+
+#~ msgid "Organisational Unit"
+#~ msgstr "Unidad organizativa"
+
+#~ msgid "Printer"
+#~ msgstr "Impresora"
+
+#~ msgid "Remote storage"
+#~ msgstr "Almacenamiento remoto"
+
+#~ msgid "Software repository"
+#~ msgstr "Repositorio de software"
+
+#~ msgid "Master"
+#~ msgstr "Maestro"
+
+#~ msgid "Read-only Policies"
+#~ msgstr "Políticas de solo lectura"
+
+#~ msgid "Testing department"
+#~ msgstr "Departamento de pruebas"
+
+#~ msgid "Extra information"
+#~ msgstr "Información extra"
+
+#~ msgid "Add policy to"
+#~ msgstr "Añadir política a"
+
+#~ msgid "Additive"
+#~ msgstr "Aditiva"
+
+#~ msgid "Overriding"
+#~ msgstr "Dominante"
+
+#~ msgid "Add"
+#~ msgstr "Añadir"
+
+#~ msgid "External"
+#~ msgstr "Externa"
+
+#~ msgid "No supported OS"
+#~ msgstr "Ningún SO soportado"
+
+#~ msgid "Support OS"
+#~ msgstr "SSOO soportados"
+
+#~ msgid "Actions"
+#~ msgstr "Acciones"
+
+#~ msgid "Remove"
+#~ msgstr "Eliminar"
+
+#~ msgid "Edit"
+#~ msgstr "Editar"
+
+#~ msgid "View"
+#~ msgstr "Ver"
+
+#~ msgid "Empty!"
+#~ msgstr "¡Vacío!"
+
+#~ msgid "There are no policies assigned to this resource yet."
+#~ msgstr "No hay aún políticas asignadas a este recurso."
+
+#~ msgid "If you want to add any policy, please execute the changes"
+#~ msgstr "Si tu quieres añadir una política, por favor encola los cambios"
+
+#~ msgid "Add a policy to this resource"
+#~ msgstr "Añade una política a este recurso"
+
+#~ msgid "Configure policy:"
+#~ msgstr "Configuración de la política:"
+
+#~ msgid "Back"
+#~ msgstr "Atrás"
+
+#~ msgid "Make and model"
+#~ msgstr "Marca y modelo"
+
+#~ msgid "Manufacturer"
+#~ msgstr "Marca"
+
+#~ msgid "Select manufacturer"
+#~ msgstr "Selecciona marca"
+
+#~ msgid "Model"
+#~ msgstr "Modelo"
+
+#~ msgid "Select model"
+#~ msgstr "Selecciona modelo"
+
+#~ msgid "Description"
+#~ msgstr "Descripción"
+
+#~ msgid "Main printer at sales department"
+#~ msgstr "Impresora principal en ventas"
+
+#~ msgid "Location"
+#~ msgstr "Ubicación"
+
+#~ msgid "Connection type"
+#~ msgstr "Tipo de conexión"
+
+#~ msgid "Printer path"
+#~ msgstr "Ruta a la impresora"
+
+#~ msgid "http://workstation_name:631/ipp/port1"
+#~ msgstr "http://nombre_estacion_de_trabajo:631/ipp/puerto1"
+
+#~ msgid "Operation Policy"
+#~ msgstr "Directiva de operación"
+
+#~ msgid "PPD URI"
+#~ msgstr ""
+
+#~ msgid "Repository"
+#~ msgstr "Repositorio"
+
+#~ msgid "Url"
+#~ msgstr ""
+
+#~ msgid "Key server"
+#~ msgstr "Servidor de claves"
+
+#~ msgid "Components"
+#~ msgstr "Componentes"
+
+#~ msgid "Deb sources"
+#~ msgstr "Fuentes Deb"
+
+#~ msgid "In progress"
+#~ msgstr "En progreso"
+
+#~ msgid "Apply changes"
+#~ msgstr "Aplicar cambios"
+
+#~ msgid "Stored changes, pending of execution"
+#~ msgstr "Cambios almacenados, pendientes de ejecución"
+
+#~ msgid "Deleted"
+#~ msgstr "Borrado"
+
+#~ msgid "Moved"
+#~ msgstr "Movido"
+
+#~ msgid "Modified"
+#~ msgstr "Modificado"
+
+#~ msgid "Added"
+#~ msgstr "Añadido"
+
+#~ msgid "Discard changes"
+#~ msgstr "Descartar cambios"
+
+#~ msgid "Remote Storage"
+#~ msgstr "Almacenamiento Remoto"
+
+#~ msgid "Access to the network storage S01"
+#~ msgstr "Acceso al almacenamiento en red S01"
+
+#~ msgid "URI"
+#~ msgstr ""
+
+#~ msgid "/path/to/the/directory"
+#~ msgstr "/ruta/al/directorio"
+
+#~ msgid "More"
+#~ msgstr "Más"
+
+#~ msgid "Selection:"
+#~ msgstr "Selección:"
+
+#~ msgid "Add to:"
+#~ msgstr "Añadir a:"
+
+#~ msgid "Computers this user has logged in:"
+#~ msgstr "Ordenadores a los que este usuario ha accedido:"
+
+#~ msgid "john"
+#~ msgstr "juan"
+
+#~ msgid "John"
+#~ msgstr "Juan"
+
+#~ msgid "Doe"
+#~ msgstr "Nadie"
+
+#~ msgid "john.doe"
+#~ msgstr "juan.nadie"
+
+#~ msgid "Address"
+#~ msgstr "Dirección"
+
+#~ msgid "123, Main Street, Bigtown"
+#~ msgstr "C/ Falsa, 123, Buenavilla"
+
+#~ msgid "Phone number"
+#~ msgstr "Número de teléfono"
+
+#~ msgid "Write commentaries about the user here..."
+#~ msgstr "Escribe comentarios acerca del usuario aquí..."
+
+#~ msgid "GECOS CC Login"
+#~ msgstr ""
+
+#~ msgid "Export to CSV"
+#~ msgstr "Exportar a CSV"
+
+#~ msgid "Workstations"
+#~ msgstr "Estaciones de trabajo"
+
+#~ msgid "Packages"
+#~ msgstr "Paquetes"
+
+#~ msgid "Mime Types"
+#~ msgstr ""
+
+#~ msgid "Saving problems"
+#~ msgstr "Problemas al guardar"
+
+#~ msgid "There was a problem saving the data"
+#~ msgstr "Ha ocurrido un problema al intentar guardar los datos"
+
+#~ msgid "Add Administrator"
+#~ msgstr "Añade un administrador"
+
+#~ msgid "If you don't fill the password fields, these won't be updated"
+#~ msgstr "Si no rellenas los campos de contraseña, esta no se actualizará"
+
+#~ msgid "Edit %(username)s"
+#~ msgstr "Editar %(username)s"
+
+#~ msgid "Set Organitation Unit managed by this user"
+#~ msgstr ""
+
+#~ msgid "Are you sure that you want to delete this user?"
+#~ msgstr "¿Estás seguro de que quieres borrar este usuario?"
+
+#~ msgid "Search for username"
+#~ msgstr "Buscar por nombre de usuario"
+
+#~ msgid "E-mail"
+#~ msgstr "Correo electrónico"
+
+#~ msgid "Is superuser?"
+#~ msgstr "¿Es superusuario?"
+
+#~ msgid "Select an Organisational Unit"
+#~ msgstr "Selecciona una Unidad Organizativa"
+
+#~ msgid "Restore previous version of Cookbook"
+#~ msgstr "Eliminar la última versión del archivo de politicas"
+
+#~ msgid "Cookbook Name"
+#~ msgstr "Nombre del archivo de políticas"
+
+#~ msgid "Version"
+#~ msgstr ""
+
+#~ msgid "Are you sure that you want to delete this cookbook version?"
+#~ msgstr "¿Estás seguro de que quieres borrar este archivo de políticas?"
+
+#~ msgid "Upload Cookbook"
+#~ msgstr "Subir Archivo de política"
+
+#~ msgid "Browser file or Download URL required."
+#~ msgstr "Archivo o URL de descarga requerido"
+
+#~ msgid "Servers"
+#~ msgstr "Servidor de claves"
+
+#~ msgid "Server connections"
+#~ msgstr "Última conexión"
+
+#~ msgid "Service"
+#~ msgstr "Dispositivo"
+
+#~ msgid "Local IP address"
+#~ msgstr "Dirección IP"
+
+#~ msgid "Local port"
+#~ msgstr ""
+
+#~ msgid "Remote IP address"
+#~ msgstr ""
+
+#~ msgid "Remote port"
+#~ msgstr "Almacenamiento remoto"
+
+#~ msgid "Server log"
+#~ msgstr "Servidor de claves"
+
+#~ msgid "Process"
+#~ msgstr "Procesando"
+
+#~ msgid "Number of bytes"
+#~ msgstr ""
+
+#~ msgid "Log"
+#~ msgstr ""
+
+#~ msgid "Disk usage detail"
+#~ msgstr ""
+
+#~ msgid "Size"
+#~ msgstr ""
+
+#~ msgid "FS Type"
+#~ msgstr "Tipo de autenticación"
+
+#~ msgid "Options"
+#~ msgstr "Opciones de usuario"
+
+#~ msgid "IP Address"
+#~ msgstr "Dirección IP"
+
+#~ msgid "CPU Load"
+#~ msgstr ""
+
+#~ msgid "RAM Load"
+#~ msgstr ""
+
+#~ msgid "Disk usage"
+#~ msgstr ""
+
+#~ msgid "Unknown"
+#~ msgstr ""
+
+#~ msgid "Connections"
+#~ msgstr "Última conexión"
+
+#~ msgid "User deleted unsuccessfully from chef"
+#~ msgstr "Usuario borrado insatisfactoriamente de chef"
+
+#~ msgid "User deleted successfully"
+#~ msgstr "Usuario borrado con éxito"
+
+#~ msgid "Cookbook deleted unsuccessfully from chef"
+#~ msgstr "Archivo de políticas borrado insatisfactoriamente de chef"
+
+#~ msgid "Cookbook deleted successfully. Visit logbook %s"
+#~ msgstr "Archivo de políticas borrado con éxito. Visite bitácora %s"
+
+#~ msgid "policy restored"
+#~ msgstr "Política restaurada"
+
+#~ msgid "Cookbook deleted successfully %s"
+#~ msgstr "Archivo de políticas borrado con éxito %s"
+
+#~ msgid "Please enter the correct username and password"
+#~ msgstr "Por favor, introduzca el nombre de usuario y contraseña correctos"
+
+#~ msgid "Welcome ${username}"
+#~ msgstr "Bienvenido ${username}"
+
+#~ msgid "Id"
+#~ msgstr "Identificador"
+
+#~ msgid "Phone"
+#~ msgstr "Teléfono"
+
+#~ msgid "Software Profiles policy not found"
+#~ msgstr "No se encuentra la política de Perfiles de Software"
+
+#~ msgid "Software Profile in use: %s"
+#~ msgstr "Perfil de Software en uso: %s"
+
+#~ msgid "Settings modified successfully"
+#~ msgstr "Configuración modificada con éxito"
+

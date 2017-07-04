@@ -1,17 +1,16 @@
-# English translations for gecoscc.
-# Copyright (C) 2014 ORGANIZATION
+# Spanish translations for GECOSCC-UI.
+# Copyright (C) 2014 Junta de Andalucia
 # This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2014.
-#
+# Alejandro Blanco <ablanco@yaco.es>, 2014.
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 0.2.2\n"
-"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-07-04 14:05+0200\n"
-"PO-Revision-Date: 2014-03-19 11:03+0100\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language: en\n"
-"Language-Team: en <LL@li.org>\n"
+"Project-Id-Version: gecoscc 0.2.1\n"
+"Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
+"POT-Creation-Date: 2017-07-04 13:51+0200\n"
+"PO-Revision-Date: 2014-03-07 13:25+0100\n"
+"Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
+"Language: es\n"
+"Language-Team: es <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -20,188 +19,194 @@ msgstr ""
 
 #: gecoscc/static/js/app-utils.js:98
 msgid "Applying changes has failed."
-msgstr ""
+msgstr "Se han producido fallos al aplicar sus cambios."
 
 #: gecoscc/static/js/app-utils.js:108
 msgid "Something went wrong, please check errors and try again."
-msgstr ""
+msgstr "Compruebe la lista de errores y pruebe de nuevo."
 
 #: gecoscc/static/js/app-utils.js:114
 msgid "Status"
-msgstr ""
+msgstr "Estado"
 
 #: gecoscc/static/js/app-utils.js:120 gecoscc/static/js/app-utils.js:126
 #: gecoscc/static/js/app-utils.js:140 gecoscc/static/js/app-utils.js:145
 msgid "Error in node: "
-msgstr ""
+msgstr "Error en el nodo: "
 
 #: gecoscc/static/js/app-utils.js:121 gecoscc/static/js/app-utils.js:140
 msgid "Server response: "
-msgstr ""
+msgstr "Respuesta del servidor: "
 
 #: gecoscc/static/js/app-utils.js:127 gecoscc/static/js/app-utils.js:146
 msgid "This node has been deleted by another administrator."
-msgstr ""
+msgstr "Este nodo ha sido borrado por otro administrador."
 
 #: gecoscc/static/js/app-utils.js:173
 msgid "Object changed."
-msgstr ""
+msgstr "Objeto cambiado."
 
 #: gecoscc/static/js/app-utils.js:174
 msgid ""
 "Someone has changed this object while you were working on it, please "
 "reload before applying any changes."
 msgstr ""
+"Alguien ha modificado este objeto mientras estabas trabajando en él, por "
+"favor recarga antes de aplicar tus cambios."
 
 #: gecoscc/static/js/app-utils.js:184
 msgid "Object deleted."
-msgstr ""
+msgstr "Objeto borrado"
 
 #: gecoscc/static/js/app-utils.js:185
 msgid "Someone has deleted this object while you were working on it"
-msgstr ""
+msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
 
 #: gecoscc/static/js/app-utils.js:295
 msgid "Staging"
-msgstr ""
+msgstr "Almacenando temporalmente"
 
 #: gecoscc/static/js/app-utils.js:299
 msgid "Save"
-msgstr ""
+msgstr "Guardar"
 
 #: gecoscc/static/js/app-utils.js:299
 #: gecoscc/static/js/tree-views-renderer.js:82
 msgid "Delete"
-msgstr ""
+msgstr "Borrar"
 
 #: gecoscc/static/js/app-utils.js:300
 msgid "Done"
-msgstr ""
+msgstr "Completado"
 
 #: gecoscc/static/js/app-utils.js:315
 msgid "Invalid data."
-msgstr ""
+msgstr "Datos inválidos."
 
 #: gecoscc/static/js/app-utils.js:316
 msgid "Please, fix the errors in the fields below and try again."
-msgstr ""
+msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
 #: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:82
 msgid "Only the super admin can cut this object"
-msgstr ""
+msgstr "Solo el super administrador puede cortar este objeto"
 
 #: gecoscc/static/js/app.js:442
 msgid "New element"
-msgstr ""
+msgstr "Nuevo elemento"
 
 #: gecoscc/static/js/app.js:447
 msgid "User"
-msgstr ""
+msgstr "Usuario"
 
 #: gecoscc/static/js/app.js:448
 msgid "Organisational Unit"
-msgstr ""
+msgstr "Unidad organizativa"
 
 #: gecoscc/static/js/app.js:449
 msgid "Group"
-msgstr ""
+msgstr "Grupo"
 
 #: gecoscc/static/js/app.js:450
 msgid "Workstation"
-msgstr ""
+msgstr "Estación de trabajo"
 
 #: gecoscc/static/js/app.js:451
 msgid "Printer"
-msgstr ""
+msgstr "Impresora"
 
 #: gecoscc/static/js/app.js:452
 msgid "Remote Storage"
-msgstr ""
+msgstr "Almacenamiento Remoto"
 
 #: gecoscc/static/js/app.js:453
 msgid "Software Repository"
-msgstr ""
+msgstr "Repositorio de Software"
 
 #: gecoscc/static/js/app.js:499
 msgid "First level OUs can only add new OUs."
 msgstr ""
+"En el primer nivel de unidades organizativas solo pueden ser añadidas "
+"nuevas unidades organizativas"
 
 #: gecoscc/static/js/app.js:513
 msgid "Domain is not Gecos."
-msgstr ""
+msgstr "El dominio no es Gecos."
 
 #: gecoscc/static/js/app.js:514
 msgid "Only local users can be added."
-msgstr ""
+msgstr "Solo los usuarios locales pueden ser añadidos."
 
 #: gecoscc/static/js/app.js:566
 msgid "¡¡ OOOOOPSSS !! The url points to a non-existent object."
-msgstr ""
+msgstr "¡¡ OOOOOPSSS !! La url apunta a un objeto no existente."
 
 #: gecoscc/static/js/app.js:567
 msgid "If you came here by clicking on a link in a view, refresh that view."
-msgstr ""
+msgstr "Si has llegado aquí desde un enlace en otra vista, refresca esa vista."
 
 #: gecoscc/static/js/app.js:668
 msgid "Policy"
-msgstr ""
+msgstr "Política"
 
 #: gecoscc/static/js/breadcrumb.js:22
 msgid "Home"
-msgstr ""
+msgstr "Inicio"
 
 #: gecoscc/static/js/computer.js:119
 msgid "No data has been received from this workstation."
-msgstr ""
+msgstr "No se han recibido datos de esta estación de trabajo."
 
 #: gecoscc/static/js/computer.js:120
 msgid "Check connection with Chef server."
-msgstr ""
+msgstr "Comprueba la conexión con el servidor Chef."
 
 #: gecoscc/static/js/computer.js:128
 msgid "This workstation is not linked."
-msgstr ""
+msgstr "Esta estación de trabajo no está enlazada:"
 
 #: gecoscc/static/js/computer.js:129
 msgid "It is possible that this node was imported from AD or LDAP."
-msgstr ""
+msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
 #: gecoscc/static/js/computer.js:136
 msgid "This workstation has incomplete Ohai information."
-msgstr ""
+msgstr "El Ohai de esta estación de trabajo está incompleto."
 
 #: gecoscc/static/js/computer.js:144 gecoscc/static/js/computer.js:152
 #: gecoscc/static/js/computer.js:162 gecoscc/static/js/computer.js:172
 msgid "This workstation is not working properly:"
-msgstr ""
+msgstr "Esta estación de trabajo no funciona correctamente:"
 
 #: gecoscc/static/js/computer.js:145
 msgid "There were errors while saving this node in Chef"
-msgstr ""
+msgstr "Se produjeron errores mientras se guardaba este nodo en Chef"
 
 #: gecoscc/static/js/computer.js:153
 msgid "Network problems connecting to the Control Center."
-msgstr ""
+msgstr "Problemas de red al conectar con el Centro de Control."
 
 #: gecoscc/static/js/computer.js:163
 msgid "Last synchronization had problems during its execution."
-msgstr ""
+msgstr "La última sincronización tuvo problemas durante su ejecución."
 
 #: gecoscc/static/js/computer.js:173
 msgid "Synchronization is not being executed on time."
 msgstr ""
+"La sincronización no se está ejecutando en el intervalo de tiempo "
+"definido."
 
 #: gecoscc/static/js/computer.js:214
 msgid "Days"
-msgstr ""
+msgstr "Días"
 
 #: gecoscc/static/js/computer.js:214
 msgid "Hours"
-msgstr ""
+msgstr "Horas"
 
 #: gecoscc/static/js/computer.js:214
 msgid "Minutes"
-msgstr ""
+msgstr "Minutos"
 
 #: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
 msgid "x04"
@@ -211,53 +216,53 @@ msgstr[1] ""
 
 #: gecoscc/static/js/ou.js:101
 msgid "Only the super admin can delete this object"
-msgstr ""
+msgstr "Solo el super administrador puede eliminar este objeto"
 
 #: gecoscc/static/js/policies-form-generator.js:126
 msgid "Policy successfully saved."
-msgstr ""
+msgstr "Política guardada satisfactoriamente"
 
 #: gecoscc/static/js/policies-form-generator.js:151
 msgid "Policy successfully deleted."
-msgstr ""
+msgstr "Política borrada satisfactoriamente"
 
 #: gecoscc/static/js/staging.js:75
 msgid "Resource marked for deletion."
-msgstr ""
+msgstr "Recurso marcado para borrado."
 
 #: gecoscc/static/js/staging.js:76
 msgid "Your latest changes in this resource will be ignored."
-msgstr ""
+msgstr "Sus últimos cambios en este recurso serán ignorados."
 
 #: gecoscc/static/js/tree-views-renderer.js:73
 msgid "More"
-msgstr ""
+msgstr "Más"
 
 #: gecoscc/static/js/tree-views-renderer.js:79
 msgid "Add new"
-msgstr ""
+msgstr "Añadir nuevo"
 
 #: gecoscc/static/js/tree-views-renderer.js:85
 msgid "Paste"
-msgstr ""
+msgstr "Pegar"
 
 #: gecoscc/static/js/tree-views-renderer.js:106 gecoscc/static/js/tree.js:680
 msgid "Loading"
-msgstr ""
+msgstr "Cargando"
 
 #: gecoscc/static/js/tree-views.js:337
 msgid "Nodes can not be moved between domains."
-msgstr ""
+msgstr "Los nodos no pueden ser movidos entre dominios."
 
 #: gecoscc/static/js/tree-views.js:373
 msgid ""
 "Deleting an OU is a permanent action. It will also delete all its "
 "children."
-msgstr ""
+msgstr "Borrar una UO es una acción permanente. También eliminará todos sus hijos."
 
 #: gecoscc/static/js/tree.js:67
 msgid "Loading nodes..."
-msgstr ""
+msgstr "Cargando nodos..."
 
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
@@ -272,44 +277,41 @@ msgid ""
 msgstr ""
 
 #~ msgid "Add new root OU"
-#~ msgstr ""
+#~ msgstr "Añadir nueva UO raíz"
 
 #~ msgid "Computer"
-#~ msgstr ""
+#~ msgstr "Puesto de trabajo"
 
 #~ msgid "Object changed."
-#~ msgstr ""
+#~ msgstr "Objeto cambiado."
 
 #~ msgid ""
 #~ msgstr ""
 
 #~ msgid "Object deleted."
-#~ msgstr ""
+#~ msgstr "Objeto borrado"
 
 #~ msgid "Someone has deleted this object while you were working on it"
-#~ msgstr ""
-
-#~ msgid "Something went wrong, please try again in a few moments."
-#~ msgstr ""
+#~ msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
 
 #~ msgid "Resource ID: %s"
-#~ msgstr ""
-
-#~ msgid "Saving the %s failed."
-#~ msgstr ""
+#~ msgstr "ID del recurso: %s"
 
 #~ msgid "Policies can't be directly accessed."
-#~ msgstr ""
+#~ msgstr "No se puede acceder a las políticas directamente."
 
 #~ msgid "Couldn't delete the %s."
-#~ msgstr ""
-
-#~ msgid "Last chef client had problems during its execution."
-#~ msgstr ""
-
-#~ msgid "Chef client is not being executed on time."
-#~ msgstr ""
+#~ msgstr "No se pudo eliminar el %s"
 
 #~ msgid "Package not found in server repositories"
-#~ msgstr ""
+#~ msgstr "Este paquete no se encuentra en los repositorios del servidor"
+
+#~ msgid "Search"
+#~ msgstr "Buscar"
+
+#~ msgid "Next"
+#~ msgstr "Siguiente"
+
+#~ msgid "Previous"
+#~ msgstr "Anterior"
 

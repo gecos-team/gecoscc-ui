@@ -391,10 +391,6 @@ class AdminUser(BaseUser):
                                   title=_('Group nodes list page size:'),
                                   validator=colander.Range(1, 200))
 
-                                   default='local',
-                                   widget=deform.widget.SelectWidget(values=AUTH_TYPES),
-                                   title=_('Auth type'))
-
 # Only to makemessages
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
@@ -678,8 +674,8 @@ class Repositories(colander.SequenceSchema):
     repositories = Repository()
 
 class Settings(colander.SequenceSchema):
-		settings = Setting()
-	
+        settings = Setting()
+    
 
 JOB_STATUS = {
     # Calculating node changes
