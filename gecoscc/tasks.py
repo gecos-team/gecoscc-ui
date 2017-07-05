@@ -495,9 +495,9 @@ class ChefTask(Task):
         from operator import itemgetter
 
         self.log("debug","tasks.py ::: group_by_multiple_key - input_data = {0}".format(input_data))
-        grouper = itemgetter(*mergeIdField)
+        keygetter = itemgetter(*mergeIdField)
         result = []
-        for key, grp in groupby(sorted(input_data, key = grouper), grouper):
+        for key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
            temp_dict = dict({mergeActionField:[]})
            for d in grp:
               aux = d.copy()

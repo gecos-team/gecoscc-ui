@@ -33,10 +33,10 @@ class Command(BaseCommand):
        This script must be executed on major policies updates when the changes in the policies structure may
        cause problems if the Chef nodes aren't properly updated.
        
-       So, the curse of action is:
+       So, the right way to use the script is:
        1) Import the new policies with the knife command
        2) Run the "import_policies" command.
-       3) Run this "check_node_policies" command.
+       3) Run this "check_local_users_policy" command.
     """
 
     usage = "usage: %prog config_uri check_local_users_policy --administrator user --key file.pem"
