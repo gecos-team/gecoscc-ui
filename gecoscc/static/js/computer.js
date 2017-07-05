@@ -468,6 +468,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     // Next result found in value
                     return  [currentPath, passed];
                 }
+                else if (typeof(value) !== 'string' && (value+'').match(keyword) && passed) {
+                    // Next result found in value
+                    return  [currentPath, passed];
+                }
                
             }
             
