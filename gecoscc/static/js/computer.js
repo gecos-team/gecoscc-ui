@@ -235,14 +235,30 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (Array.isArray(ohai[name])) {
                         cssClass = "tree-json-array";
                     }
-                    
-                    childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                    if (ohai[name] === null) {
+                        cssClass = "tree-json-null";
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+': <span class="tree-json-null">null</span>', "type": "item", content: ohai[name], "attr": { "id": id, "data-icon": "icon-tree-json-null" }  } )
+                    }
+                    else {
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                    }
                 }
                 else {
                     // Item
                     var name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
-                    if (Array.isArray(ohai))
+                    if (typeof(ohai[name]) === 'string') 
+                        name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">"'+ohai[name]+'"</span>';
+                    
+                    if (Array.isArray(ohai)) {
                         name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                        if (typeof(ohai[name]) === 'string') {
+                            name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">"'+ohai[name]+'"</span>';
+                        }
+                        
+                    }
+                    
+                    if (ohai === null)
+                        name_value = '<span class="tree-json-null">null</span>';
                 
                     childNodesArray.push( {"key": name, "path": path, "name": name_value, "type": "item", "attr": { "id": id, "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } )
                 }
