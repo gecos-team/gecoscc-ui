@@ -95,8 +95,7 @@ class Command(BaseCommand):
         # Get all nodes with old package policy data
         logger.info('Getting all nodes with old package policy data...')
         path_to_find = "policies.%s.pkgs_to_remove"%(str(packages_policy['_id']))
-        old_policy_nodes = self.db.nodes.find({path_to_find: { '$exists': True }})
-        
+        old_policy_nodes = self.db.nodes.find({ '$query': {path_to_find: { '$exists': True }}, '$orderby': { "path" : 1 }})
         
         updated_nodes = []
         for node in old_policy_nodes:
