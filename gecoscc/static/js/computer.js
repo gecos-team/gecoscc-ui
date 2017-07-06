@@ -222,7 +222,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             if (typeof(parentData.content) !== 'undefined') {
                 ohai = parentData.content;
-                path = parentData.path + parentData.key + '/';
+                path = parentData.path + parentData.key.replace(/[^a-zA-Z0-9]/g, '_') + '/';
                 id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
             }
             
@@ -353,7 +353,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (mode != 'initial') {
                 if (ohai_tree.tree('selectedItems').length > 0) {
                     var selectedItem = ohai_tree.tree('selectedItems')[0];
-                    selectedItemPath = selectedItem.path + selectedItem.key;
+                    selectedItemPath = selectedItem.path + selectedItem.key.replace(/[^a-zA-Z0-9]/g, '_');
                 }
             }
 
@@ -440,7 +440,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             var keys = Object.keys(data);
             for( var i=0; i<keys.length; i++ ) {
                 var name = keys[i];
-                var currentPath = path + '/' + name;
+                var currentPath = path + '/' + name.replace(/[^a-zA-Z0-9]/g, '_');
                 var value = data[name];
                 //console.log('currentPath: '+currentPath+' passed = '+passed);
                 
