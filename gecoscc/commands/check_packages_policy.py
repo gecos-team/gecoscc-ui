@@ -123,64 +123,51 @@ class Command(BaseCommand):
             logger.debug('Joined list: %s'%(str(node['policies'][str(packages_policy['_id'])]['package_list'])))
 
 
-        # Recalculate policies
-        for node_id in updated_nodes:
-            node = self.db.nodes.find_one({"_id": ObjectId(node_id)})
-            if node is None:
-                logger.error('FATAL: Can\'t find node with ID: %s'%(node_id))
-                return                
-            
-            # Chef if this node was already updated because its path
-            already_updated = False
-            for obj_id in node['path'].split(','):
-                if obj_id in updated_nodes:
-                    already_updated = True
-            
-            if already_updated:
-                logger.info("Node %s already updated because of its path"%(node_id))
-                
-            else:
-                logger.info("Updating Node %s"%(node_id))
-                if node['type'] == 'ou':
-                    logger.info('Applying policies to OU')
-                    apply_policies_to_ou(self.db.nodes, node, self.auth_user, api=self.api)
-                if node['type'] == 'group':
-                    logger.info('Applying policies to GROUP')
-                    apply_policies_to_group(self.db.nodes, node, self.auth_user, api=self.api)
-                if node['type'] == 'computer':
-                    logger.info('Applying policies to COMPUTER')
-                    apply_policies_to_computer(self.db.nodes, node, self.auth_user, api=self.api)            
-            
         logger.info('%s nodes were updated!'%(len(updated_nodes)))
+        
+        # Recalculate policies for Chef nodes
+        for node_id in ChefNode.list():
+            node = ChefNode(node_id, self.api)
+            logger.info('Checking node: %s'%(node_id))
+            must_update = False
+            if ("gecos_ws_mgmt" in node.attributes) and ("software_mgmt" in node.attributes["gecos_ws_mgmt"]) and ("package_res" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]):
+                if "pkgs_to_remove" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
+                    logger.debug("Chef node %s contains a pkgs_to_remove value!")
+                    must_update = True
+                    
+                if not "package_list" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
+                    logger.error("Chef node %s doesn\'t contains a package_list value!")
+                    continue
+                
+                package_list = node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["package_list"]
+                bad_element = False
+                for element in package_list:
+                    if not 'action' in element:
+                        logger.debug('Chef node: %s doesn\'t have an action value in package_res! (package_list:%s)'%(node_id, str(package_list))) 
+                        must_update = True
+                        break
+            
+            if must_update:
+                # Look for mongodb node
+                mnode = self.db.nodes.find_one({"node_chef_id": node_id})
+                if mnode is None:
+                    logger.error('FATAL: Can\'t find node with Chef ID: %s'%(node_id))
+                    continue                
+                    
+                logger.info('Updating node: %s - %s'%(node_id, mnode['name']))
+                apply_policies_to_computer(self.db.nodes, mnode, self.auth_user, api=self.api, initialize=False, use_celery=False)           
+                
         
         # Final check
         bad_nodes = Search('node', "pkgs_to_remove:*", rows=1000, start=0, api=self.api)
         for node in bad_nodes:
             logger.warn('Detected bad node: %s'%(node.object.name))
-            gecos_node = self.db.nodes.find_one({"chef_node_id": node.object.name})
+            gecos_node = self.db.nodes.find_one({"node_chef_id": node.object.name})
             if gecos_node is None:
                 logger.warn('Can\'t find node in MongoDB for: %s'%(node.object.name)) 
             else:
                 logger.warn('For an unknown reason a computer called %s wasn\'t updated!'%(gecos_node['name'])) 
-        
-        package_nodes = Search('node', "package_res:*", rows=1000, start=0, api=self.api)
-        for node in package_nodes:
-            logger.info('Checking node: %s'%(node.object.name))
-            if not "pkgs_to_remove" in node['default']["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
-                logger.error("Chef node %s contains a pkgs_to_remove value!")
-                return
                 
-            if not "package_list" in node['default']["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
-                logger.error("Chef node %s doesn\'t contains a package_list value!")
-                return
-            
-            package_list = node['default']["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["package_list"]
-            bad_element = False
-            for element in package_list:
-                if not 'action' in element:
-                    logger.warn('Chef node: %s doesn\'t have an action value in package_res! (package_list:%s)'%(node.object.name, str(package_list))) 
-                    break
-        
         logger.info('END ;)')
         
     
