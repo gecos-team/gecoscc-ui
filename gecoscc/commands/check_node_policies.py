@@ -15,11 +15,15 @@ import string
 import random
 import subprocess
 import json
+import requests
+import re
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
+from chef.node import NodeAttributes
 from getpass import getpass
 from optparse import make_option
+from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
@@ -69,6 +73,124 @@ class Command(BaseCommand):
         'chef_pem',
     )
     
+    def get_url(self, url):
+        r = requests.get(url, verify=False, timeout=30)
+        if r.ok:
+            if hasattr(r,'text'):
+                return r.text
+            else:  
+                return r.content                
+            
+        return None     
+    
+    def get_chef_url(self, url):
+        url = url[url.index('://')+3:]
+        url = url[url.index('/'):]
+            
+        print "url=", url
+        data = None
+        try:
+            data = self.api[url]
+        except ChefServerNotFoundError:
+            pass              
+        
+        return data
+    
+    def get_default_data(self, dotted_keys):
+        # Get gecos_ws_mgmt cookbook version
+        data = None
+        try:
+            data = self.api['/organizations/default/cookbooks/gecos_ws_mgmt']
+        except ChefServerNotFoundError:
+            pass              
+        
+        if (data is None) or (not "gecos_ws_mgmt" in data) or (not "versions" in data["gecos_ws_mgmt"]):
+            logger.error('Can\'t get version for gecos_ws_mgmt cookbook!')
+            return None
+            
+        last_version_number = ''
+        last_version_url = ''
+        for ver in data["gecos_ws_mgmt"]["versions"]:
+            if last_version_number == '':
+                last_version_number = ver['version']
+                last_version_url = ver['url']
+            elif  LooseVersion(last_version_number) < LooseVersion(ver['version']):
+                last_version_number = ver['version']
+                last_version_url = ver['url']
+            
+        if last_version_number == '':
+            logger.error('Can\'t find last version number!')
+            return None
+            
+        logger.info("Cookbook version: %s"%(last_version_number))
+        data = self.get_chef_url(last_version_url)
+        if data is None:
+            logger.error('Can\'t get data for gecos_ws_mgmt cookbook!')
+            return None
+
+        if not "attributes" in data:
+            logger.error('gecos_ws_mgmt cookbook data doesn\'t contain attributes!')
+            return None
+
+        default_attr_url = ''
+        for attr in data["attributes"]:
+            if attr["name"] == "default.rb" and attr["path"] == "attributes/default.rb":
+                default_attr_url = attr["url"] 
+                
+        if default_attr_url == '':
+            logger.error('Can\'t find default attributes file!')
+            return None
+            
+        data = self.get_url(default_attr_url)
+        if data is None:
+            logger.error('Can\'t download default attributes file!')
+            return None
+        
+        # Convert to python
+        data = re.sub('\[:(?P<name>[a-zA-Z0-9_]+)\]', '["\g<name>"]', data)
+        data = data.replace('true', 'True').replace('false', 'False')
+        
+        # Create dictionaries
+        created = []
+        header = ''
+        for line in data.split('\n'):
+            # Line example: 
+            #   default["gecos_ws_mgmt"]["misc_mgmt"]["chef_conf_res"]["support_os"] = ["GECOS V3", "GECOS V2", "Gecos V2 Lite", "GECOS V3 Lite"]
+            if line.strip() != '':
+                asignation = line.split('=')
+                # Left example:
+                #   default["gecos_ws_mgmt"]["misc_mgmt"]["chef_conf_res"]["support_os"]
+                left = asignation[0].strip()
+                right = asignation[1].strip()
+                
+                # Save as dotted_key => value
+                dotted_key = left.replace('"', '').replace('default[', '').replace('][', '.').replace(']','')
+                dotted_keys[dotted_key] = eval(right)
+                
+                # Create empty dictionaries code
+                begining = 0
+                position = left.index('[', begining)
+                while position > 0:
+                    variable = left[0:position]
+                    begining = position + 1
+                    try:
+                        position = left.index('[', begining)
+                    except ValueError:
+                        # String not found
+                        position = -1
+                        
+                    if (not variable in created) and len(variable) != len(left):
+                        created.append(variable)
+                        header += variable+' = {}\n'
+                
+        data = header + data
+        
+        default = None
+        code = compile(data, '<string>', 'exec')
+        exec code
+            
+        return default
+    
     
     def command(self):
         # Initialization
@@ -82,6 +204,12 @@ class Command(BaseCommand):
         self.referenced_data_type['repository_can_view'] = 'repository'
         self.referenced_data_type['printer_can_view'] = 'printer'
         
+        # Get gecos_ws_mgmt cookbook default data structure
+        default_data_dotted_keys = {}
+        default_data = self.get_default_data(default_data_dotted_keys)
+        if default_data is None:
+            logger.error("Can't find default data!")
+            return
         
         # Get all the policies structures
         logger.info('Getting all the policies structures from database...')
@@ -134,9 +262,9 @@ class Command(BaseCommand):
             for computer in computers:   
                 found = True
                 
+            computer_node = ChefNode(node_id, self.api)
             if not found:
                 pclabel = "(No OHAI-GECOS data in the node)"
-                computer_node = ChefNode(node_id, self.api)
                 try:
                     pclabel = "(pclabel = %s)"%( computer_node.attributes.get_dotted('ohai_gecos.pclabel') )
                 except KeyError:
@@ -144,6 +272,12 @@ class Command(BaseCommand):
                         
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
+            # Chef default data for chef node
+            if not computer_node.default.to_dict():
+                logger.warning("For an unknown reason Chef node: %s has no default attributes. Fixing it!"%(node_id))
+                computer_node.default = default_data
+                computer_node.save()
+            
         
         logger.info('END ;)')
         
