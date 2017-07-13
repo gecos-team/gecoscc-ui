@@ -132,11 +132,14 @@ class Command(BaseCommand):
             must_update = False
             if ("gecos_ws_mgmt" in node.attributes) and ("software_mgmt" in node.attributes["gecos_ws_mgmt"]) and ("package_res" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]):
                 if "pkgs_to_remove" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
-                    logger.debug("Chef node %s contains a pkgs_to_remove value!")
-                    must_update = True
+                    logger.debug("Chef node %s contains a pkgs_to_remove value!"%(node_id))
+                    # Remove pkgs_to_remove from mongodb node
+                    logger.info("Remove 'pkgs_to_remove' attribute!")
+                    del node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["pkgs_to_remove"]
+                    node.save()
                     
                 if not "package_list" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
-                    logger.error("Chef node %s doesn\'t contains a package_list value!")
+                    logger.error("Chef node %s doesn\'t contains a package_list value!"%(node_id))
                     continue
                 
                 package_list = node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["package_list"]
