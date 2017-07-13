@@ -721,7 +721,7 @@ class ChefTask(Task):
                         obj_ui[field_ui] = node.default.get_dotted(field_chef)
                         self.log("debug","tasks:::update_node_from_rules - obj_ui = {0}".format(obj_ui))
 
-                if not obj_ui_field and action == DELETED_POLICY_ACTION:
+                if not obj_ui_field and action == DELETED_POLICY_ACTION and not is_mergeable:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
