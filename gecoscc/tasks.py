@@ -403,7 +403,7 @@ class ChefTask(Task):
             self.log("debug","tasks.py:::update_ws_mergeable_policy - new_field_chef_value = {0}".format(new_field_chef_value))
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
             for updater_node in updater_nodes:
-                if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
+                if field_ui in updater_node['policies'].get(unicode(policy['_id']),{}):                                                                
                     new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
                 else: # support_os
                     new_field_chef_value += obj_ui[field_ui]
@@ -662,7 +662,7 @@ class ChefTask(Task):
                         obj_ui[field_ui] = node.default.get_dotted(field_chef)
                         self.log("debug","tasks:::update_node_from_rules - obj_ui = {0}".format(obj_ui))
 
-                if not obj_ui_field and action == DELETED_POLICY_ACTION:
+                if not obj_ui_field and action == DELETED_POLICY_ACTION and not is_mergeable:
                     try:
                         obj_ui_field = delete_dotted(node.attributes, field_chef)
                         updated = True
