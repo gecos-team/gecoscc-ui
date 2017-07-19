@@ -15,6 +15,7 @@ import random
 import os
 import subprocess
 import traceback
+import pymongo
 
 from copy import deepcopy
 
@@ -614,7 +615,6 @@ class ChefTask(Task):
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]}).sort([('type',-1),('path',1),('name',1)])
            
             innode = inhierarchy = []
-            lasts = []
             for updater_node in updater_nodes:
 
                 self.log("debug","tasks.py ::: get_merge_policies - Updating {0}".format(updater_node['name']))
@@ -634,41 +634,7 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: get_merge_policies - inhierarchy = {0}".format(inhierarchy))
                 inhierarchy = self.group_by_multiple_keys(inhierarchy, mergeIdField, mergeActionField, False)
                 self.log("debug","tasks.py ::: get_merge_policies - Cleaning dupes in inhierarchy = {0}".format(inhierarchy))
-
-                # Trace inheritance (reminder: updater_nodes ordered by path)
-
-                # Getting inheritance field of updater_node
-                inheritance = self.db.nodes.find_one({'_id': updater_node['_id']},{'_id':0, 'inheritance': 1}).get('inheritance',[]) 
-                self.log("debug","tasks.py ::: get_merge_policies - inheritance = {0}".format(inheritance))
-
-                # Delete obj policy
-                if action == DELETED_POLICY_ACTION:
-                    delete = filter(lambda d: d['node_id'] == obj['_id'], inheritance)
-                    self.log("debug","tasks.py ::: get_merge_policies DELETE_POLICY_ACTION - delete = {0}".format(delete))
-                    if delete and unicode(policy['_id']) in delete[0]['policies']:
-                        delete[0]['policies'].remove(unicode(policy['_id']))
-                        self.log("debug","tasks.py ::: get_merge_policies DELETE_POLICY_ACTION - inheritance = {0}".format(inheritance))
-
-                for last in lasts:
-                    self.log("debug","tasks.py ::: get_merge_policies - last = {0}".format(last))
-                    inherit = filter(lambda d: d['node_id'] == last['_id'], inheritance)
-                    self.log("debug","tasks.py ::: get_merge_policies - inherit = {0}".format(inherit))
-
-                    if inherit:
-                        inherit_dict = inherit.pop()
-                        policies = list(set(inherit_dict['policies'] + [unicode(policy['_id'])]))
-                        inherit_dict.update({'policies':policies})
-                    else:
-                        inherit_dict = dict({'node_id':last['_id'], 'policies':[unicode(policy['_id'])]}) 
-                        inheritance.append(inherit_dict)
-
-                # Updating mongo node (inheritance)
-                self.log("debug","tasks.py ::: get_merge_policies - inheritance = {0}".format(inheritance))
-                if inheritance:
-                    self.db.nodes.update({'_id':ObjectId(updater_node['_id'])},{'$set':{'inheritance':inheritance}}) 
-
-                lasts.append(updater_node)
-
+                
             # Updating chef node
             try:
                 node.attributes.set_dotted(field_chef, inhierarchy)
@@ -681,6 +647,76 @@ class ChefTask(Task):
         return False
         
     # END: NEW MERGE ALGORITHM CODE #
+
+    # INI: TRACE INHERITANCE #
+    def trace_inheritance(self, action, obj, policy):
+        self.log("debug","tasks.py ::: Starting trace_inheritance ...")
+   
+        items = []
+        policyId = unicode(policy['_id'])
+        self.log("debug","tasks.py ::: trace_inheritance - policyId = {0}".format(policyId))
+        if obj['type'] == 'ou':
+            self.log("debug","tasks.py ::: trace_inheritance - obj is OU = {0}".format(obj))
+            items = self.db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
+                                        'type':{'$ne':'group'}
+            }).sort('path',pymongo.ASCENDING)
+                 
+        elif obj['type'] == 'group':
+            self.log("debug","tasks.py ::: trace_inheritance - obj is GROUP = {0}".format(obj))
+            # Computers that are members of the group and groups that are below in the hierarchy or at the same level,
+            # below alphabetically
+            items = self.db.nodes.find({ 
+                                         '$or': [ 
+                                           {'_id'  : {'$in': obj.get('members', [])}}, 
+                                           {'$and' : [ {'type': 'group'}, {'path': {'$regex': obj['path'] + '.+'}} ] },
+                                           {'$and' : [ {'type': 'group'}, {'path': obj['path']}, {'name': {'$gt': obj['name']}} ] }
+                                         ] 
+            }).sort([('type',pymongo.DESCENDING), ('path',pymongo.ASCENDING), ('name',pymongo.ASCENDING)])
+
+        elif obj['type'] == 'computer':
+            self.log("debug","tasks.py ::: trace_inheritance - obj is COMPUTER = {0}".format(obj))
+            items = [self.db.nodes.find_one({'_id': obj['_id']})]
+ 
+        for item in items:
+            self.log("debug","tasks.py ::: trace_inheritance - item = {0}".format(item))
+
+            # Policy not applying this node
+            if not item['type'] in policy['targets']:
+                continue
+
+            #updated = filter(lambda d: d['node_id'] == obj['_id'], item.get('inheritance',[]))[0] Not Found error
+            updated = next((d for d in item.get('inheritance',[]) if ObjectId(d['node_id']) == obj['_id']), None)
+            self.log("debug","tasks.py ::: trace_inheritance - updated = {0}".format(updated))
+
+            if action == DELETED_POLICY_ACTION:
+                if updated and policyId in updated['policies']:
+                    self.log("debug","tasks.py ::: trace_inheritance - REMOVE POLICY FROM INHERITANCE ...")
+                    updated['policies'].remove(policyId)
+                    self.log("debug","tasks.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
+                else:
+                    continue
+            else:
+                if updated:
+                    if policyId in updated['policies']:
+                        continue
+                    else:
+                        updated['policies'].append(policyId)
+                        self.log("debug","tasks.py ::: trace_inheritance - ADDING NEW POLICY TO INHERITANCE ... = {0}".format(updated))
+                else:
+                    # 'node_id': str(obj['_id']) for avoiding ...
+                    # TypeError: ObjectId('591334dc0435645496069348') is not JSON serializable
+                    updated = dict({'node_id': str(obj['_id']), 'policies': [policyId]})
+                    self.log("debug","tasks.py ::: trace_inheritance - ADDING NEW NODE TO INHERITANCE ... = {0}".format(updated))
+                    new_inheritance = item.get('inheritance',[])
+                    new_inheritance.append(updated)
+                    item['inheritance'] = new_inheritance
+                    self.log("debug","tasks.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
+
+            self.log("debug","tasks.py ::: trace_inheritance - UPGRADING INHERITANCE ...")
+            self.db.nodes.update({'_id': item['_id']}, {'$set':{'inheritance': item.get('inheritance')}})
+            
+    # END: TRACE INHERITANCE #
+    
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer):
         '''
         This function update a node from rules.
@@ -964,6 +1000,8 @@ class ChefTask(Task):
                     node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
+                    # Trace inheritance
+                    self.trace_inheritance(action, obj, policy)
             return (node, updated)
         elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
             rule_type = 'save'
@@ -971,6 +1009,8 @@ class ChefTask(Task):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
+                # Trace inheritance
+                self.trace_inheritance(action, obj, policy)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
