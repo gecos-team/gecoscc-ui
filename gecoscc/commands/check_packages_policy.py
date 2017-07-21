@@ -135,8 +135,11 @@ class Command(BaseCommand):
                     logger.debug("Chef node %s contains a pkgs_to_remove value!"%(node_id))
                     # Remove pkgs_to_remove from mongodb node
                     logger.info("Remove 'pkgs_to_remove' attribute!")
-                    del node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["pkgs_to_remove"]
-                    node.save()
+                    try:
+                        del node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["pkgs_to_remove"]
+                        node.save()
+                    except:
+                        logger.warn("Problem deleting pkgs_to_remove value from node: %s"%(node_id))
                     
                 if not "package_list" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
                     logger.error("Chef node %s doesn\'t contains a package_list value!"%(node_id))
