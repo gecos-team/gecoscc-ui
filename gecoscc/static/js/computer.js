@@ -222,7 +222,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
             if (typeof(parentData.content) !== 'undefined') {
                 ohai = parentData.content;
-                path = parentData.path + parentData.key + '/';
+                path = parentData.path + parentData.key.replace(/[^a-zA-Z0-9]/g, '_') + '/';
                 id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
             }
             
@@ -235,14 +235,30 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (Array.isArray(ohai[name])) {
                         cssClass = "tree-json-array";
                     }
-                    
-                    childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                    if (ohai[name] === null) {
+                        cssClass = "tree-json-null";
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+': <span class="tree-json-null">null</span>', "type": "item", content: ohai[name], "attr": { "id": id, "data-icon": "icon-tree-json-null" }  } )
+                    }
+                    else {
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                    }
                 }
                 else {
                     // Item
                     var name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
-                    if (Array.isArray(ohai))
+                    if (typeof(ohai[name]) === 'string') 
+                        name_value = name+': <span class="tree-json-'+(typeof(ohai[name]))+'">"'+ohai[name]+'"</span>';
+                    
+                    if (Array.isArray(ohai)) {
                         name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">'+ohai[name]+'</span>';
+                        if (typeof(ohai[name]) === 'string') {
+                            name_value = '<span class="tree-json-'+(typeof(ohai[name]))+'">"'+ohai[name]+'"</span>';
+                        }
+                        
+                    }
+                    
+                    if (ohai === null)
+                        name_value = '<span class="tree-json-null">null</span>';
                 
                     childNodesArray.push( {"key": name, "path": path, "name": name_value, "type": "item", "attr": { "id": id, "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } )
                 }
@@ -337,7 +353,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (mode != 'initial') {
                 if (ohai_tree.tree('selectedItems').length > 0) {
                     var selectedItem = ohai_tree.tree('selectedItems')[0];
-                    selectedItemPath = selectedItem.path + selectedItem.key;
+                    selectedItemPath = selectedItem.path + selectedItem.key.replace(/[^a-zA-Z0-9]/g, '_');
                 }
             }
 
@@ -424,7 +440,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             var keys = Object.keys(data);
             for( var i=0; i<keys.length; i++ ) {
                 var name = keys[i];
-                var currentPath = path + '/' + name;
+                var currentPath = path + '/' + name.replace(/[^a-zA-Z0-9]/g, '_');
                 var value = data[name];
                 //console.log('currentPath: '+currentPath+' passed = '+passed);
                 
@@ -449,6 +465,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                    }
                 }
                 else if (typeof(value) === 'string' && value.match(keyword) && passed) {
+                    // Next result found in value
+                    return  [currentPath, passed];
+                }
+                else if (typeof(value) !== 'string' && (value+'').match(keyword) && passed) {
                     // Next result found in value
                     return  [currentPath, passed];
                 }
