@@ -19,6 +19,7 @@ import time
 import re
 import pkg_resources
 import logging
+import pymongo
 
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
@@ -987,3 +988,72 @@ def _nested_lookup(key, document):
                 for d in v:
                     for result in _nested_lookup(key, d):
                         yield result
+
+# INI: TRACE INHERITANCE #
+def trace_inheritance(db, action, obj, policy):
+    logger.debug("utils.py ::: Starting trace_inheritance ...")
+
+    items = []
+    policyId = unicode(policy['_id'])
+    logger.debug("utils.py ::: trace_inheritance - policyId = {0}".format(policyId))
+    if obj['type'] == 'ou':
+        logger.debug("utils.py ::: trace_inheritance - obj is OU = {0}".format(obj))
+        items = db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
+                                    'type':{'$ne':'group'}
+        }).sort('path',pymongo.ASCENDING)
+             
+    elif obj['type'] == 'group':
+        logger.debug("utils.py ::: trace_inheritance - obj is GROUP = {0}".format(obj))
+        # Computers that are members of the group and groups that are below in the hierarchy or at the same level,
+        # below alphabetically
+        items = db.nodes.find({ 
+                                     '$or': [ 
+                                       {'_id'  : {'$in': obj.get('members', [])}}, 
+                                       {'$and' : [ {'type': 'group'}, {'path': {'$regex': obj['path'] + '.+'}} ] },
+                                       {'$and' : [ {'type': 'group'}, {'path': obj['path']}, {'name': {'$gt': obj['name']}} ] }
+                                     ] 
+        }).sort([('type',pymongo.DESCENDING), ('path',pymongo.ASCENDING), ('name',pymongo.ASCENDING)])
+
+    elif obj['type'] == 'computer':
+        logger.debug("utils.py ::: trace_inheritance - obj is COMPUTER = {0}".format(obj))
+        items = [db.nodes.find_one({'_id': obj['_id']})]
+
+    for item in items:
+        logger.debug("utils.py ::: trace_inheritance - item = {0}".format(item))
+
+        # Policy not applying this node
+        if not item['type'] in policy['targets']:
+            continue
+
+        #updated = filter(lambda d: d['node_id'] == obj['_id'], item.get('inheritance',[]))[0] Not Found error
+        updated = next((d for d in item.get('inheritance',[]) if ObjectId(d['node_id']) == obj['_id']), None)
+        logger.debug("utils.py ::: trace_inheritance - updated = {0}".format(updated))
+
+        if action == DELETED_POLICY_ACTION:
+            if updated and policyId in updated['policies']:
+                logger.debug("utils.py ::: trace_inheritance - REMOVE POLICY FROM INHERITANCE ...")
+                updated['policies'].remove(policyId)
+                logger.debug("utils.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
+            else:
+                continue
+        else:
+            if updated:
+                if policyId in updated['policies']:
+                    continue
+                else:
+                    updated['policies'].append(policyId)
+                    logger.debug("utils.py ::: trace_inheritance - ADDING NEW POLICY TO INHERITANCE ... = {0}".format(updated))
+            else:
+                # 'node_id': str(obj['_id']) for avoiding ...
+                # TypeError: ObjectId('591334dc0435645496069348') is not JSON serializable
+                updated = dict({'node_id': str(obj['_id']), 'policies': [policyId]})
+                logger.debug("utils.py ::: trace_inheritance - ADDING NEW NODE TO INHERITANCE ... = {0}".format(updated))
+                new_inheritance = item.get('inheritance',[])
+                new_inheritance.append(updated)
+                item['inheritance'] = new_inheritance
+                logger.debug("utils.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
+
+        logger.debug("utils.py ::: trace_inheritance - UPGRADING INHERITANCE ...")
+        db.nodes.update({'_id': item['_id']}, {'$set':{'inheritance': item.get('inheritance')}})
+        
+# END: TRACE INHERITANCE #
