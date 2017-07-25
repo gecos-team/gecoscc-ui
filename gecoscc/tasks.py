@@ -409,10 +409,7 @@ class ChefTask(Task):
                 field = field_chef.split(".")[-1] if callable(field_ui) else field_ui
                 if field in updater_node['policies'].get(unicode(policy['_id']),{}):
                     new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field]
-                else: # support_os
-                    new_field_chef_value += obj_ui[field]
-
-            
+                    
             try:
                 node.attributes.set_dotted(field_chef,list(set(new_field_chef_value)))
             except TypeError:
