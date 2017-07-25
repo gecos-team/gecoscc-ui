@@ -45,7 +45,7 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
-                           get_policy_emiter_id, get_object_related_list, update_computers_of_user)
+                           get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -614,7 +614,6 @@ class ChefTask(Task):
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]}).sort([('type',-1),('path',1),('name',1)])
            
             innode = inhierarchy = []
-            lasts = []
             for updater_node in updater_nodes:
 
                 self.log("debug","tasks.py ::: get_merge_policies - Updating {0}".format(updater_node['name']))
@@ -634,41 +633,7 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: get_merge_policies - inhierarchy = {0}".format(inhierarchy))
                 inhierarchy = self.group_by_multiple_keys(inhierarchy, mergeIdField, mergeActionField, False)
                 self.log("debug","tasks.py ::: get_merge_policies - Cleaning dupes in inhierarchy = {0}".format(inhierarchy))
-
-                # Trace inheritance (reminder: updater_nodes ordered by path)
-
-                # Getting inheritance field of updater_node
-                inheritance = self.db.nodes.find_one({'_id': updater_node['_id']},{'_id':0, 'inheritance': 1}).get('inheritance',[]) 
-                self.log("debug","tasks.py ::: get_merge_policies - inheritance = {0}".format(inheritance))
-
-                # Delete obj policy
-                if action == DELETED_POLICY_ACTION:
-                    delete = filter(lambda d: d['node_id'] == obj['_id'], inheritance)
-                    self.log("debug","tasks.py ::: get_merge_policies DELETE_POLICY_ACTION - delete = {0}".format(delete))
-                    if delete and unicode(policy['_id']) in delete[0]['policies']:
-                        delete[0]['policies'].remove(unicode(policy['_id']))
-                        self.log("debug","tasks.py ::: get_merge_policies DELETE_POLICY_ACTION - inheritance = {0}".format(inheritance))
-
-                for last in lasts:
-                    self.log("debug","tasks.py ::: get_merge_policies - last = {0}".format(last))
-                    inherit = filter(lambda d: d['node_id'] == last['_id'], inheritance)
-                    self.log("debug","tasks.py ::: get_merge_policies - inherit = {0}".format(inherit))
-
-                    if inherit:
-                        inherit_dict = inherit.pop()
-                        policies = list(set(inherit_dict['policies'] + [unicode(policy['_id'])]))
-                        inherit_dict.update({'policies':policies})
-                    else:
-                        inherit_dict = dict({'node_id':last['_id'], 'policies':[unicode(policy['_id'])]}) 
-                        inheritance.append(inherit_dict)
-
-                # Updating mongo node (inheritance)
-                self.log("debug","tasks.py ::: get_merge_policies - inheritance = {0}".format(inheritance))
-                if inheritance:
-                    self.db.nodes.update({'_id':ObjectId(updater_node['_id'])},{'$set':{'inheritance':inheritance}}) 
-
-                lasts.append(updater_node)
-
+                
             # Updating chef node
             try:
                 node.attributes.set_dotted(field_chef, inhierarchy)
@@ -681,6 +646,7 @@ class ChefTask(Task):
         return False
         
     # END: NEW MERGE ALGORITHM CODE #
+
     def update_node_from_rules(self, rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer):
         '''
         This function update a node from rules.
@@ -964,6 +930,8 @@ class ChefTask(Task):
                     node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
+                    # Trace inheritance
+                    trace_inheritance(self.db, action, obj, policy)
             return (node, updated)
         elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
             rule_type = 'save'
@@ -971,6 +939,8 @@ class ChefTask(Task):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
+                # Trace inheritance
+                trace_inheritance(self.db, action, obj, policy)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
