@@ -23,6 +23,7 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.i18n import gettext as _
 from gecoscc.messages import created_msg
 from gecoscc.userdb import UserDoesNotExist
+from gecoscc.userdb import get_ldap_info
 from gecoscc.socks import is_websockets_enabled
 from gecoscc.views import BaseView
 from gecoscc.command_util import get_setting
@@ -54,8 +55,30 @@ class LoginViews(BaseView):
         if self.request.POST:
             username = self.request.POST.get('username')
             password = self.request.POST.get('password')
+
             try:
-                user = self.request.userdb.login(username, password)
+                user_authtype = self.request.userdb.get_authtype(username)
+            except UserDoesNotExist:
+                return {
+                    'username': username,
+                    'message': self.translate(
+                        _("Please enter the correct username and password")),
+                }
+
+            if not (user_authtype and user_authtype.has_key('cc_auth_type')):
+                self.request.userdb.add_authtype(username)
+                user_authtype = 'local'
+
+            ldap = get_ldap_info()
+            if ( ldap['url']  == None and user_authtype['cc_auth_type'] == 'ldap'):
+                return {
+                    'username': username,
+                    'message': self.translate(
+                        _("gecoscc.ini LDAP configuration is wrong. Please contact your system administrator.")),
+            }
+
+            try:
+                user = self.request.userdb.login(username, password, user_authtype['cc_auth_type'])
             except UserDoesNotExist:
                 return {
                     'username': username,
@@ -74,6 +97,7 @@ class LoginViews(BaseView):
                 _('Welcome ${username}',
                   mapping={'username': user['username']})
             ), 'info')
+
             return HTTPFound(location=self.request.route_path('home'),
                              headers=headers)
         else:
@@ -108,3 +132,4 @@ def forbidden_view(context, request):
     logger.debug("No user and forbidden access! --> redirect to login")        
     loginurl = request.route_url('login', _query=(('next', request.path),))
     return HTTPFound(location=loginurl)
+

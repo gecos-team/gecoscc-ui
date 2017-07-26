@@ -7,15 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-06-07 16:06+0200\n"
+"POT-Creation-Date: 2017-07-04 14:05+0200\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
 "Language-Team: en <LL@li.org>\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 1.3\n"
+"Generated-By: Babel 2.3.4\n"
 
 #: gecoscc/static/js/app-utils.js:98
 msgid "Applying changes has failed."
@@ -85,7 +86,7 @@ msgstr ""
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:81
+#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:82
 msgid "Only the super admin can cut this object"
 msgstr ""
 
@@ -133,15 +134,15 @@ msgstr ""
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:564
+#: gecoscc/static/js/app.js:566
 msgid "¡¡ OOOOOPSSS !! The url points to a non-existent object."
 msgstr ""
 
-#: gecoscc/static/js/app.js:565
+#: gecoscc/static/js/app.js:567
 msgid "If you came here by clicking on a link in a view, refresh that view."
 msgstr ""
 
-#: gecoscc/static/js/app.js:663
+#: gecoscc/static/js/app.js:668
 msgid "Policy"
 msgstr ""
 
@@ -203,13 +204,12 @@ msgid "Minutes"
 msgstr ""
 
 #: gecoscc/static/js/i18n.js:70 gecoscc/static/js/i18n.js:78
-#, fuzzy
 msgid "x04"
 msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/ou.js:100
+#: gecoscc/static/js/ou.js:101
 msgid "Only the super admin can delete this object"
 msgstr ""
 
@@ -241,15 +241,15 @@ msgstr ""
 msgid "Paste"
 msgstr ""
 
-#: gecoscc/static/js/tree-views-renderer.js:106 gecoscc/static/js/tree.js:638
+#: gecoscc/static/js/tree-views-renderer.js:106 gecoscc/static/js/tree.js:680
 msgid "Loading"
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:223
+#: gecoscc/static/js/tree-views.js:337
 msgid "Nodes can not be moved between domains."
 msgstr ""
 
-#: gecoscc/static/js/tree-views.js:259
+#: gecoscc/static/js/tree-views.js:373
 msgid ""
 "Deleting an OU is a permanent action. It will also delete all its "
 "children."
