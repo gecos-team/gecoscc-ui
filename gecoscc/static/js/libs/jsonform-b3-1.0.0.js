@@ -622,19 +622,19 @@ jsonform.elementTypes = {
     }
   },
   'select':{
-    'template':'<<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
+    'template':'<<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url) ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '> ' + '<% if (!(node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)) { %>' +
+      '> ' + '<% if (!((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)) { %>' +
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
       '<% }}}); %> ' + '<% } %> ' +
-      '</<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %>>',
+      '</<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)? "input" : "select") %>>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
-      var parent = node.parentNode.schemaElement,
+      var schemaElmnt = ((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)?node.parentNode.schemaElement:node.schemaElement),
           promise,
           pagesize = 30,
           more,
@@ -662,9 +662,9 @@ jsonform.elementTypes = {
           return slug === "package";
       };
 
-      if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
+      if (!schemaElmnt || _.isUndefined(schemaElmnt) || _.isUndefined(schemaElmnt.autocomplete_url)) { return; }
 
-      if (node.value) {
+      if (node.value && !schemaElmnt.autocomplete_url.startsWith('javascript:')) {
         $(node.el).addClass("hidden");
           if (isPackagesPolicy()){
             data = {name: node.value};
@@ -672,7 +672,7 @@ jsonform.elementTypes = {
             data = {oids: node.value};
           }
         promise = $.ajax({
-          url: parent.autocomplete_url,
+          url: schemaElmnt.autocomplete_url,
           dataType: 'json',
           data: data
         });
@@ -731,96 +731,119 @@ jsonform.elementTypes = {
         
         $(node.el).find("input").html("");
 
-        $(node.el).find("input").select2({
-          query: function(query) {
-              if (lastTerm.length < query.term.length && !more) {
-                  cachedData = _.filter(cachedData, function (d) {
-                      var re = new RegExp(query.term + ".*", 'i');
-                      return re.test(d.text);
-                  });
-                  cachedRequests[query.term] = _.clone(cachedData);
-                  if (isPackagesPolicy()) {
-                    addTerm(cachedData, query.term);
-                  }
-                  query.callback({results: cachedData});
-              } else if (cachedRequests[query.term]) {
-                  if (isPackagesPolicy()) {
-                    addTerm(cachedRequests[query.term], query.term);
-                  }
-                  query.callback({results: cachedRequests[query.term]});
-              } else {
-                  $.ajax({
-                      url: parent.autocomplete_url,
-                      dataType: 'json',
-                      id : function (node) {
-                        return node._id;
-                      },
-                      data:  {
-                        item_id: resourceId,
-                        ou_id: ouId,
-                        iname: query.term,
-                        page: query.page,
-                        pagesize: pagesize
-
-                      },
-                      type: 'GET',
-                      success: function(data) {
-                          if ((typeof(data.settings) !== 'undefined')) {
-                            nodes = []
-                            var values = data.settings[0].value.replace(/[\[\]"]/g, '').split(',');
-                            
-                            for (var i = 0; i < values.length; i++) {
-                              nodes[i] = {
-                                text: values[i],
-                                value: values[i],
-                                id: values[i]
-                              }
-                              node.schemaElement.enum.push(values[i]);
-                            }
-                            
-                            more = values.length >= pagesize;
-                          }
-                          else {
-                            var collection = data.software_profiles || data.nodes || data.packages
-                            nodes = collection.map(function (n) {
-                              n._id = n._id || n.name;
-                              node.schemaElement.enum.push(n._id);
-                              return {
-                                text: n.name,
-                                value: n._id,
-                                id: n._id
-                              }
-                            });
-                            more = collection.length >= pagesize;
-                          }
-
-                          if(data.page === 1) {
-                              cachedData = nodes;
-                          } else  {
-                              cachedData = _.union(cachedData, nodes);
-                          }
-
-                          query.callback({results: nodes, more: more});
-                      }
-                  });
+        if (schemaElmnt.autocomplete_url.startsWith('javascript:')) {
+            // Data loaded from a javascript function
+            var functionName = schemaElmnt.autocomplete_url.split(":")[1];
+            
+            $(node.el).find("input").select2({
+              query: function(query) {
+                  window[functionName](node, query);
+              },
+              initSelection : function (element, callback) {
+                if(!_.isUndefined(node.value)){
+                  $(node.el).find("input").last().attr('value', node.value);
+                  node.schemaElement.enum.push(node.value);
+                  var data = {id: node.value, text: node.value};
+                  callback(data);
+                }
               }
-              lastTerm = query.term;
-          },
-          initSelection : function (element, callback) {
-            if(!_.isUndefined(resNode)){
-              $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
-              node.schemaElement.enum.push(resNode._id || resNode.name);
-              var data = {id: resNode._id || resNode.name, text: resNode.name};
-              callback(data);
-            }
-          }
-        }).on("change", function(e) {
-          if(e.val != lastTerm || !addedTerm){
-            $(node.el).find(".alert").hide();
-          } else {
-            $(node.el).find(".alert").show();
-          }
-        });
+            });
+        }
+        else {
+            // Data loaded from the server
+            $(node.el).find("input").select2({
+              query: function(query) {
+                  if (lastTerm.length < query.term.length && !more) {
+                      cachedData = _.filter(cachedData, function (d) {
+                          var re = new RegExp(query.term + ".*", 'i');
+                          return re.test(d.text);
+                      });
+                      cachedRequests[query.term] = _.clone(cachedData);
+                      if (isPackagesPolicy()) {
+                        addTerm(cachedData, query.term);
+                      }
+                      query.callback({results: cachedData});
+                  } else if (cachedRequests[query.term]) {
+                      if (isPackagesPolicy()) {
+                        addTerm(cachedRequests[query.term], query.term);
+                      }
+                      query.callback({results: cachedRequests[query.term]});
+                  } else {
+                      $.ajax({
+                          url: schemaElmnt.autocomplete_url,
+                          dataType: 'json',
+                          id : function (node) {
+                            return node._id;
+                          },
+                          data:  {
+                            item_id: resourceId,
+                            ou_id: ouId,
+                            iname: query.term,
+                            page: query.page,
+                            pagesize: pagesize
+
+                          },
+                          type: 'GET',
+                          success: function(data) {
+                              if ((typeof(data.settings) !== 'undefined')) {
+                                nodes = []
+                                var values = data.settings[0].value.replace(/[\[\]"]/g, '').split(',');
+                                
+                                for (var i = 0; i < values.length; i++) {
+                                  nodes[i] = {
+                                    text: values[i],
+                                    value: values[i],
+                                    id: values[i]
+                                  }
+                                  node.schemaElement.enum.push(values[i]);
+                                }
+                                
+                                more = values.length >= pagesize;
+                              }
+                              else {
+                                var collection = data.software_profiles || data.nodes || data.packages
+                                nodes = collection.map(function (n) {
+                                  n._id = n._id || n.name;
+                                  node.schemaElement.enum.push(n._id);
+                                  return {
+                                    text: n.name,
+                                    value: n._id,
+                                    id: n._id
+                                  }
+                                });
+                                more = collection.length >= pagesize;
+                              }
+
+                              if(data.page === 1) {
+                                  cachedData = nodes;
+                              } else  {
+                                  cachedData = _.union(cachedData, nodes);
+                              }
+
+                              query.callback({results: nodes, more: more});
+                          }
+                      });
+                  }
+                  lastTerm = query.term;
+              },
+              initSelection : function (element, callback) {
+                if(!_.isUndefined(resNode)){
+                  $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
+                  node.schemaElement.enum.push(resNode._id || resNode.name);
+                  var data = {id: resNode._id || resNode.name, text: resNode.name};
+                  callback(data);
+                }
+              }
+            }).on("change", function(e) {
+              if(e.val != lastTerm || !addedTerm){
+                $(node.el).find(".alert").hide();
+              } else {
+                $(node.el).find(".alert").show();
+              }
+            });
+        
+        }
+        
         $(node.el).removeClass("hidden");
       });
     }
