@@ -16,6 +16,7 @@ import os
 import subprocess
 import traceback
 
+
 from copy import deepcopy
 
 from bson import ObjectId
@@ -28,22 +29,25 @@ from celery.signals import task_prerun
 from celery.exceptions import Ignore
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
-
+from pyramid.threadlocal import get_current_registry
 
 import gettext
+from gecoscc.models import Job
+from gecoscc.models import User
+
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
-from gecoscc.socks import invalidate_jobs
+from gecoscc.socks import invalidate_jobs, update_tree, invalidate_change, add_computer_to_user
 # It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user...
 from gecoscc.utils import (get_chef_api, get_cookbook,
-                           get_filter_nodes_belonging_ou,
+                           get_filter_nodes_belonging_ou, get_filter_in_domain,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, NodeNotLinked,
                            apply_policies_to_computer, apply_policies_to_user,
                            apply_policies_to_printer, apply_policies_to_storage,
                            apply_policies_to_repository, apply_policies_to_group,
-                           apply_policies_to_ou, recursive_defaultdict, setpath, dict_merge, nested_lookup,
+                           apply_policies_to_ou, remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance)
 
@@ -1512,3 +1516,164 @@ ssl_verify_mode          :verify_none
     self.db.jobs.update({'_id':ObjectId(macrojob_id)},{'$set':{'status':status, 'message':msg}})
 
     invalidate_jobs(self.request, user)   
+
+@task(base=ChefTask)
+def chef_status_sync(node_id, auth_user):
+    from gecoscc.api.chef_status import USERS_OHAI
+    self = chef_status_sync
+    settings = get_current_registry().settings
+    api = get_chef_api(settings, auth_user)   
+    node = Node(node_id, api)    
+    job_status = node.attributes.get('job_status')
+
+    # After chef-client run, a report handler calls /api/chef_status
+    # Previously, gcc_link attribute of chef node is updated by network policies
+    gcc_link = node.attributes.get('gcc_link')
+    self.log("info", "Saving gcc_link: {0}".format(gcc_link))
+    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
+
+    # Update IP address
+    ipaddress = node.attributes.get('ipaddress')
+    self.log("info", "ipaddress: {0}".format(ipaddress))
+    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
+        
+    reserve_node = False
+    if job_status:
+        node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+        reserve_node = True
+        chef_client_error = False
+
+        for job_id, job_status in job_status.to_dict().items():
+            job = self.db.jobs.find_one({'_id': ObjectId(job_id)})
+            if not job:
+                continue
+            # Parent
+            macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
+            if job_status['status'] == 0:
+                self.db.jobs.update({'_id': job['_id']},
+                                    {'$set': {'status': 'finished',
+                                              'last_update': datetime.datetime.utcnow()}})
+                # Decrement number of children in parent
+                if macrojob and 'counter' in macrojob:
+                    macrojob['counter'] -= 1
+            elif job_status['status'] == 2:
+                self.db.jobs.update({'_id': job['_id']},
+                                    {'$set': {'status': 'warnings',
+                                              'message': job_status.get('message', 'Warning'),
+                                              'last_update': datetime.datetime.utcnow()}})
+                if macrojob:                                
+                    macrojob['status'] = 'warnings'
+            else:
+                chef_client_error = True
+                self.db.jobs.update({'_id': job['_id']},
+                                    {'$set': {'status': 'errors',
+                                              'message': job_status.get('message', 'Error'),
+                                              'last_update': datetime.datetime.utcnow()}})
+                if macrojob:                                
+                    macrojob['status'] = 'errors'
+            # Update parent                                 
+            if macrojob:
+                self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                                    {'$set': {'counter': macrojob['counter'],
+                                              'message': self._("Pending: %d") % macrojob['counter'],
+                                              'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})
+        self.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
+        invalidate_jobs(self.request, auth_user)
+        node.attributes.set_dotted('job_status', {})
+
+    # Users identified by username
+    computer = self.db.nodes.find_one({'node_chef_id': node_id, 'type':'computer'})
+    if not computer:
+        return {'ok': False,
+                'message': 'This node does not exist (mongodb)'}
+
+    self.log("debug","tasks.py ::: chef_status_sync - computer = {0}".format(computer))                 
+
+    chef_node_usernames = set([d['username'] for d in  node.attributes.get_dotted(USERS_OHAI)])
+    gcc_node_usernames  = set([d['name'] for d in self.db.nodes.find({
+                                'type':'user', 
+                                'computers': {'$in': [computer['_id']]}
+                         },
+                         {'_id':0, 'name':1})
+                     ])
+    self.log("debug","tasks.py ::: chef_status_sync - chef_node_usernames = {0}".format(chef_node_usernames))
+    self.log("debug","tasks.py ::: chef_status_sync - gcc_node_usernames = {0}".format(gcc_node_usernames))
+
+    users_recalculate_policies = []
+    reload_clients = False
+    users_remove_policies = []
+
+    # Bugfix invalidate_change
+    self.request.user = auth_user
+    self.request.GET = {}
+
+    # Users added/removed ?
+    if set.symmetric_difference(chef_node_usernames, gcc_node_usernames): 
+        self.log("info", "Must check users!")
+        self.log("debug", "tasks.py ::: chef_status_sync - users added or removed = {0}".format(set.symmetric_difference(chef_node_usernames, gcc_node_usernames)))
+        if not reserve_node:
+            node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+
+        
+        # Add users or vinculate user to computer if already exists
+        addusers = set.difference(chef_node_usernames, gcc_node_usernames)
+        self.log("debug", "tasks.py ::: chef_status_sync - addusers = {0}".format(addusers))
+        for add in addusers:
+            user = self.db.nodes.find_one({'name': add, 'type': 'user', 'path': get_filter_in_domain(computer)})
+
+            if not user:
+                user_model = User()
+                user = user_model.serialize({'name': add,
+                                             'path': computer.get('path', ''),
+                                             'type': 'user',
+                                             'lock': computer.get('lock', ''),
+                                             'source': computer.get('source', '')})
+
+                user = update_computers_of_user(self.db, user, api)
+    
+                del user['_id']
+                user_id = self.db.nodes.insert(user)
+                user = self.db.nodes.find_one({'_id': user_id})
+                reload_clients = True
+                users_recalculate_policies.append(user)
+
+            else:
+                computers = user.get('computers', [])
+                if computer['_id'] not in computers:
+                    computers.append(computer['_id'])
+                    self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                    users_recalculate_policies.append(user)
+                    add_computer_to_user(computer['_id'], user['_id'])
+                    invalidate_change(self.request, auth_user)
+
+        # Removed users
+        delusers = set.difference(gcc_node_usernames, chef_node_usernames)
+        self.log("debug", "tasks.py ::: chef_status_sync - delusers = {0}".format(delusers))
+
+        for delete in delusers:
+            user = self.db.nodes.find_one({'name': delete,
+                                           'type': 'user',
+                                           'path': get_filter_in_domain(computer)})
+            computers = user['computers'] if user else []
+            if computer['_id'] in computers:
+                users_remove_policies.append(deepcopy(user))
+                computers.remove(computer['_id'])
+                self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                invalidate_change(self.request, auth_user)
+
+             
+
+    if reload_clients:
+        update_tree(computer.get('path', ''))
+
+    save_node_and_free(node)
+
+    for user in users_recalculate_policies:
+        apply_policies_to_user(self.db.nodes, user, auth_user)
+
+    for user in users_remove_policies:
+        remove_policies_of_computer(user, computer, auth_user)
+
+    # Save node and free
+    if job_status:
+        save_node_and_free(node)
