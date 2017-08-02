@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2017-06-07 16:06+0200\n"
+"POT-Creation-Date: 2017-08-02 08:12+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -86,7 +86,7 @@ msgstr "Datos inválidos."
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:81
+#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:82
 msgid "Only the super admin can cut this object"
 msgstr "Solo el super administrador puede cortar este objeto"
 
@@ -136,15 +136,15 @@ msgstr "El dominio no es Gecos."
 msgid "Only local users can be added."
 msgstr "Solo los usuarios locales pueden ser añadidos."
 
-#: gecoscc/static/js/app.js:564
+#: gecoscc/static/js/app.js:566
 msgid "¡¡ OOOOOPSSS !! The url points to a non-existent object."
 msgstr "¡¡ OOOOOPSSS !! La url apunta a un objeto no existente."
 
-#: gecoscc/static/js/app.js:565
+#: gecoscc/static/js/app.js:567
 msgid "If you came here by clicking on a link in a view, refresh that view."
 msgstr "Si has llegado aquí desde un enlace en otra vista, refresca esa vista."
 
-#: gecoscc/static/js/app.js:663
+#: gecoscc/static/js/app.js:668
 msgid "Policy"
 msgstr "Política"
 
@@ -214,7 +214,7 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/ou.js:100
+#: gecoscc/static/js/ou.js:101
 msgid "Only the super admin can delete this object"
 msgstr "Solo el super administrador puede eliminar este objeto"
 
@@ -246,15 +246,15 @@ msgstr "Añadir nuevo"
 msgid "Paste"
 msgstr "Pegar"
 
-#: gecoscc/static/js/tree-views-renderer.js:106 gecoscc/static/js/tree.js:638
+#: gecoscc/static/js/tree-views-renderer.js:106 gecoscc/static/js/tree.js:680
 msgid "Loading"
 msgstr "Cargando"
 
-#: gecoscc/static/js/tree-views.js:223
+#: gecoscc/static/js/tree-views.js:337
 msgid "Nodes can not be moved between domains."
 msgstr "Los nodos no pueden ser movidos entre dominios."
 
-#: gecoscc/static/js/tree-views.js:259
+#: gecoscc/static/js/tree-views.js:373
 msgid ""
 "Deleting an OU is a permanent action. It will also delete all its "
 "children."
@@ -264,12 +264,20 @@ msgstr "Borrar una UO es una acción permanente. También eliminará todos sus h
 msgid "Loading nodes..."
 msgstr "Cargando nodos..."
 
+#: gecoscc/static/js/user.js:93
+msgid "Can not delete user because it is linked to a computer."
+msgstr "No se puede eliminar un usuario vinculado a un puesto de trabajo."
+
+#: gecoscc/static/js/user.js:94
+msgid "Delete first locally on the computer"
+msgstr "Borrar primero localmente en el puesto de trabajo."
+
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid "Package not found in server repositories"
 msgstr ""
 
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1009
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1032
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid ""
 "contains items that are outside your scope, please consult a global "

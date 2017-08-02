@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2017-06-21 08:42+0200\n"
+"POT-Creation-Date: 2017-08-02 08:12+0200\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -347,28 +347,28 @@ msgstr "Cambios aplicados"
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
-#: gecoscc/tasks.py:886 gecoscc/tasks.py:977 gecoscc/tasks.py:1121
+#: gecoscc/tasks.py:1072 gecoscc/tasks.py:1163 gecoscc/tasks.py:1307
 msgid "type"
 msgstr "Tipo"
 
-#: gecoscc/tasks.py:945 gecoscc/api/chef_status.py:123
+#: gecoscc/tasks.py:1131 gecoscc/tasks.py:1578
 #, python-format
 msgid "Pending: %d"
 msgstr "Pendientes: %d"
 
-#: gecoscc/tasks.py:977 gecoscc/tasks.py:1121
+#: gecoscc/tasks.py:1163 gecoscc/tasks.py:1307
 msgid "deleted"
 msgstr "Borrado"
 
-#: gecoscc/tasks.py:1279
+#: gecoscc/tasks.py:1465
 msgid "policy uploaded"
 msgstr "Política subida"
 
-#: gecoscc/tasks.py:1281
+#: gecoscc/tasks.py:1467
 msgid "policy uploading..."
 msgstr "Actualizando política..."
 
-#: gecoscc/tasks.py:1328
+#: gecoscc/tasks.py:1514
 #, python-format
 msgid "Cookbook uploaded successfully %s %s"
 msgstr "Archivo de políticas actualizado con éxito %s %s"
@@ -557,7 +557,7 @@ msgstr ""
 msgid "Yes"
 msgstr "Si"
 
-#: gecoscc/templates/base_tree.jinja2:274
+#: gecoscc/templates/base_tree.jinja2:275
 #: gecoscc/templates/bb-computer.html:106
 #: gecoscc/templates/bb-groups-form.html:27 gecoscc/templates/bb-user.html:74
 msgid "Loading"
@@ -768,11 +768,11 @@ msgstr "Datos extraidos del puesto"
 msgid "Expand all"
 msgstr "Expandir todo"
 
-#: gecoscc/templates/bb-computer.html:222
+#: gecoscc/templates/bb-computer.html:229
 msgid "Collapse all"
 msgstr "Contraer todo"
 
-#: gecoscc/templates/bb-computer.html:278
+#: gecoscc/templates/bb-computer.html:292
 #: gecoscc/templates/bb-groups-form.html:49 gecoscc/templates/bb-ou.html:74
 #: gecoscc/templates/bb-user.html:103
 msgid "Policies list"
