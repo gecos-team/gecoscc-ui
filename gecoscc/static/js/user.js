@@ -67,6 +67,38 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 isEditable;
 
+            //CHECK IS EMPTY
+            var computers = this.model.get("computers"),
+                path = this.model.get("path"),
+                id = this.model.get("id"),
+                that = this;
+
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
+
+            var page = new App.Tree.Models.Container({path:path+','+id});
+            page.goTo(1, {
+               success: function (data) {
+                   var $button = $('#delete');
+                   if(!_.isEmpty(computers)) {
+                        $button.removeClass('btn-danger');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click');
+                        $button.css('margin-right','5px');
+                        $button.click(function (e){
+                           e.preventDefault();
+                           App.showAlert('warning',
+                                         gettext('Can not delete user because it is linked to a computer.'),
+                                         "<br/> - " + gettext("Delete first locally on the computer"));
+
+                        });
+                        App.instances.noMaintenance[that.model.get('id')] = false;
+                   }
+                }
+            });
+
             if (this.model.get("isEditable") !== undefined) { return; }
             domain = path.split(',')[2];
 
@@ -82,6 +114,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     that.render();
                 });
             }
+
         },
 
         onRender: function () {
@@ -108,6 +141,7 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+
         },
 
         saveForm: function (evt) {
