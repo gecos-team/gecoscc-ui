@@ -991,6 +991,7 @@ def _nested_lookup(key, document):
 
 # INI: TRACE INHERITANCE #
 def trace_inheritance(db, action, obj, policy):
+    from gecoscc.tasks import DELETED_POLICY_ACTION
     logger.debug("utils.py ::: Starting trace_inheritance ...")
 
     items = []
