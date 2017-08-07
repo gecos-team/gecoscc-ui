@@ -202,15 +202,15 @@ class Command(BaseCommand):
             if key == MIMETYPES_POLICY:
                 self.set_mimetypes_url(value)
                 
+            support_os = value['properties']['support_os']['default']
+            
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
+                    
             path = value.pop('path')
 
-            support_os = value['properties']['support_os']['default']
             is_mergeable = value.pop('is_mergeable', False)
-
-            del value['properties']['support_os']
 
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
