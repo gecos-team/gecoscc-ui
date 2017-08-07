@@ -36,12 +36,12 @@ function calculateVersions(node, query) {
             var options = [];
             var versions = [];
             options.push( {
-                text: 'latest',
+                text: gettext('latest'),
                 value: 'latest',
                 id: 'latest'
             });      
             options.push( {
-                text: 'current',
+                text: gettext('current'),
                 value: 'current',
                 id: 'current'
             });    
