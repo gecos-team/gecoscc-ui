@@ -61,11 +61,13 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         groupsWidget: undefined,
         policiesList: undefined,
+        inheritanceList: undefined,
         activeTab: undefined,
 
         ui: {
             groups: "div#groups-widget",
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -590,6 +592,12 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that.saveCloseNode(id_base);
             }
         },
+
+        onShow: function () {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
+            }
+        },
         
         onRender: function () {
             if(!_.isUndefined(this.activeTab)) {
@@ -620,6 +628,13 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.policiesList.render();
+
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
+
             this.$el.find("#ohai-json").click(function (evt) {
                 var $el = $(evt.target).find("span.fa");
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");

@@ -42,7 +42,8 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         perPage: group_nodes_pagesize,
 
         ui: {
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -54,6 +55,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         policiesList: undefined,
+        inheritanceList: undefined,
 
         goToPage: function (evt) {
             evt.preventDefault();
@@ -142,10 +144,15 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             domain.fetch().done(function () {
                 that.model.set("isEditable", domain.get("master") === "gecos");
                 that.model.set("master_policies", domain.get("master_policies"));
-                that.render();
+                //that.render();
             });
         },
 
+        onShow: function() {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
+            }
+        },
         onRender: function () {
             this.canMove();
 
@@ -178,6 +185,12 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.renderPolicies();
+            
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
         },
 
         save: function (evt) {

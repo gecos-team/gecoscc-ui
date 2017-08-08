@@ -92,7 +92,7 @@ class Command(BaseCommand):
         for node in nodes:
             instance = node['policies'][unicode(policyId)]
 
-            logger.info('Node name = %s, _id = %s)'%(node['name'],str(node['_id']))
+            logger.info('Node name = %s, _id = %s'%(node['name'],str(node['_id'])))
             logger.info('Instance before validate method: %s'%str(instance))
             while True:
                 try:

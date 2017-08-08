@@ -46,9 +46,11 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         groupsWidget: undefined,
+        inheritanceList: undefined,
 
         ui: {
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -77,7 +79,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 App.instances.noMaintenance = [];
             }
 
-            var page = new App.Tree.Models.Container({path:path+','+id});
+            var search_filter = App.instances.tree.getSearchFilter();
+            var page = new App.Tree.Models.Container({path:path+','+id, search_filter: search_filter.join()});
+
             page.goTo(1, {
                success: function (data) {
                    var $button = $('#delete');
@@ -117,6 +121,12 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
 
         },
 
+        onShow: function () {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
+            }
+        },
+
         onRender: function () {
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#username").attr('disabled', 'disabled');
@@ -138,6 +148,13 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
+
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
