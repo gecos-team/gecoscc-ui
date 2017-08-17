@@ -92,16 +92,24 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
 
 
 def get_computer_of_user(collection_nodes, user, related_computers=None):
+    sudo = False
     if related_computers is None:
         related_computers = []
     user_computers = collection_nodes.find({'_id': {'$in': user['computers']}})
     for computer in user_computers:
-        if computer not in related_computers:
+        # Sudoers
+        if user['name'] in computer.get('sudoers',[]):
+            sudo = True
+            continue
+        elif computer not in related_computers:
             computer['user'] = user
             related_computers.append(computer)
         elif 'user' not in computer:
             computer_index = related_computers.index(computer)
             related_computers[computer_index]['user'] = user
+    # Sudoers linked to more than one computer                                  
+    if not related_computers and sudo:
+        collection_nodes.update({'_id': user['_id']},{'$set': {'policies':{},'inheritance':[]}})
     return related_computers
 
 
@@ -999,21 +1007,21 @@ def trace_inheritance(db, action, obj, policy):
     logger.debug("utils.py ::: trace_inheritance - policyId = {0}".format(policyId))
     if obj['type'] == 'ou':
         logger.debug("utils.py ::: trace_inheritance - obj is OU = {0}".format(obj))
-        items = db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
+        items = list(db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
                                     'type':{'$ne':'group'}
-        }).sort('path',pymongo.ASCENDING)
+        }).sort('path',pymongo.ASCENDING))
              
     elif obj['type'] == 'group':
         logger.debug("utils.py ::: trace_inheritance - obj is GROUP = {0}".format(obj))
         # Computers that are members of the group and groups that are below in the hierarchy or at the same level,
         # below alphabetically
-        items = db.nodes.find({ 
+        items = list(db.nodes.find({ 
                                      '$or': [ 
                                        {'_id'  : {'$in': obj.get('members', [])}}, 
                                        {'$and' : [ {'type': 'group'}, {'path': {'$regex': obj['path'] + '.+'}} ] },
                                        {'$and' : [ {'type': 'group'}, {'path': obj['path']}, {'name': {'$gt': obj['name']}} ] }
                                      ] 
-        }).sort([('type',pymongo.DESCENDING), ('path',pymongo.ASCENDING), ('name',pymongo.ASCENDING)])
+        }).sort([('type',pymongo.DESCENDING), ('path',pymongo.ASCENDING), ('name',pymongo.ASCENDING)]))
 
     elif obj['type'] == 'computer':
         logger.debug("utils.py ::: trace_inheritance - obj is COMPUTER = {0}".format(obj))
@@ -1026,6 +1034,13 @@ def trace_inheritance(db, action, obj, policy):
         if not item['type'] in policy['targets']:
             continue
 
+        # Sudoers
+        if item['type'] == 'user':
+            user_computers = get_computer_of_user(db.nodes, item)
+            computers = [c for c in user_computers if c['_id'] in [d['_id'] for d in items]]
+            logger.debug("utils.py ::: trace_inheritance - computers = {0}".format(computers))
+            if not computers:
+                continue
         #updated = filter(lambda d: d['node_id'] == obj['_id'], item.get('inheritance',[]))[0] Not Found error
         updated = next((d for d in item.get('inheritance',[]) if ObjectId(d['node_id']) == obj['_id']), None)
         logger.debug("utils.py ::: trace_inheritance - updated = {0}".format(updated))

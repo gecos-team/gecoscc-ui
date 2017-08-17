@@ -1141,6 +1141,7 @@ class ChefTask(Task):
     def object_deleted(self, user, obj, computers=None):
         obj_without_policies = deepcopy(obj)
         obj_without_policies['policies'] = {}
+        obj_without_policies['inheritance'] = []                                        
         object_changed = getattr(self, '%s_changed' % obj['type'])
         object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
@@ -1635,17 +1636,22 @@ def chef_status_sync(node_id, auth_user):
                 user_id = self.db.nodes.insert(user)
                 user = self.db.nodes.find_one({'_id': user_id})
                 reload_clients = True
-                users_recalculate_policies.append(user)
 
             else:
                 computers = user.get('computers', [])
                 if computer['_id'] not in computers:
                     computers.append(computer['_id'])
                     self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
-                    users_recalculate_policies.append(user)
                     add_computer_to_user(computer['_id'], user['_id'])
                     invalidate_change(self.request, auth_user)
 
+            # Sudoers
+            if add not in chef_sudoers:
+                self.log("info", "tasks.py ::: chef_status_sync - Recalculate policies for user: {0}".format(user))
+                users_recalculate_policies.append(user)
+            else:
+                new_sudoers = computer.get('sudoers',[]).append(add)
+                self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': new_sudoers}})
         # Removed users
         delusers = set.difference(gcc_node_usernames, chef_node_usernames)
         self.log("debug", "tasks.py ::: chef_status_sync - delusers = {0}".format(delusers))
@@ -1661,8 +1667,38 @@ def chef_status_sync(node_id, auth_user):
                 self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 invalidate_change(self.request, auth_user)
 
-             
+    else: # Sudoers (only rol changed)
+        chef_sudoers = set([d['username'] for d in node.attributes.get_dotted(USERS_OHAI) if d['sudo']]) 
+        gcc_sudoers  = set(computer.get('sudoers',[]))
+        self.log("debug","tasks.py ::: chef_status_sync - chef_sudoers = {0}".format(chef_sudoers))
+        self.log("debug","tasks.py ::: chef_status_sync - gcc_sudoers  = {0}".format(gcc_sudoers))
 
+        # normal-to-sudo
+        normal_to_sudo = set.difference(chef_sudoers, gcc_sudoers)
+        self.log("debug", "tasks.py ::: chef_status_sync - normal to sudo = {0}".format(normal_to_sudo))
+        sudo = self.db.nodes.find({'name': {'$in': list(normal_to_sudo)}, 
+                                   'type': 'user',
+                                   'path': get_filter_in_domain(computer)})
+        #users_remove_policies += list(sudo)
+        self.db.nodes.update({'_id': {'$in': [d['_id'] for d in sudo]}},{'$set': { 'inheritance':[],'policies':{}}}, multi=True)
+        self.log("debug", "tasks.py ::: chef_status_sync - users_remove_policies = {0}".format(users_remove_policies))
+
+        gcc_sudoers = gcc_sudoers.union(normal_to_sudo)
+        self.log("debug", "tasks.py ::: chef_status_sync - normal-to-sudo - gcc_sudoers = {0}".format(gcc_sudoers))
+
+        # sudo-to-normal
+        sudo_to_normal = set.difference(gcc_sudoers, chef_sudoers)
+        self.log("debug", "tasks.py ::: chef_status_sync - sudo to normal = {0}".format(sudo_to_normal))
+        normal = self.db.nodes.find({'name': {'$in': list(sudo_to_normal)}, 
+                                   'type': 'user',
+                                   'path': get_filter_in_domain(computer)})
+        users_recalculate_policies += list(normal)
+        self.log("debug", "tasks.py ::: chef_status_sync - users_recalculate_policies = {0}".format(users_recalculate_policies))
+
+        gcc_sudoers = gcc_sudoers.difference(sudo_to_normal)
+        self.log("debug", "tasks.py ::: chef_status_sync - sudo-to-normal - gcc_sudoers = {0}".format(gcc_sudoers))
+
+        self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
     if reload_clients:
         update_tree(computer.get('path', ''))
 
