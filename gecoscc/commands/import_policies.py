@@ -226,7 +226,7 @@ class Command(BaseCommand):
                 for lan in languages:
                     value['title_' + lan] = titles[lan]
 
-            elif 'network_mgmt' in path:
+            elif 'single_node' in path:
                 targets = ['computer']
             else:
                 targets = DEFAULT_TARGETS
