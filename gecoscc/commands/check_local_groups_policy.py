@@ -136,7 +136,7 @@ class Command(BaseCommand):
         for computer in computers:
             logger.info('computer = %s'%str(computer))
             computer = self.db.nodes.find_one({'_id': ObjectId(computer)})
-            apply_policies_to_computer(self.db.nodes, computer, self.auth_user, api=self.api, initialize=False, use_celery=True) 
+            apply_policies_to_computer(self.db.nodes, computer, self.auth_user, api=self.api, initialize=False, use_celery=False) 
 
         logger.info('Finished.')
 
