@@ -16,10 +16,9 @@ import subprocess
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from optparse import make_option
-from bson import ObjectId
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, toChefUsername, apply_policies_to_ou, apply_policies_to_group, apply_policies_to_computer, get_filter_nodes_belonging_ou
+from gecoscc.utils import _get_chef_api, toChefUsername, apply_policies_to_computer, get_filter_nodes_belonging_ou
 from bson.objectid import ObjectId
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -70,6 +69,11 @@ class Command(BaseCommand):
                             toChefUsername(self.options.chef_username),
                             self.options.chef_pem, False, self.settings.get('chef.version'))
 
+        self.auth_user = self.db.adminusers.find_one({'username': self.options.chef_username})       
+        if self.auth_user is None:
+            logger.error('The administrator user must exist in MongoDB')
+            sys.exit(1)                            
+
         self.db = self.pyramid.db
         
         # Get local_groups (Local groups) policy
@@ -101,7 +105,7 @@ class Command(BaseCommand):
                     validate(instance, schema)
                     break
                 except ValidationError as e: 
-                     logger.error('Validation error on instance = %s'%str(e.message))
+                     logger.warning('Validation error on instance = %s'%str(e.message))
                      # Sanitize instance
                      self.sanitize(e, instance)
                      sanitized = True
@@ -114,25 +118,25 @@ class Command(BaseCommand):
                 # Update mongo
                 self.db.nodes.update({'_id': node['_id']},{'$set':{field:instance}})
 
-                # Afected nodes
+                # Affected nodes
                 if node['type'] == 'ou':
                     result = list(self.db.nodes.find({'path': get_filter_nodes_belonging_ou(node['_id']),'type': 'computer'},{'_id':1}))
-                    for i in result:
-                        computers.add(i['_id'])
+                    [computers.add(str(n['_id'])) for n in result]
+                    logger.info('OU computers = %s'%str(computers))
                 elif node['type'] == 'group':
                     result = self.db.nodes.find_one({'type': 'group', '_id': node['_id']},{'_id':0, 'members':1})
-                    for i in result['members']:
-                        computers.add(i)
+                    [computers.add(str(n)) for n in result['members']]
+                    logger.info('GROUP computers = %s'%str(computers))
                 elif node['type'] == 'computer':
-                    computers.add(node['_id'])
-
+                    computers.add(str(node['_id']))
+                    logger.info('COMPUTER computers = %s'%str(computers))
 
         logger.info('computers = %s'%str(computers))
-        auth_user = self.db.adminusers.find_one({'username': self.options.chef_username})
+
         for computer in computers:
             logger.info('computer = %s'%str(computer))
             computer = self.db.nodes.find_one({'_id': ObjectId(computer)})
-            apply_policies_to_computer(self.db.nodes, computer, auth_user, api=self.api, initialize=False, use_celery=True) 
+            apply_policies_to_computer(self.db.nodes, computer, self.auth_user, api=self.api, initialize=False, use_celery=True) 
 
         logger.info('Finished.')
 
