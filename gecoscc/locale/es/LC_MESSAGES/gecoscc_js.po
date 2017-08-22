@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2017-08-02 08:12+0200\n"
+"POT-Creation-Date: 2017-08-07 12:19+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -213,6 +213,14 @@ msgid "x04"
 msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
+
+#: gecoscc/static/js/jsonform-utils.js:40
+msgid "latest"
+msgstr "Última"
+
+#: gecoscc/static/js/jsonform-utils.js:45
+msgid "current"
+msgstr "Actual"
 
 #: gecoscc/static/js/ou.js:101
 msgid "Only the super admin can delete this object"

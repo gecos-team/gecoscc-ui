@@ -27,8 +27,8 @@ function calculateVersions(node, query) {
             if (jQuery.type(node.schemaElement.enum) === "undefined")
                 node.schemaElement.enum = [];
             
-            if (jQuery.inArray('lastest', node.schemaElement.enum) < 0)
-                node.schemaElement.enum.push('lastest');
+            if (jQuery.inArray('latest', node.schemaElement.enum) < 0)
+                node.schemaElement.enum.push('latest');
             
             if (jQuery.inArray('current', node.schemaElement.enum) < 0)
                 node.schemaElement.enum.push('current');
@@ -36,12 +36,12 @@ function calculateVersions(node, query) {
             var options = [];
             var versions = [];
             options.push( {
-                text: 'lastest',
-                value: 'lastest',
-                id: 'lastest'
+                text: gettext('latest'),
+                value: 'latest',
+                id: 'latest'
             });      
             options.push( {
-                text: 'current',
+                text: gettext('current'),
                 value: 'current',
                 id: 'current'
             });    

@@ -743,7 +743,7 @@ jsonform.elementTypes = {
                 if(!_.isUndefined(node.value)){
                   $(node.el).find("input").last().attr('value', node.value);
                   node.schemaElement.enum.push(node.value);
-                  var data = {id: node.value, text: node.value};
+                  var data = {id: node.value, value: node.value, text: gettext(node.value)};
                   callback(data);
                 }
               }
