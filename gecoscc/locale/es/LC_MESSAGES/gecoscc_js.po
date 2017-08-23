@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2017-08-07 12:19+0200\n"
+"POT-Creation-Date: 2017-08-08 11:34+0200\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -86,7 +86,7 @@ msgstr "Datos inválidos."
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:82
+#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
 msgstr "Solo el super administrador puede cortar este objeto"
 
@@ -144,7 +144,7 @@ msgstr "¡¡ OOOOOPSSS !! La url apunta a un objeto no existente."
 msgid "If you came here by clicking on a link in a view, refresh that view."
 msgstr "Si has llegado aquí desde un enlace en otra vista, refresca esa vista."
 
-#: gecoscc/static/js/app.js:668
+#: gecoscc/static/js/app.js:669
 msgid "Policy"
 msgstr "Política"
 
@@ -222,7 +222,7 @@ msgstr "Última"
 msgid "current"
 msgstr "Actual"
 
-#: gecoscc/static/js/ou.js:101
+#: gecoscc/static/js/ou.js:104
 msgid "Only the super admin can delete this object"
 msgstr "Solo el super administrador puede eliminar este objeto"
 

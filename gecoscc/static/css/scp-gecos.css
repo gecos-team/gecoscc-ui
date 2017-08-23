@@ -722,3 +722,9 @@ legend {
 .tree-selected .tree-branch-name, .tree-selected .tree-item-name {
     background-color: #b9dff1 !important;
 }
+
+.foreignpolicy {
+    margin-right: 5px;
+    color: #ff9900;
+}    
+}
