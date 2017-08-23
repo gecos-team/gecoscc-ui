@@ -43,7 +43,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         ui: {
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
         events: {
             "click #submit": "saveForm",
@@ -54,8 +55,10 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         policiesList: undefined,
+        inheritanceList: undefined,
 
         onBeforeRender: function () {
+
             var that = this;
             var path = this.model.get("path");
 
@@ -117,6 +120,12 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        onShow: function () {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
+            }
+        },
+
         onRender: function () {
             var oids = [],
                 url;
@@ -130,6 +139,12 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
 
             if (!_.isEmpty(this.model.get("master_policies")) && this.model.get("path").split(',').length === 2) {
                 _.each(this.model.get("master_policies"), function (o, k) {
