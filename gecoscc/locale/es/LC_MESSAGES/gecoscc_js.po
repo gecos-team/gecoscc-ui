@@ -214,6 +214,14 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
+#: gecoscc/static/js/jsonform-utils.js:40
+msgid "latest"
+msgstr "Última"
+
+#: gecoscc/static/js/jsonform-utils.js:45
+msgid "current"
+msgstr "Actual"
+
 #: gecoscc/static/js/ou.js:104
 msgid "Only the super admin can delete this object"
 msgstr "Solo el super administrador puede eliminar este objeto"
