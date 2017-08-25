@@ -1141,7 +1141,7 @@ class ChefTask(Task):
     def object_deleted(self, user, obj, computers=None):
         obj_without_policies = deepcopy(obj)
         obj_without_policies['policies'] = {}
-        obj_without_policies['inheritance'] = []                                        
+        obj_without_policies['inheritance'] = []
         object_changed = getattr(self, '%s_changed' % obj['type'])
         object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
@@ -1590,7 +1590,7 @@ def chef_status_sync(node_id, auth_user):
 
     self.log("debug","tasks.py ::: chef_status_sync - computer = {0}".format(computer))                 
 
-    chef_node_usernames = set([d['username'] for d in  node.attributes.get_dotted(USERS_OHAI)])
+    chef_node_usernames = set([d['username'] for d in node.attributes.get_dotted(USERS_OHAI)])
     gcc_node_usernames  = set([d['name'] for d in self.db.nodes.find({
                                 'type':'user', 
                                 'computers': {'$in': [computer['_id']]}
@@ -1607,6 +1607,11 @@ def chef_status_sync(node_id, auth_user):
     # Bugfix invalidate_change
     self.request.user = auth_user
     self.request.GET = {}
+    # Sudoers
+    chef_sudoers = set([d['username'] for d in node.attributes.get_dotted(USERS_OHAI) if d['sudo']]) 
+    gcc_sudoers  = set(computer.get('sudoers',[]))
+    self.log("debug","tasks.py ::: chef_status_sync - chef_sudoers = {0}".format(chef_sudoers))
+    self.log("debug","tasks.py ::: chef_status_sync - gcc_sudoers  = {0}".format(gcc_sudoers))
 
     # Users added/removed ?
     if set.symmetric_difference(chef_node_usernames, gcc_node_usernames): 
@@ -1650,8 +1655,8 @@ def chef_status_sync(node_id, auth_user):
                 self.log("info", "tasks.py ::: chef_status_sync - Recalculate policies for user: {0}".format(user))
                 users_recalculate_policies.append(user)
             else:
-                new_sudoers = computer.get('sudoers',[]).append(add)
-                self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': new_sudoers}})
+                gcc_sudoers.add(add)
+                self.log("info", "tasks.py ::: chef_status_sync - gcc_sudoers: {0}".format(gcc_sudoers))
         # Removed users
         delusers = set.difference(gcc_node_usernames, chef_node_usernames)
         self.log("debug", "tasks.py ::: chef_status_sync - delusers = {0}".format(delusers))
@@ -1668,10 +1673,6 @@ def chef_status_sync(node_id, auth_user):
                 invalidate_change(self.request, auth_user)
 
     else: # Sudoers (only rol changed)
-        chef_sudoers = set([d['username'] for d in node.attributes.get_dotted(USERS_OHAI) if d['sudo']]) 
-        gcc_sudoers  = set(computer.get('sudoers',[]))
-        self.log("debug","tasks.py ::: chef_status_sync - chef_sudoers = {0}".format(chef_sudoers))
-        self.log("debug","tasks.py ::: chef_status_sync - gcc_sudoers  = {0}".format(gcc_sudoers))
 
         # normal-to-sudo
         normal_to_sudo = set.difference(chef_sudoers, gcc_sudoers)
@@ -1698,7 +1699,8 @@ def chef_status_sync(node_id, auth_user):
         gcc_sudoers = gcc_sudoers.difference(sudo_to_normal)
         self.log("debug", "tasks.py ::: chef_status_sync - sudo-to-normal - gcc_sudoers = {0}".format(gcc_sudoers))
 
-        self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+    # Upgrade sudoers
+    self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
     if reload_clients:
         update_tree(computer.get('path', ''))
 
