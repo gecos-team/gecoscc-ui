@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-08-07 12:19+0200\n"
+"POT-Creation-Date: 2017-08-08 11:34+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -84,7 +84,7 @@ msgstr ""
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:82
+#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
 msgstr ""
 
@@ -140,7 +140,7 @@ msgstr ""
 msgid "If you came here by clicking on a link in a view, refresh that view."
 msgstr ""
 
-#: gecoscc/static/js/app.js:668
+#: gecoscc/static/js/app.js:669
 msgid "Policy"
 msgstr ""
 
@@ -215,7 +215,7 @@ msgstr ""
 msgid "current"
 msgstr ""
 
-#: gecoscc/static/js/ou.js:101
+#: gecoscc/static/js/ou.js:104
 msgid "Only the super admin can delete this object"
 msgstr ""
 

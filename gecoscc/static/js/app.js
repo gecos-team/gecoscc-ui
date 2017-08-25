@@ -343,8 +343,8 @@ var App;
             "newroot": "newRoot",
             "ou/:containerid/new": "newItemDashboard",
             "ou/:containerid/:type": "newItem",
-            "ou/:containerid/:type/:itemid": "loadItem",
             "ou/:containerid/:type/:itemid/policy": "newPolicy",
+            "ou/:containerid/:type/:itemid(/:tab)": "loadItem",
             "ou/:containerid/:type/:itemid/policy/:policyid": "loadPolicy",
             "search/:keyword": "search",
             "logbook": "logbook"                                
@@ -570,9 +570,9 @@ var App;
                 });
             },
 
-            loadItem: function (containerid, type, itemid) {
+            loadItem: function (containerid, type, itemid, tab) {
                 var Model, model, View, view, skipFetch;
-                
+
                 this._prepare(containerid, type, itemid);
                 App.tree.currentView.activeNode = itemid;
                 App.tree.currentView.highlightNodeById(itemid);
@@ -587,6 +587,7 @@ var App;
                 view = new View({ model: model });
                 
                 App.tree.currentView.activeNodeModel = model;
+                App.instances.activeTab = tab;
                 
                 // Render the loader indicator
                 App.main.show(App.instances.loaderView);
