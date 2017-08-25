@@ -550,6 +550,7 @@ class Computer(Node):
                                                  default=False)
     gcc_link = colander.SchemaNode(RealBoolean(),
                                    default=True)
+    sudoers = StringList(missing=[], default=[])
 
 
 class Computers(colander.SequenceSchema):
