@@ -582,7 +582,7 @@ class ChefTask(Task):
             self.log("debug","tasks.py ::: get_merge_policies - obj_ui_copy = {0}".format(obj_ui_copy))
 
             objold_ui_field = field_ui(objold_ui_copy, obj=objold_copy, node=node, field_chef=field_chef)
-            obj_ui_field    = field_ui(obj_ui_copy, obj=obj_copy, node=node, field_chef=field_chef)
+            obj_ui_field    = obj_ui.get(field_chef.split('.')[-1])
         else:
             objold_ui_field = objold_ui.get(field_ui, [])
             obj_ui_field = obj_ui.get(field_ui, [])
