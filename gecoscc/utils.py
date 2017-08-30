@@ -99,7 +99,7 @@ def get_computer_of_user(collection_nodes, user, related_computers=None):
     for computer in user_computers:
         # Sudoers
         if user['name'] in computer.get('sudoers',[]):
-            sudo = True
+            #sudo = True
             continue
         elif computer not in related_computers:
             computer['user'] = user
@@ -107,9 +107,9 @@ def get_computer_of_user(collection_nodes, user, related_computers=None):
         elif 'user' not in computer:
             computer_index = related_computers.index(computer)
             related_computers[computer_index]['user'] = user
-    # Sudoers linked to more than one computer                                  
-    if not related_computers and sudo:
-        collection_nodes.update({'_id': user['_id']},{'$set': {'policies':{},'inheritance':[]}})
+    # Sudoers linked to more than one computer. No policies in "Policies" tab                                  
+    #if not related_computers and sudo:
+    #    collection_nodes.update({'_id': user['_id']},{'$set': {'policies':{},'inheritance':[]}})
     return related_computers
 
 

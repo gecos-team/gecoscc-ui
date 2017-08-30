@@ -1681,8 +1681,7 @@ def chef_status_sync(node_id, auth_user):
                                    'type': 'user',
                                    'path': get_filter_in_domain(computer)})
         #users_remove_policies += list(sudo)
-        self.db.nodes.update({'_id': {'$in': [d['_id'] for d in sudo]}},{'$set': { 'inheritance':[],'policies':{}}}, multi=True)
-        self.log("debug", "tasks.py ::: chef_status_sync - users_remove_policies = {0}".format(users_remove_policies))
+        #self.db.nodes.update({'_id': {'$in': [d['_id'] for d in sudo]}},{'$set': { 'inheritance':[],'policies':{}}}, multi=True)
 
         gcc_sudoers = gcc_sudoers.union(normal_to_sudo)
         self.log("debug", "tasks.py ::: chef_status_sync - normal-to-sudo - gcc_sudoers = {0}".format(gcc_sudoers))
