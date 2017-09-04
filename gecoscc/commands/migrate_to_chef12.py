@@ -188,29 +188,119 @@ class Command(BaseCommand):
             if not computer["node_chef_id"] in acl['create']['actors']:
                 print "INFO: Fix create permission"
                 acl['create']['actors'].append(computer["node_chef_id"])
+                acl['create']['actors'] = self.check_acl_content(api, acl['create']['actors'], None)
                 api.api_request('PUT', '/organizations/default/nodes/%s/_acl/create'%(computer["node_chef_id"]), data={'create': acl['create']})                 
                 
             if not computer["node_chef_id"] in acl['read']['actors']:
                 print "INFO: Fix read permission"
                 acl['read']['actors'].append(computer["node_chef_id"])
+                acl['read']['actors'] = self.check_acl_content(api, acl['read']['actors'], None)
                 api.api_request('PUT', '/organizations/default/nodes/%s/_acl/read'%(computer["node_chef_id"]), data={'read': acl['read']})                 
 
             if not computer["node_chef_id"] in acl['update']['actors']:
                 print "INFO: Fix update permission"
                 acl['update']['actors'].append(computer["node_chef_id"])
+                acl['update']['actors'] = self.check_acl_content(api, acl['update']['actors'], None)
                 api.api_request('PUT', '/organizations/default/nodes/%s/_acl/update'%(computer["node_chef_id"]), data={'update': acl['update']})                 
                 
             if not computer["node_chef_id"] in acl['grant']['actors']:
                 print "INFO: Fix grant permission"
                 acl['grant']['actors'].append(computer["node_chef_id"])
+                acl['grant']['actors'] = self.check_acl_content(api, acl['grant']['actors'], None)
                 api.api_request('PUT', '/organizations/default/nodes/%s/_acl/grant'%(computer["node_chef_id"]), data={'grant': acl['grant']})                 
 
             if not computer["node_chef_id"] in acl['delete']['actors']:
                 print "INFO: Fix delete permission"
                 acl['delete']['actors'].append(computer["node_chef_id"])
+                acl['delete']['actors'] = self.check_acl_content(api, acl['delete']['actors'], None)
                 api.api_request('PUT', '/organizations/default/nodes/%s/_acl/delete'%(computer["node_chef_id"]), data={'delete': acl['delete']})                 
 
                 
+        # Check the ACL of all clients
+        print '============ CHECKING CLIENTS ============='                  
+        chef_clients = api['/organizations/default/clients']
+        for client in chef_clients:
+            print 'Checking client: %s'%(client)
             
+            # Get the ACL for the client
+            acl = None
+            try:
+                acl = api['/organizations/default/clients/%s/_acl'%(client)]
+            except ChefServerNotFoundError:
+                pass              
+            
+            if acl is None:
+                print "ERROR: Can't find the client ACL!"
+                continue
+
+            checked_acl = self.check_acl_content(api, acl['create']['actors'], client)
+            if acl['create']['actors'] != checked_acl:
+                print "INFO: Fix create permission"
+                acl['create']['actors'] = checked_acl
+                api.api_request('PUT', '/organizations/default/clients/%s/_acl/create'%(client), data={'create': acl['create']})                 
+
+
+            checked_acl = self.check_acl_content(api, acl['read']['actors'], client)
+            if acl['read']['actors'] != checked_acl:
+                print "INFO: Fix read permission"
+                acl['read']['actors'] = checked_acl
+                api.api_request('PUT', '/organizations/default/clients/%s/_acl/read'%(client), data={'read': acl['read']})                 
+
+            checked_acl = self.check_acl_content(api, acl['update']['actors'], client)
+            if acl['update']['actors'] != checked_acl:
+                print "INFO: Fix update permission"
+                acl['update']['actors'] = checked_acl
+                api.api_request('PUT', '/organizations/default/clients/%s/_acl/update'%(client), data={'update': acl['update']})                 
                 
-        
+
+            checked_acl = self.check_acl_content(api, acl['grant']['actors'], client)
+            if acl['grant']['actors'] != checked_acl:
+                print "INFO: Fix grant permission"
+                acl['grant']['actors'] = checked_acl
+                api.api_request('PUT', '/organizations/default/clients/%s/_acl/grant'%(client), data={'grant': acl['grant']})                 
+                
+            checked_acl = self.check_acl_content(api, acl['delete']['actors'], client)
+            if acl['delete']['actors'] != checked_acl:
+                print "INFO: Fix delete permission"
+                acl['delete']['actors'] = checked_acl
+                api.api_request('PUT', '/organizations/default/clients/%s/_acl/delete'%(client), data={'delete': acl['delete']})                 
+                
+            
+    def check_acl_content(self, api, acl, current_actor):
+        # Check if the acls contains actors that are both client and user
+        ret_acl = []
+        for actor in acl:
+            if actor != current_actor:
+                # Check if the chef client exists
+                chef_client = None
+                try:
+                    chef_client = api['/organizations/default/clients/%s'%(actor)]
+                except ChefServerNotFoundError:
+                    pass              
+            
+                # Check if the chef user exists
+                chef_user = None
+                try:
+                    chef_user = api['/organizations/default/users/%s'%(actor)]
+                except ChefServerNotFoundError:
+                    pass              
+                
+                if chef_client is not None and chef_user is not None:
+                    # Exists both client and user --> Do not include this actor in the ACL
+                    continue
+            else:
+                # Check if the chef user exists
+                chef_user = None
+                try:
+                    chef_user = api['/organizations/default/users/%s'%(actor)]
+                except ChefServerNotFoundError:
+                    pass              
+                
+                if chef_user is not None:
+                    # Exists both client and user --> Do not include this actor in the ACL
+                    continue
+                    
+            # Include the actor in the ACL
+            ret_acl.append(actor)
+            
+        return ret_acl
