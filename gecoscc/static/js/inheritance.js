@@ -27,7 +27,7 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
             if (_.has(options, "resource")) {
                 this.resource = options.resource;
             }
-            this.collection = this.resource.get('inheritanceCollection');
+            this.collection = this.resource.get('inheritanceCollection') || [];
         },
         
         serializeData: function () {
