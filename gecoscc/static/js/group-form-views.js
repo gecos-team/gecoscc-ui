@@ -144,7 +144,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             domain.fetch().done(function () {
                 that.model.set("isEditable", domain.get("master") === "gecos");
                 that.model.set("master_policies", domain.get("master_policies"));
-                //that.render();
+                that.render();
             });
         },
 
