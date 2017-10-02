@@ -21,7 +21,7 @@ EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by', 'support_os']
 def encrypt_password(objs_ui, obj, node, field_chef, **kwargs):
     field_ui = field_chef.split('.')[-1]
     sha_512_code = "$6$"
-    users = objs_ui.get(field_ui, [])
+    users = deepcopy(objs_ui.get(field_ui, []))
     for user in users:
         user['password'] = crypt.crypt(user['password'], sha_512_code)
     return users

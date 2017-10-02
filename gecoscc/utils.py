@@ -92,24 +92,18 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
 
 
 def get_computer_of_user(collection_nodes, user, related_computers=None):
-    sudo = False
     if related_computers is None:
         related_computers = []
     user_computers = collection_nodes.find({'_id': {'$in': user['computers']}})
     for computer in user_computers:
         # Sudoers
         if user['name'] in computer.get('sudoers',[]):
-            #sudo = True
             continue
-        elif computer not in related_computers:
-            computer['user'] = user
+            
+        computer['user'] = user
+        if computer not in related_computers:
             related_computers.append(computer)
-        elif 'user' not in computer:
-            computer_index = related_computers.index(computer)
-            related_computers[computer_index]['user'] = user
-    # Sudoers linked to more than one computer. No policies in "Policies" tab                                  
-    #if not related_computers and sudo:
-    #    collection_nodes.update({'_id': user['_id']},{'$set': {'policies':{},'inheritance':[]}})
+            
     return related_computers
 
 
