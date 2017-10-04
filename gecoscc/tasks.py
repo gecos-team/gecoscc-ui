@@ -836,6 +836,8 @@ class ChefTask(Task):
                     updated_by_type = self.order_ou_by_depth(updated_by_type)
                 else:
                     updated_by_type.append(obj_id)
+                    updated_by_type = self.order_groups_by_depth(updated_by_type)
+                    
             if updated_by_type:
                 updated_by[obj_type] = updated_by_type
             elif obj_type in updated_by:
@@ -851,6 +853,16 @@ class ChefTask(Task):
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
         return updated
+        
+    def order_groups_by_depth(self, groups_ids):
+        '''
+        order groups by depth 
+        (when several groups have the same depth they will be ordered in alphabetic order)
+        '''
+        groups_ids = [ObjectId(groups_id) for groups_id in groups_ids]
+        groups = [group for group in self.db.nodes.find({'_id': {'$in': groups_ids}}).sort([('name',-1)])]
+        groups.sort(key=lambda x: x['path'].count(','), reverse=True)
+        return [unicode(group['_id']) for group in groups]        
 
     def order_ou_by_depth(self, ou_ids):
         '''
