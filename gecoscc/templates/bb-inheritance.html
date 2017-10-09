@@ -1,35 +1,24 @@
 <div class="row"><div class="col-sm-12">
-<% if (items.length > 0) { %>
-    <table class="table table-striped table-bordered mb10" id="inheritance-table">
-        <thead>
-            <tr>
-                <th>{{ gettext('Policy') }}</th>
-                <th>{{ gettext('Nodes') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <% _.each(items, function (item, idx) { %>
-            <tr id="<%= item._id %>"> 
-                <td>
-                   <span class="fa <% if (item.classes == 'foreignpolicy') { print('fa-sitemap foreignpolicy'); } %>" title="Inheritance"></span>
-                   <%= item.policy %>
-                </td>
-                <td>
-                   <% _.each(item.nodes, function(node, idx) { %>
-                       <a href="#<%= node.url %>"><%= node.name %></a>
-                       <% if (idx != item.nodes.length - 1) { %> | <% } %>
-                   <% }); %>
-                </td>
-            </tr>
-            <% }); %>
-        </tbody>
-    </table>
-<% } else { %>
-    <div class="alert alert-info alert-dismissable">
-        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <% if (typeof resource.id !== 'undefined') { %>
-            <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no inheritance assigned to this resource yet.') }}
-        <% } %>
-    </div>
-<% } %>
+
+<div class="fuelux">
+    <ul class="tree" role="tree" id="inheritance_tree">
+        <li class="tree-branch hide" data-template="treebranch" role="treeitem" aria-expanded="true">
+          <div class="tree-branch-header">
+            <button type="button" class="tree-branch-name">
+              <span class="glyphicon icon-folder glyphicon-folder-close no-visited"></span>
+              <span class="tree-label"></span>
+            </button>
+          </div>
+          <ul class="tree-branch-children" role="group"></ul>
+          <div class="tree-loader" role="alert">Loading...</div>
+        </li>
+        <li class="tree-item hide" data-template="treeitem" role="treeitem">
+          <button type="button" class="tree-item-name">
+            <span class="glyphicon icon-item fueluxicon-bullet"></span>
+            <span class="tree-label"></span>
+          </button>
+        </li>
+    </ul>
+</div>
+
 </div></div>

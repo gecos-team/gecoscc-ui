@@ -165,6 +165,7 @@ class AdminUserValidator(object):
         del value['repeat_password']
 
 
+        
 class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     path = colander.SchemaNode(colander.String())
@@ -173,9 +174,9 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
-    inheritance = colander.SchemaNode(colander.List(),
-                                      default=[],
-                                      missing=[])
+    inheritance = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
     policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                    default={},
                                    missing={})

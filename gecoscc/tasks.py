@@ -937,8 +937,7 @@ class ChefTask(Task):
                     node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
-                    # Trace inheritance
-                    trace_inheritance(self.db, action, obj, policy)
+                        
             return (node, updated)
         elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
             rule_type = 'save'
@@ -946,8 +945,6 @@ class ChefTask(Task):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
-                # Trace inheritance
-                trace_inheritance(self.db, action, obj, policy)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
@@ -1137,6 +1134,14 @@ class ChefTask(Task):
                                       'message': self._("Pending: %d") % len(job_ids_by_order)}})
         if are_new_jobs:
             invalidate_jobs(self.request, user)
+            
+        # Trace inheritance
+        if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            rule_type = 'policies'        
+            for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
+                policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
+                
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)

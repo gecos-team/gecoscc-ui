@@ -32,6 +32,7 @@ from chef.node import NodeAttributes
 from pyramid.threadlocal import get_current_registry
 
 from collections import defaultdict
+DELETED_POLICY_ACTION = 'deleted'
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
 RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
@@ -991,79 +992,318 @@ def _nested_lookup(key, document):
                     for result in _nested_lookup(key, d):
                         yield result
 
-# INI: TRACE INHERITANCE #
-def trace_inheritance(db, action, obj, policy):
-    from gecoscc.tasks import DELETED_POLICY_ACTION
-    logger.debug("utils.py ::: Starting trace_inheritance ...")
+                  
+# ------------------------------------------------------------------------------------------------------
+def exist_policy_in_child_nodes(policy_id, inheritanceTree):
+    """Function that looks for a policy in all the child nodes and return True if exists.
 
-    items = []
+    Args:
+        policy_id (str): Id of the policy to find.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        bool: The return value. True for if found, False otherwise.
+
+    """
+    
+    if inheritanceTree is None or not inheritanceTree:
+        return False
+        
+        
+    for child in inheritanceTree:
+        exists = False
+        for p_id in child['policies']:
+            if policy_id == p_id:
+                exists = True
+                break
+            
+        if exists:
+            return True
+    
+        if exist_policy_in_child_nodes(policy_id, child['children']):
+            return True
+        
+    return False
+
+# ------------------------------------------------------------------------------------------------------
+def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritanceTree):
+    """Function that looks for the node that received the change (obj) inside the inheritance tree
+       and performs the change in its policies.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node).
+        obj (object): Node (computer, user, OU or group) that received the change.
+        policy (object): Policy that is changed or deleted.
+        node (object): Node whose inheritance field must be recalculated.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    
+    
+    found = False
+    this_node = inheritanceTree
+    logger.warning("utils.py ::: apply_change_in_inheritance -  this_node['_id'] = {0} obj['_id'] = {1} action={2}".format(this_node['_id'], obj['_id'], action))
+        
+    if str(this_node['_id']) == str(obj['_id']):
+        # This is the object to change
+        found = True
+        policy_id = str(policy['_id'])
+        if action == DELETED_POLICY_ACTION:
+            # Remove the policy
+            to_remove = None
+            for p_id in this_node['policies']:
+                if policy_id == p_id:
+                    to_remove = p_id
+                    break
+                    
+            if to_remove is None:
+                logger.error("utils.py ::: apply_change_in_inheritance - Policy not found %s" % str(policy['_id']))
+                return False    
+                
+            else:
+                logger.warning("utils.py ::: apply_change_in_inheritance - Removing policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+                del this_node['policies'][policy_id]
+            
+        else:
+            # Chef if the policy already existed
+            existed = False
+            for p_id in this_node['policies']:
+                if policy_id == p_id:
+                    existed = True
+                    break
+            
+            if not existed:
+                # Add the policy
+                logger.warning("utils.py ::: apply_change_in_inheritance - Adding policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+                this_node['policies'][policy_id] = {}
+                this_node['policies'][policy_id]['name'] = policy['name']
+                this_node['policies'][policy_id]['name_es'] = policy['name_es']
+                this_node['policies'][policy_id]['is_mergeable'] = policy['is_mergeable']      
+                
+                inherited = True
+                if not policy['is_mergeable'] and exist_policy_in_child_nodes(policy_id, this_node['children']):
+                    inherited = False
+                this_node['policies'][policy_id]['inherited'] = inherited
+
+            else:
+                logger.warning("utils.py ::: apply_change_in_inheritance - Change in policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+            
+        
+    else:
+        # Continue looking in the tree
+        for child in this_node['children']:
+            found = (found or apply_change_in_inheritance(logger, db, action, obj, policy, node, child))
+            if found:
+                break
+    
+    
+    return found
+                  
+# ------------------------------------------------------------------------------------------------------
+def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
+    """Function that recalculate the "inheritance" field of a node by changing or deleting a policy in
+    a related node.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node).
+        obj (object): Node (computer, user, OU or group) that received the change.
+        policy (object): Policy that is changed or deleted.
+        node (object): Node whose inheritance field must be recalculated.
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    from gecoscc.tasks import DELETED_POLICY_ACTION
+    
+    # Calculate inheritance tree for the first time when neccessary
+    if (not 'inheritance' in node) or not node['inheritance']:
+        if node['type'] == 'group':
+            # Group (does not inherit anything)
+            
+            # Add current node
+            item =  {}
+            item['_id'] = str(node['_id'])
+            item['name'] = node['name']
+            item['path'] = node['path']
+            item['type'] = node['type']
+            item['policies'] = {}
+                
+            item['is_main_element'] = True
+            item['children'] = []
+            
+            inheritanceTree = item
+            
+        else:
+            # OU, user or computer
+            inheritanceTree = None
+            previousOU = None
+            for ou_id in node.get('path').split(','):
+                if ou_id != 'root':
+                    # Get ou from mongoDB
+                    ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
+                    if not ou:
+                        logger.error("utils.py ::: recalculate_inheritance_for_node - OU not found %s" % str(ou_id))
+                        return False
+                        
+                    else:
+                        # Generate item
+                        item =  {}
+                        item['_id'] = str(ou_id)
+                        item['name'] = ou['name']
+                        item['type'] = ou['type']
+                        item['path'] = ou['path']
+                        item['policies'] = {}
+                        item['is_main_element'] = True
+                        item['children'] = []
+                        
+                        if inheritanceTree is None:
+                            inheritanceTree = item
+                        
+                        if previousOU is not None:
+                            previousOU['children'].append(item)
+                        
+                        previousOU = item
+        
+            if 'memberof' in node:
+                # Add the groups in order (depth and aphabetic)
+                groups_ids = [ObjectId(group_id) for group_id in node['memberof']]
+                groups = [group for group in db.nodes.find({'_id': {'$in': groups_ids}}).sort([('name',1)])]
+                groups.sort(key=lambda x: x['path'].count(','), reverse=False)
+                
+                for group in groups:
+                    group_ou_id = group['path'].split(',')[-1]
+                    if previousOU['_id'] != group_ou_id:
+                        # Get ou from mongoDB
+                        ou = db.nodes.find_one({'_id': ObjectId(group_ou_id)})
+                        if not ou:
+                            logger.error("utils.py ::: recalculate_inheritance_for_node - OU not found %s" % str(group_ou_id))
+                            return False
+                            
+                        else:
+                            # Generate item
+                            item =  {}
+                            item['_id'] = str(group_ou_id)
+                            item['name'] = ou['name']
+                            item['type'] = ou['type']
+                            item['path'] = ou['path']
+                            item['policies'] = {}
+                            item['is_main_element'] = False
+                            item['children'] = []
+                            
+                            previousOU['children'].append(item)
+                            previousOU = item
+                            
+                            
+                    # Add this group to the children
+                    item =  {}
+                    item['_id'] = str(group['_id'])
+                    item['name'] = group['name']
+                    item['type'] = group['type']
+                    item['path'] = group['path']
+                    item['policies'] = {}
+                        
+                    item['is_main_element'] = True
+                    item['children'] = []
+                    
+                    previousOU['children'].append(item)               
+        
+            # Add current node
+            item =  {}
+            item['_id'] = str(node['_id'])
+            item['name'] = node['name']
+            item['path'] = node['path']
+            item['type'] = node['type']
+            item['policies'] = {}
+                
+            item['is_main_element'] = True
+            item['children'] = []
+            
+            previousOU['children'].append(item)           
+    
+        node['inheritance'] = inheritanceTree
+        
+    # Look for the node of the inheritance tree that changes
+    # and apply the change to that node propagating it when neccessary
+    success = apply_change_in_inheritance(logger, db, action, obj, policy, node, node['inheritance'])
+    
+    if success:
+        # Update node in mongo db
+        db.nodes.update({'_id': node['_id']}, {'$set':{'inheritance': node['inheritance']}})
+    
+    return success
+                        
+# ------------------------------------------------------------------------------------------------------
+# To remove all inheritance information from database:
+#   db.nodes.update({"inheritance": { $exists: true }}, { $unset: { "inheritance": {$exist: true } }}, {multi: 1})
+def trace_inheritance(logger, db, action, obj, policy):
+    """Function that fills or complete the "inheritance" field of a mongo db node.
+
+    The "inheritance" field must include the neccessary information about the inheritance of policies
+    in that node. That information includes all the intermediate nodes (OUs and groups) and policies
+    applied to them.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node).
+        obj (object): Node (computer, user, OU or group) that received the change.
+        policy (object): Policy that is changed or deleted.
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    logger.warning("utils.py ::: trace_inheritance - action: {0} obj: {1} policy: {2}".format(action, obj['name'], policy['_id']))
+
+    # First lets calculate all the nodes that are affected by this change
+    affected_nodes = []
     policyId = unicode(policy['_id'])
-    logger.debug("utils.py ::: trace_inheritance - policyId = {0}".format(policyId))
+    logger.info("utils.py ::: trace_inheritance - policyId = {0}".format(policyId))
+    
     if obj['type'] == 'ou':
-        logger.debug("utils.py ::: trace_inheritance - obj is OU = {0}".format(obj))
-        items = list(db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
-                                    'type':{'$ne':'group'}
-        }).sort('path',pymongo.ASCENDING))
+        # If a policy is changed in an OU this change will affect other OUs, users and computers
+        # but not groups (and to itself)
+        targets = policy['targets']
+        targets.remove('group')
+        logger.info("utils.py ::: trace_inheritance - obj is OU = {0}".format(obj['name']))
+        affected_nodes = list(db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
+                                    'type':{'$in': targets}}))
+        affected_nodes.append(obj)
              
     elif obj['type'] == 'group':
-        logger.debug("utils.py ::: trace_inheritance - obj is GROUP = {0}".format(obj))
-        # Computers that are members of the group and groups that are below in the hierarchy or at the same level,
-        # below alphabetically
-        items = list(db.nodes.find({ 
-                                     '$or': [ 
-                                       {'_id'  : {'$in': obj.get('members', [])}}, 
-                                       {'$and' : [ {'type': 'group'}, {'path': {'$regex': obj['path'] + '.+'}} ] },
-                                       {'$and' : [ {'type': 'group'}, {'path': obj['path']}, {'name': {'$gt': obj['name']}} ] }
-                                     ] 
-        }).sort([('type',pymongo.DESCENDING), ('path',pymongo.ASCENDING), ('name',pymongo.ASCENDING)]))
+        logger.debug("utils.py ::: trace_inheritance - obj is GROUP = {0}".format(obj['name']))
+        targets = policy['targets']
+        # If a policy is changed in an Group this change will affect to his members (and to itself)
+        affected_nodes = list(db.nodes.find( {'_id'  : {'$in': obj.get('members', [])}, 'type':{'$in': targets}} ))
+        affected_nodes.append(obj)
 
     elif obj['type'] == 'computer':
-        logger.debug("utils.py ::: trace_inheritance - obj is COMPUTER = {0}".format(obj))
-        items = [db.nodes.find_one({'_id': obj['_id']})]
-
-    for item in items:
-        logger.debug("utils.py ::: trace_inheritance - item = {0}".format(item))
-
-        # Policy not applying this node
-        if not item['type'] in policy['targets']:
-            continue
-
-        # Sudoers
-        if item['type'] == 'user':
-            user_computers = get_computer_of_user(db.nodes, item)
-            computers = [c for c in user_computers if c['_id'] in [d['_id'] for d in items]]
-            logger.debug("utils.py ::: trace_inheritance - computers = {0}".format(computers))
-            if not computers:
-                continue
-        #updated = filter(lambda d: d['node_id'] == obj['_id'], item.get('inheritance',[]))[0] Not Found error
-        updated = next((d for d in item.get('inheritance',[]) if ObjectId(d['node_id']) == obj['_id']), None)
-        logger.debug("utils.py ::: trace_inheritance - updated = {0}".format(updated))
-
-        if action == DELETED_POLICY_ACTION:
-            if updated and policyId in updated['policies']:
-                logger.debug("utils.py ::: trace_inheritance - REMOVE POLICY FROM INHERITANCE ...")
-                updated['policies'].remove(policyId)
-                logger.debug("utils.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
-            else:
-                continue
-        else:
-            if updated:
-                if policyId in updated['policies']:
-                    continue
-                else:
-                    updated['policies'].append(policyId)
-                    logger.debug("utils.py ::: trace_inheritance - ADDING NEW POLICY TO INHERITANCE ... = {0}".format(updated))
-            else:
-                # 'node_id': str(obj['_id']) for avoiding ...
-                # TypeError: ObjectId('591334dc0435645496069348') is not JSON serializable
-                updated = dict({'node_id': str(obj['_id']), 'policies': [policyId]})
-                logger.debug("utils.py ::: trace_inheritance - ADDING NEW NODE TO INHERITANCE ... = {0}".format(updated))
-                new_inheritance = item.get('inheritance',[])
-                new_inheritance.append(updated)
-                item['inheritance'] = new_inheritance
-                logger.debug("utils.py ::: trace_inheritance - item.get('inheritance') = {0}".format(item.get('inheritance')))
-
-        logger.debug("utils.py ::: trace_inheritance - UPGRADING INHERITANCE ...")
-        db.nodes.update({'_id': item['_id']}, {'$set':{'inheritance': item.get('inheritance')}})
+        # If a policy is changed in a Computer this change will affect only to itself
+        logger.debug("utils.py ::: trace_inheritance - obj is COMPUTER = {0}".format(obj['name']))
+        affected_nodes.append(obj)
         
-# END: TRACE INHERITANCE #
+    elif obj['type'] == 'user':
+        # If a policy is changed in a User this change will affect only to itself
+        logger.debug("utils.py ::: trace_inheritance - obj is USER = {0}".format(obj['name']))
+        affected_nodes.append(obj)        
+    
+    else:
+        logger.error("utils.py ::: trace_inheritance - Bad node type = {0} for node = {1}".format(obj['type'], obj['_id']))
+        return False
+
+    success = True
+    for node in affected_nodes:
+        logger.warning("utils.py ::: trace_inheritance - affected_node = {0} - {1}".format(node['name'], node['type']))
+        success = (success and recalculate_inheritance_for_node(logger, db, action, obj, policy, node))
+        logger.warning("utils.py ::: trace_inheritance - success = {0}".format(success))
+
+    return success
+

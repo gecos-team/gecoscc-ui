@@ -19,7 +19,6 @@ from copy import deepcopy
 from cornice.schemas import CorniceSchema
 from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
-from pyramid.threadlocal import get_current_request
 from webob.multidict import MultiDict
 
 from gecoscc.models import Node
@@ -224,105 +223,11 @@ class ResourcePaginatedReadOnly(BaseAPI):
             raise HTTPNotFound()
         node = self.parse_item(node)
         
-        # INI: Inheritante
-        # Ownself and foreign policies
-        logger.info("API ::: Starting inheritance treatment ...")
-        import itertools
-        locale_name = 'name_%s' % get_current_request().locale_name
-        projection = {'_id':1, 'name':1, locale_name:1, 'type':1, 'path':1}
-        all_policies = all_nodes = []
-
-        own_policies = node.get('policies',{}).keys()
-        logger.info("API ::: INHERITANCE Own policies: %s" % str(own_policies))
-        foreign_policies = list(itertools.chain.from_iterable([d['policies'] for d in node.get('inheritance',[])]))
-        logger.info("API ::: INHERITANCE Foreign policies: %s" % str(foreign_policies))
-        policynames_filter = {'_id':{'$in': [ObjectId(ident) for ident in own_policies + foreign_policies]}}
-        if policynames_filter:
-            all_policies = list(self.request.db.policies.find(policynames_filter, projection).sort(locale_name,1))
-        logger.info("API ::: INHERITANCE All policies: %s" % str(list(all_policies)))
-            
-        # Node names
-        nodenames_filter = {'_id':{'$in': [ObjectId(n['node_id']) for n in node.get('inheritance',[])]}}
-        if nodenames_filter:
-            all_nodes = list(self.request.db.nodes.find(nodenames_filter, projection).sort('path',1))
-        logger.info("API ::: INHERITANCE Node names: %s" % str(list(all_nodes)))
-        
-        # Building node['inheritanceCollection']:
-        # [
-        #     {
-        #         '_id': <policy1_id>,
-        #         'policy': <policy1_name>,
-        #         'classes': <class>,
-        #         'nodes': [ 
-        #             {'name':<nodename1>, 'path':<nodepath1>}, 
-        #             {'name':<nodename2>, 'path':<nodepath2>}, 
-        #             ...  
-        #             {'name':<nodenameN>, 'path':<nodepathN>}, 
-        #         ] 
-        #     },
-        #     {
-        #         '_id': <policy2_id>,
-        #         'policy': <policy2_name>,
-        #         'classes': <class>,
-        #         'nodes': [ 
-        #             {'name':<nodename1>, 'path':<nodepath1>}, 
-        #             {'name':<nodename2>, 'path':<nodepath2>}, 
-        #             ...  
-        #             {'name':<nodenameN>, 'path':<nodepathN>}, 
-        #         ] 
-        #     },
-        #     .
-        #     .
-        #     .
-        #     {
-        #         '_id': <policyN_id>,
-        #         'policy': <policyN_name>,
-        #         'classes': <class>,
-        #         'nodes': [ 
-        #             {'name':<nodename1>, 'path':<nodepath1>}, 
-        #             {'name':<nodename2>, 'path':<nodepath2>}, 
-        #             ...  
-        #             {'name':<nodenameN>, 'path':<nodepathN>}, 
-        #         ] 
-        #     },
-        # ]
-        inheritanceCollection = []
-        for policy in all_policies:
-            logger.info("API INHERITANCE policy: %s"%str(policy))
-            item =  {}
-            item['nodes'] = []
-            item['_id']   = str(policy['_id'])
-            item['policy']= policy[locale_name] or policy['name']
-
-            logger.info("API INHERITANCE policy['_id']: %s"%str(policy['_id']))
-            if str(policy['_id']) in own_policies: # own policy
-                node_dict = {'name': node.get('name'), 'url': self.getUrl(node)}
-                item['nodes'].append(node_dict)
-                item['classes'] = 'ownpolicy'
-                
-            else: # foreign policy
-                testators = [d['node_id'] for d in node.get('inheritance',[]) if str(policy['_id']) in d['policies']]
-                logger.debug("API ::: INHERITANCE testators: %s"%str(testators))
-                item['nodes'] += [dict([('name',n['name']),('url',self.getUrl(n))]) for n in all_nodes if str(n['_id']) in testators]
-                #item['nodes'] += [n['name'] for n in all_nodes if str(n['_id']) in testators]
-                logger.debug("API ::: INHERITANCE item['nodes']: %s"%str(item['nodes']))
-                item['classes'] = 'foreignpolicy'
-
-            inheritanceCollection.append(item)
-
-        node['inheritanceCollection'] = inheritanceCollection
-        logger.info("API ::: INHERITANCE inheritance collection: %s" % str(inheritanceCollection))
-                            
         if node.get('type', None) in RESOURCES_EMITTERS_TYPES:
             node['is_assigned'] = self.is_assigned(node)
             return node
         return node
         
-    def getUrl(self, n):
-        containerid = n.get("path").split(',')[-1]
-        url = "ou/" + containerid + '/' + n.get('type') + '/' + str(n.get("_id")) + '/policies'
-        return url
-
     def is_assigned(self, related_object):
         node_with_related_object = get_object_related_list(self.request.db, related_object)
         return bool(node_with_related_object.count())
