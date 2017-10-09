@@ -86,7 +86,7 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
                             name = '<span class="no-inherited">'+name+'</span>';
                         }
                         
-                        childNodesArray.push( {"key": policy['_id'], "name": name, "type": "item", "attr": { "id": policy['_id'], "data-icon": 'fa '+icon  } } )
+                        childNodesArray.push( {"key": 'h'+policy['_id'], "name": name, "type": "item", "attr": { "id": 'h'+policy['_id'], "data-icon": 'fa '+icon  } } )
                         
                     }                        
                 }
@@ -117,7 +117,7 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
                             name = '<span class="inheritance_main_element">'+name+'</span>';
                         }
                         
-                        childNodesArray.push( {"key": node['_id'], "path": node['path'], 'is_main_element': node['is_main_element'], "name": name, "type": "folder", policies: node['policies'], children: node['children'], "attr": { "id": node['_id'], "cssClass": icon } } )
+                        childNodesArray.push( {"key": 'h'+node['_id'], "path": node['path'], 'is_main_element': node['is_main_element'], "name": name, "type": "folder", policies: node['policies'], children: node['children'], "attr": { "id": 'h'+node['_id'], "cssClass": icon } } )
                         
                         
                         
@@ -146,7 +146,7 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
                     name = '<span class="inheritance_main_element">'+name+'</span>';
                 }                
                 
-                childNodesArray.push( {"key": node['_id'], "path": node['path'], 'is_main_element': node['is_main_element'], "name": name, "type": "folder", policies: node['policies'], children: node['children'], "attr": { "id": node['_id'], "cssClass": icon } } )
+                childNodesArray.push( {"key": 'h'+node['_id'], "path": node['path'], 'is_main_element': node['is_main_element'], "name": name, "type": "folder", policies: node['policies'], children: node['children'], "attr": { "id": 'h'+node['_id'], "cssClass": icon } } )
                 
             }
             

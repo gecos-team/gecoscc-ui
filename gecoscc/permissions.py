@@ -56,7 +56,7 @@ def is_path_right(request, path, ou_type='ou_managed'):
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
             return True
-            break
+            
     return False
 
 
