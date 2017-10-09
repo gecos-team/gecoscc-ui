@@ -17,6 +17,7 @@ import subprocess
 import json
 import requests
 import re
+from copy import deepcopy
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
@@ -30,6 +31,8 @@ from gecoscc.userdb import UserAlreadyExists
 from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
+from gecoscc.utils import trace_inheritance
+
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -66,6 +69,20 @@ class Command(BaseCommand):
             action='store',
             help='The pem file that contains the chef administrator private key'
         ),
+        make_option(
+            '-i', '--inheritance',
+            dest='inheritance',
+            action='store_true',
+            default=False,
+            help='Check inheritance field'
+        ),        
+        make_option(
+            '-c', '--clean-inheritance',
+            dest='clean_inheritance',
+            action='store_true',
+            default=False,
+            help='Clean inheritance field (must be used with -i)'
+        ),          
     ]
 
     required_options = (
@@ -232,6 +249,9 @@ class Command(BaseCommand):
             except Exception as err:
                 logger.error('Policy %s with slug %s can\'t be serialized: %s'%(policy['_id'], policy['slug'], str(err)))
                 
+        if self.options.clean_inheritance:
+            logger.info('Cleaning inheritance field...')
+            self.db.nodes.update({"inheritance": { '$exists': True }}, { '$unset': { "inheritance": {'$exist': True } }}, multi=True)
         
         logger.info('Checking tree...')
         # Look for the root of the nodes tree
@@ -299,6 +319,9 @@ class Command(BaseCommand):
         '''        
         logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
         
+        if self.options.inheritance:
+            inheritance_node = deepcopy(node)      
+        
         # Check policies
         if 'policies' in node:
             # Check the policies data
@@ -336,9 +359,20 @@ class Command(BaseCommand):
                     
                     # Check object
                     self.check_object_property(policydata['schema'], nodedata, None, is_emitter_policy, emitter_policy_slug)
+                    
+                    if self.options.inheritance:
+                        # Check inheritance field
+                        trace_inheritance(logger, self.db, 'change', inheritance_node, deepcopy(policydata))
                             
         else:
             logger.debug('No policies in this node.')
+        
+        if self.options.inheritance and ('inheritance' in inheritance_node) and (
+            (not 'inheritance' in node) or (inheritance_node['inheritance'] != node['inheritance'])):
+            
+            # Save inheritance field
+            logger.info('FIX: updating inheritance field!')
+            self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'inheritance': inheritance_node['inheritance']}})
         
         # Check referenced nodes
         if node['type'] == 'user':
