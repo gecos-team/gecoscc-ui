@@ -9,7 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os, errno
+import os, errno, shutil
 import time
 import re
 import glob
@@ -291,7 +291,7 @@ class CookbookUploadForm(GecosForm):
             logger.debug("forms.py ::: CookbookUpload - cookbook_ver = %s" % cookbook_ver)
             cookbook_path = uploadir + cookbook_name
             logger.debug("forms.py ::: CookbookUpload - cookbook_path = %s" % cookbook_path)
-            os.rename(tmpdir, cookbook_path)
+            shutil.move(tmpdir, cookbook_path)
 
         except urllib2.HTTPError as e:
                 error = True

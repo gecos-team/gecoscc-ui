@@ -49,7 +49,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
-                           get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance)
+                           get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
+                           order_groups_by_depth, order_ou_by_depth)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -833,9 +834,11 @@ class ChefTask(Task):
                 updated = True
                 if obj_type == 'ou':
                     updated_by_type.append(obj_id)
-                    updated_by_type = self.order_ou_by_depth(updated_by_type)
+                    updated_by_type = order_ou_by_depth(self.db, updated_by_type)
                 else:
                     updated_by_type.append(obj_id)
+                    updated_by_type = order_groups_by_depth(self.db, updated_by_type)
+                    
             if updated_by_type:
                 updated_by[obj_type] = updated_by_type
             elif obj_type in updated_by:
@@ -851,16 +854,7 @@ class ChefTask(Task):
             node.attributes.set_dotted(attr, updated_by)
             attributes_updated.append(attr)
         return updated
-
-    def order_ou_by_depth(self, ou_ids):
-        '''
-        order ous by depth
-        '''
-        ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
-        ous = [ou for ou in self.db.nodes.find({'_id': {'$in': ou_ids}})]
-        ous.sort(key=lambda x: x['path'].count(','), reverse=True)
-        return [unicode(ou['_id']) for ou in ous]
-
+        
     def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, parent_id, job_ids_by_computer):
         '''
         Update the jobs field of a node

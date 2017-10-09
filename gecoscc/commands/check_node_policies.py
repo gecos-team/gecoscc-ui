@@ -28,11 +28,9 @@ from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
+from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername, trace_inheritance, order_groups_by_depth
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
-from gecoscc.utils import trace_inheritance
-
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -292,14 +290,45 @@ class Command(BaseCommand):
                         
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
-            # Chef default data for chef node
+            # Check default data for chef node
             if not computer_node.default.to_dict():
                 logger.warning("For an unknown reason Chef node: %s has no default attributes. Fixing it!"%(node_id))
                 computer_node.default = default_data
                 computer_node.save()
+                
+            # Check "updated_by" field
+            atrributes = computer_node.normal.to_dict()
+            updated, updated_attributes = self.check_updated_by_field(node_id, None, atrributes)
+            if updated:
+                computer_node.normal = atrributes
+                computer_node.save()
             
         
         logger.info('END ;)')
+        
+    def check_updated_by_field(self, node_id, key, attributes):
+        updated = False
+        if isinstance(attributes, dict):
+            for attribute in attributes:
+                if attribute == 'updated_by':
+                    if 'group' in attributes['updated_by']:
+                        # Sort groups
+                        sorted_groups = order_groups_by_depth(self.db, attributes['updated_by']['group'])
+                        if attributes['updated_by']['group'] != sorted_groups:
+                            logger.info("Sorting updated_by field for node {0} - {1}!".format(node_id, key)) 
+                            attributes['updated_by']['group'] = sorted_groups
+                            updated = True
+                else:
+                    if key is None:
+                        k = attribute
+                    else:
+                        k = key+'.'+attribute
+                        
+                    up, attributes[attribute] = self.check_updated_by_field(node_id, k, attributes[attribute])
+                    updated = (updated or up)
+        
+        return updated, attributes
+        
         
     def check_node_and_subnodes(self, node):
         '''

@@ -992,39 +992,134 @@ def _nested_lookup(key, document):
                     for result in _nested_lookup(key, d):
                         yield result
 
-                  
 # ------------------------------------------------------------------------------------------------------
-def exist_policy_in_child_nodes(policy_id, inheritanceTree):
-    """Function that looks for a policy in all the child nodes and return True if exists.
+def order_groups_by_depth(db, groups_ids):
+    """Function that orders a group list by depth.
+        (when several groups have the same depth they will be ordered in alphabetic order).
 
     Args:
-        policy_id (str): Id of the policy to find.
-        inheritanceTree (object): Tree of inheritance objects
+        db (object): Mongo DB access object.
+        groups_ids (list): List of group IDs.
 
     Returns:
-        bool: The return value. True for if found, False otherwise.
+        list: Sorted list.
 
     """
-    
-    if inheritanceTree is None or not inheritanceTree:
-        return False
-        
-        
-    for child in inheritanceTree:
-        exists = False
-        for p_id in child['policies']:
-            if policy_id == p_id:
-                exists = True
-                break
-            
-        if exists:
-            return True
-    
-        if exist_policy_in_child_nodes(policy_id, child['children']):
-            return True
-        
-    return False
+    groups_ids = [ObjectId(groups_id) for groups_id in groups_ids]
+    groups = [group for group in db.nodes.find({'_id': {'$in': groups_ids}, 'type': 'group'}).sort([('name',-1)])]
+    groups.sort(key=lambda x: x['path'].count(','), reverse=True)
+    return [unicode(group['_id']) for group in groups]
 
+# ------------------------------------------------------------------------------------------------------
+def order_ou_by_depth(db, ou_ids):
+    """Function that orders an ou list by depth.
+
+    Args:
+        db (object): Mongo DB access object.
+        ou_ids (list): List of OU IDs.
+
+    Returns:
+        list: Sorted list.
+
+    """
+    ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
+    ous = [ou for ou in db.nodes.find({'_id': {'$in': ou_ids}, 'type': 'ou'})]
+    ous.sort(key=lambda x: x['path'].count(','), reverse=True)
+    return [unicode(ou['_id']) for ou in ous]
+
+# ------------------------------------------------------------------------------------------------------
+def get_priority_node(db, nodes_list):
+    """Function that the object with the top priority of the list.
+
+    Args:
+        db (object): Mongo DB access object.    
+        nodes_list (list): List of node IDs.
+
+    Returns:
+        object: Object with the top priority or None if no object is found.
+
+    """
+    priority_node = None
+
+    # Check if there is a computer in the list
+    nodes_ids = [ObjectId(node_id) for node_id in nodes_list]
+    computers = [computer for computer in db.nodes.find({'_id': {'$in': nodes_ids}, 'type': 'computer'})]
+    if len(computers) > 0:
+        priority_node = computers[0]
+    
+    if priority_node is None:
+        # Check if there is an user in the list
+        users = [user for user in db.nodes.find({'_id': {'$in': nodes_ids}, 'type': 'user'})]
+        if len(users) > 0:
+            priority_node = users[0]
+        
+    if priority_node is None:
+        # Check if there is an group in the list
+        groups = order_groups_by_depth(db, nodes_list)
+        if len(groups) > 0:
+            priority_node = groups[0]
+        
+    if priority_node is None:
+        # Check if there is an OU in the list
+        ous = order_ou_by_depth(db, nodes_list)
+        if len(ous) > 0:
+            priority_node = ous[0]
+            
+    return priority_node
+
+# ------------------------------------------------------------------------------------------------------
+def set_inherited_field(inheritanceTree, policy_id, false_node_list, priority_node_id):
+    """Function that looks into the inheritanceTree and set the 'inherited' field of a policy to false
+       if a node is in the "false_node_list" or to true if the node is the "priority_node_id"
+
+    Args:
+        inheritanceTree (object): Tree of inheritance objects
+        policy_id (string): Policy ID of the policy that is changed or deleted.
+        false_node_list (list): List of node IDs to set the 'inherited' field to False
+        priority_node_id (string): Node ID to set the 'inherited' field to True
+
+    Returns:
+        Nothing.
+
+    """
+    if inheritanceTree['_id'] == priority_node_id and inheritanceTree['is_main_element']:
+        inheritanceTree['policies'][policy_id]['inherited'] = True
+    elif inheritanceTree['_id'] in false_node_list and inheritanceTree['is_main_element']:
+        inheritanceTree['policies'][policy_id]['inherited'] = False
+    
+    for child in inheritanceTree['children']:
+        set_inherited_field(child, policy_id, false_node_list, priority_node_id)
+
+    
+# ------------------------------------------------------------------------------------------------------
+def get_inheritance_tree_node_list(inheritanceTree, policy_id):
+    """Function that retuns a list with all the IDs of all nodes in an inheritance Tree with the policy specified.
+
+    Args:
+        inheritanceTree (object): Tree of inheritance objects
+        policy_id (string): Policy ID of the policy that is changed or deleted.
+
+    Returns:
+        list: List with all the IDs of all nodes in an inheritance tree with that policy.
+
+    """
+    list = []
+    
+    # Chef if the policy id exists
+    exists = False
+    for p_id in inheritanceTree['policies']:
+        if policy_id == p_id:
+            exists = True
+            break    
+    
+    if exists:
+        list.append(inheritanceTree['_id'])
+        
+    for child in inheritanceTree['children']:
+        list.extend(get_inheritance_tree_node_list(child, policy_id))
+
+    return list                        
+                  
 # ------------------------------------------------------------------------------------------------------
 def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritanceTree):
     """Function that looks for the node that received the change (obj) inside the inheritance tree
@@ -1084,11 +1179,7 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
                 this_node['policies'][policy_id]['name'] = policy['name']
                 this_node['policies'][policy_id]['name_es'] = policy['name_es']
                 this_node['policies'][policy_id]['is_mergeable'] = policy['is_mergeable']      
-                
-                inherited = True
-                if not policy['is_mergeable'] and exist_policy_in_child_nodes(policy_id, this_node['children']):
-                    inherited = False
-                this_node['policies'][policy_id]['inherited'] = inherited
+                this_node['policies'][policy_id]['inherited'] = True
 
             else:
                 logger.warning("utils.py ::: apply_change_in_inheritance - Change in policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
@@ -1235,6 +1326,17 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
     success = apply_change_in_inheritance(logger, db, action, obj, policy, node, node['inheritance'])
     
     if success:
+        if not policy['is_mergeable']:
+            # Set the 'inherited' field to false in all nodes except one
+            logger.warning("utils.py ::: recalculate_inheritance_for_node - policy_id: {0}".format(str(policy['_id'])))
+            node_list = get_inheritance_tree_node_list(node['inheritance'], str(policy['_id']))
+            logger.warning("utils.py ::: recalculate_inheritance_for_node - node_list: {0}".format(node_list))
+            priority_node = get_priority_node(db, node_list)
+                
+            logger.warning("utils.py ::: recalculate_inheritance_for_node - priority object: %s" % str(priority_node))
+            logger.warning("utils.py ::: recalculate_inheritance_for_node - inheritance: {0}".format(node['inheritance']))
+            set_inherited_field(node['inheritance'], str(policy['_id']), node_list, priority_node)
+    
         # Update node in mongo db
         db.nodes.update({'_id': node['_id']}, {'$set':{'inheritance': node['inheritance']}})
     
