@@ -1118,8 +1118,135 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
     for child in inheritanceTree['children']:
         list.extend(get_inheritance_tree_node_list(child, policy_id))
 
-    return list                        
-                  
+    return list        
+
+# ------------------------------------------------------------------------------------------------------
+def get_inheritance_tree_policies_list(inheritanceTree):
+    """Function that retuns a list with all the policies of all nodes in an inheritance Tree.
+
+    Args:
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        list: List with all the policies in an inheritance tree.
+
+    """
+    list = []
+    
+    for policy_id in inheritanceTree['policies']:
+        exist = False
+        for policy in list:
+            if policy['_id'] == policy_id:
+                exist = True
+                break
+                
+        if not exist:
+            policy = deepcopy(inheritanceTree['policies'][policy_id])
+            policy['_id'] = policy_id
+            list.append(policy)
+        
+    for child in inheritanceTree['children']:
+        list.extend(get_inheritance_tree_policies_list(child))
+
+    return list 
+    
+
+# ------------------------------------------------------------------------------------------------------
+def move_in_inheritance(logger, db, obj, inheritanceTree):
+    """Move an object to another position in the inheritance Tree.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        obj (object): Node (computer, user, OU or group) that received the change.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        list: The return value. A list of nodes added to the inheritance tree.
+
+    """
+    success = False
+    nodes_added = []
+            
+    logger.warning("utils.py ::: move_in_inheritance - obj=%s" %(obj['name']))
+    if inheritanceTree['_id'] == str(obj['_id']):
+        # This is the object to move
+        
+        if inheritanceTree['type'] == 'group':
+            # A group does not inherit nothing
+            inheritanceTree['path'] = obj['path']
+            
+        else:
+            # Must move the object to a different place of the tree
+            
+            # Look for the base node and remove unnecessary branches
+            base_node = inheritanceTree['parent']
+            while ('parent' in base_node) and (base_node['_id'] not in obj['path']):
+                base_node['parent']['children'].remove(base_node)
+                base_node = base_node['parent']
+            
+            # Add the necessary OUs to the tree
+            previousOU = base_node
+            base_node_path = base_node['path']+','+base_node['_id']
+            obj_path = obj['path']
+            logger.warning("utils.py ::: move_in_inheritance - obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
+            
+            
+            if not obj_path.startswith(base_node_path):
+                logger.error("utils.py ::: move_in_inheritance - Strange error calcualing base node %s - %s" %(obj_path,base_node_path))
+                return False                
+                
+            obj_path = obj_path[len(base_node_path+','):].strip()
+            logger.warning("utils.py ::: move_in_inheritance - final obj_path=%s" %(obj_path))
+
+            # Ignore empty string
+            if obj_path:
+                for ou_id in obj_path.split(','):
+                    if not ou_id:
+                        # Ignore empty string
+                        continue
+                        
+                    # Get ou from mongoDB
+                    logger.warning("utils.py ::: move_in_inheritance - final ou_id=%s" %(ou_id))
+                    ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
+                    if not ou:
+                        logger.error("utils.py ::: move_in_inheritance - OU not found %s" % str(ou_id))
+                        return False
+                        
+                    else:
+                        # Generate item
+                        item =  {}
+                        item['_id'] = str(ou_id)
+                        item['name'] = ou['name']
+                        item['type'] = ou['type']
+                        item['path'] = ou['path']
+                        item['policies'] = {}
+                        item['is_main_element'] = True
+                        item['children'] = []
+                        
+                        if inheritanceTree is None:
+                            inheritanceTree = item
+                        
+                        if previousOU is not None:
+                            previousOU['children'].append(item)
+                        
+                        previousOU = item
+                        nodes_added.append(item['_id'])
+            
+            # Move this node to the new OU
+            previousOU['children'].append(inheritanceTree)
+            inheritanceTree['parent']['children'].remove(inheritanceTree)
+
+        
+    else:
+        for child in inheritanceTree['children']:
+            child['parent'] = inheritanceTree
+            nodes_added.extend(move_in_inheritance(logger, db, obj, child))
+            del child['parent']
+
+    return nodes_added      
+    
+                    
 # ------------------------------------------------------------------------------------------------------
 def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritanceTree):
     """Function that looks for the node that received the change (obj) inside the inheritance tree
@@ -1194,27 +1321,20 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
     
     
     return found
-                  
+
 # ------------------------------------------------------------------------------------------------------
-def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
-    """Function that recalculate the "inheritance" field of a node by changing or deleting a policy in
-    a related node.
+def calculate_initial_inheritance_for_node(logger, db, node):
+    """Function that calculates the initial "inheritance" field of a node.
 
     Args:
         logger (object): Logger.
         db (object): Mongo DB access object.
-        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node).
-        obj (object): Node (computer, user, OU or group) that received the change.
-        policy (object): Policy that is changed or deleted.
         node (object): Node whose inheritance field must be recalculated.
 
     Returns:
         bool: The return value. True for success, False otherwise.
 
     """
-    from gecoscc.tasks import DELETED_POLICY_ACTION
-    
-    # Calculate inheritance tree for the first time when neccessary
     if (not 'inheritance' in node) or not node['inheritance']:
         if node['type'] == 'group':
             # Group (does not inherit anything)
@@ -1304,7 +1424,7 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
                     item['is_main_element'] = True
                     item['children'] = []
                     
-                    previousOU['children'].append(item)               
+                    previousOU['children'].append(item)   
         
             # Add current node
             item =  {}
@@ -1317,9 +1437,72 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
             item['is_main_element'] = True
             item['children'] = []
             
-            previousOU['children'].append(item)           
+            previousOU['children'].append(item)   
     
         node['inheritance'] = inheritanceTree
+
+    return True
+    
+# ------------------------------------------------------------------------------------------------------
+def recalculate_inherited_field(logger, db, obj_id):
+    """Function that recalculate the "inheritance" field of a node.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        obj_id (string): ID of the node.
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    obj = db.nodes.find_one({'_id': ObjectId(obj_id)})
+    if not obj:
+        logger.error("utils.py ::: recalculate_inherited_field - Node not found %s" % str(obj_id))
+        return False    
+
+    inherited_updated = False
+    for policy in get_inheritance_tree_policies_list(obj['inheritance']):
+        if not policy['is_mergeable']:
+            # Set the 'inherited' field to false in all nodes except one
+            node_list = get_inheritance_tree_node_list(obj['inheritance'], str(policy['_id']))
+            priority_node = get_priority_node(db, node_list)
+            set_inherited_field(obj['inheritance'], str(policy['_id']), node_list, priority_node)                
+            inherited_updated = True
+
+    if inherited_updated:
+        # Update node in mongo db to dave the 'inherited' field
+        db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+    
+    
+    
+# ------------------------------------------------------------------------------------------------------
+def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
+    """Function that recalculate the "inheritance" field of a node by changing or deleting a policy in
+    a related node.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node), or 'created' (a object is created with policies when is moved).
+        obj (object): Node (computer, user, OU or group) that received the change.
+        policy (object): Policy that is changed or deleted.
+        node (object): Node whose inheritance field must be recalculated.
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    from gecoscc.tasks import DELETED_POLICY_ACTION
+    
+    # Calculate inheritance tree for the first time when neccessary
+    calculate_initial_inheritance_for_node(logger, db, node)
+        
+    if action == 'created':
+        # The object is being moved to a new position in the nodes tree
+        move_in_inheritance(logger, db, obj, node['inheritance'])
+        
+        
         
     # Look for the node of the inheritance tree that changes
     # and apply the change to that node propagating it when neccessary
@@ -1355,7 +1538,7 @@ def trace_inheritance(logger, db, action, obj, policy):
     Args:
         logger (object): Logger.
         db (object): Mongo DB access object.
-        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node).
+        action (str): Could be 'changed' (policy added or changed) or 'deleted' (policy deleted from node), or 'created' (a object is created with policies when is moved).
         obj (object): Node (computer, user, OU or group) that received the change.
         policy (object): Policy that is changed or deleted.
 

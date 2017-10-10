@@ -50,7 +50,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_ou, remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
-                           order_groups_by_depth, order_ou_by_depth)
+                           order_groups_by_depth, order_ou_by_depth, calculate_initial_inheritance_for_node, move_in_inheritance,
+                           recalculate_inherited_field)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -1131,6 +1132,40 @@ class ChefTask(Task):
             
         # Trace inheritance
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            if action == 'created':
+                # When creating or moving an object we must change the inheritance of the node
+                # event when it has no policies applied
+                
+                # Calculate inheritance tree for the first time when neccessary
+                calculate_initial_inheritance_for_node(self.logger, self.db, obj)
+                
+                # The object is being moved to a new position in the nodes tree
+                nodes_added = move_in_inheritance(self.logger, self.db, obj, obj['inheritance'])
+                
+                # Update node in mongo db
+                self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                
+                self.log("error","object_action - nodes_added = {0}".format(nodes_added))
+                # Recalculate policies for each added node
+                for newnode_id in nodes_added:
+                    newnode = self.db.nodes.find_one({'_id': ObjectId(newnode_id)})
+                    if not newnode:
+                        self.log("error","object_action - Node not found  %s" % str(newnode_id))
+                        return False                
+                        
+                    for policy_id in newnode['policies']:
+                        policydata = self.db.policies.find_one({'_id': ObjectId(policy_id)})
+                        if not policydata:
+                            self.log("error","object_action - Policy not found %s" % str(policy_id))
+                            return                
+                            
+                        trace_inheritance(self.logger, self.db, 'change', newnode, policydata)                
+                
+                # Finaly recalculate the 'inherited' field of all the non mergeable policies
+                recalculate_inherited_field(self.logger, self.db, str(obj['_id']))
+                        
+                        
+            # Changing an object (only if it has policies applied)
             rule_type = 'policies'        
             for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
                 policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
