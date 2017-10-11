@@ -1005,6 +1005,17 @@ def order_groups_by_depth(db, groups_ids):
         list: Sorted list.
 
     """
+    
+    # Parameter checking
+    if db is None:
+        raise ValueError('db is None')
+
+    if groups_ids is None:
+        raise ValueError('groups_ids is None')
+
+    if not isinstance(groups_ids, list):
+        raise ValueError('groups_ids is not a list')      
+    
     groups_ids = [ObjectId(groups_id) for groups_id in groups_ids]
     groups = [group for group in db.nodes.find({'_id': {'$in': groups_ids}, 'type': 'group'}).sort([('name',-1)])]
     groups.sort(key=lambda x: x['path'].count(','), reverse=True)
@@ -1022,6 +1033,17 @@ def order_ou_by_depth(db, ou_ids):
         list: Sorted list.
 
     """
+    
+    # Parameter checking
+    if db is None:
+        raise ValueError('db is None')
+
+    if ou_ids is None:
+        raise ValueError('ou_ids is None')
+
+    if not isinstance(ou_ids, list):
+        raise ValueError('ou_ids is not a list')          
+    
     ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
     ous = [ou for ou in db.nodes.find({'_id': {'$in': ou_ids}, 'type': 'ou'})]
     ous.sort(key=lambda x: x['path'].count(','), reverse=True)
@@ -1039,19 +1061,29 @@ def get_priority_node(db, nodes_list):
         object: Object with the top priority or None if no object is found.
 
     """
+    # Parameter checking
+    if db is None:
+        raise ValueError('db is None')
+
+    if nodes_list is None:
+        raise ValueError('nodes_list is None')
+
+    if not isinstance(nodes_list, list):
+        raise ValueError('nodes_list is not a list')         
+        
     priority_node = None
 
     # Check if there is a computer in the list
     nodes_ids = [ObjectId(node_id) for node_id in nodes_list]
     computers = [computer for computer in db.nodes.find({'_id': {'$in': nodes_ids}, 'type': 'computer'})]
     if len(computers) > 0:
-        priority_node = computers[0]
+        priority_node = str(computers[0]['_id'])
     
     if priority_node is None:
         # Check if there is an user in the list
         users = [user for user in db.nodes.find({'_id': {'$in': nodes_ids}, 'type': 'user'})]
         if len(users) > 0:
-            priority_node = users[0]
+            priority_node = str(users[0]['_id'])
         
     if priority_node is None:
         # Check if there is an group in the list
@@ -1068,11 +1100,12 @@ def get_priority_node(db, nodes_list):
     return priority_node
 
 # ------------------------------------------------------------------------------------------------------
-def set_inherited_field(inheritanceTree, policy_id, false_node_list, priority_node_id):
+def set_inherited_field(logger, inheritanceTree, policy_id, false_node_list, priority_node_id):
     """Function that looks into the inheritanceTree and set the 'inherited' field of a policy to false
        if a node is in the "false_node_list" or to true if the node is the "priority_node_id"
 
     Args:
+        logger (object): Logger.
         inheritanceTree (object): Tree of inheritance objects
         policy_id (string): Policy ID of the policy that is changed or deleted.
         false_node_list (list): List of node IDs to set the 'inherited' field to False
@@ -1082,6 +1115,33 @@ def set_inherited_field(inheritanceTree, policy_id, false_node_list, priority_no
         Nothing.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')
+
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')
+
+    if policy_id is None:
+        raise ValueError('policy_id is None')
+
+    if not isinstance(policy_id, str):
+        raise ValueError('policy_id is not a string')         
+        
+    if false_node_list is None:
+        raise ValueError('false_node_list is None')
+
+    if not isinstance(false_node_list, list):
+        raise ValueError('false_node_list is not a list')         
+        
+    if priority_node_id is None:
+        raise ValueError('priority_node_id is None')
+        
+    if not isinstance(priority_node_id, str):
+        raise ValueError('priority_node_id is not a string')         
+
+        
+    logger.warning("utils.py ::: set_inherited_field - inheritanceTree['_id'] = {0} priority_node_id={1} policy_id? {2}".format(inheritanceTree['_id'], priority_node_id, (policy_id in inheritanceTree['policies'])))    
     if policy_id in inheritanceTree['policies']:
         if inheritanceTree['_id'] == priority_node_id and inheritanceTree['is_main_element']:
             inheritanceTree['policies'][policy_id]['inherited'] = True
@@ -1089,7 +1149,7 @@ def set_inherited_field(inheritanceTree, policy_id, false_node_list, priority_no
             inheritanceTree['policies'][policy_id]['inherited'] = False
     
     for child in inheritanceTree['children']:
-        set_inherited_field(child, policy_id, false_node_list, priority_node_id)
+        set_inherited_field(logger, child, policy_id, false_node_list, priority_node_id)
 
     
 # ------------------------------------------------------------------------------------------------------
@@ -1104,6 +1164,17 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
         list: List with all the IDs of all nodes in an inheritance tree with that policy.
 
     """
+    # Parameter checking
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')
+
+    if policy_id is None:
+        raise ValueError('policy_id is None')
+
+    if not isinstance(policy_id, str):
+        raise ValueError('policy_id is not a string')       
+    
+    
     list = []
     
     # Chef if the policy id exists
@@ -1132,6 +1203,11 @@ def get_inheritance_tree_policies_list(inheritanceTree):
         list: List with all the policies in an inheritance tree.
 
     """
+    # Parameter checking
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')
+    
+    
     list = []
     
     for policy_id in inheritanceTree['policies']:
@@ -1166,6 +1242,19 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
         list: The return value. A list of nodes added to the inheritance tree.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if obj is None:
+        raise ValueError('obj is None')    
+        
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')    
+    
     success = False
     nodes_added = []
             
@@ -1259,6 +1348,7 @@ def exist_node_in_inheritance_tree(node, inheritanceTree):
         bool: The return value. True if exists, false otherwise.
 
     """
+    # Parameter checking
     if not node or not inheritanceTree:
         return False
     
@@ -1287,6 +1377,18 @@ def remove_group_from_inheritance_tree(logger, db, group, inheritanceTree):
         bool: The return value. True for success, False otherwise.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if group is None:
+        raise ValueError('group is None')    
+        
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')     
     
     if not exist_node_in_inheritance_tree(group, inheritanceTree):
         # The group doesn't exist
@@ -1340,6 +1442,18 @@ def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
         bool: The return value. True for success, False otherwise.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if group is None:
+        raise ValueError('group is None')    
+        
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')     
     
     if exist_node_in_inheritance_tree(group, inheritanceTree):
         # The group already exist
@@ -1477,7 +1591,30 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
         bool: The return value. True for success, False otherwise.
 
     """
-    
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if action is None:
+        raise ValueError('action is None')    
+
+    if not isinstance(action, str):
+        raise ValueError('action is not a string')         
+        
+    if obj is None:
+        raise ValueError('obj is None')    
+
+    if policy is None:
+        raise ValueError('policy is None')    
+
+    if node is None:
+        raise ValueError('node is None')    
+        
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')     
     
     found = False
     this_node = inheritanceTree
@@ -1546,6 +1683,17 @@ def calculate_initial_inheritance_for_node(logger, db, node):
         bool: The return value. True for success, False otherwise.
 
     """
+    
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if node is None:
+        raise ValueError('node is None')    
+        
     if (not 'inheritance' in node) or not node['inheritance']:
         if node['type'] == 'group':
             # Group (does not inherit anything)
@@ -1667,6 +1815,20 @@ def recalculate_inherited_field(logger, db, obj_id):
         bool: The return value. True for success, False otherwise.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if obj_id is None:
+        raise ValueError('obj_id is None')  
+
+    if not isinstance(obj_id, str):
+        raise ValueError('obj_id is not a string')      
+        
+    
     obj = db.nodes.find_one({'_id': ObjectId(obj_id)})
     if not obj:
         logger.error("utils.py ::: recalculate_inherited_field - Node not found %s" % str(obj_id))
@@ -1678,7 +1840,7 @@ def recalculate_inherited_field(logger, db, obj_id):
             # Set the 'inherited' field to false in all nodes except one
             node_list = get_inheritance_tree_node_list(obj['inheritance'], str(policy['_id']))
             priority_node = get_priority_node(db, node_list)
-            set_inherited_field(obj['inheritance'], str(policy['_id']), node_list, priority_node)                
+            set_inherited_field(logger, obj['inheritance'], str(policy['_id']), node_list, priority_node)                
             inherited_updated = True
 
     if inherited_updated:
@@ -1704,6 +1866,29 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
         bool: The return value. True for success, False otherwise.
 
     """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if action is None:
+        raise ValueError('action is None')  
+
+    if not isinstance(action, str):
+        raise ValueError('action is not a string')         
+    
+    if obj is None:
+        raise ValueError('obj is None')  
+
+    if policy is None:
+        raise ValueError('policy is None')  
+
+    if node is None:
+        raise ValueError('node is None')          
+    
+    
     from gecoscc.tasks import DELETED_POLICY_ACTION
     
     # Calculate inheritance tree for the first time when neccessary
@@ -1729,7 +1914,7 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
                 
             logger.warning("utils.py ::: recalculate_inheritance_for_node - priority object: %s" % str(priority_node))
             logger.warning("utils.py ::: recalculate_inheritance_for_node - inheritance: {0}".format(node['inheritance']))
-            set_inherited_field(node['inheritance'], str(policy['_id']), node_list, priority_node)
+            set_inherited_field(logger, node['inheritance'], str(policy['_id']), node_list, str(priority_node))
     
         # Update node in mongo db
         db.nodes.update({'_id': node['_id']}, {'$set':{'inheritance': node['inheritance']}})
@@ -1757,6 +1942,27 @@ def trace_inheritance(logger, db, action, obj, policy):
         bool: The return value. True for success, False otherwise.
 
     """
+    
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if action is None:
+        raise ValueError('action is None')  
+
+    if not isinstance(action, str):
+        raise ValueError('action is not a string')         
+    
+    if obj is None:
+        raise ValueError('obj is None')  
+
+    if policy is None:
+        raise ValueError('policy is None')  
+    
+    
     logger.warning("utils.py ::: trace_inheritance - action: {0} obj: {1} policy: {2}".format(action, obj['name'], policy['_id']))
 
     # First lets calculate all the nodes that are affected by this change

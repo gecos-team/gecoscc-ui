@@ -51,7 +51,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
                            order_groups_by_depth, order_ou_by_depth, calculate_initial_inheritance_for_node, move_in_inheritance,
-                           recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree)
+                           recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
+                           recalculate_inheritance_for_node)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -923,16 +924,12 @@ class ChefTask(Task):
         if not objold:
             return []
             
-        self.log("warning","tasks.py:::get_groups -> obj['memberof'] = {0} objold['memberof'] = {1}".format(obj['memberof'], objold['memberof']))
         members_add = set(obj['memberof']) - set(objold['memberof'])
         members_add = [(group_id, 'add') for group_id in members_add]
         
         members_delete = set(objold['memberof']) - set(obj['memberof'])
         members_delete = [(group_id, 'delete') for group_id in members_delete]
 
-        self.log("warning","tasks.py:::get_groups -> members_add = {0} members_delete = {1}".format(members_add, members_delete))
-
-        
         return members_add + members_delete        
 
     def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
@@ -1159,6 +1156,17 @@ class ChefTask(Task):
             
         # Trace inheritance
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            # Get an updated 'inheritance' field because this field may have been modified by a previous task in the queue
+            # when the administrator adds several changes to the queue and then clic on "apply changes" button
+            updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+            if not updated_obj:
+                self.log("error","object_action - Node not found  %s" % str(obj['_id']))
+                return False   
+                
+            if 'inheritance' in updated_obj:
+                obj['inheritance'] = updated_obj['inheritance']
+
+
             if action == 'created':
                 # When creating or moving an object we must change the inheritance of the node
                 # event when it has no policies applied
@@ -1195,7 +1203,6 @@ class ChefTask(Task):
             # Changing an object (by adding or removing groups)
             groups_changed = False
             for group_id, group_action in self.get_groups(obj, objold):
-                self.log("warning","object_action - group_id=%s group_action=%s" %(str(group_id), group_action))
                 group = self.db.nodes.find_one({'_id': group_id})
                 if not group:
                     self.log("error","object_action - Group not found  %s" % str(group_id))
@@ -1212,6 +1219,19 @@ class ChefTask(Task):
             if groups_changed:
                 # Update node in mongo db
                 self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                
+                # Refresh all policies of the added groups in the inheritance field
+                for group_id, group_action in self.get_groups(obj, objold):
+                    if group_action == 'add':
+                        group = self.db.nodes.find_one({'_id': group_id})
+                        if not group:
+                            self.log("error","object_action - Group not found  %s" % str(group_id))
+                            continue            
+
+                        for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):
+                            policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                            recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
+                
                        
             # Changing an object (only if it has policies applied)
             rule_type = 'policies'        

@@ -378,7 +378,14 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if obj is None:
             return
 
+        inheritance_backup = None
+        if 'inheritance' in obj:
+            # Do not save the inheritance field
+            inheritance_backup = obj['inheritance']
+            del obj['inheritance']
+            
         real_obj.update(obj)
+        
         try:
             self.collection.update(obj_filter, real_obj, new=True)
         except DuplicateKeyError, e:
@@ -388,6 +395,10 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.post_save(obj, old_obj=old_obj)
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
+        
+        if inheritance_backup is not None:
+            obj['inheritance'] = inheritance_backup
+        
         return obj
 
     def delete(self):
