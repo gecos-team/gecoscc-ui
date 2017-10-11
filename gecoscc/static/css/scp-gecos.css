@@ -739,3 +739,7 @@ legend {
 #inheritance_tree .tree-item {
     margin-left: 0px;
 }
+
+.gray_background {
+    background-color: #f9f9f9;
+}

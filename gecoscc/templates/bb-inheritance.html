@@ -1,3 +1,15 @@
+<% if (resource && resource.attributes && ('type' in resource.attributes)) { %>
+    <% if (resource.attributes['type'] == 'computer') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('Workstation policies') }}</strong></div></div>
+    <% } %>
+    <% if (resource.attributes['type'] == 'group' || resource.attributes['type'] == 'ou') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('Policies') }}</strong></div></div>
+    <% } %>
+    <% if (resource.attributes['type'] == 'user') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('User policies') }}</strong></div></div>
+    <% } %>
+<% } %>
+
 <div class="row"><div class="col-sm-12">
 <% if (items && ((items.children && items.children.length > 0) || (items.policies && !jQuery.isEmptyObject(items.policies)))) { %>
 <div class="fuelux">

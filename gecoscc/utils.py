@@ -1082,10 +1082,11 @@ def set_inherited_field(inheritanceTree, policy_id, false_node_list, priority_no
         Nothing.
 
     """
-    if inheritanceTree['_id'] == priority_node_id and inheritanceTree['is_main_element']:
-        inheritanceTree['policies'][policy_id]['inherited'] = True
-    elif inheritanceTree['_id'] in false_node_list and inheritanceTree['is_main_element']:
-        inheritanceTree['policies'][policy_id]['inherited'] = False
+    if policy_id in inheritanceTree['policies']:
+        if inheritanceTree['_id'] == priority_node_id and inheritanceTree['is_main_element']:
+            inheritanceTree['policies'][policy_id]['inherited'] = True
+        elif inheritanceTree['_id'] in false_node_list and inheritanceTree['is_main_element']:
+            inheritanceTree['policies'][policy_id]['inherited'] = False
     
     for child in inheritanceTree['children']:
         set_inherited_field(child, policy_id, false_node_list, priority_node_id)
@@ -1246,6 +1247,217 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
 
     return nodes_added      
     
+# ------------------------------------------------------------------------------------------------------
+def exist_node_in_inheritance_tree(node, inheritanceTree):
+    """Function that checks if a node exists in the inheritance tree of another node.
+
+    Args:
+        node (object): Node (OU, group, computer or user) to find.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        bool: The return value. True if exists, false otherwise.
+
+    """
+    if not node or not inheritanceTree:
+        return False
+    
+    if str(inheritanceTree['_id']) == str(node['_id']):
+        return True
+
+    found = False
+    for child in inheritanceTree['children']:
+        found = exist_node_in_inheritance_tree(node, child)
+        if found:
+            break
+    
+    return found
+    
+# ------------------------------------------------------------------------------------------------------
+def remove_group_from_inheritance_tree(logger, db, group, inheritanceTree):
+    """Function that remove a group from the inheritance tree of an object.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        group (object): Group object to remove.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    
+    if not exist_node_in_inheritance_tree(group, inheritanceTree):
+        # The group doesn't exist
+        return False
+    
+    found = False
+    logger.warning("utils.py ::: remove_group_from_inheritance_tree - group['_id'] = {0}".format(group['_id']))
+
+    if inheritanceTree['_id'] == str(group['_id']):
+        found = True
+        # Remove this node
+        base_node = inheritanceTree['parent']
+        base_node['children'].remove(inheritanceTree)
+        
+        if len(base_node['children']) == 1:
+            # Only 1 node is left. That node must be a computer, a user or another ou
+            # --> Remove the base node too!
+            base_node_parent = base_node['parent']
+            base_node_parent['children'].append(base_node['children'][0])
+            base_node_parent['children'].remove(base_node)
+            
+        if len(base_node['children']) == 0:
+            # Strange. This must be caused by a previous error.
+            # --> Remove it anyway!
+            base_node_parent = base_node['parent']
+            base_node_parent['children'].remove(base_node)            
+    
+    else:
+        # Continue looking in the tree
+        for child in inheritanceTree['children']:
+            child['parent'] = inheritanceTree
+            found = (found or remove_group_from_inheritance_tree(logger, db, group, child))
+            del child['parent']
+            if found:
+                break
+    
+    return found
+    
+    
+# ------------------------------------------------------------------------------------------------------
+def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
+    """Function that adds a group to the inheritance tree of an object.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        group (object): Group object to add.
+        inheritanceTree (object): Tree of inheritance objects
+
+    Returns:
+        bool: The return value. True for success, False otherwise.
+
+    """
+    
+    if exist_node_in_inheritance_tree(group, inheritanceTree):
+        # The group already exist
+        return False
+    
+    logger.warning("utils.py ::: add_group_to_inheritance_tree - group['_id'] = {0} group['path'] = {1}".format(group['_id'], group['path']))
+    # Locate the base node
+    base_node = inheritanceTree
+    group_path = [groups_id for groups_id in reversed(group['path'].split(','))]
+    logger.warning("utils.py ::: add_group_to_inheritance_tree - group_path={0}".format(group_path))
+    group_base_node_id = group_path[0]
+    logger.warning("utils.py ::: add_group_to_inheritance_tree - group_base_node_id = {0}".format(group_base_node_id))
+    
+    not_main_element = []
+    last_main_element = None
+    
+    while base_node['type'] == 'ou':
+        if not base_node['is_main_element'] and base_node['_id'] == str(group_base_node_id):
+            break
+
+        if not base_node['is_main_element']:
+            not_main_element.append(base_node)
+        else:
+            last_main_element = base_node
+            
+        next_base_node = base_node['children'][0]
+        
+        # Maybe the 'ou' is not the first node, so lets check other nodes
+        for child in base_node['children']:
+            if child['type'] == 'ou':
+                next_base_node = child
+                break
+
+        base_node = next_base_node
+                
+    logger.warning("utils.py ::: add_group_to_inheritance_tree - base_node: type = {0} is_main_element = {1} _id = {2}".format(base_node['type'], base_node['is_main_element'], base_node['_id']))
+        
+    if base_node['type'] != 'ou' or base_node['is_main_element'] or base_node['_id'] != str(group_base_node_id):
+        # Base node not found --> We must create it
+        logger.warning("utils.py ::: add_group_to_inheritance_tree - Base node not found --> We must create it")
+        
+        base_ou = None
+        for ou_id in group_path:
+            for node in not_main_element:
+                if str(node['_id']) == str(ou_id):
+                    base_ou = node
+                    break
+        
+        if base_ou is None:
+            base_ou = last_main_element
+            
+
+        # Get ou from mongoDB
+        ou = db.nodes.find_one({'_id': ObjectId(group_base_node_id)})
+        if not ou:
+            logger.error("utils.py ::: add_group_to_inheritance_tree - OU not found %s" % str(group_base_node_id))
+            return False
+            
+        else:
+            # Generate item
+            item =  {}
+            item['_id'] = str(group_base_node_id)
+            item['name'] = ou['name']
+            item['type'] = ou['type']
+            item['path'] = ou['path']
+            item['policies'] = {}
+            item['is_main_element'] = False
+            item['children'] = []
+
+            base_node = item
+            
+            if base_ou == last_main_element:
+                other_node = None
+                for child in base_ou['children']:
+                    if child['type'] != 'group':
+                        other_node = child
+                        
+                if other_node is not None:
+                    base_ou['children'].remove(other_node)
+                    base_node['children'].append(other_node)
+
+            
+            base_ou['children'].append(item)
+                            
+                
+                            
+    # Add this group to the children
+    item =  {}
+    item['_id'] = str(group['_id'])
+    item['name'] = group['name']
+    item['type'] = group['type']
+    item['path'] = group['path']
+    item['policies'] = {}
+        
+    item['is_main_element'] = True
+    item['children'] = []
+    
+    base_node['children'].append(item)   
+    
+    # Sort the groups by alphabetic order
+    groups = []
+    other_node = None
+    for child in base_node['children']:
+        if child['type'] == 'group':
+            groups.append(child)
+            
+        else:
+            other_node = child
+            
+    groups.sort(key=lambda x: x['name'], reverse=False)
+    
+    base_node['children'] = []
+    base_node['children'].extend(groups)
+    
+    if other_node is not None:
+        base_node['children'].append(other_node)
+                    
+    return True
                     
 # ------------------------------------------------------------------------------------------------------
 def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritanceTree):
@@ -1318,7 +1530,6 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
             found = (found or apply_change_in_inheritance(logger, db, action, obj, policy, node, child))
             if found:
                 break
-    
     
     return found
 
