@@ -13,7 +13,7 @@ import crypt
 
 from copy import deepcopy
 
-EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by']
+EXCLUDE_GENERIC_ATTRS = ['job_ids', 'updated_by', 'support_os']
 
 
 # Local user rules
