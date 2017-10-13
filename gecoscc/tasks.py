@@ -218,7 +218,7 @@ class ChefTask(Task):
                 if not obj.get(rule_type, None):
                     object_related_id_list = []
                 else:
-                    object_related_id_list = obj[rule_type][policy_id]['object_related_list']
+                    object_related_id_list = obj[rule_type].get(policy_id,{}).get('object_related_list',[])
                 object_related_list = []
                 for object_related_id in object_related_id_list:
                     if policy['slug'] == SOFTWARE_PROFILE_SLUG:
