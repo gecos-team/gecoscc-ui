@@ -1227,6 +1227,56 @@ def get_inheritance_tree_policies_list(inheritanceTree):
 
     return list 
     
+    
+
+# ------------------------------------------------------------------------------------------------------
+def recalculate_path_values(logger, inheritanceTree, path_value, main_ou_list):
+    """Recalculate the 'path' value in every node in the inheritance Tree.
+
+    Args:
+        logger (object): Logger.
+        inheritanceTree (object): Tree of inheritance objects.
+        path_value (string): Path up to this node.
+        main_ou_list (list): List of previous OUs that are "main_element"
+        
+
+    Returns:
+        nothing
+
+    """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if path_value is None:
+        raise ValueError('path_value is None')            
+        
+    if inheritanceTree is None:
+        raise ValueError('inheritanceTree is None')    
+
+    if inheritanceTree['is_main_element']:
+        # Use the received path value
+        inheritanceTree['path'] = path_value
+        if inheritanceTree['type'] == 'ou':
+            main_ou_list.append(inheritanceTree)
+            
+    else:
+        # Copy the path of the main element
+        for ou in main_ou_list:
+            if ou['_id'] == inheritanceTree['_id']:
+                inheritanceTree['path'] = ou['path']
+            
+    
+    # Recalculate path values for the children
+    for child in inheritanceTree['children']:
+        pv = path_value
+        if inheritanceTree['is_main_element']:
+            pv = ('%s,%s'%(path_value, inheritanceTree['_id']))
+        
+        if child['type'] == 'group':
+            pv = ('%s,%s'%(inheritanceTree['path'], inheritanceTree['_id']))
+            
+        recalculate_path_values(logger, child, pv, main_ou_list)
 
 # ------------------------------------------------------------------------------------------------------
 def move_in_inheritance(logger, db, obj, inheritanceTree):
@@ -1283,9 +1333,27 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
             
             
             if not obj_path.startswith(base_node_path):
-                logger.error("utils.py ::: move_in_inheritance - Strange error calcualing base node %s - %s" %(obj_path,base_node_path))
-                return False                
+                # Moving an OU (base_node) to a different place in the nodes tree
+                root_node = base_node['parent']
+                while 'parent' in root_node:
+                    root_node = root_node['parent']
                 
+                real_base_node = db.nodes.find_one({'_id': ObjectId(base_node['_id'])})
+                if not real_base_node:
+                    logger.error("utils.py ::: move_in_inheritance - real base node not found %s" % str(base_node['_id']))
+                    return False                
+                
+                result = move_in_inheritance(logger, db, real_base_node, root_node)
+                if result:
+                    nodes_added.extend(result)
+                    
+                recalculate_path_values(logger, root_node, 'root', [])
+                base_node_path = base_node['path']+','+base_node['_id']
+                logger.warning("utils.py ::: move_in_inheritance - new obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
+            
+            
+            
+            # Moving a node to a different place in the nodes tree
             obj_path = obj_path[len(base_node_path+','):].strip()
             logger.warning("utils.py ::: move_in_inheritance - final obj_path=%s" %(obj_path))
 
@@ -1308,6 +1376,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
                         item =  {}
                         item['_id'] = str(ou_id)
                         item['name'] = ou['name']
+                        logger.warning("utils.py ::: move_in_inheritance - add_node=%s - %s"%(item['_id'], item['name']))
                         item['type'] = ou['type']
                         item['path'] = ou['path']
                         item['policies'] = {}
@@ -1330,10 +1399,21 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
         
     else:
         for child in inheritanceTree['children']:
+            # Check if child['parent'] already exists
+            key_exists = ('parent' in child)
+            
             child['parent'] = inheritanceTree
-            nodes_added.extend(move_in_inheritance(logger, db, obj, child))
-            del child['parent']
+            result = move_in_inheritance(logger, db, obj, child)
+            if result:
+                # Result may be False in case of error
+                nodes_added.extend(result)
+                
+            if not key_exists and ('parent' in child):
+                # child['parent'] was added in this loop
+                del child['parent']
 
+    logger.warning("utils.py ::: move_in_inheritance - nodes_added={0}".format(nodes_added))
+                
     return nodes_added      
     
 # ------------------------------------------------------------------------------------------------------
@@ -1371,6 +1451,9 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
     
     # The object is being moved to a new position in the nodes tree
     nodes_added = move_in_inheritance(logger, db, srcobj, obj['inheritance'])
+    
+    # Recalculate path values
+    recalculate_path_values(logger, obj['inheritance'], 'root', [])
     
     # Update node in mongo db
     db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})

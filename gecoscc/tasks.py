@@ -1172,6 +1172,16 @@ class ChefTask(Task):
                 # event when it has no policies applied
                 move_in_inheritance_and_recalculate_policies(self.logger, self.db, obj, obj)
                 
+                # The inheritance field may have been updated
+                updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+                if not updated_obj:
+                    self.log("error","object_action - Node not found  %s" % str(obj['_id']))
+                    return False   
+                    
+                if 'inheritance' in updated_obj:
+                    obj['inheritance'] = updated_obj['inheritance']
+                
+                
                     
             
             # Changing an object (by adding or removing groups)
