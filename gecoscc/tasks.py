@@ -15,6 +15,7 @@ import random
 import os
 import subprocess
 import traceback
+import sys
 
 
 from copy import deepcopy
@@ -1156,15 +1157,16 @@ class ChefTask(Task):
             
         # Trace inheritance
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
-            # Get an updated 'inheritance' field because this field may have been modified by a previous task in the queue
-            # when the administrator adds several changes to the queue and then clic on "apply changes" button
-            updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
-            if not updated_obj:
-                self.log("error","object_action - Node not found  %s" % str(obj['_id']))
-                return False   
-                
-            if 'inheritance' in updated_obj:
-                obj['inheritance'] = updated_obj['inheritance']
+            if action != 'deleted':
+                # Get an updated 'inheritance' field because this field may have been modified by a previous task in the queue
+                # when the administrator adds several changes to the queue and then clic on "apply changes" button
+                updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+                if not updated_obj:
+                    self.log("error","object_action - Node not found  %s (%s,%s)" %(str(obj['_id']), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                    return False   
+                    
+                if 'inheritance' in updated_obj:
+                    obj['inheritance'] = updated_obj['inheritance']
 
 
             if action == 'created':
@@ -1175,21 +1177,30 @@ class ChefTask(Task):
                 # The inheritance field may have been updated
                 updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
                 if not updated_obj:
-                    self.log("error","object_action - Node not found  %s" % str(obj['_id']))
+                    self.log("error","object_action - Node not found  %s (%s,%s)" %(str(obj['_id']), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
                     return False   
                     
                 if 'inheritance' in updated_obj:
                     obj['inheritance'] = updated_obj['inheritance']
                 
                 
-                    
+            if action == 'deleted' and obj['type'] == 'group' and ('members' in obj):
+                # When a group is deleted we must remove it from all its members
+                for object_id in obj['members']:
+                    member = self.db.nodes.find_one({'_id': object_id})
+                    if not member:
+                        self.log("error","object_action - Node not found  %s (%s,%s)" %(str(object_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        return False  
+                        
+                    remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
+                    self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
             
             # Changing an object (by adding or removing groups)
             groups_changed = False
             for group_id, group_action in self.get_groups(obj, objold):
                 group = self.db.nodes.find_one({'_id': group_id})
                 if not group:
-                    self.log("error","object_action - Group not found  %s" % str(group_id))
+                    self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
                     continue            
             
                 if group_action == 'add':
@@ -1209,7 +1220,7 @@ class ChefTask(Task):
                     if group_action == 'add':
                         group = self.db.nodes.find_one({'_id': group_id})
                         if not group:
-                            self.log("error","object_action - Group not found  %s" % str(group_id))
+                            self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
                             continue            
 
                         for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):

@@ -444,6 +444,10 @@ def visibility_group(db, obj):
                         {'$set': {'memberof': visible_groups}})
         for hide_group_id in hide_groups:
             group = db.nodes.find_one({'_id': hide_group_id})
+            if not group:
+                # Group not found in database
+                continue
+            
             members = list(set(group['members']))
             try:
                 del members[members.index(obj['_id'])]
