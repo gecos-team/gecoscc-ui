@@ -257,6 +257,19 @@ class Command(BaseCommand):
         for root in root_nodes:        
             self.check_node_and_subnodes(root)
         
+        logger.info('Checking nodes that are outside the tree (missing OUs in the PATH)...')
+        # Check node path
+        nodes = self.db.nodes.find({})    
+        for node in nodes:                
+            for ou_id in node['path'].split(','):
+                if ou_id == 'root':
+                    continue
+                    
+                ou = self.db.nodes.find_one({ "_id" : ObjectId(ou_id) })    
+                if not ou:
+                    logger.error('Can\'t find OU %s that belongs to node path (node ID: %s NAME: %s)'%(str(ou_id), str(node['_id']), node['name']))                
+                    continue        
+        
         logger.info('Checking chef node references...')
         # Check the references to Chef nodes
         computers = self.db.nodes.find({"type" : "computer"})    
@@ -444,7 +457,6 @@ class Command(BaseCommand):
             if len(difference) > 0:
                 logger.info('FIX: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
-
         
         
     def check_referenced_nodes(self, id_list, possible_types, property):
