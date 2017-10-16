@@ -139,6 +139,9 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
                 }
                 else if (node["path"].split(",").length == 2) {
                     icon = 'globe-icon';
+                } 
+                else if (node['type'] == 'group') {
+                    icon = 'group-icon';
                 }
                 
                 var name = node['name'];
