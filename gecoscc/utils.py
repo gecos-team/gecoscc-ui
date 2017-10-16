@@ -955,7 +955,7 @@ def getURLComponents(url):
 def update_computers_of_user(db, user, api):
     from gecoscc.api.chef_status import USERS_OHAI
 
-    logger.warning("utils ::: update_computers_of_user - user = %s" % str(user))
+    logger.debug("utils ::: update_computers_of_user - user = %s" % str(user))
     nodes = db.nodes.find({'path': {'$regex': '.*' + user['path'] +'.*'}, 'type':'computer'})
 
     for node in nodes:
@@ -1312,7 +1312,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
     success = False
     nodes_added = []
             
-    logger.warning("utils.py ::: move_in_inheritance - obj=%s" %(obj['name']))
+    logger.debug("utils.py ::: move_in_inheritance - obj=%s" %(obj['name']))
     if inheritanceTree['_id'] == str(obj['_id']):
         # This is the object to move
         
@@ -1333,7 +1333,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
             previousOU = base_node
             base_node_path = base_node['path']+','+base_node['_id']
             obj_path = obj['path']
-            logger.warning("utils.py ::: move_in_inheritance - obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
+            logger.debug("utils.py ::: move_in_inheritance - obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
             
             
             if not obj_path.startswith(base_node_path):
@@ -1353,13 +1353,13 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
                     
                 recalculate_path_values(logger, root_node, 'root', [])
                 base_node_path = base_node['path']+','+base_node['_id']
-                logger.warning("utils.py ::: move_in_inheritance - new obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
+                logger.debug("utils.py ::: move_in_inheritance - new obj_path=%s base_node_path=%s" %(obj_path, base_node_path))
             
             
             
             # Moving a node to a different place in the nodes tree
             obj_path = obj_path[len(base_node_path+','):].strip()
-            logger.warning("utils.py ::: move_in_inheritance - final obj_path=%s" %(obj_path))
+            logger.debug("utils.py ::: move_in_inheritance - final obj_path=%s" %(obj_path))
 
             # Ignore empty string
             if obj_path:
@@ -1369,7 +1369,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
                         continue
                         
                     # Get ou from mongoDB
-                    logger.warning("utils.py ::: move_in_inheritance - final ou_id=%s" %(ou_id))
+                    logger.debug("utils.py ::: move_in_inheritance - final ou_id=%s" %(ou_id))
                     ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
                     if not ou:
                         logger.error("utils.py ::: move_in_inheritance - OU not found %s" % str(ou_id))
@@ -1380,7 +1380,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
                         item =  {}
                         item['_id'] = str(ou_id)
                         item['name'] = ou['name']
-                        logger.warning("utils.py ::: move_in_inheritance - add_node=%s - %s"%(item['_id'], item['name']))
+                        logger.debug("utils.py ::: move_in_inheritance - add_node=%s - %s"%(item['_id'], item['name']))
                         item['type'] = ou['type']
                         item['path'] = ou['path']
                         item['policies'] = {}
@@ -1416,7 +1416,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
                 # child['parent'] was added in this loop
                 del child['parent']
 
-    logger.warning("utils.py ::: move_in_inheritance - nodes_added={0}".format(nodes_added))
+    logger.debug("utils.py ::: move_in_inheritance - nodes_added={0}".format(nodes_added))
                 
     return nodes_added      
     
@@ -1448,7 +1448,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
     if obj is None:
         raise ValueError('obj is None')    
     
-    logger.warning("move_in_inheritance_and_recalculate_policies - Node name=%s type=%s"%(obj['name'], obj['type']))
+    logger.debug("move_in_inheritance_and_recalculate_policies - Node name=%s type=%s"%(obj['name'], obj['type']))
     
     # Calculate inheritance tree for the first time when neccessary
     calculate_initial_inheritance_for_node(logger, db, obj)
@@ -1561,7 +1561,7 @@ def remove_group_from_inheritance_tree(logger, db, group, inheritanceTree):
         return False
     
     found = False
-    logger.warning("utils.py ::: remove_group_from_inheritance_tree - group['_id'] = {0}".format(group['_id']))
+    logger.debug("utils.py ::: remove_group_from_inheritance_tree - group['_id'] = {0}".format(group['_id']))
 
     if inheritanceTree['_id'] == str(group['_id']):
         found = True
@@ -1625,13 +1625,13 @@ def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
         # The group already exist
         return False
     
-    logger.warning("utils.py ::: add_group_to_inheritance_tree - group['_id'] = {0} group['path'] = {1}".format(group['_id'], group['path']))
+    logger.debug("utils.py ::: add_group_to_inheritance_tree - group['_id'] = {0} group['path'] = {1}".format(group['_id'], group['path']))
     # Locate the base node
     base_node = inheritanceTree
     group_path = [groups_id for groups_id in reversed(group['path'].split(','))]
-    logger.warning("utils.py ::: add_group_to_inheritance_tree - group_path={0}".format(group_path))
+    logger.debug("utils.py ::: add_group_to_inheritance_tree - group_path={0}".format(group_path))
     group_base_node_id = group_path[0]
-    logger.warning("utils.py ::: add_group_to_inheritance_tree - group_base_node_id = {0}".format(group_base_node_id))
+    logger.debug("utils.py ::: add_group_to_inheritance_tree - group_base_node_id = {0}".format(group_base_node_id))
     
     not_main_element = []
     last_main_element = None
@@ -1655,11 +1655,11 @@ def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
 
         base_node = next_base_node
                 
-    logger.warning("utils.py ::: add_group_to_inheritance_tree - base_node: type = {0} is_main_element = {1} _id = {2}".format(base_node['type'], base_node['is_main_element'], base_node['_id']))
+    logger.debug("utils.py ::: add_group_to_inheritance_tree - base_node: type = {0} is_main_element = {1} _id = {2}".format(base_node['type'], base_node['is_main_element'], base_node['_id']))
         
     if base_node['type'] != 'ou' or base_node['is_main_element'] or base_node['_id'] != str(group_base_node_id):
         # Base node not found --> We must create it
-        logger.warning("utils.py ::: add_group_to_inheritance_tree - Base node not found --> We must create it")
+        logger.debug("utils.py ::: add_group_to_inheritance_tree - Base node not found --> We must create it")
         
         base_ou = None
         for ou_id in group_path:
@@ -1690,7 +1690,7 @@ def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
             item['children'] = []
 
             base_node = item
-            logger.warning("utils.py ::: add_group_to_inheritance_tree - Create %s under %s"%(base_node['name'], base_ou['name']))
+            logger.debug("utils.py ::: add_group_to_inheritance_tree - Create %s under %s"%(base_node['name'], base_ou['name']))
 
             # If inside the base OU is a children that is not a Group
             # we must move that children to the appended OU
@@ -1702,7 +1702,7 @@ def add_group_to_inheritance_tree(logger, db, group, inheritanceTree):
             if other_node is not None:
                 base_ou['children'].remove(other_node)
                 base_node['children'].append(other_node)
-                logger.warning("utils.py ::: add_group_to_inheritance_tree - Move %s from %s to %s"%(other_node['name'], base_ou['name'], base_node['name']))
+                logger.debug("utils.py ::: add_group_to_inheritance_tree - Move %s from %s to %s"%(other_node['name'], base_ou['name'], base_node['name']))
 
             
             base_ou['children'].append(item)
@@ -1787,7 +1787,7 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
     
     found = False
     this_node = inheritanceTree
-    logger.warning("utils.py ::: apply_change_in_inheritance -  this_node['_id'] = {0} obj['_id'] = {1} action={2}".format(this_node['_id'], obj['_id'], action))
+    logger.debug("utils.py ::: apply_change_in_inheritance -  this_node['_id'] = {0} obj['_id'] = {1} action={2}".format(this_node['_id'], obj['_id'], action))
         
     if str(this_node['_id']) == str(obj['_id']):
         # This is the object to change
@@ -1806,7 +1806,7 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
                 return False    
                 
             else:
-                logger.warning("utils.py ::: apply_change_in_inheritance - Removing policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+                logger.debug("utils.py ::: apply_change_in_inheritance - Removing policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
                 del this_node['policies'][policy_id]
             
         else:
@@ -1819,7 +1819,7 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
             
             if not existed:
                 # Add the policy
-                logger.warning("utils.py ::: apply_change_in_inheritance - Adding policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+                logger.debug("utils.py ::: apply_change_in_inheritance - Adding policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
                 this_node['policies'][policy_id] = {}
                 this_node['policies'][policy_id]['name'] = policy['name']
                 this_node['policies'][policy_id]['name_es'] = policy['name_es']
@@ -1827,7 +1827,7 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
                 this_node['policies'][policy_id]['inherited'] = True
 
             else:
-                logger.warning("utils.py ::: apply_change_in_inheritance - Change in policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
+                logger.debug("utils.py ::: apply_change_in_inheritance - Change in policy %s to node %s inherited by %s" % (str(policy['_id']), str(obj['_id']), str(node['_id'])))
             
         
     else:
@@ -2076,13 +2076,13 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
     if success:
         if not policy['is_mergeable']:
             # Set the 'inherited' field to false in all nodes except one
-            logger.warning("utils.py ::: recalculate_inheritance_for_node - policy_id: {0}".format(str(policy['_id'])))
+            logger.debug("utils.py ::: recalculate_inheritance_for_node - policy_id: {0}".format(str(policy['_id'])))
             node_list = get_inheritance_tree_node_list(node['inheritance'], str(policy['_id']))
-            logger.warning("utils.py ::: recalculate_inheritance_for_node - node_list: {0}".format(node_list))
+            logger.debug("utils.py ::: recalculate_inheritance_for_node - node_list: {0}".format(node_list))
             priority_node = get_priority_node(db, node_list)
                 
-            logger.warning("utils.py ::: recalculate_inheritance_for_node - priority object: %s" % str(priority_node))
-            logger.warning("utils.py ::: recalculate_inheritance_for_node - inheritance: {0}".format(node['inheritance']))
+            logger.debug("utils.py ::: recalculate_inheritance_for_node - priority object: %s" % str(priority_node))
+            logger.debug("utils.py ::: recalculate_inheritance_for_node - inheritance: {0}".format(node['inheritance']))
             set_inherited_field(logger, node['inheritance'], str(policy['_id']), node_list, str(priority_node))
     
         # Update node in mongo db
@@ -2132,7 +2132,7 @@ def trace_inheritance(logger, db, action, obj, policy):
         raise ValueError('policy is None')  
     
     
-    logger.warning("utils.py ::: trace_inheritance - action: {0} obj: {1} policy: {2}".format(action, obj['name'], policy['_id']))
+    logger.debug("utils.py ::: trace_inheritance - action: {0} obj: {1} policy: {2}".format(action, obj['name'], policy['_id']))
 
     # First lets calculate all the nodes that are affected by this change
     affected_nodes = []
@@ -2172,9 +2172,9 @@ def trace_inheritance(logger, db, action, obj, policy):
 
     success = True
     for node in affected_nodes:
-        logger.warning("utils.py ::: trace_inheritance - affected_node = {0} - {1}".format(node['name'], node['type']))
+        logger.debug("utils.py ::: trace_inheritance - affected_node = {0} - {1}".format(node['name'], node['type']))
         success = (success and recalculate_inheritance_for_node(logger, db, action, obj, policy, node))
-        logger.warning("utils.py ::: trace_inheritance - success = {0}".format(success))
+        logger.debug("utils.py ::: trace_inheritance - success = {0}".format(success))
 
     return success
 

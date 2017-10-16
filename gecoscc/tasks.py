@@ -1090,8 +1090,8 @@ class ChefTask(Task):
         # MacroJob
         job_ids_by_order = []
         name = "%s %s" % (obj['type'], action)
-        self.log("warning","obj_type_translate {0}".format(obj['type']))
-        self.log("warning","action_translate {0}".format(action))
+        self.log("debug","obj_type_translate {0}".format(obj['type']))
+        self.log("debug","action_translate {0}".format(action))
         name_es = self._(action) + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
         macrojob_id = macrojob_storage.create(obj=obj,
