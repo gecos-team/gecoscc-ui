@@ -15,6 +15,7 @@ import random
 import os
 import subprocess
 import traceback
+import sys
 
 
 from copy import deepcopy
@@ -49,7 +50,10 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            apply_policies_to_repository, apply_policies_to_group,
                            apply_policies_to_ou, remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
-                           get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance)
+                           get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
+                           order_groups_by_depth, order_ou_by_depth, calculate_initial_inheritance_for_node, move_in_inheritance_and_recalculate_policies,
+                           recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
+                           recalculate_inheritance_for_node)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -1071,10 +1075,10 @@ class ChefTask(Task):
                 updated = True
                 if obj_type == 'ou':
                     updated_by_type.append(obj_id)
-                    updated_by_type = self.order_ou_by_depth(updated_by_type)
+                    updated_by_type = order_ou_by_depth(self.db, updated_by_type)
                 else:
                     updated_by_type.append(obj_id)
-                    updated_by_type = self.order_groups_by_depth(updated_by_type)
+                    updated_by_type = order_groups_by_depth(self.db, updated_by_type)
                     
             if updated_by_type:
                 updated_by[obj_type] = updated_by_type
@@ -1092,25 +1096,6 @@ class ChefTask(Task):
             attributes_updated.append(attr)
         return updated
         
-    def order_groups_by_depth(self, groups_ids):
-        '''
-        order groups by depth 
-        (when several groups have the same depth they will be ordered in alphabetic order)
-        '''
-        groups_ids = [ObjectId(groups_id) for groups_id in groups_ids]
-        groups = [group for group in self.db.nodes.find({'_id': {'$in': groups_ids}}).sort([('name',-1)])]
-        groups.sort(key=lambda x: x['path'].count(','), reverse=True)
-        return [unicode(group['_id']) for group in groups]        
-
-    def order_ou_by_depth(self, ou_ids):
-        '''
-        order ous by depth
-        '''
-        ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
-        ous = [ou for ou in self.db.nodes.find({'_id': {'$in': ou_ids}})]
-        ous.sort(key=lambda x: x['path'].count(','), reverse=True)
-        return [unicode(ou['_id']) for ou in ous]
-
     def update_node_job_id(self, user, obj, action, computer, node, policy, attr, attributes_updated, parent_id, job_ids_by_computer):
         '''
         Update the jobs field of a node
@@ -1162,6 +1147,38 @@ class ChefTask(Task):
         policies_delete = set(objold[rule_type].keys()) - set(obj[rule_type].keys())
         policies_delete = [(policy_id, DELETED_POLICY_ACTION) for policy_id in policies_delete]
         return policies_apply + policies_delete
+        
+    def get_groups(self, obj, objold):
+        """Method that get the groups to add and to delete from an object.
+
+        Args:
+            self (object): self pointer.
+            obj (object): Node (computer or user) that received the change.
+            objold (object): Value of the node (computer or user) before the change.
+
+        Returns:
+            set: Set that contains tuples of (group_id, action). Where action could be "add" or "delete".
+
+        """
+        if not objold:
+            return []
+            
+        obj_memberof = set()
+        if 'memberof' in obj:
+            obj_memberof = set(obj['memberof'])
+            
+        objold_memberof = set()
+        if 'memberof' in objold:
+            objold_memberof = set(objold['memberof'])
+            
+        
+        members_add = obj_memberof - objold_memberof
+        members_add = [(group_id, 'add') for group_id in members_add]
+        
+        members_delete = objold_memberof - obj_memberof
+        members_delete = [(group_id, 'delete') for group_id in members_delete]
+
+        return members_add + members_delete        
 
     def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
         '''
@@ -1187,8 +1204,7 @@ class ChefTask(Task):
                     node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
-                    # Trace inheritance
-                    trace_inheritance(self.db, action, obj, policy)
+                        
             return (node, updated)
         elif obj['type'] in RESOURCES_EMITTERS_TYPES:  # printer, storage, repository
             rule_type = 'save'
@@ -1196,8 +1212,6 @@ class ChefTask(Task):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
-                # Trace inheritance
-                trace_inheritance(self.db, action, obj, policy)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
@@ -1387,6 +1401,97 @@ class ChefTask(Task):
                                       'message': self._("Pending: %d") % len(job_ids_by_order)}})
         if are_new_jobs:
             invalidate_jobs(self.request, user)
+            
+        # Trace inheritance
+        if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            if action != 'deleted':
+                # Get an updated 'inheritance' field because this field may have been modified by a previous task in the queue
+                # when the administrator adds several changes to the queue and then clic on "apply changes" button
+                updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+                if not updated_obj:
+                    self.log("error","object_action - Node not found  %s (%s,%s)" %(str(obj['_id']), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                    return False   
+                    
+                if 'inheritance' in updated_obj:
+                    obj['inheritance'] = updated_obj['inheritance']
+                
+            if action == 'created':
+                # When creating or moving an object we must change the inheritance of the node
+                # event when it has no policies applied
+                move_in_inheritance_and_recalculate_policies(self.logger, self.db, obj, obj)
+                
+                # The inheritance field may have been updated
+                updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+                if not updated_obj:
+                    self.log("error","object_action - Node not found  %s (%s,%s)" %(str(obj['_id']), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                    return False   
+                    
+                if 'inheritance' in updated_obj:
+                    obj['inheritance'] = updated_obj['inheritance']
+                
+                
+            if action == 'deleted' and obj['type'] == 'group' and ('members' in obj):
+                # When a group is deleted we must remove it from all its members
+                self.log("debug","object_action - Deleting a group!")
+                for object_id in obj['members']:
+                    member = self.db.nodes.find_one({'_id': object_id})
+                    if not member:
+                        self.log("error","object_action - Node not found  %s (%s,%s)" %(str(object_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        return False  
+
+                    if not 'inheritance' in member:
+                        continue                        
+                        
+                    remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
+                    self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
+                    recalculate_inherited_field(self.logger, self.db, str(object_id))
+                    
+            else:
+            
+                # Changing an object (by adding or removing groups)
+                groups_changed = False
+                for group_id, group_action in self.get_groups(obj, objold):
+                    self.log("debug","object_action - changing groups: group ID = {0} action = {1}".format(group_id, group_action))
+                    group = self.db.nodes.find_one({'_id': group_id})
+                    if not group:
+                        self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        continue            
+                
+                    if group_action == 'add':
+                        group_added = add_group_to_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
+                        groups_changed = (groups_changed or group_added)
+                        
+                    if group_action == 'delete':
+                        group_deleted = remove_group_from_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
+                        groups_changed = (groups_changed or group_deleted)
+                        
+                if groups_changed:
+                    self.log("debug","object_action - groups changed!")
+                    # Update node in mongo db
+                    self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                    
+                    # Refresh all policies of the added groups in the inheritance field
+                    for group_id, group_action in self.get_groups(obj, objold):
+                        if group_action == 'add':
+                            group = self.db.nodes.find_one({'_id': group_id})
+                            if not group:
+                                self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                                continue            
+
+                            for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):
+                                policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                                recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
+
+                    recalculate_inherited_field(self.logger, self.db, str(obj['_id']))
+                                
+                
+                # Changing an object (only if it has policies applied)
+                rule_type = 'policies'        
+                for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
+                    self.log("debug","object_action - changing: policy_id = {0} action = {1}".format(policy_id, policy_action))
+                    policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                    trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
+                
 
     def object_created(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='created', computers=computers)

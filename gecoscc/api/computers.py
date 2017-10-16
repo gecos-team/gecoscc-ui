@@ -17,7 +17,7 @@ from cornice.resource import resource
 from chef import Node as ChefNode
 from chef import ChefError
 from chef.exceptions import ChefServerError
-from gecoscc.utils import get_chef_api
+from gecoscc.utils import get_chef_api, get_inheritance_tree_policies_list
 
 
 from gecoscc.api import TreeLeafResourcePaginated
@@ -63,11 +63,30 @@ class ComputerResource(TreeLeafResourcePaginated):
             # ObjectId to string for JSON serialize
             [d.update({'_id': str(d['_id'])}) for d in users]
             
+            # Create a list of users that provides at least one user policy to this computer
+            users_inheritance_pre = list(node_collection.find({
+                "$and": [
+                    { "$or": [{"name": {"$in": usernames}}] }, 
+                    { "type":"user"},
+                    { "computers": {"$elemMatch": {"$eq": ObjectId(nodeid)}}}
+                 ]
+            },{'_id':1,'name':1,'path':1, 'inheritance': 1}))
+            [d.update({'_id': str(d['_id'])}) for d in users_inheritance_pre]
+
+            users_inheritance = []
+            for usr_inh in users_inheritance_pre:
+                if 'inheritance' in usr_inh:
+                    policies_list = get_inheritance_tree_policies_list(usr_inh['inheritance'])
+                    if len(policies_list) > 0:
+                        users_inheritance.append(usr_inh)
+            
+            
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
             
             result.update({'ohai': ohai,
-                           'users': users,
+                           'users': users, # Users related with this computer
+                           'users_inheritance': users_inheritance, # Users related with this computer that provides at least one user policy
                            'uptime': ohai.get('uptime', ''),
                            #'gcc_link': ohai.get('gcc_link',True),
                            'ipaddress': ohai.get('ipaddress', ''),

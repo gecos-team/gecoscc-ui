@@ -727,4 +727,19 @@ legend {
     margin-right: 5px;
     color: #ff9900;
 }    
+
+.no-inherited {
+    text-decoration: line-through;
+}
+
+.inheritance_main_element {
+    font-weight: bold;
+}
+
+#inheritance_tree .tree-item {
+    margin-left: 0px;
+}
+
+.gray_background {
+    background-color: #f9f9f9;
 }

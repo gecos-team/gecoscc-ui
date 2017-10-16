@@ -300,8 +300,35 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Inheritance list') }}</div>
+                    <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
+                        <span class="fa fa-refresh"></span>
+                    </button>
                 </div>
+                
                 <div class="bootstrap-admin-panel-content"></div>
+
+                <% if (users_inheritance && users_inheritance.length > 0) { %>
+                <div class="bootstrap-admin-panel-content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <!-- Table to display the users related with this computer -->
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th class="gray_background"><strong>{{ gettext('User policies') }}</strong></th>
+                                    
+                                <% users_inheritance.forEach(function (user) { %>
+                                    <td>
+                                        <a href="#ou/<%= _.last(user.path.split(',')) %>/user/<%= user._id %>/inheritance"><span class="fa fa-user"></span> <%= user.name %></a> 
+                                    </td>
+                                <% }) %>
+                                    
+                                </tr>
+                            </table>
+                        </div>
+                    </div>    
+                </div>
+                <% } %>
+
             </div>
         </div>
     </div>

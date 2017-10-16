@@ -17,6 +17,7 @@ import subprocess
 import json
 import requests
 import re
+from copy import deepcopy
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
@@ -27,10 +28,9 @@ from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
+from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername, trace_inheritance, order_groups_by_depth
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
-from gecoscc.tasks import ChefTask
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
@@ -67,6 +67,20 @@ class Command(BaseCommand):
             action='store',
             help='The pem file that contains the chef administrator private key'
         ),
+        make_option(
+            '-i', '--inheritance',
+            dest='inheritance',
+            action='store_true',
+            default=False,
+            help='Check inheritance field'
+        ),        
+        make_option(
+            '-c', '--clean-inheritance',
+            dest='clean_inheritance',
+            action='store_true',
+            default=False,
+            help='Clean inheritance field (must be used with -i)'
+        ),          
     ]
 
     required_options = (
@@ -233,12 +247,41 @@ class Command(BaseCommand):
             except Exception as err:
                 logger.error('Policy %s with slug %s can\'t be serialized: %s'%(policy['_id'], policy['slug'], str(err)))
                 
+        if self.options.clean_inheritance:
+            logger.info('Cleaning inheritance field...')
+            self.db.nodes.update({"inheritance": { '$exists': True }}, { '$unset': { "inheritance": {'$exist': True } }}, multi=True)
         
         logger.info('Checking tree...')
         # Look for the root of the nodes tree
         root_nodes = self.db.nodes.find({"path" : "root"})    
         for root in root_nodes:        
             self.check_node_and_subnodes(root)
+        
+        logger.info('Checking nodes that are outside the tree (missing OUs in the PATH)...')
+        # Check node path
+        nodes = self.db.nodes.find({})    
+        for node in nodes:
+            if not 'path' in node:
+                logger.error('Node with ID: %s has no "path" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'name' in node:
+                logger.error('Node with ID: %s has no "name" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'type' in node:
+                logger.error('Node with ID: %s has no "type" attribute!'%(str(node['_id'])))                
+                continue
+
+                
+            for ou_id in node['path'].split(','):
+                if ou_id == 'root':
+                    continue
+                    
+                ou = self.db.nodes.find_one({ "_id" : ObjectId(ou_id) })    
+                if not ou:
+                    logger.error('Can\'t find OU %s that belongs to node path (node ID: %s NAME: %s)'%(str(ou_id), str(node['_id']), node['name']))                
+                    continue        
         
         logger.info('Checking chef node references...')
         # Check the references to Chef nodes
@@ -280,9 +323,8 @@ class Command(BaseCommand):
                 computer_node.save()
                 
             # Check "updated_by" field
-            task = ChefTask()
             atrributes = computer_node.normal.to_dict()
-            updated, updated_attributes = self.check_updated_by_field(node_id, None, task, atrributes)
+            updated, updated_attributes = self.check_updated_by_field(node_id, None, atrributes)
             if updated:
                 computer_node.normal = atrributes
                 computer_node.save()
@@ -290,14 +332,14 @@ class Command(BaseCommand):
         
         logger.info('END ;)')
         
-    def check_updated_by_field(self, node_id, key, task, attributes):
+    def check_updated_by_field(self, node_id, key, attributes):
         updated = False
         if isinstance(attributes, dict):
             for attribute in attributes:
                 if attribute == 'updated_by':
                     if 'group' in attributes['updated_by']:
                         # Sort groups
-                        sorted_groups = task.order_groups_by_depth(attributes['updated_by']['group'])
+                        sorted_groups = order_groups_by_depth(self.db, attributes['updated_by']['group'])
                         if attributes['updated_by']['group'] != sorted_groups:
                             logger.info("Sorting updated_by field for node {0} - {1}!".format(node_id, key)) 
                             attributes['updated_by']['group'] = sorted_groups
@@ -308,7 +350,7 @@ class Command(BaseCommand):
                     else:
                         k = key+'.'+attribute
                         
-                    up, attributes[attribute] = self.check_updated_by_field(node_id, k, task, attributes[attribute])
+                    up, attributes[attribute] = self.check_updated_by_field(node_id, k, attributes[attribute])
                     updated = (updated or up)
         
         return updated, attributes
@@ -331,6 +373,9 @@ class Command(BaseCommand):
         Check the policies applied to a node
         '''        
         logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        
+        if self.options.inheritance:
+            inheritance_node = deepcopy(node)      
         
         # Check policies
         if 'policies' in node:
@@ -369,9 +414,20 @@ class Command(BaseCommand):
                     
                     # Check object
                     self.check_object_property(policydata['schema'], nodedata, None, is_emitter_policy, emitter_policy_slug)
+                    
+                    if self.options.inheritance:
+                        # Check inheritance field
+                        trace_inheritance(logger, self.db, 'change', inheritance_node, deepcopy(policydata))
                             
         else:
             logger.debug('No policies in this node.')
+        
+        if self.options.inheritance and ('inheritance' in inheritance_node) and (
+            (not 'inheritance' in node) or (inheritance_node['inheritance'] != node['inheritance'])):
+            
+            # Save inheritance field
+            logger.info('FIX: updating inheritance field!')
+            self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'inheritance': inheritance_node['inheritance']}})
         
         # Check referenced nodes
         if node['type'] == 'user':
@@ -414,7 +470,6 @@ class Command(BaseCommand):
             if len(difference) > 0:
                 logger.info('FIX: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
-
         
         
     def check_referenced_nodes(self, id_list, possible_types, property):
