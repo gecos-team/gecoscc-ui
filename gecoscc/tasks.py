@@ -925,10 +925,19 @@ class ChefTask(Task):
         if not objold:
             return []
             
-        members_add = set(obj['memberof']) - set(objold['memberof'])
+        obj_memberof = set()
+        if 'memberof' in obj:
+            obj_memberof = set(obj['memberof'])
+            
+        objold_memberof = set()
+        if 'memberof' in objold:
+            objold_memberof = set(objold['memberof'])
+            
+        
+        members_add = obj_memberof - objold_memberof
         members_add = [(group_id, 'add') for group_id in members_add]
         
-        members_delete = set(objold['memberof']) - set(obj['memberof'])
+        members_delete = objold_memberof - obj_memberof
         members_delete = [(group_id, 'delete') for group_id in members_delete]
 
         return members_add + members_delete        
@@ -1167,8 +1176,7 @@ class ChefTask(Task):
                     
                 if 'inheritance' in updated_obj:
                     obj['inheritance'] = updated_obj['inheritance']
-
-
+                
             if action == 'created':
                 # When creating or moving an object we must change the inheritance of the node
                 # event when it has no policies applied
@@ -1186,6 +1194,7 @@ class ChefTask(Task):
                 
             if action == 'deleted' and obj['type'] == 'group' and ('members' in obj):
                 # When a group is deleted we must remove it from all its members
+                self.log("debug","object_action - Deleting a group!")
                 for object_id in obj['members']:
                     member = self.db.nodes.find_one({'_id': object_id})
                     if not member:
@@ -1197,11 +1206,14 @@ class ChefTask(Task):
                         
                     remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
                     self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
+                    recalculate_inherited_field(self.logger, self.db, str(object_id))
+                    
             else:
             
                 # Changing an object (by adding or removing groups)
                 groups_changed = False
                 for group_id, group_action in self.get_groups(obj, objold):
+                    self.log("debug","object_action - changing groups: group ID = {0} action = {1}".format(group_id, group_action))
                     group = self.db.nodes.find_one({'_id': group_id})
                     if not group:
                         self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
@@ -1216,6 +1228,7 @@ class ChefTask(Task):
                         groups_changed = (groups_changed or group_deleted)
                         
                 if groups_changed:
+                    self.log("debug","object_action - groups changed!")
                     # Update node in mongo db
                     self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
                     
@@ -1230,11 +1243,14 @@ class ChefTask(Task):
                             for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):
                                 policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                                 recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
-                    
-                           
+
+                    recalculate_inherited_field(self.logger, self.db, str(obj['_id']))
+                                
+                
                 # Changing an object (only if it has policies applied)
                 rule_type = 'policies'        
                 for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
+                    self.log("debug","object_action - changing: policy_id = {0} action = {1}".format(policy_id, policy_action))
                     policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                     trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
                 

@@ -1214,20 +1214,22 @@ def get_inheritance_tree_policies_list(inheritanceTree):
     
     list = []
     
-    for policy_id in inheritanceTree['policies']:
-        exist = False
-        for policy in list:
-            if policy['_id'] == policy_id:
-                exist = True
-                break
-                
-        if not exist:
-            policy = deepcopy(inheritanceTree['policies'][policy_id])
-            policy['_id'] = policy_id
-            list.append(policy)
-        
-    for child in inheritanceTree['children']:
-        list.extend(get_inheritance_tree_policies_list(child))
+    if 'policies' in inheritanceTree:
+        for policy_id in inheritanceTree['policies']:
+            exist = False
+            for policy in list:
+                if policy['_id'] == policy_id:
+                    exist = True
+                    break
+                    
+            if not exist:
+                policy = deepcopy(inheritanceTree['policies'][policy_id])
+                policy['_id'] = policy_id
+                list.append(policy)
+    
+    if 'children' in inheritanceTree:
+        for child in inheritanceTree['children']:
+            list.extend(get_inheritance_tree_policies_list(child))
 
     return list 
     
@@ -1325,7 +1327,8 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
             
             # Look for the base node and remove unnecessary branches
             base_node = inheritanceTree['parent']
-            while ('parent' in base_node) and (base_node['_id'] not in obj['path']):
+            while ('parent' in base_node) and not ((base_node['_id'] in obj['path']) and base_node['is_main_element']):
+                logger.debug("utils.py ::: move_in_inheritance - remove %s from path" %(base_node['_id']))
                 base_node['parent']['children'].remove(base_node)
                 base_node = base_node['parent']
             
@@ -1477,6 +1480,31 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
                 return False             
                 
             trace_inheritance(logger, db, 'change', newnode, policydata)                
+    
+    # If the object is a computer or an user and belongs to any group
+    # we have to ensure that all the groups appears after the last OU
+    if (obj['type'] == 'user' or obj['type'] == 'computer') and len(obj.get('memberof', []))>0:
+        # The easiest way to do this is to remove all the groups and add them again
+        todelete = list(db.nodes.find( {'_id'  : {'$in': obj.get('memberof', [])}, 'type': 'group'} ))
+        toadd = []
+        for group in todelete:
+            remove_group_from_inheritance_tree(logger, db, group, obj['inheritance'])
+            toadd.append(group)
+            
+        for group in toadd:
+            add_group_to_inheritance_tree(logger, db, group, obj['inheritance'])
+            
+            if 'policies' in group:
+                for policy_id in group['policies'].keys():
+                    policy = db.policies.find_one({"_id": ObjectId(policy_id)})
+                    recalculate_inheritance_for_node(logger, db, 'changed', group, policy, obj)            
+            
+        # Recalculate path values
+        recalculate_path_values(logger, obj['inheritance'], 'root', [])
+        
+        # Update node in mongo db
+        db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+        
     
     # Finaly recalculate the 'inherited' field of all the non mergeable policies
     recalculate_inherited_field(logger, db, str(obj['_id']))   
