@@ -229,14 +229,17 @@ class Command(BaseCommand):
                 instance['local_admin_list'].append({'name':removed,'action':'remove'})
             del instance['local_admin_remove_list']
 
+        elif "u'local_admin_list' is a required property" in error.message:
+            instance['local_admin_list'] = []
+
         elif "is not of type u'object'" in error.message:
-             error.path.rotate(-1)
-             index = error.path.popleft()
-             logger.info('index = %s' % str(index))
-             user = instance['local_admin_list'][index]
-             logger.info('user = %s' % str(user))
-             logger.info('BEFORE instance = %s' % str(instance))
-             instance['local_admin_list'][index] = {'name': user, 'action': 'add'}
-             logger.info('AFTER instance = %s' % str(instance))
+            error.path.rotate(-1)
+            index = error.path.popleft()
+            logger.info('index = %s' % str(index))
+            user = instance['local_admin_list'][index]
+            logger.info('user = %s' % str(user))
+            logger.info('BEFORE instance = %s' % str(instance))
+            instance['local_admin_list'][index] = {'name': user, 'action': 'add'}
+            logger.info('AFTER instance = %s' % str(instance))
         else:
             raise error
