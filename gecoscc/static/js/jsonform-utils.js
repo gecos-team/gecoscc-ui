@@ -96,3 +96,13 @@ function calculateVersions(node, query) {
     });
     
 }
+function desktopfileExtensionValidate(node) {
+    var desktopEl = $(node.parentNode.children[0].el).find("input").last();
+    
+    desktopEl.focusout(function() {
+        var name = $(this).val();
+        if (name && !(name.endsWith(".desktop"))) {
+            $(this).val( name + '.desktop');
+        }
+    });
+}
