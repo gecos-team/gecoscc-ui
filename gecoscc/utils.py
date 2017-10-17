@@ -2113,6 +2113,10 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
     
     from gecoscc.tasks import DELETED_POLICY_ACTION
     
+    # Check if the policy is applicable to this object
+    if not node['type'] in policy['targets']:
+        return False
+    
     # Calculate inheritance tree for the first time when neccessary
     if not calculate_initial_inheritance_for_node(logger, db, node):
         return False
