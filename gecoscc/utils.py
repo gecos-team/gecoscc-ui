@@ -1451,7 +1451,8 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
     logger.debug("move_in_inheritance_and_recalculate_policies - Node name=%s type=%s"%(obj['name'], obj['type']))
     
     # Calculate inheritance tree for the first time when neccessary
-    calculate_initial_inheritance_for_node(logger, db, obj)
+    if not calculate_initial_inheritance_for_node(logger, db, obj):
+        return False
     
     # The object is being moved to a new position in the nodes tree
     nodes_added = move_in_inheritance(logger, db, srcobj, obj['inheritance'])
@@ -1775,15 +1776,28 @@ def apply_change_in_inheritance(logger, db, action, obj, policy, node, inheritan
         
     if obj is None:
         raise ValueError('obj is None')    
+        
+    if (not '_id' in obj) or (not 'name' in obj):
+        raise ValueError('obj is not a node')           
 
     if policy is None:
         raise ValueError('policy is None')    
 
+    if (not '_id' in policy) or (not 'targets' in policy):
+        raise ValueError('policy is not a policy')          
+        
     if node is None:
         raise ValueError('node is None')    
         
+    if (not '_id' in node) or (not 'name' in node):
+        raise ValueError('node is not a node')           
+        
     if inheritanceTree is None:
         raise ValueError('inheritanceTree is None')     
+        
+    if (not '_id' in inheritanceTree) or (not 'name' in inheritanceTree):
+        raise ValueError('inheritanceTree is not a node')           
+        
     
     found = False
     this_node = inheritanceTree
@@ -1862,6 +1876,9 @@ def calculate_initial_inheritance_for_node(logger, db, node):
         
     if node is None:
         raise ValueError('node is None')    
+        
+    if (not '_id' in node) or (not 'name' in node):
+        raise ValueError('node is not a node')          
         
     if (not 'inheritance' in node) or not node['inheritance']:
         if node['type'] == 'group':
@@ -2051,17 +2068,26 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
     if obj is None:
         raise ValueError('obj is None')  
 
+    if (not '_id' in obj) or (not 'name' in obj):
+        raise ValueError('obj is not a node')          
+        
     if policy is None:
         raise ValueError('policy is None')  
 
+    if (not '_id' in policy) or (not 'targets' in policy):
+        raise ValueError('policy is not a policy')          
+        
     if node is None:
         raise ValueError('node is None')          
     
+    if (not '_id' in node) or (not 'name' in node):
+        raise ValueError('node is not a node')      
     
     from gecoscc.tasks import DELETED_POLICY_ACTION
     
     # Calculate inheritance tree for the first time when neccessary
-    calculate_initial_inheritance_for_node(logger, db, node)
+    if not calculate_initial_inheritance_for_node(logger, db, node):
+        return False
         
     if action == 'created':
         # The object is being moved to a new position in the nodes tree
@@ -2128,9 +2154,14 @@ def trace_inheritance(logger, db, action, obj, policy):
     if obj is None:
         raise ValueError('obj is None')  
 
+    if (not '_id' in obj) or (not 'name' in obj):
+        raise ValueError('obj is not a node')  
+        
     if policy is None:
         raise ValueError('policy is None')  
     
+    if (not '_id' in policy) or (not 'targets' in policy):
+        raise ValueError('policy is not a policy')  
     
     logger.debug("utils.py ::: trace_inheritance - action: {0} obj: {1} policy: {2}".format(action, obj['name'], policy['_id']))
 

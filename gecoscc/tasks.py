@@ -1191,48 +1191,52 @@ class ChefTask(Task):
                     if not member:
                         self.log("error","object_action - Node not found  %s (%s,%s)" %(str(object_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
                         return False  
+
+                    if not 'inheritance' in member:
+                        continue                        
                         
                     remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
                     self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
+            else:
             
-            # Changing an object (by adding or removing groups)
-            groups_changed = False
-            for group_id, group_action in self.get_groups(obj, objold):
-                group = self.db.nodes.find_one({'_id': group_id})
-                if not group:
-                    self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
-                    continue            
-            
-                if group_action == 'add':
-                    group_added = add_group_to_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
-                    groups_changed = (groups_changed or group_added)
-                    
-                if group_action == 'delete':
-                    group_deleted = remove_group_from_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
-                    groups_changed = (groups_changed or group_deleted)
-                    
-            if groups_changed:
-                # Update node in mongo db
-                self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
-                
-                # Refresh all policies of the added groups in the inheritance field
+                # Changing an object (by adding or removing groups)
+                groups_changed = False
                 for group_id, group_action in self.get_groups(obj, objold):
-                    if group_action == 'add':
-                        group = self.db.nodes.find_one({'_id': group_id})
-                        if not group:
-                            self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
-                            continue            
-
-                        for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):
-                            policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-                            recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
+                    group = self.db.nodes.find_one({'_id': group_id})
+                    if not group:
+                        self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        continue            
                 
-                       
-            # Changing an object (only if it has policies applied)
-            rule_type = 'policies'        
-            for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
-                policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
-                trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
+                    if group_action == 'add':
+                        group_added = add_group_to_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
+                        groups_changed = (groups_changed or group_added)
+                        
+                    if group_action == 'delete':
+                        group_deleted = remove_group_from_inheritance_tree(self.logger, self.db, group, obj['inheritance'])
+                        groups_changed = (groups_changed or group_deleted)
+                        
+                if groups_changed:
+                    # Update node in mongo db
+                    self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                    
+                    # Refresh all policies of the added groups in the inheritance field
+                    for group_id, group_action in self.get_groups(obj, objold):
+                        if group_action == 'add':
+                            group = self.db.nodes.find_one({'_id': group_id})
+                            if not group:
+                                self.log("error","object_action - Group not found  %s (%s,%s)" %(str(group_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                                continue            
+
+                            for policy_id, policy_action in self.get_policies('policies', 'changed', group, None):
+                                policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                                recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
+                    
+                           
+                # Changing an object (only if it has policies applied)
+                rule_type = 'policies'        
+                for policy_id, policy_action in self.get_policies(rule_type, action, obj, objold):
+                    policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
+                    trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
                 
 
     def object_created(self, user, objnew, computers=None):
