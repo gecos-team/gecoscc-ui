@@ -260,7 +260,20 @@ class Command(BaseCommand):
         logger.info('Checking nodes that are outside the tree (missing OUs in the PATH)...')
         # Check node path
         nodes = self.db.nodes.find({})    
-        for node in nodes:                
+        for node in nodes:
+            if not 'path' in node:
+                logger.error('Node with ID: %s has no "path" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'name' in node:
+                logger.error('Node with ID: %s has no "name" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'type' in node:
+                logger.error('Node with ID: %s has no "type" attribute!'%(str(node['_id'])))                
+                continue
+
+                
             for ou_id in node['path'].split(','):
                 if ou_id == 'root':
                     continue
