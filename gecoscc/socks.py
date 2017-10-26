@@ -19,7 +19,7 @@ from pyramid.threadlocal import get_current_registry
 from socketio import socketio_manage
 from socketio.namespace import BaseNamespace
 from socketio.server import SocketIOServer
-from socketio.sgunicorn import GeventSocketIOWorker
+from socketio.sgunicorn import GeventSocketIOWorker, GunicornWSGIHandler
 from socketio.virtsocket import Socket
 
 CHANNEL_WEBSOCKET = 'message'
@@ -111,6 +111,15 @@ def delete_computer(object_id, path):
     }))
 
 
+class GecosWSGIHandler(GunicornWSGIHandler):
+
+    def get_environ(self):
+        env = super(GecosWSGIHandler, self).get_environ()
+        for key, value in self._headers():
+            if key  == 'HTTP_X_FORWARDED_PROTO' and 'https' == value:
+                env['wsgi.url_scheme'] = 'https'
+        return env
+
 class GecosSocketIOServer(SocketIOServer):
 
     def get_socket(self, sessid=''):
@@ -129,6 +138,7 @@ class GecosSocketIOServer(SocketIOServer):
 class GecosGeventSocketIOWorker(GeventSocketIOWorker):
 
     server_class = GecosSocketIOServer
+    wsgi_handler = GecosWSGIHandler
 
 
 class GecosNamespace(BaseNamespace):
