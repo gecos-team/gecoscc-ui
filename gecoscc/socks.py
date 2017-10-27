@@ -115,9 +115,9 @@ class GecosWSGIHandler(GunicornWSGIHandler):
 
     def get_environ(self):
         env = super(GecosWSGIHandler, self).get_environ()
-        for key, value in self._headers():
-            if key  == 'HTTP_X_FORWARDED_PROTO' and 'https' == value:
-                env['wsgi.url_scheme'] = 'https'
+        headers = dict(self._headers())
+        if ('HTTP_X_FORWARDED_PROTO' in headers and headers['HTTP_X_FORWARDED_PROTO'] == 'https' ):
+            env['wsgi.url_scheme'] = 'https'
         return env
 
 class GecosSocketIOServer(SocketIOServer):
