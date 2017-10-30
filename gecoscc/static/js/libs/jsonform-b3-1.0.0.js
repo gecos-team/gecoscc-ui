@@ -243,21 +243,9 @@ var inputFieldTemplate = function (type) {
             '<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
             '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
             '<%= (node.placeholder? "placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
-        ' />' +
-        '<div class="alert alert-warning hidden"></div>',
+        ' />', 
     'fieldtemplate': true,
-    'inputfield': true,
-    'onInsert': function (evt, node) {
-        if (node.schemaElement && node.schemaElement.validate) {                                                                
-            if (_.isFunction(window[node.schemaElement.validate])) {
-                window[node.schemaElement.validate](node);
-            } else {
-                var warn = gettext(node.schemaElement.validate + " function not found. Please consult a global administrator if you need more information.");
-                $(node.el).find(".alert").html(warn);
-                $(node.el).find(".alert").removeClass('hidden');                                                                
-            }
-        }
-    }
+    'inputfield': true
   }
 };
 
@@ -3443,9 +3431,6 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
       schemaElement.readOnly ||
       formElement.readonly ||
       schemaElement.readonly;
-    formElement.validate =
-      formElement.validate ||
-      schemaElement.validate;
 
     // Compute the ID of the input field
     if (!formElement.id) {
