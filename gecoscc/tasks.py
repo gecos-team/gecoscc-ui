@@ -1188,9 +1188,9 @@ class ChefTask(Task):
             2 - object type is emitter: printer, storage or repository
         '''
         updated = False
-        if action == DELETED_POLICY_ACTION or action == 'detached':
+        if action == 'detached':
             return(node, False)
-        if action not in ['changed', 'created']:
+        if action not in ['changed', 'created', 'deleted']:
             raise ValueError('The action should be changed or created')
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
             if force_update or self.is_updating_policies(obj, objold):
