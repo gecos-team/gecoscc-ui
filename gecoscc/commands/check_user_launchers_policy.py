@@ -189,8 +189,6 @@ class Command(BaseCommand):
             index = error.path.popleft()
             logger.debug('index = %s' % str(index))
             desktopfile = instance['launchers'][index]
-            if not desktopfile.endswith('.desktop'):
-                desktopfile += '.desktop'
             logger.debug('desktopfile = %s' % str(desktopfile))
             logger.debug('BEFORE instance = %s' % str(instance))
             instance['launchers'][index]= {'name': desktopfile, 'action': 'add'}
