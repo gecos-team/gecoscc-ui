@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-08-08 11:34+0200\n"
+"POT-Creation-Date: 2017-10-31 11:21+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -148,56 +148,56 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:119
+#: gecoscc/static/js/computer.js:121
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:120
+#: gecoscc/static/js/computer.js:122
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:128
+#: gecoscc/static/js/computer.js:130
 msgid "This workstation is not linked."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:129
+#: gecoscc/static/js/computer.js:131
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:136
+#: gecoscc/static/js/computer.js:138
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:144 gecoscc/static/js/computer.js:152
-#: gecoscc/static/js/computer.js:162 gecoscc/static/js/computer.js:172
+#: gecoscc/static/js/computer.js:146 gecoscc/static/js/computer.js:154
+#: gecoscc/static/js/computer.js:164 gecoscc/static/js/computer.js:174
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:145
+#: gecoscc/static/js/computer.js:147
 msgid "There were errors while saving this node in Chef"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:153
+#: gecoscc/static/js/computer.js:155
 msgid "Network problems connecting to the Control Center."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:163
+#: gecoscc/static/js/computer.js:165
 msgid "Last synchronization had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:173
+#: gecoscc/static/js/computer.js:175
 msgid "Synchronization is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:214
+#: gecoscc/static/js/computer.js:216
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:214
+#: gecoscc/static/js/computer.js:216
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:214
+#: gecoscc/static/js/computer.js:216
 msgid "Minutes"
 msgstr ""
 
@@ -207,11 +207,11 @@ msgid_plural "x04"
 msgstr[0] ""
 msgstr[1] ""
 
-#: gecoscc/static/js/jsonform-utils.js:40
+#: gecoscc/static/js/jsonform-utils.js:39
 msgid "latest"
 msgstr ""
 
-#: gecoscc/static/js/jsonform-utils.js:45
+#: gecoscc/static/js/jsonform-utils.js:44
 msgid "current"
 msgstr ""
 
@@ -219,11 +219,21 @@ msgstr ""
 msgid "Only the super admin can delete this object"
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:126
+#: gecoscc/static/js/policies-form-generator.js:100
+msgid "This is an auto-reverting policy."
+msgstr ""
+
+#: gecoscc/static/js/policies-form-generator.js:101
+msgid ""
+"Any configuration element removed from the form will be inmediatly removed "
+"from the corresponding workstations."
+msgstr ""
+
+#: gecoscc/static/js/policies-form-generator.js:147
 msgid "Policy successfully saved."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:151
+#: gecoscc/static/js/policies-form-generator.js:172
 msgid "Policy successfully deleted."
 msgstr ""
 
@@ -263,11 +273,11 @@ msgstr ""
 msgid "Loading nodes..."
 msgstr ""
 
-#: gecoscc/static/js/user.js:93
+#: gecoscc/static/js/user.js:97
 msgid "Can not delete user because it is linked to a computer."
 msgstr ""
 
-#: gecoscc/static/js/user.js:94
+#: gecoscc/static/js/user.js:98
 msgid "Delete first locally on the computer"
 msgstr ""
 

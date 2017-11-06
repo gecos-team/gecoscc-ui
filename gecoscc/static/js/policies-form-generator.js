@@ -92,6 +92,27 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             return this;
         },
 
+        onBeforeRender: function () {
+            var autoreverse = this.model.get('autoreverse');
+
+            if (autoreverse) {
+                this.alertWarning(
+                    gettext("This is an auto-reverting policy."),
+                    "<br/> - " + gettext("Any configuration element removed from the form will be inmediatly removed from the corresponding workstations.")
+                );
+            }
+        },
+
+        alertWarning: function (strong, text) {
+            this.model.set("iconClass", "info-icon-warning");
+            this.model.set("labelClass", "label-warning");
+            App.showAlert(
+                "warning",
+                strong,
+                text
+            );
+        },
+
         onRender: function () {
             if (this.disabled) {
                 this.$el.find("textarea,input,select").prop("disabled", true);

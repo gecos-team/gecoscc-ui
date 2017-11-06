@@ -201,16 +201,17 @@ class Command(BaseCommand):
             
             if key == MIMETYPES_POLICY:
                 self.set_mimetypes_url(value)
-                
+
             support_os = value['properties']['support_os']['default']
-            
+
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
-                    
+
             path = value.pop('path')
 
             is_mergeable = value.pop('is_mergeable', False)
+            autoreverse = value.pop('autoreverse', False)
 
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
@@ -240,6 +241,7 @@ class Command(BaseCommand):
                 'is_emitter_policy': False,
                 'support_os': support_os,
                 'is_mergeable': is_mergeable,
+                'autoreverse': autoreverse,
             }
 
             for lan in languages:
@@ -265,7 +267,8 @@ class Command(BaseCommand):
                     'is_emitter_policy': True,
                     'schema': schema,
                     'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default'],
-                    'is_mergeable': True
+                    'is_mergeable': True,
+                    'autoreverse': policies[POLICY_EMITTER_PATH[slug].split('.')[-2]].get('autoreverse', False)
                 }
                 for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]

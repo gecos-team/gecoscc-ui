@@ -744,6 +744,7 @@ class Policy(colander.MappingSchema):
                                             default=False)
     support_os = StringList(missing=[], default=[])
     is_mergeable = colander.SchemaNode(RealBoolean())
+    autoreverse = colander.SchemaNode(RealBoolean())
 
 
 class Policies(colander.SequenceSchema):
