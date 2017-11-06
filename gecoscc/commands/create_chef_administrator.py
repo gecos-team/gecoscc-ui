@@ -129,7 +129,7 @@ class Command(BaseCommand):
         print "User %s created in chef server" % toChefUsername(self.options.username)
 
         if int(self.settings.get('chef.version').split('.')[0]) >= 12:
-            if os.path.isfile('/opt/opscode/bin/chef-server-ctl') is not None:
+            if os.path.isfile('/opt/opscode/bin/chef-server-ctl') is True:
                 # Include the user in the "server-admins" group
                 cmd = ['/opt/opscode/bin/chef-server-ctl', 'grant-server-admin-permissions', toChefUsername(self.options.username)]
                 if subprocess.call(cmd) != 0:
