@@ -191,6 +191,10 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.inheritanceList.render();
+            
+            // Ensure the execution of onShow after onRender
+            this.onShow();
+            
         },
 
         save: function (evt) {

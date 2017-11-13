@@ -778,7 +778,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });                 
 
                 
-                
+            // Ensure the execution of onShow after onRender
+            this.onShow();                
         },
         
         refresh: function (evt) {

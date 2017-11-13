@@ -159,6 +159,8 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
 
+            // Ensure the execution of onShow after onRender
+            this.onShow();            
         },
 
         saveForm: function (evt) {

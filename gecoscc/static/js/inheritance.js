@@ -39,7 +39,7 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
             // Inheritance JSON tree rendering
             var that = this;
             var inheritance_tree = this.$el.find("#inheritance_tree");
-            inheritance_tree.tree({ dataSource: this.inheritanceTreeDataSource, model: this.resource.get('inheritance'), folderSelect:false });
+            inheritance_tree.tree({ dataSource: this.inheritanceTreeDataSource, model: this.resource.get('inheritance'), folderSelect:true });
             
             var isAllDisclosed = false;
             // Open all the branches
@@ -55,7 +55,48 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
             inheritance_tree.find( "li.folder-icon" ).find( "span.no-visited" ).removeClass('no-visited').removeClass('glyphicon-folder-open').addClass('fa fa-folder');
             inheritance_tree.find( "li.globe-icon" ).find( "span.no-visited" ).removeClass('no-visited').removeClass('glyphicon-folder-open').addClass('fa fa-globe');
             inheritance_tree.find( "li.flag-icon" ).find( "span.no-visited" ).removeClass('no-visited').removeClass('glyphicon-folder-open').addClass('fa fa-flag');
+            
+            // Set selection manager
+            inheritance_tree.on('selected.fu.tree', function(evt) {
+                var selectedItem = inheritance_tree.tree('selectedItems');
+                if (Array.isArray(selectedItem)) {
+                    selectedItem = selectedItem[0];
+                }
+                if (('key' in selectedItem) && ('path' in selectedItem)  && ('attr' in selectedItem) && ('cssClass' in selectedItem.attr)) {
+                    var obj_id = selectedItem.key.substring(1);
+                    var path = selectedItem.path.split(',');
+                    var parent_id = path[path.length-1];
+                    var obj_type = 'unknown';
+                    
+                    switch(selectedItem.attr.cssClass) {
+                        case 'group-icon':
+                            obj_type = 'group';
+                            break;
+                        case 'user-icon':
+                            obj_type = 'user';
+                            break;
+                        case 'desktop-icon':
+                            obj_type = 'computer';
+                            break;
+                        case 'globe-icon':
+                        case 'folder-icon':
+                        case 'flag-icon':
+                            obj_type = 'ou';
+                            break;
+                                
+                    }
+                    
+                    //console.log("url: "+'/#ou/'+parent_id+'/'+obj_type+'/'+obj_id+'/policies');
+                    if (obj_type=='ou' || obj_type == 'group') {
+                        window.location = '/#ou/'+parent_id+'/'+obj_type+'/'+obj_id+'/policies';
+                    }
+                }
+                inheritance_tree.tree('deselectAll');
+                inheritance_tree.find(':focus').trigger( "blur" );
+            });
         },        
+        
+        
         
         inheritanceTreeDataSource: function(parentData, callback) {
             var inheritance = this.model;
