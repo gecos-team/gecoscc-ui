@@ -20,6 +20,7 @@ import re
 import pkg_resources
 import logging
 import pymongo
+import traceback
 
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
@@ -1145,11 +1146,13 @@ def set_inherited_field(logger, inheritanceTree, policy_id, false_node_list, pri
         raise ValueError('priority_node_id is not a string')         
 
         
-    logger.debug("utils.py ::: set_inherited_field - inheritanceTree['_id'] = {0} priority_node_id={1} policy_id? {2}".format(inheritanceTree['_id'], priority_node_id, (policy_id in inheritanceTree['policies'])))    
+    logger.debug("utils.py ::: set_inherited_field - inheritanceTree['_id'] = {0} priority_node_id={1} policy_id? {2} is_main_element? {3}".format(
+        inheritanceTree['_id'], priority_node_id, (policy_id in inheritanceTree['policies']), inheritanceTree['is_main_element']))    
     if policy_id in inheritanceTree['policies']:
-        if inheritanceTree['_id'] == priority_node_id and inheritanceTree['is_main_element']:
+        if str(inheritanceTree['_id']) == str(priority_node_id) and inheritanceTree['is_main_element']:
             inheritanceTree['policies'][policy_id]['inherited'] = True
-        elif inheritanceTree['_id'] in false_node_list and inheritanceTree['is_main_element']:
+            logger.debug("utils.py ::: set_inherited_field - Set as inherited ({0}, {1})!".format(priority_node_id, policy_id))    
+        elif str(inheritanceTree['_id']) in false_node_list and inheritanceTree['is_main_element']:
             inheritanceTree['policies'][policy_id]['inherited'] = False
     
     for child in inheritanceTree['children']:
@@ -1197,11 +1200,12 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
     return list        
 
 # ------------------------------------------------------------------------------------------------------
-def get_inheritance_tree_policies_list(inheritanceTree):
+def get_inheritance_tree_policies_list(inheritanceTree, list):
     """Function that retuns a list with all the policies of all nodes in an inheritance Tree.
 
     Args:
         inheritanceTree (object): Tree of inheritance objects
+        list: List with policies found until this moment.
 
     Returns:
         list: List with all the policies in an inheritance tree.
@@ -1211,8 +1215,6 @@ def get_inheritance_tree_policies_list(inheritanceTree):
     if inheritanceTree is None:
         raise ValueError('inheritanceTree is None')
     
-    
-    list = []
     
     if 'policies' in inheritanceTree:
         for policy_id in inheritanceTree['policies']:
@@ -1229,7 +1231,7 @@ def get_inheritance_tree_policies_list(inheritanceTree):
     
     if 'children' in inheritanceTree:
         for child in inheritanceTree['children']:
-            list.extend(get_inheritance_tree_policies_list(child))
+            get_inheritance_tree_policies_list(child, list)
 
     return list 
     
@@ -1507,7 +1509,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
         
     
     # Finaly recalculate the 'inherited' field of all the non mergeable policies
-    recalculate_inherited_field(logger, db, str(obj['_id']))   
+    recalculate_inherited_fieldrecalculate_inherited_field(logger, db, str(obj['_id']))   
     
     
     if obj['type'] == 'group' and len(obj.get('members', []))>0:
@@ -2049,7 +2051,8 @@ def recalculate_inherited_field(logger, db, obj_id):
         return False    
 
     inherited_updated = False
-    for policy in get_inheritance_tree_policies_list(obj['inheritance']):
+    
+    for policy in get_inheritance_tree_policies_list(obj['inheritance'], []):
         if not policy['is_mergeable']:
             # Set the 'inherited' field to false in all nodes except one
             node_list = get_inheritance_tree_node_list(obj['inheritance'], str(policy['_id']))
@@ -2058,9 +2061,10 @@ def recalculate_inherited_field(logger, db, obj_id):
             inherited_updated = True
 
     if inherited_updated:
-        # Update node in mongo db to dave the 'inherited' field
+        # Update node in mongo db to save the 'inherited' field
         db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
     
+    return obj['inheritance']
     
     
 # ------------------------------------------------------------------------------------------------------

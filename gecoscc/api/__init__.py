@@ -550,6 +550,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         removes = [n for n in oldmemberof if n not in newmemberof]
 
         for group_id in removes:
+            group = self.request.db.nodes.find_one({'_id': group_id})
             self.request.db.nodes.update({
                 '_id': group_id
             }, {
@@ -557,7 +558,6 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     'members': obj['_id']
                 }
             }, multi=False)
-            group = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)

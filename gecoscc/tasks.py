@@ -1190,6 +1190,41 @@ class ChefTask(Task):
 
         return members_add + members_delete        
 
+    def get_members(self, obj, objold):
+        """Method that get the members to add and to delete from a group.
+
+        Args:
+            self (object): self pointer.
+            obj (object): Group node that received the change.
+            objold (object): Value of the group node before the change.
+
+        Returns:
+            set: Set that contains tuples of (node_id, action). Where action could be "add" or "delete".
+
+        """
+        if not objold:
+            return []
+            
+        obj_members = set()
+        if 'members' in obj:
+            obj_members = set(obj['members'])
+            
+        objold_members = set()
+        if 'members' in objold:
+            objold_members = set(objold['members'])
+            
+        
+        members_add = obj_members - objold_members
+        members_add = [(obj_id, 'add') for obj_id in members_add]
+        
+        members_delete = objold_members - obj_members
+        members_delete = [(obj_id, 'delete') for obj_id in members_delete]
+
+        return members_add + members_delete        
+        
+        
+        
+        
     def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
         '''
         This method update the node with changed or created actions.
@@ -1413,6 +1448,8 @@ class ChefTask(Task):
             invalidate_jobs(self.request, user)
             
         # Trace inheritance
+        self.log("debug","object_action - type = {0} action = {1}".format(obj['type'], action))
+        
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
             if action != 'deleted':
                 # Get an updated 'inheritance' field because this field may have been modified by a previous task in the queue
@@ -1492,8 +1529,14 @@ class ChefTask(Task):
                                 policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                                 recalculate_inheritance_for_node(self.logger, self.db, policy_action, group, policy, obj)
 
-                    recalculate_inherited_field(self.logger, self.db, str(obj['_id']))
+                    obj['inheritance'] = recalculate_inherited_field(self.logger, self.db, str(obj['_id']))
                                 
+                if obj['type'] == 'group' and len(self.get_members(obj, objold)) > 0:
+                    # When we are changing the members of a group we must ignore the change in policies
+                    # because in api/__init.py__  we are comparing the group_without_policies with the old group
+                    self.log("debug","object_action - member of group changed!")
+                    return
+                
                 
                 # Changing an object (only if it has policies applied)
                 rule_type = 'policies'        
