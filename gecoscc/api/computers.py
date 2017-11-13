@@ -76,7 +76,7 @@ class ComputerResource(TreeLeafResourcePaginated):
             users_inheritance = []
             for usr_inh in users_inheritance_pre:
                 if 'inheritance' in usr_inh:
-                    policies_list = get_inheritance_tree_policies_list(usr_inh['inheritance'])
+                    policies_list = get_inheritance_tree_policies_list(usr_inh['inheritance'], [])
                     if len(policies_list) > 0:
                         users_inheritance.append(usr_inh)
             
