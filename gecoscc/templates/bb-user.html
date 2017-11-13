@@ -116,6 +116,29 @@
                 </button>                
             </div>
             <div class="bootstrap-admin-panel-content"></div>
+            
+                <% if (computers_inheritance && computers_inheritance.length > 0) { %>
+                <div class="bootstrap-admin-panel-content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <!-- Table to display the users related with this computer -->
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th class="gray_background"><strong>{{ gettext('Computer policies') }}</strong></th>
+                                    
+                                <% computers_inheritance.forEach(function (computer) { %>
+                                    <td>
+                                        <a href="#ou/<%= _.last(computer.path.split(',')) %>/computer/<%= computer._id %>/inheritance"><span class="fa fa-desktop"></span> <%= computer.name %></a> 
+                                    </td>
+                                <% }) %>
+                                    
+                                </tr>
+                            </table>
+                        </div>
+                    </div>    
+                </div>
+                <% } %>            
+            
         </div>
     </div>
 </div>
