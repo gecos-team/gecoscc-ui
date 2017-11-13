@@ -550,7 +550,6 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         removes = [n for n in oldmemberof if n not in newmemberof]
 
         for group_id in removes:
-            group_old = self.request.db.nodes.find_one({'_id': group_id})
             self.request.db.nodes.update({
                 '_id': group_id
             }, {
@@ -558,14 +557,11 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     'members': obj['_id']
                 }
             }, multi=False)
-            group_old_without_policies = group_old
-            group_old_without_policies['policies'] = {}
+            group = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)
-            # When adding or removing members of a group, the task of group "changed" is generated without policies to
-            # prevent updating all the other members of the group
-            object_changed.delay(self.request.user, 'group', group_without_policies, group_old_without_policies, 'changed', computers)
+            object_changed.delay(self.request.user, 'group', group_without_policies, group, 'changed', computers)
 
         for group_id in adds:
 
