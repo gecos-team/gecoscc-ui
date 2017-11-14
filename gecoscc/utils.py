@@ -1509,7 +1509,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
         
     
     # Finaly recalculate the 'inherited' field of all the non mergeable policies
-    recalculate_inherited_fieldrecalculate_inherited_field(logger, db, str(obj['_id']))   
+    recalculate_inherited_field(logger, db, str(obj['_id']))   
     
     
     if obj['type'] == 'group' and len(obj.get('members', []))>0:
