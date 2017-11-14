@@ -743,3 +743,9 @@ legend {
 .gray_background {
     background-color: #f9f9f9;
 }
+
+.object_related_list {
+    overflow-x: auto;
+    overflow-y: auto;
+    position: relative;
+}

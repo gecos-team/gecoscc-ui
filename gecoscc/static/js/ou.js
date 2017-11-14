@@ -168,6 +168,9 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea, input").prop("disabled", true);
             }
+
+            // Ensure the execution of onShow after onRender
+            this.onShow();
         },
 
         saveForm: function (evt) {

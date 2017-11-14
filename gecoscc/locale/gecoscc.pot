@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-08-08 11:34+0200\n"
+"POT-Creation-Date: 2017-11-13 14:55+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -99,271 +99,271 @@ msgstr ""
 msgid "The passwords do not match"
 msgstr ""
 
-#: gecoscc/models.py:224 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:225 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr ""
 
-#: gecoscc/models.py:228
+#: gecoscc/models.py:229
 msgid "Value"
 msgstr ""
 
-#: gecoscc/models.py:232 gecoscc/templates/bb-computer.html:71
+#: gecoscc/models.py:233 gecoscc/templates/bb-computer.html:71
 #: gecoscc/templates/bb-computer.html:181 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr ""
 
-#: gecoscc/models.py:239 gecoscc/templates/bb-user.html:41
+#: gecoscc/models.py:240 gecoscc/templates/bb-user.html:41
 #: gecoscc/templates/admins/list.jinja2:33 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr ""
 
-#: gecoscc/models.py:243 gecoscc/templates/bb-user.html:45
+#: gecoscc/models.py:244 gecoscc/templates/bb-user.html:45
 #: gecoscc/templates/admins/list.jinja2:34 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr ""
 
-#: gecoscc/models.py:338 gecoscc/templates/bb-user.html:37
+#: gecoscc/models.py:339 gecoscc/templates/bb-user.html:37
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/views/reports.py:79
 msgid "Username"
 msgstr ""
 
-#: gecoscc/models.py:344 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:345 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr ""
 
-#: gecoscc/models.py:349
+#: gecoscc/models.py:350
 msgid "Repeat the password"
 msgstr ""
 
-#: gecoscc/models.py:353 gecoscc/templates/bb-user.html:51
+#: gecoscc/models.py:354 gecoscc/templates/bb-user.html:51
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr ""
 
-#: gecoscc/models.py:361
+#: gecoscc/models.py:362
 msgid "Navigation tree page size:"
 msgstr ""
 
-#: gecoscc/models.py:366
+#: gecoscc/models.py:367
 msgid "Policies list page size:"
 msgstr ""
 
-#: gecoscc/models.py:371
+#: gecoscc/models.py:372
 msgid "Actions list page size:"
 msgstr ""
 
-#: gecoscc/models.py:376
+#: gecoscc/models.py:377
 msgid "Group nodes list page size:"
 msgstr ""
 
-#: gecoscc/models.py:383
+#: gecoscc/models.py:384
 msgid "There is a user with this email: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:384
+#: gecoscc/models.py:385
 msgid "There is a user with this username: ${val}"
 msgstr ""
 
-#: gecoscc/models.py:389
+#: gecoscc/models.py:390
 msgid "This user can manage workstations under these Organizational Units"
 msgstr ""
 
-#: gecoscc/models.py:392
+#: gecoscc/models.py:393
 msgid "Organizational Units available to register workstations"
 msgstr ""
 
-#: gecoscc/models.py:398
+#: gecoscc/models.py:399
 msgid "Cookbook ZIP"
 msgstr ""
 
-#: gecoscc/models.py:402
+#: gecoscc/models.py:403
 msgid "URL download"
 msgstr ""
 
-#: gecoscc/models.py:410
+#: gecoscc/models.py:411
 msgid "Restore previous version of cookbook"
 msgstr ""
 
-#: gecoscc/models.py:419
+#: gecoscc/models.py:420
 msgid "uri"
 msgstr ""
 
-#: gecoscc/models.py:422
+#: gecoscc/models.py:423
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:425
+#: gecoscc/models.py:426
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:428
+#: gecoscc/models.py:429
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:431
+#: gecoscc/models.py:432
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:437
+#: gecoscc/models.py:438
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:439
+#: gecoscc/models.py:440
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:445
+#: gecoscc/models.py:446
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:448
+#: gecoscc/models.py:449
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:451
+#: gecoscc/models.py:452
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:454
+#: gecoscc/models.py:455
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:463
+#: gecoscc/models.py:464
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:465
+#: gecoscc/models.py:466
 msgid "Auth type"
 msgstr ""
 
-#: gecoscc/models.py:469
+#: gecoscc/models.py:470
 msgid "Specific conf"
 msgstr ""
 
-#: gecoscc/models.py:471
+#: gecoscc/models.py:472
 msgid "Auth LDAP"
 msgstr ""
 
-#: gecoscc/models.py:472 gecoscc/models.py:473
+#: gecoscc/models.py:473 gecoscc/models.py:474
 msgid "Auth Active directory"
 msgstr ""
 
-#: gecoscc/models.py:516 gecoscc/templates/bb-computer.html:73
+#: gecoscc/models.py:517 gecoscc/templates/bb-computer.html:73
 msgid "Desktop"
 msgstr ""
 
-#: gecoscc/models.py:517 gecoscc/templates/bb-computer.html:74
+#: gecoscc/models.py:518 gecoscc/templates/bb-computer.html:74
 msgid "Laptop"
 msgstr ""
 
-#: gecoscc/models.py:518 gecoscc/templates/bb-computer.html:75
+#: gecoscc/models.py:519 gecoscc/templates/bb-computer.html:75
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:519 gecoscc/templates/bb-computer.html:76
+#: gecoscc/models.py:520 gecoscc/templates/bb-computer.html:76
 msgid "Tablet"
 msgstr ""
 
-#: gecoscc/models.py:560
+#: gecoscc/models.py:562
 msgid "Laser"
 msgstr ""
 
-#: gecoscc/models.py:561
+#: gecoscc/models.py:563
 msgid "Ink"
 msgstr ""
 
-#: gecoscc/models.py:562
+#: gecoscc/models.py:564
 msgid "Dot matrix"
 msgstr ""
 
-#: gecoscc/models.py:566
+#: gecoscc/models.py:568
 msgid "Network"
 msgstr ""
 
-#: gecoscc/models.py:567
+#: gecoscc/models.py:569
 msgid "Local"
 msgstr ""
 
-#: gecoscc/models.py:571
+#: gecoscc/models.py:573
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:572
+#: gecoscc/models.py:574
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:573
+#: gecoscc/models.py:575
 msgid "Kerberos-AD"
 msgstr ""
 
-#: gecoscc/models.py:621
+#: gecoscc/models.py:623
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:622
+#: gecoscc/models.py:624
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:623
+#: gecoscc/models.py:625
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:624
+#: gecoscc/models.py:626
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:625
+#: gecoscc/models.py:627
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:629
+#: gecoscc/models.py:631
 msgid "System mounts (fstab)"
 msgstr ""
 
-#: gecoscc/models.py:630
+#: gecoscc/models.py:632
 msgid "User space mounts (gvfs)"
 msgstr ""
 
-#: gecoscc/models.py:670
+#: gecoscc/models.py:672
 msgid "Processing"
 msgstr ""
 
-#: gecoscc/models.py:673
+#: gecoscc/models.py:675
 msgid "Applying changes"
 msgstr ""
 
-#: gecoscc/models.py:676
+#: gecoscc/models.py:678
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:679 gecoscc/models.py:682
+#: gecoscc/models.py:681 gecoscc/models.py:684
 msgid "There were errors"
 msgstr ""
 
-#: gecoscc/tasks.py:1072 gecoscc/tasks.py:1163 gecoscc/tasks.py:1307
+#: gecoscc/tasks.py:1387 gecoscc/tasks.py:1578 gecoscc/tasks.py:1722
 msgid "type"
 msgstr ""
 
-#: gecoscc/tasks.py:1131 gecoscc/tasks.py:1578
+#: gecoscc/tasks.py:1446 gecoscc/tasks.py:1993
 #, python-format
 msgid "Pending: %d"
 msgstr ""
 
-#: gecoscc/tasks.py:1163 gecoscc/tasks.py:1307
+#: gecoscc/tasks.py:1578 gecoscc/tasks.py:1722
 msgid "deleted"
 msgstr ""
 
-#: gecoscc/tasks.py:1465
+#: gecoscc/tasks.py:1880
 msgid "policy uploaded"
 msgstr ""
 
-#: gecoscc/tasks.py:1467
+#: gecoscc/tasks.py:1882
 msgid "policy uploading..."
 msgstr ""
 
-#: gecoscc/tasks.py:1514
+#: gecoscc/tasks.py:1929
 #, python-format
 msgid "Cookbook uploaded successfully %s %s"
 msgstr ""
@@ -584,7 +584,8 @@ msgid "Workstation specifications"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:5 gecoscc/templates/bb-groups-form.html:4
-#: gecoscc/templates/bb-ou.html:4 gecoscc/templates/bb-user.html:4
+#: gecoscc/templates/bb-inheritance.html:6 gecoscc/templates/bb-ou.html:4
+#: gecoscc/templates/bb-user.html:4
 msgid "Policies"
 msgstr ""
 
@@ -598,11 +599,13 @@ msgid "Workstation"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:14 gecoscc/templates/bb-computer.html:138
-#: gecoscc/templates/bb-groups-form.html:13
+#: gecoscc/templates/bb-computer.html:303 gecoscc/templates/bb-groups-form.html:13
+#: gecoscc/templates/bb-groups-form.html:60
 #: gecoscc/templates/bb-jobs-summary.html:8 gecoscc/templates/bb-jobs.html:19
-#: gecoscc/templates/bb-ou.html:13 gecoscc/templates/bb-printer.html:4
-#: gecoscc/templates/bb-repository.html:4 gecoscc/templates/bb-storage.html:4
-#: gecoscc/templates/bb-user.html:13
+#: gecoscc/templates/bb-ou.html:13 gecoscc/templates/bb-ou.html:84
+#: gecoscc/templates/bb-printer.html:4 gecoscc/templates/bb-repository.html:4
+#: gecoscc/templates/bb-storage.html:4 gecoscc/templates/bb-user.html:13
+#: gecoscc/templates/bb-user.html:114
 msgid "Reload"
 msgstr ""
 
@@ -756,6 +759,10 @@ msgstr ""
 msgid "Inheritance list"
 msgstr ""
 
+#: gecoscc/templates/bb-computer.html:317 gecoscc/templates/bb-inheritance.html:9
+msgid "User policies"
+msgstr ""
+
 #: gecoscc/templates/bb-groups-form.html:12
 #: gecoscc/templates/bb-new-element.html:34
 msgid "Group"
@@ -792,20 +799,16 @@ msgstr ""
 msgid "Completed tasks"
 msgstr ""
 
-#: gecoscc/templates/bb-inheritance.html:6 gecoscc/templates/bb-jobs.html:44
-msgid "Policy"
+#: gecoscc/templates/bb-inheritance.html:3 gecoscc/templates/bb-user.html:127
+msgid "Workstation policies"
 msgstr ""
 
-#: gecoscc/templates/bb-inheritance.html:7
-msgid "Nodes"
-msgstr ""
-
-#: gecoscc/templates/bb-inheritance.html:31
+#: gecoscc/templates/bb-inheritance.html:39
 #: gecoscc/templates/bb-policies-list.html:54
 msgid "Empty!"
 msgstr ""
 
-#: gecoscc/templates/bb-inheritance.html:31
+#: gecoscc/templates/bb-inheritance.html:39
 msgid "There are no inheritance assigned to this resource yet."
 msgstr ""
 
@@ -867,6 +870,10 @@ msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:37
 msgid "Origin"
+msgstr ""
+
+#: gecoscc/templates/bb-jobs.html:44
+msgid "Policy"
 msgstr ""
 
 #: gecoscc/templates/bb-jobs.html:49 gecoscc/templates/admins/restore.jinja2:17
