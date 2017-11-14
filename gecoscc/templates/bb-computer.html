@@ -309,23 +309,26 @@
 
                 <% if (users_inheritance && users_inheritance.length > 0) { %>
                 <div class="bootstrap-admin-panel-content">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <!-- Table to display the users related with this computer -->
-                            <table class="table table-bordered">
+                    <div class="row"><div class="col-sm-12"><strong>{{ gettext('User policies') }}</strong></div></div>
+                    <div class="object_related_list">
+                        <table class="table table-bordered">
+                        <% users_inheritance.forEach(function (user, index) { %>
+                            <% if ( (index%4) == 0) { %>
                                 <tr>
-                                    <th class="gray_background"><strong>{{ gettext('User policies') }}</strong></th>
-                                    
-                                <% users_inheritance.forEach(function (user) { %>
+                            <% } %>
+
                                     <td>
-                                        <a href="#ou/<%= _.last(user.path.split(',')) %>/user/<%= user._id %>/inheritance"><span class="fa fa-user"></span> <%= user.name %></a> 
+                                        <a style="white-space: nowrap;" href="#ou/<%= _.last(user.path.split(',')) %>/user/<%= user._id %>/inheritance"><span class="fa fa-user"></span>&nbsp;<%= user.name %></a> 
                                     </td>
-                                <% }) %>
                                     
+                            <% if ( (index%4) == 3) { %>
                                 </tr>
-                            </table>
-                        </div>
+                            <% } %>
+                                    
+                        <% }) %>
+                        </table>
                     </div>    
+                    </div>
                 </div>
                 <% } %>
 
