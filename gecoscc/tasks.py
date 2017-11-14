@@ -330,6 +330,8 @@ class ChefTask(Task):
         self.log("debug","tasks.py ::: has_changed_ws_policy - obj_ui_field = {0}".format(obj_ui_field))
         self.log("debug","tasks.py ::: has_changed_ws_policy - objold_ui_field = {0}".format(objold_ui_field))
 
+        field_chef_value = node.attributes.get_dotted(field_chef)
+
         diff = len(obj_ui_field) - len(objold_ui_field)
 
         if diff == 0:
