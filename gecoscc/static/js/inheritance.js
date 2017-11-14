@@ -56,6 +56,15 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
             inheritance_tree.find( "li.globe-icon" ).find( "span.no-visited" ).removeClass('no-visited').removeClass('glyphicon-folder-open').addClass('fa fa-globe');
             inheritance_tree.find( "li.flag-icon" ).find( "span.no-visited" ).removeClass('no-visited').removeClass('glyphicon-folder-open').addClass('fa fa-flag');
             
+            // Disable unused buttons
+            inheritance_tree.find( "li.user-icon" ).find( ".tree-branch-header" ).first().children().first().prop("disabled",true);
+            inheritance_tree.find( "li.user-icon" ).find( ".tree-branch-header" ).first().children().first().css( "cursor", "default");
+            inheritance_tree.find( "li.user-icon" ).find( ".tree-branch-header" ).first().children().first().css( "color", "black");
+            inheritance_tree.find( "li.desktop-icon" ).find( ".tree-branch-header" ).first().children().first().prop("disabled",true);
+            inheritance_tree.find( "li.desktop-icon" ).find( ".tree-branch-header" ).first().children().first().css( "cursor", "default");
+            inheritance_tree.find( "li.desktop-icon" ).find( ".tree-branch-header" ).first().children().first().css( "color", "black");
+            
+            
             // Set selection manager
             inheritance_tree.on('selected.fu.tree', function(evt) {
                 var selectedItem = inheritance_tree.tree('selectedItems');
