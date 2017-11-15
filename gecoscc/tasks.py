@@ -1446,7 +1446,7 @@ class ChefTask(Task):
                                       'childs':  len(job_ids_by_order),
                                       'counter': len(job_ids_by_order),
                                       'message': self._("Pending: %d") % len(job_ids_by_order)}})
-        if are_new_jobs:
+        if are_new_jobs or job_status == 'finished':
             invalidate_jobs(self.request, user)
             
         # Trace inheritance
