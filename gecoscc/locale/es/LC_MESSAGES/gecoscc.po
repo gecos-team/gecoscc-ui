@@ -1219,7 +1219,7 @@ msgstr "Archivo o URL de descarga requerido"
 #: gecoscc/templates/server/status.jinja2:8
 #: gecoscc/templates/server/status.jinja2:11
 msgid "Servers"
-msgstr "Servidor de claves"
+msgstr "Servidores"
 
 #: gecoscc/templates/server/connections.jinja2:11
 msgid "Server connections"
@@ -1247,7 +1247,7 @@ msgstr "Almacenamiento remoto"
 
 #: gecoscc/templates/server/log.jinja2:11
 msgid "Server log"
-msgstr "Servidor de claves"
+msgstr "Registro del servidor"
 
 #: gecoscc/templates/server/log.jinja2:23
 msgid "Process"
