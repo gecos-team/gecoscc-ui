@@ -770,18 +770,14 @@ class ChefTask(Task):
         keygetter = itemgetter(*mergeIdField)
         result = []
         for key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
-           temp_dict = dict({mergeActionField:[]})
-           for d in grp:
-              aux = d.copy()
-              temp_dict[mergeActionField] += [aux.pop(mergeActionField)]
-              temp_dict.update(aux)
-           if opposite:
-              # Incoherence in node
-              # temp_dict[mergeActionField] = ['add','remove']
-              if len(temp_dict[mergeActionField]) > 1:
-                  continue
-           temp_dict[mergeActionField] = temp_dict[mergeActionField][-1] # input_data sorted (ous,groups,computers). Last item has the highest priority
-           result.append(temp_dict)
+            group = list(grp)
+            actions_list = [g["action"] for g in group]
+            latest = {mergeActionField: actions_list}
+            if opposite:
+                if len(latest[mergeActionField]) > 1:
+                    continue
+            latest.update(group.pop()) # input_data
+            result.append(latest)
 
         self.log("debug","tasks.py ::: group_by_multiple_keys - result = {0}".format(result))
         self.log("debug","tasks.py ::: Ending group_by_multiple_keys ...")
