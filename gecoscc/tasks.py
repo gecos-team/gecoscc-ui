@@ -771,7 +771,7 @@ class ChefTask(Task):
         result = []
         for key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
             group = list(grp)
-            actions_list = [g["action"] for g in group]
+            actions_list = [g[mergeActionField] for g in group]
             latest = {mergeActionField: actions_list}
             if opposite:
                 if len(latest[mergeActionField]) > 1:
