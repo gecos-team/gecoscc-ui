@@ -749,3 +749,21 @@ legend {
     overflow-y: auto;
     position: relative;
 }
+.control-group-action {
+    height:50px;
+    margin-right:-15px; 
+    margin-left:-15px;
+}
+
+.control-label-action {
+    padding-top:0
+}
+
+.select-action {
+    height:32px;
+    margin-top:4px;
+}
+
+.separator {
+    border-bottom: solid 1px #2AABB0;
+}

@@ -1017,7 +1017,7 @@ jsonform.elementTypes = {
           '</li>';
       }
       else {
-        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12" <% } else { %> "col-sm-offset-1 col-sm-11" <% } %>' +
+        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12 separator" <% } else { %> "col-sm-offset-1 col-sm-11 separator" <% } %>' +
           'data-idx="<%= node.childPos %>">' +
           '<a href="#" class="pull-right btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-minus" title="Delete item"></span></a>' +
           inner +
@@ -1029,7 +1029,7 @@ jsonform.elementTypes = {
       var boundaries = node.getArrayBoundaries();
       node.resetDeleteEvents();
 
-      var warning = (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      var warning = node["schemaElement"] && (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
       $(node.el).find(".alert-warning").html(warning);
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
@@ -1083,6 +1083,7 @@ jsonform.elementTypes = {
           }
         }
         node.insertArrayItem(idx, $('> ul', $nodeid).get(0));
+        JSONForm.initializeTabs($('form'));                                           
         if ((boundaries.minItems <= 0) ||
             ((boundaries.minItems > 0) &&
               (node.children.length > boundaries.minItems - 1))) {
@@ -1377,9 +1378,9 @@ jsonform.elementTypes = {
             '<% if (node.legend) { %><legend><%= node.legend %></legend><% } %>' +
             '<% if (node.formElement.key) { %><input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" /><% } else { %><a id="<%= node.id %>"></a><% } %>' +
             '<div class="tabbable">' +
-                '<div class="control-group<%= node.formElement.hideMenu ? " hide" : "" %>">' +
-                    '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label><% } %>' +
-                    '<div class="controls"><%= tabs %></div>' +
+                '<div class="control-group<%= node.formElement.hideMenu ? " hide" : " control-group-action" %>">' +
+                    '<% if (node.title && !elt.notitle) { %><label class="col-sm-2 control-label control-label-action" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label><% } %>' +
+                    '<div class="controls col-sm-9"><%= tabs %></div>' +
                 '</div>' +
                 '<div class="tab-content">' +
                     '<%= children %>' +
@@ -1414,6 +1415,7 @@ jsonform.elementTypes = {
       if (node.options) {
         children = _.map(node.options, function (option, idx) {
           var child = node.children[idx];
+          child.childPos = idx;
           if (option instanceof Object) {
             option = _.extend({ node: child }, option);
             option.title = option.title ||
@@ -1463,7 +1465,7 @@ jsonform.elementTypes = {
       data.value = activeChild.value;
 
       var elt = node.formElement;
-      var tabs = '<select class="nav"' +
+      var tabs = '<select class="nav select-action"' +
         (node.disabled ? ' disabled' : '') +
         '>';
       _.each(children, function (child, idx) {
@@ -2745,7 +2747,7 @@ formNode.prototype.render = function (el) {
  */
 formNode.prototype.getLocalizedAttr = function (attr, lan) {
   lan = lan || this.lan;
-  return this.schemaElement[attr + "_" + lan] || this[attr];
+  return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
 };
 
 
@@ -3972,6 +3974,7 @@ global.JSONForm.getFormValue = jsonform.getFormValue;
 global.JSONForm.fieldTemplate = jsonform.fieldTemplate;
 global.JSONForm.fieldTypes = jsonform.elementTypes;
 global.JSONForm.getInitialValue = getInitialValue;
+global.JSONForm.initializeTabs = initializeTabs;
 global.JSONForm.util.getObjKey = jsonform.util.getObjKey;
 global.JSONForm.util.setObjKey = jsonform.util.setObjKey;
 

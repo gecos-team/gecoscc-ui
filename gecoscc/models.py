@@ -733,6 +733,9 @@ class Policy(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     name = colander.SchemaNode(colander.String())
     slug = colander.SchemaNode(colander.String())
+    form = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                               default={},
+                               missing={})
     schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                  default={},
                                  missing={})
