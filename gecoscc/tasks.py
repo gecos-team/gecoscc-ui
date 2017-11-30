@@ -315,15 +315,16 @@ class ChefTask(Task):
         Checks if the user policy has changed or is equal to the policy stored in the node chef.
         '''
         field_chef_value = node.attributes.get_dotted(field_chef)
+        username = get_username_chef_format(priority_obj)
         for policy_type in obj_ui.keys():
-            if isinstance(field_chef_value.get(priority_obj['name']).get(policy_type), list) or field_chef_value.get(priority_obj['name']).get(policy_type) is None:
-                if field_chef_value.get(priority_obj['name']).get(policy_type) is None:
+            if isinstance(field_chef_value.get(username,{}).get(policy_type), list) or field_chef_value.get(username,{}).get(policy_type) is None:
+                if field_chef_value.get(username,{}).get(policy_type) is None:
                     return True
                 elif obj_ui.get(policy_type) != []:
                     for obj in obj_ui.get(policy_type):
-                            if obj not in field_chef_value.get(priority_obj['name']).get(policy_type):
+                            if obj not in field_chef_value.get(username,{}).get(policy_type):
                                 return True
-        return False
+        return True
 
     def has_changed_ws_emitter_policy(self, node, obj_ui, field_chef):
         '''
@@ -346,7 +347,7 @@ class ChefTask(Task):
 
                 elif not any(d['name'] == related_obj['name'] for d in field_chef_value):
                     return True
-            return False
+            return True
         related_objs = obj_ui
         for field_value in field_chef_value:
             if obj_ui['type'] == 'repository':
@@ -375,7 +376,7 @@ class ChefTask(Task):
                 for obj in related_objects:
                     if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
                         return True
-                return False
+                return True
             return True
 
         related_objects = obj_ui
@@ -439,9 +440,10 @@ class ChefTask(Task):
                 
 
             obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-            if obj_ui_field.get(priority_obj['name']):
+            username = get_username_chef_format(priority_obj)
+            if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             else:
                 return False
         
@@ -480,8 +482,8 @@ class ChefTask(Task):
             current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
             for objs in related_objects:
-                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+                if objs not in current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]):
+                    current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]).append(objs)
             node.attributes.set_dotted(field_chef, current_objs)
             return True
 
