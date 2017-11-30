@@ -759,7 +759,7 @@ class ChefTask(Task):
             if force_update or self.is_updated_node(obj, objold):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
-                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, job_ids_by_computer)
+                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, parent_id, job_ids_by_computer)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
@@ -943,7 +943,7 @@ class ChefTask(Task):
                                       'childs':  len(job_ids_by_order),
                                       'counter': len(job_ids_by_order),
                                       'message': self._("Pending: %d") % len(job_ids_by_order)}})
-        if are_new_jobs:
+        if are_new_jobs or job_status == 'finished':
             invalidate_jobs(self.request, user)
 
     def object_created(self, user, objnew, computers=None):
