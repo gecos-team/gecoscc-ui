@@ -376,16 +376,17 @@ class ChefTask(Task):
         # Checking changes in Chef node.
         field_chef_value = node.attributes.get_dotted(field_chef)
         self.log("debug","tasks.py ::: has_changed_user_policy - field_chef_value = {0}".format(field_chef_value))
+        username = get_username_chef_format(priority_obj)
         for policy_type in obj_ui.keys():
             self.log("debug","tasks.py ::: has_changed_user_policy - policy_type = {0}".format(policy_type))
-            if isinstance(field_chef_value.get(priority_obj['name'],{}).get(policy_type), list) or field_chef_value.get(priority_obj['name'],{}).get(policy_type) is None:
-                if field_chef_value.get(priority_obj['name'],{}).get(policy_type) is None:
+            if isinstance(field_chef_value.get(username,{}).get(policy_type), list) or field_chef_value.get(username,{}).get(policy_type) is None:
+                if field_chef_value.get(username,{}).get(policy_type) is None:
                     return True
                 elif obj_ui.get(policy_type) != []:
                     for obj in obj_ui.get(policy_type):
-                            if obj not in field_chef_value.get(priority_obj['name'],{}).get(policy_type):
+                            if obj not in field_chef_value.get(username,{}).get(policy_type):
                                 return True
-        return False
+        return True
         
     def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
@@ -438,7 +439,7 @@ class ChefTask(Task):
             return False
 
         field_chef_value = node.attributes.get_dotted(field_chef)
-        field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
+        field_chef_value_storage = field_chef_value.get(priority_obj['name'],{}).get('gtkbookmarks',[])
         if obj_ui.get('object_related_list', False):
             related_objects = obj_ui['object_related_list']
             if field_chef_value_storage:
@@ -686,9 +687,10 @@ class ChefTask(Task):
             self.log("debug","tasks.py ::: update_user_mergeable_policy - obj_ui_field = {0}".format(obj_ui_field))
             self.log("debug","tasks.py ::: update_user_mergeable_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
             self.log("debug","tasks.py ::: update_user_mergeable_policy - action = {0}".format(action))
-            if obj_ui_field.get(priority_obj['name']):
+            username = get_username_chef_format(priority_obj)
+            if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             elif action == DELETED_POLICY_ACTION:  # update node
                 pass
             else:
@@ -730,8 +732,8 @@ class ChefTask(Task):
             current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
             for objs in related_objects:
-                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+                if objs not in current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]):
+                    current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]).append(objs)
             node.attributes.set_dotted(field_chef, current_objs)
             return True
 
