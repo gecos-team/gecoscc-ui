@@ -12,6 +12,7 @@
 
 import json
 import pymongo
+import logging
 
 from cornice.resource import resource
 from bson import ObjectId
@@ -20,6 +21,7 @@ from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.models import Job, Jobs
 from gecoscc.permissions import api_login_required
 
+logger = logging.getLogger(__name__)
 
 @resource(collection_path='/api/jobs/',
           path='/api/jobs/{oid}/',
@@ -41,18 +43,39 @@ class JobResource(ResourcePaginatedReadOnly):
 
     def get_objects_filter(self):
         filters = super(JobResource, self).get_objects_filter()
-        administrator_username = self.request.user['username']
-        filters.append({'administrator_username': administrator_username})
+        
         # Only macrojobs
         parentId = self.request.GET.get('parentId', None)
         if parentId:
             filters.append({'parent': ObjectId(parentId)})
         else:
             filters.append({'parent': {'$exists': True, '$eq': None}})
+
+        userfilter = self.request.GET.get('userfilter', None)
+        if userfilter:
+            filters.append({'administrator_username': {'$regex': userfilter,'$options':'i'}})
+
+        source = self.request.GET.get('source', None)
+        if source:
+            filters.append({'objname': {'$regex': source,'$options':'i'}})
+
+        workstation = self.request.GET.get('workstation', None)
+        if workstation and not parentId:
+            parents = self.request.db.jobs.find({'parent':{'$exists': True, '$ne': None},'computername':  {'$regex': workstation,'$options':'i'}},{'_id':0,'parent':1}).distinct('parent')
+            filters.append({'_id': {'$in': parents}})
+
+        seeAll = self.request.GET.get('seeAll', 'false')
+        if seeAll == 'false':
+            administrator_username = self.request.user['username']
+            filters.append({'administrator_username': administrator_username})
+
         status = self.request.GET.get('status', '')
         if status:
             filters.append({'status': status})
+
         archived = self.request.GET.get('archived', '')
         if archived:
             filters.append({'archived': json.loads(archived)})
+
+        logger.debug("/api/jobs ::: filters = %s" % filters)
         return filters

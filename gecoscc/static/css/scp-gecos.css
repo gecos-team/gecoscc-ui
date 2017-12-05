@@ -749,6 +749,7 @@ legend {
     overflow-y: auto;
     position: relative;
 }
+
 .control-group-action {
     height:50px;
     margin-right:-15px; 
@@ -766,4 +767,113 @@ legend {
 
 .separator {
     border-bottom: solid 1px #2AABB0;
+}
+
+.tasks-search {
+    display: inline-block;
+    border-left: solid 1px #E7E7E7;
+    margin-left: 15px;
+    padding-left: 15px;
+    text-align:right;
+}
+.tasks-search label{
+    font-size: 12px;
+    font-weight: normal;
+    color: #999999;
+    margin-bottom:0;
+}
+.tasks-search .btn-primary {
+    background-color: #34ABB3;
+    border-color: #ccc;
+    max-height: 24px;
+    line-height: normal;
+    padding: 1px 8px 2px;
+    margin-right:12px;
+    height:23px;
+}
+.tasks-search .btn-primary:hover{
+    background-color:#428bca;
+}
+.tasks-search .bootstrap-switch .bootstrap-switch-handle-off.bootstrap-switch-primary, .tasks-search .bootstrap-switch .bootstrap-switch-handle-on.bootstrap-switch-primary {
+    background: #34ABB3;
+}
+.tasks-search input.tasks-search-input {
+    max-height: 24px;
+    position: relative;
+    top: 0px;
+    max-width: 120px;
+    margin-right:5px;
+    font-size:12px;
+    border-radius:2px;
+    border:solid 1px #E2E3EA;
+    border-top-color:#ABADB3;
+    height:23px;
+    padding:0 3px;
+}
+.tasks-search .form-group.seeAll {
+    border-left: solid 1px #E7E7E7;
+    padding: 0 12px 0 15px;
+}
+.panel-heading.tasks-heading{
+    display:table;
+    width:100%;
+    padding-top:3px;
+}
+.bootstrap-admin-box-title.tasks-filters{
+	display:table-cell;
+}
+.tasks-rigth {
+    display: table-cell;
+    text-align: right;
+}
+.tasks-buttons {
+    display: inline-block;
+    position: relative;
+    top: 9px;
+    border-left:solid 1px #E7E7E7;
+    padding-left:15px;
+    height:25px;
+}
+.tasks-search .form-inline .form-group{
+    position:relative;
+}
+.tasks-search .tasks-close-search-btn {
+    position: absolute;
+    right: 6px;
+    background-color: transparent;
+    color: #ff0000;
+    height: 22px;
+    padding: 0 5px;
+    top: 3px;
+    border-color: transparent;
+}
+.tasks-search .tasks-close-search-btn:hover{
+    color: #34ABB3;
+}
+.tasks-search .form-group.seeAll .bootstrap-switch-id-seeAll{
+	position:relative;
+	top:-1px;
+}
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	.tasks-search .form-group.seeAll .bootstrap-switch-id-seeAll {
+		top:0px;
+	}
+}
+.tasks-search .form-group.seeAll .bootstrap-switch-id-seeAll .bootstrap-switch-container span {
+  height: 21px;
+}
+.tasks-buttons button {
+  position: relative;
+  top: 1px;
+	height:23px;
+	min-width:23px;
+}
+@media only screen and (max-width: 1279px) {
+	.bootstrap-admin-box-title.tasks-filters {
+		display: block;
+		padding-bottom:15px;
+	}
+	.tasks-rigth {
+		display: block;
+	}
 }
