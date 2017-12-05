@@ -63,9 +63,31 @@ var App;
             "click span.filters #tasksActives": "tasksActives",
             "click span.filters #tasksArchived": "tasksArchived",
             "click button.archiveTasks": "archiveTasks",
-            "click button.backstack": "backstack"
+            "click button.backstack": "backstack",
+            "click button.tasks-search-btn": "tasksSearch",
+            "switchChange.bootstrapSwitch #seeAll": "seeAll",
+            "keydown .tasks-search-input":"pressEnter",
         },
 
+        pressEnter: function(evt) {
+            var code = evt.keyCode || evt.which;
+            if(code == 13) { 
+                this.tasksSearch();
+            }
+        },
+
+        tasksSearch: function() {
+            this.collection.userfilter  = this.$el.find('#tasksByUser').val().trim() || undefined;
+            this.collection.workstation = this.$el.find('#tasksByWorkstation').val().trim() || undefined;
+            this.collection.source      = this.$el.find("#tasksBySource").val().trim() || undefined; 
+            this.tasksFilter();
+        },
+        seeAll: function(evt, data) {
+            evt.preventDefault();
+            this.collection.seeAll = data;
+            this.collection.archived = false;
+            this.tasksFilter();
+        },
         backstack: function () {                                
             this.collection.status = '';
             this.collection.archived = false;
@@ -182,6 +204,9 @@ var App;
                 "parentId":this.collection.parentId,
                 "archived": this.collection.archived,
                 "total": this.collection.total,
+                "workstation": this.collection.workstation,
+                "userfilter": this.collection.userfilter,
+                "source": this.collection.source,
             };
         },
         goToPage: function (evt) {
@@ -210,6 +235,50 @@ var App;
             this.collection.on('sync', function () {
                 this.render();
             }, this);
+        },
+        onRender: function() {
+            var $button = this.$el.find('div.seeAll'),
+                that = this;
+            if ($button.hasClass('admin') == false) {
+                $button.addClass('hidden');
+            } else {
+                $("[name='seeAll']").bootstrapSwitch('state', this.collection.seeAll, true);
+            }
+            if (this.collection.source || this.collection.userfilter || this.collection.workstation) {
+                if (!_.isUndefined(this.collection.source)) {
+                    $('#tasksBySource-close-search-btn').removeClass('hidden');
+                }
+
+                if (!_.isUndefined(this.collection.userfilter)) {
+                    $('#tasksByUser-close-search-btn').removeClass('hidden');
+                }
+
+                if (!_.isUndefined(this.collection.workstation)) {
+                    $('#tasksByWorkstation-close-search-btn').removeClass('hidden');
+                }
+
+                var that = this
+                $(".tasks-close-search-btn").each( function() {
+                    $(this).click(function (evt) {
+                        evt.preventDefault();
+                        switch (this.id) {
+                            case 'tasksBySource-close-search-btn':
+                                that.collection.source = undefined;
+                                $(this).addClass('hidden');
+                                break;
+                            case 'tasksByUser-close-search-btn':
+                                that.collection.userfilter = undefined;
+                                $(this).addClass('hidden');
+                                break;
+                            case 'tasksByWorkstation-close-search-btn':
+                                that.collection.workstation = undefined;
+                                $(this).addClass('hidden');
+                                break;
+                        }
+                        that.tasksFilter();
+                     });
+                });
+            }
         }
     });
 
