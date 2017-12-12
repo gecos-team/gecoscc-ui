@@ -1,0 +1,95 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container" id="admin-container">
+        <h1>{{ gettext('Maintenance Mode') }}</h1>
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                <li><a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a></li>
+                <li class="active">{{ gettext('Maintenance Mode') }}</li>
+            </ol>
+        {% endblock %}
+    <div class="row" id="users">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Username') }}</th>
+                        <th>{{ gettext('E-mail') }}</th>
+                        <th>{{ gettext('First name') }}</th>
+                        <th>{{ gettext('Last name') }}</th>
+                        <th>{{ gettext('Is superuser?') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for admin_user in admin_users %}
+                        <tr>
+                            <td><a href="{{ request.route_url('admins_edit', username=admin_user.username) }}">{{ admin_user.username }}</td>
+                            <td>{% if 'email' in admin_user %}{{ admin_user.email }}{% endif %}</td>
+                            <td>{% if 'first_name' in admin_user %}{{ admin_user.first_name }}{% endif %}</td>
+                            <td>{% if 'last_name' in admin_user %}{{ admin_user.last_name }}{% endif %}</td>
+                            <td>
+                                {% if  admin_user.get('is_superuser') %}
+                                    {{ gettext('Yes') }}
+                                {% else %}
+                                    {{ gettext('No') }}
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6">
+            <ul class="pagination pull-right">
+                {{ page.pager() }}
+            </ul>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 text-right">
+            <span class="label label-warning maintenance-info"><i class="fa fa-exclamation-triangle" aria-hidden="true"></i> {{ gettext('Press the button to change portal status') }}</span>
+            <input type="checkbox" id="goToMaintenance" name="goToMaintenance" data-switch-set="size" data-switch-value="mini" checked="checked" />
+        </div>
+    </div>
+
+    {% block form_content %}
+        {{ form_maintenance|safe }}
+    {% endblock %}
+
+
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+            $(document).ready(function () {
+                $('input[name="goToMaintenance"]').bootstrapSwitch({
+                    labelText: 'Maintenance',
+                    state: {{ "true" if maintenance else "false" }},
+                    onSwitchChange: function(event, state) {
+                         event.preventDefault();
+                         var msg = state ? "{{ gettext('Are you sure that you want to turn off maintenance mode?') }}" 
+                                         : "{{ gettext('Are you sure that you want to turn on maintenance mode?') }}";
+                         var confirm = GecosUtils.askConfirmation({
+                            'message': msg,
+                            'callback': function () {
+                                 $.ajax("{{ request.route_url('admin_maintenance') }}?mode=" + state,
+                                     {"type": "GET"}).done(function() {
+                                         window.location = "{{ request.route_url('admin_maintenance') }}"
+                                 });
+                            }
+                         });
+                         confirm.done(function(e) { if (!e) $('input[name="goToMaintenance"]').bootstrapSwitch('state', !state, true)});
+                    }
+                });
+            });
+    </script>
+{% endblock %}
+

@@ -1,0 +1,28 @@
+{% extends "base.jinja2" %}
+
+{% block extraheader %}
+<style>
+  div.container {
+       position: absolute;
+       top: 0;
+       left: 0;
+       bottom: 0;
+       right: 0;
+       margin: auto;
+       text-align: center;
+  }
+</style>
+{% endblock %}
+
+{% block htmlclass %}bootstrap-admin-vertical-centered{% endblock %}
+{% block bodyclass %}bootstrap-admin-without-padding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <h1>{{ gettext('GECOS CC Maintenance Mode') }}</h1>
+        <h3>{{ maintenance_msg|default("", True) }}</h3>
+    </div>
+</div>
+
+{% endblock %}

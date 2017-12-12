@@ -170,4 +170,7 @@ def get_user(request):
 def get_groups(userid, request):
     ## TODO
     # Not Implemented
-    return ['logged']
+    user = request.userdb.get_user(userid)
+    if user.get('is_superuser',None):
+        return ['logged', 'g:maintenance']
+    return ['logger']

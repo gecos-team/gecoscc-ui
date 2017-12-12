@@ -27,10 +27,9 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.db import MongoDB, get_db
-from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage
-from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
+from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory, RootFactory
 from gecoscc.socks import socketio_service
 
 from urlparse import urlsplit
@@ -56,6 +55,7 @@ def route_config(config):
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_upload','/admins/upload/{username}/', factory=SuperUserFactory)
     config.add_route('admin_restore','/admins/restore/{name}/{version}/', factory=SuperUserFactory)
+    config.add_route('admin_maintenance','/admins/maintenance/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
@@ -220,7 +220,7 @@ def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
     settings = dict(settings)
-    config = Configurator(root_factory=get_root, settings=settings)
+    config = Configurator(root_factory=RootFactory, settings=settings)
 
     # Set Unicode as default encoding
     reload(sys)

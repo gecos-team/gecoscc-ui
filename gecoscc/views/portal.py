@@ -11,6 +11,7 @@
 
 import logging
 import json
+import time
 
 from pyramid.security import remember, forget, authenticated_userid
 from pyramid.httpexceptions import HTTPFound
@@ -74,6 +75,9 @@ class LoginViews(BaseView):
                 _('Welcome ${username}',
                   mapping={'username': user['username']})
             ), 'info')
+
+            self.request.db.adminusers.update({'username': username},{'$set':{'logged_in': int(time.time())}})
+
             return HTTPFound(location=self.request.route_path('home'),
                              headers=headers)
         else:
@@ -97,8 +101,16 @@ def forbidden_view(context, request):
             reason = 'unknown'
         logger.debug("User %s tripped Forbidden view, request %s, "
                      "reason %s"%(str(user), str(request), str(reason)))
-        response = Response(render('templates/forbidden.jinja2', {}))
-        response.status_int = 403
+        if request.db.settings.find_one({'key':'maintenance_mode'}).get('value', False):
+            msg = request.db.settings.find_one({'key':'maintenance_message'})
+            if msg is not None:
+                msg = msg['value']
+            response = Response(render('templates/maintenance.jinja2', {'request': request,'maintenance_msg': msg}))
+            response.status_int = 200
+
+        else:
+            response = Response(render('templates/forbidden.jinja2', {}))
+            response.status_int = 403
         return response
     if user is None and (request.is_xhr or request.headers.get('content-type') == 'application/json'):
         response = Response(render('templates/forbidden.jinja2', {}))

@@ -858,3 +858,12 @@ legend {
 		display: block;
 	}
 }
+
+.maintenance-info {
+    font-size: 14px;
+    font-weight: normal;
+    padding: 9px;
+    position: relative;
+    top: 1px;
+    font-style: italic;
+}
