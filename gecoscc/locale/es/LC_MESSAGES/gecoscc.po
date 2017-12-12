@@ -203,7 +203,7 @@ msgstr "Eliminar la última versión del archivo de politicas"
 
 #: gecoscc/models.py:421
 msgid "Users will be warned with this message"
-msgstr ""
+msgstr "Se avisará a los usuarios con este mensaje"
 
 #: gecoscc/models.py:430
 msgid "uri"
