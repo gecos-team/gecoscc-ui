@@ -210,6 +210,7 @@ class Command(BaseCommand):
 
             path = value.pop('path')
 
+            form_layout = value.pop('form', {})
             is_mergeable = value.pop('is_mergeable', False)
             autoreverse = value.pop('autoreverse', False)
 
@@ -237,6 +238,7 @@ class Command(BaseCommand):
                 'slug': key,
                 'path': path,
                 'schema': value,
+                'form': form_layout,
                 'targets': targets,
                 'is_emitter_policy': False,
                 'support_os': support_os,
