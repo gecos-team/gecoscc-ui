@@ -376,17 +376,25 @@ class ChefTask(Task):
         # Checking changes in Chef node.
         field_chef_value = node.attributes.get_dotted(field_chef)
         self.log("debug","tasks.py ::: has_changed_user_policy - field_chef_value = {0}".format(field_chef_value))
+        username = get_username_chef_format(priority_obj)
+        self.log("debug","tasks.py ::: has_changed_user_policy -  username = {0}".format(username))
+        updated = False
+
         for policy_type in obj_ui.keys():
             self.log("debug","tasks.py ::: has_changed_user_policy - policy_type = {0}".format(policy_type))
-            if isinstance(field_chef_value.get(priority_obj['name'],{}).get(policy_type), list) or field_chef_value.get(priority_obj['name'],{}).get(policy_type) is None:
-                if field_chef_value.get(priority_obj['name'],{}).get(policy_type) is None:
-                    return True
+            if isinstance(field_chef_value.get(username,{}).get(policy_type), list) or field_chef_value.get(username,{}).get(policy_type) is None:
+                if field_chef_value.get(username,{}).get(policy_type) is None:
+                    
+                    updated = True
                 elif obj_ui.get(policy_type) != []:
                     for obj in obj_ui.get(policy_type):
-                            if obj not in field_chef_value.get(priority_obj['name'],{}).get(policy_type):
-                                return True
-        return False
-        
+                        if obj not in field_chef_value.get(username,{}).get(policy_type):
+                            updated = True
+                            break
+                    if not updated:
+                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]])
+        self.log("debug","tasks.py ::: has_changed_user_policy - updated = {0}".format(updated))                                                                                                
+        return updated
     def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
         Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
@@ -433,20 +441,24 @@ class ChefTask(Task):
         Checks if the user emitter policy has changed or is equal to the policy stored in the node chef.
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
-
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - obj_ui = {0}".format(obj_ui))
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - objold_ui = {0}".format(objold_ui))
         if obj_ui == objold_ui:
             return False
 
         field_chef_value = node.attributes.get_dotted(field_chef)
-        field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
+        username = get_username_chef_format(priority_obj)
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - username = {0}".format(username))
+        field_chef_value_storage = field_chef_value.get(username,{}).get('gtkbookmarks',[])
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - field_chef_value_storage = {0}".format(field_chef_value_storage))
         if obj_ui.get('object_related_list', False):
             related_objects = obj_ui['object_related_list']
-            if field_chef_value_storage:
-                for obj in related_objects:
-                    if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
-                        return True
-                return True
-            return True
+
+            for obj in related_objects:
+                if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
+                    return True
+            return any(x in [j['name'] for j in field_chef_value_storage] for x in [y['name'] for y in objold_ui['object_related_list'] if y['name'] not in [z['name'] for z in obj_ui['object_related_list']]])
 
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
@@ -584,14 +596,14 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
 
                 updater_node_ui = updater_node['policies'].get(unicode(policy['_id']), {})
+                if callable(field_ui): # encrypt_password
+                    innode = field_ui(updater_node_ui, obj=updater_node, node=node, field_chef=field_chef)
+                    self.log("debug","tasks.py ::: update_ws_mergeable_policy - innode = {0}".format(innode))
+                else:
+                    innode = updater_node_ui[field_ui]
+                    self.log("debug","tasks.py ::: update_ws_mergeable_policy - innode = {0}".format(innode))
 
                 if mergeIdField and mergeActionField: # NEW MERGE
-                    if callable(field_ui): # encrypt_password
-                        innode = field_ui(updater_node_ui, obj=updater_node, node=node, field_chef=field_chef)
-                    else:
-                        innode = updater_node_ui[field_ui]
-
-                    self.log("debug","tasks.py ::: update_ws_mergeable_policy - innode = {0}".format(innode))
 
                     # At node: Removing opposites actions
                     nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
@@ -602,9 +614,7 @@ class ChefTask(Task):
                     new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
 
                 else: # OLD MERGE
-                    field = field_chef.split(".")[-1] if callable(field_ui) else field_ui
-                    if field in updater_node_ui:
-                        new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field]
+                    new_field_chef_value += innode
                     
             self.log("debug","tasks.py ::: update_ws_mergeable_policy - new_field_chef_value = {0}".format(new_field_chef_value))
             try:
@@ -686,9 +696,11 @@ class ChefTask(Task):
             self.log("debug","tasks.py ::: update_user_mergeable_policy - obj_ui_field = {0}".format(obj_ui_field))
             self.log("debug","tasks.py ::: update_user_mergeable_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
             self.log("debug","tasks.py ::: update_user_mergeable_policy - action = {0}".format(action))
-            if obj_ui_field.get(priority_obj['name']):
+            username = get_username_chef_format(priority_obj)
+            self.log("debug","tasks.py ::: update_user_mergeable_policy - username = {0}".format(username))
+            if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             elif action == DELETED_POLICY_ACTION:  # update node
                 pass
             else:
@@ -730,8 +742,8 @@ class ChefTask(Task):
             current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
             for objs in related_objects:
-                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+                if objs not in current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]):
+                    current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]).append(objs)
             node.attributes.set_dotted(field_chef, current_objs)
             return True
 
