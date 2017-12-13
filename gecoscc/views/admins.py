@@ -294,7 +294,7 @@ def admin_maintenance(context, request):
                 request.db.settings.remove({'key':'maintenance_message'})
 
     # Active users
-    last_login = int(time.time()) - settings.get('last_login',15*60)
+    last_login = int(time.time()) - int(settings.get('last_login',15*60))
     filters = {'logged_in':{'$gt':last_login}}
     admin_users = request.userdb.list_users(filters).sort('username')
     page = create_pagination_mongo_collection(request, admin_users)
