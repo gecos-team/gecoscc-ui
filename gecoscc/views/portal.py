@@ -76,7 +76,6 @@ class LoginViews(BaseView):
                   mapping={'username': user['username']})
             ), 'info')
 
-            self.request.db.adminusers.update({'username': username},{'$set':{'logged_in': int(time.time())}})
 
             return HTTPFound(location=self.request.route_path('home'),
                              headers=headers)
@@ -106,6 +105,7 @@ def forbidden_view(context, request):
             if msg is not None:
                 msg = msg['value']
             response = Response(render('templates/maintenance.jinja2', {'request': request,'maintenance_msg': msg}))
+            request.session.delete()
             response.status_int = 200
 
         else:

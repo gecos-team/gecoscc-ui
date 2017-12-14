@@ -71,12 +71,12 @@
     <script type="text/javascript">
             $(document).ready(function () {
                 $('input[name="goToMaintenance"]').bootstrapSwitch({
-                    labelText: 'Maintenance',
+                    labelText: {{ gettext('Maintenance Mode') }},
                     state: {{ "true" if maintenance else "false" }},
                     onSwitchChange: function(event, state) {
                          event.preventDefault();
-                         var msg = state ? "{{ gettext('Are you sure that you want to turn off maintenance mode?') }}" 
-                                         : "{{ gettext('Are you sure that you want to turn on maintenance mode?') }}";
+                         var msg = state ? "{{ gettext('Are you sure that you want to turn on maintenance mode?') }}" 
+                                         : "{{ gettext('Are you sure that you want to turn off maintenance mode?') }}";
                          var confirm = GecosUtils.askConfirmation({
                             'message': msg,
                             'callback': function () {

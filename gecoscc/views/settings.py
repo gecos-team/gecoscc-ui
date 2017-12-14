@@ -107,6 +107,8 @@ def settings(context, request):
             elif setting['key'] == "mimetypes":
                 includesMimeTypes = True
                 result.append(Setting().deserialize(setting))
+            elif setting['key'] == "maintenance_mode":
+                continue
             else:
                 result.append(Setting().deserialize(setting))
     

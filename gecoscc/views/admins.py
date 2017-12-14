@@ -30,6 +30,7 @@ from bson import ObjectId
 
 import os
 import time
+import pickle
 import logging
 logger = logging.getLogger(__name__)
 
@@ -294,12 +295,17 @@ def admin_maintenance(context, request):
                 request.db.settings.remove({'key':'maintenance_message'})
 
     # Active users
-    last_login = int(time.time()) - int(settings.get('last_login',15*60))
-    filters = {'logged_in':{'$gt':last_login}}
+    sessions = [pickle.loads(session['value']) for session in request.db.backer_cache.find({},{'_id':0, 'value':1})]
+    logger.info("admin_maintenance ::: sessions = %s" % sessions)
+    last_action = int(time.time()) - int(settings.get('idle_time',15*60))
+    logger.info("admin_maintenance ::: last_action = %s" % last_action)
+    active_users = [ session['auth.userid'] for session in sessions if session.get('auth.userid',None) and int(session['_accessed_time']) > last_action ]
+    logger.info("admin_maintenance ::: active_users = %s" % active_users)
+
+    filters = {'username':{'$in': active_users }}
     admin_users = request.userdb.list_users(filters).sort('username')
     page = create_pagination_mongo_collection(request, admin_users)
 
-    logger.info("admin_maintenance ::: mode 2 = %s" % (mode == 'true'))
     return {
        'admin_users': admin_users,
        'page': page,

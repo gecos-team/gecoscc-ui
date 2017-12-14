@@ -270,7 +270,6 @@ class User(Node, BaseUser):
                                    default={},
                                    missing={})
     computers = ObjectIdList(missing=[], default=[])
-    logged_in = colander.SchemaNode(colander.Time())
 
 
 class Users(colander.SequenceSchema):
