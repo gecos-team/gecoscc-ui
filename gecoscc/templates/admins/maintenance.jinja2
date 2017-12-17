@@ -71,7 +71,7 @@
     <script type="text/javascript">
             $(document).ready(function () {
                 $('input[name="goToMaintenance"]').bootstrapSwitch({
-                    labelText: {{ gettext('Maintenance Mode') }},
+                    labelText: "{{ gettext('Maintenance') }}",
                     state: {{ "true" if maintenance else "false" }},
                     onSwitchChange: function(event, state) {
                          event.preventDefault();
