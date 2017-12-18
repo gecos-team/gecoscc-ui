@@ -28,6 +28,9 @@ import json
 from bson.objectid import ObjectId
 logger = logging.getLogger(__name__)
 
+
+EXCLUDE_SETTINGS = ['maintenance_mode']
+
 # Create a setting from the default values
 def create_setting(key):
     default_settings = get_current_registry().settings
@@ -54,7 +57,7 @@ def create_setting(key):
 @view_config(route_name='settings', renderer='templates/settings.jinja2',
              permission='is_superuser')
 def settings(context, request):
-    settings = request.db.settings.find().sort([("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
+    settings = request.db.settings.find({'key':{'$nin': EXCLUDE_SETTINGS}}).sort([("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
     result = []
     if settings.count() == 0:
         # If there aren't settings in the database then load the default values
@@ -107,8 +110,6 @@ def settings(context, request):
             elif setting['key'] == "mimetypes":
                 includesMimeTypes = True
                 result.append(Setting().deserialize(setting))
-            elif setting['key'] == "maintenance_mode":
-                continue
             else:
                 result.append(Setting().deserialize(setting))
     
