@@ -60,9 +60,12 @@ class JobResource(ResourcePaginatedReadOnly):
             filters.append({'objname': {'$regex': source,'$options':'i'}})
 
         workstation = self.request.GET.get('workstation', None)
-        if workstation and not parentId:
-            parents = self.request.db.jobs.find({'parent':{'$exists': True, '$ne': None},'computername':  {'$regex': workstation,'$options':'i'}},{'_id':0,'parent':1}).distinct('parent')
-            filters.append({'_id': {'$in': parents}})
+        if workstation:
+            if not parentId:
+                parents = self.request.db.jobs.find({'parent':{'$exists': True, '$ne': None},'computername':  {'$regex': workstation,'$options':'i'}},{'_id':0,'parent':1}).distinct('parent')
+                filters.append({'_id': {'$in': parents}})
+            else:
+                filters.append({'computername':  {'$regex': workstation,'$options':'i'}})
 
         seeAll = self.request.GET.get('seeAll', 'false')
         if seeAll == 'false':
