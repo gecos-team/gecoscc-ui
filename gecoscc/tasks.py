@@ -30,6 +30,7 @@ from jsonschema.exceptions import ValidationError
 
 
 import gettext
+import traceback
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs
@@ -213,7 +214,7 @@ class ChefTask(Task):
                 if not obj.get(rule_type, None):
                     object_related_id_list = []
                 else:
-                    object_related_id_list = obj[rule_type][policy_id]['object_related_list']
+                    object_related_id_list = obj[rule_type].get(policy_id,{}).get('object_related_list',[])
                 object_related_list = []
                 for object_related_id in object_related_id_list:
                     if policy['slug'] == SOFTWARE_PROFILE_SLUG:
@@ -299,37 +300,96 @@ class ChefTask(Task):
 
         return new_field_chef_dict
 
-    def has_changed_ws_policy(self, node, obj_ui, field_ui, field_chef):
+    def has_changed_ws_policy(self, node, obj_ui_field, objold_ui_field, field_chef):
         '''
-        Checks if the ws policy has changed or is equal to the policy stored in the node chef.
-        '''
-        field_chef_value = node.attributes.get_dotted(field_chef)
-        for obj in obj_ui[field_ui]:
-            if isinstance(field_chef_value, list):
-                if obj not in field_chef_value:
-                    return True
-        return False
+        This method checks whether the "field_chef" policy field changed for the current object.
 
-    def has_changed_user_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+        Args:
+            node (ChefNode): reserved node in Chef, receiver the policy.
+
+            field_chef (str): policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.package_list
+
+            obj_ui_field (list): value of policy field in object after current executed action.
+
+            objold_ui_field (list): value of policy field in object before current executed action 
+
+        Returns:
+            bool:  True if policy field changed and its value not in stored value in Chef node. False otherwise. 
         '''
-        Checks if the user policy has changed or is equal to the policy stored in the node chef.
-        '''
+        self.log("info","tasks.py ::: Starting has_changed_ws_policy method ...")
+        self.log("debug","tasks.py ::: has_changed_ws_policy - obj_ui_field = {0}".format(obj_ui_field))
+        self.log("debug","tasks.py ::: has_changed_ws_policy - objold_ui_field = {0}".format(objold_ui_field))
         field_chef_value = node.attributes.get_dotted(field_chef)
+
+        diff = len(obj_ui_field) - len(objold_ui_field)
+
+        if diff == 0:
+            self.log("debug","tasks.py ::: has_changed_ws_policy - obj/objold iguales")
+            updated =  obj_ui_field != objold_ui_field
+        elif diff > 0:
+            self.log("debug","tasks.py ::: has_changed_ws_policy - obj > objold")
+            updated = any(x not in field_chef_value for x in obj_ui_field)
+        else:
+            self.log("debug","tasks.py ::: has_changed_ws_policy - obj < objold")
+
+            updated = any(x in field_chef_value for x in [y for y in objold_ui_field if y not in obj_ui_field])
+
+        self.log("debug","tasks.py ::: has_changed_ws_policy - updated = {0}".format(updated))
+        return updated
+    def has_changed_user_policy(self, node, obj_ui, objold_ui, field_chef, priority_obj):
+        '''
+        This method checks whether the "field_chef" policy field changed for the current object.
+
+        Args:
+            node (ChefNode): reserved node in Chef, receiver the policy.
+
+            field_chef (str): policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.package_list
+
+            obj_ui (list): policy fields and their values for the policy parameter and current object
+
+            objold_ui (list): policy fields and their values for the policy parameter and old object (before executed action)
+
+        Returns:
+            bool:  True if policy field changed and its value not in stored value in Chef node. False otherwise.
+        '''
+        self.log("info","tasks.py ::: Starting has_changed_user_policy method ...")
+        self.log("debug","tasks.py ::: has_changed_user_policy - obj_ui = {0}".format(obj_ui))
+        self.log("debug","tasks.py ::: has_changed_user_policy - objold_ui = {0}".format(objold_ui))
+        # Checking changes in object.
+        if obj_ui == objold_ui:
+            return False
+
+        field_chef_value = node.attributes.get_dotted(field_chef)
+        self.log("debug","tasks.py ::: has_changed_user_policy - field_chef_value = {0}".format(field_chef_value))
+        username = get_username_chef_format(priority_obj)
+        self.log("debug","tasks.py ::: has_changed_user_policy -  username = {0}".format(username))
+        updated = False
         for policy_type in obj_ui.keys():
-            if isinstance(field_chef_value.get(priority_obj['name']).get(policy_type), list) or field_chef_value.get(priority_obj['name']).get(policy_type) is None:
-                if field_chef_value.get(priority_obj['name']).get(policy_type) is None:
-                    return True
+            if isinstance(field_chef_value.get(username,{}).get(policy_type), list) or field_chef_value.get(username,{}).get(policy_type) is None:
+                if field_chef_value.get(username,{}).get(policy_type) is None:
+                                                                                                                                          
+                    updated = True
                 elif obj_ui.get(policy_type) != []:
+                                                                                                            
                     for obj in obj_ui.get(policy_type):
-                            if obj not in field_chef_value.get(priority_obj['name']).get(policy_type):
-                                return True
-        return False
+                                                                                                                      
+                        if obj not in field_chef_value.get(username,{}).get(policy_type):
+                                                                                                                                                    
+                            updated = True
+                            break
+                    if not updated:
+                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]])
+         
+        self.log("debug","tasks.py ::: has_changed_user_policy - updated = {0}".format(updated))                                                                                                
+        return updated
 
-    def has_changed_ws_emitter_policy(self, node, obj_ui, field_chef):
+    def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
         Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
         This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
         '''
+        if obj_ui == objold_ui:
+            return False
         field_chef_value = node.attributes.get_dotted(field_chef)
 
         if obj_ui.get('object_related_list', False):
@@ -346,7 +406,7 @@ class ChefTask(Task):
 
                 elif not any(d['name'] == related_obj['name'] for d in field_chef_value):
                     return True
-            return False
+            return True
         related_objs = obj_ui
         for field_value in field_chef_value:
             if obj_ui['type'] == 'repository':
@@ -362,21 +422,28 @@ class ChefTask(Task):
                         return True
         return False
 
-    def has_changed_user_emitter_policy(self, node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui):
+    def has_changed_user_emitter_policy(self, node, obj_ui, objold_ui, field_chef, priority_obj):
         '''
         Checks if the user emitter policy has changed or is equal to the policy stored in the node chef.
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - obj_ui = {0}".format(obj_ui))
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - objold_ui = {0}".format(objold_ui))
+        if obj_ui == objold_ui:
+            return False
+
         field_chef_value = node.attributes.get_dotted(field_chef)
-        field_chef_value_storage = field_chef_value.get(priority_obj['name']).get('gtkbookmarks')
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
+        username = get_username_chef_format(priority_obj)
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - username = {0}".format(username))
+        field_chef_value_storage = field_chef_value.get(username,{}).get('gtkbookmarks',[])
+        self.log("debug","tasks.py ::: has_changed_user_emitter_policy - field_chef_value_storage = {0}".format(field_chef_value_storage))
         if obj_ui.get('object_related_list', False):
             related_objects = obj_ui['object_related_list']
-            if field_chef_value_storage:
-                for obj in related_objects:
-                    if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
-                        return True
-                return False
-            return True
+            for obj in related_objects:
+                if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
+                    return True
+            return any(x in [j['name'] for j in field_chef_value_storage] for x in [y['name'] for y in objold_ui['object_related_list'] if y['name'] not in [z['name'] for z in obj_ui['object_related_list']]])
 
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
@@ -386,29 +453,137 @@ class ChefTask(Task):
                         return True
         return False
 
-    def update_ws_mergeable_policy(self, node, action, field_chef, field_ui, policy, update_by_path, obj_ui):
+    def update_ws_mergeable_policy(self, node, action, field_chef, field_ui, policy, update_by_path, obj_ui, obj_ui_field, objold_ui_field):
         '''
-        Updates node chef with a mergeable workstation policy
+        This method updates the policy field on the chef node, with the resulting merge value of the policy for the current object.
+
+        Args:
+            node (ChefNode)        : reserved node in Chef, receiver the policy.
+            action (str)           : Action ("created","changed") that Gecos administrator has performed on the current object ("ou","group","computer") 
+            field_chef (str)       : policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.package_list
+            field_ui (str|callable): When is a string type, name of the policy field (package_list). Otherwise (callable), a function.
+            policy (dict)          : complete policy with all its fields. Example: 
+
+              {  
+                 u'slug':u'package_res',
+                 u'name':u'Packages management',
+                 u'name_es':u'Administracion de paquetes',
+                 u'is_emitter_policy':False,
+                 u'support_os':[  
+                    u'GECOS V3',
+                    u'GECOS V2',
+                    u'Ubuntu 14.04.1 LTS',
+                    u'GECOS V3 Lite',
+                    u'Gecos V2 Lite'
+                 ],
+                 u'is_mergeable':True,
+                 u'path':u'gecos_ws_mgmt.software_mgmt.package_res',
+                 u'_id':ObjectId('593a8f050435643b8ba03630'),
+                 u'targets':[  
+                    u'ou',
+                    u'computer',
+                    u'group'
+                 ],
+                 u'schema':{  
+                    u'title_es':u'Administracion de paquetes',
+                    u'properties':{  
+                       u'package_list':{  
+                          u'title':u'Package list',
+                          u'minItems':0,
+                          u'items':{  
+                             u'mergeIdField':[  
+                                u'name'
+                             ],
+                             u'required':[  
+                                u'name',
+                                u'version',
+                                u'action'
+                             ],
+                             u'order':[  
+                                u'name',
+                                u'version',
+                                u'action'
+                             ],
+                             u'type':u'object',
+                             u'properties':{  
+                                u'action':{  
+                                   u'title_es':u'Accion',
+                                   u'enum':[  
+                                      u'add',
+                                      u'remove'
+                                   ],
+                                   u'type':u'string',
+                                   u'title':u'Action'
+                                },
+                                u'version':{  
+                                   u'title_es':u'Version',
+                                   u'enum':[  
+
+                                   ],
+                                   u'type':u'string',
+                                   u'autocomplete_url': 
+                                   u'javascript:calculateVersions',
+                                   u'title':u'Version'
+                                },
+                                u'name':{  
+                                   u'title_es':u'Nombre',
+                                   u'enum':[  
+
+                                   ],
+                                   u'type':u'string',
+                                   u'autocomplete_url':u'/api/packages/',
+                                   u'title':u'Name'
+                                }
+                             },
+                             u'mergeActionField':u'action'
+                          },
+                          u'title_es':u'Lista de paquetes',
+                          u'uniqueItems':True,
+                          u'type':u'array'
+                       }
+                    },
+                    u'type':u'object',
+                    u'order':[  
+                       u'package_list'
+                    ],
+                    u'title':u'Packages management'
+                 }
+              }
+                            
+
+            update_by_path (str)  : update_by policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.updated_by
+            obj_ui_field (list)   : value of policy field in object after current executed action.
+                                    Example: [{'name':'evince','version':'current','action':'add'},{'name':'xournal','version':'latest','action':'add'}]
+            objold_ui_field (list): value of policy field in object before current executed action
+                                    Example: [{'name':'evince','version':'current','action':'remove'},{'name':'xournal','version':'latest','action':'add'}])
+
+        Returns:
+            bool: True if the update was successful. False otherwise.
         '''
-        self.log("debug","tasks.py:::update_ws_mergeable_policy - field_chef = {0}".format(field_chef))
-        if self.has_changed_ws_policy(node, obj_ui, field_ui, field_chef) or action == DELETED_POLICY_ACTION:
+        self.log("info","tasks.py ::: Starting update_ws_mergeable_policy ...")
+        if self.has_changed_ws_policy(node, obj_ui_field, objold_ui_field, field_chef) or action == DELETED_POLICY_ACTION:
            
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             self.log("debug","tasks.py:::update_ws_mergeable_policy - node_updated_by = {0}".format(node_updated_by))
             nodes_ids = self.get_nodes_ids(node_updated_by)
             self.log("debug","tasks.py:::update_ws_mergeable_policy - nodes_ids = {0}".format(nodes_ids))
         
-
             new_field_chef_value = []
             self.log("debug","tasks.py:::update_ws_mergeable_policy - new_field_chef_value = {0}".format(new_field_chef_value))
             updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
+            field = field_chef.split(".")[-1] if callable(field_ui) else field_ui
             for updater_node in updater_nodes:
-                if field_ui in updater_node['policies'][unicode(policy['_id'])]:                                                                
-                    new_field_chef_value += updater_node['policies'][unicode(policy['_id'])][field_ui]
-                else: # support_os
-                    new_field_chef_value += obj_ui[field_ui]
+                updater_node_ui = updater_node['policies'].get(unicode(policy['_id']), {})
+                if callable(field_ui):
+                    innode = field_ui(updater_node_ui, obj=updater_node, node=node, field_chef=field_chef)
+                    self.log("debug","tasks.py:::update_ws_mergeable_policy - innode = {0}".format(innode))
+                else:
+                    innode = updater_node_ui[field_ui]                
+                    self.log("debug","tasks.py:::update_ws_mergeable_policy - innode = {0}".format(innode))
+                    
+                new_field_chef_value += innode            
 
-            
+            self.log("debug","tasks.py:::update_ws_mergeable_policy - new_field_chef_value = {0}".format(new_field_chef_value))
             try:
                 node.attributes.set_dotted(field_chef,list(set(new_field_chef_value)))
             except TypeError:
@@ -419,11 +594,29 @@ class ChefTask(Task):
         return False
             
 
-    def update_user_mergeable_policy(self, node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui):
+    def update_user_mergeable_policy(self, node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui, objold_ui):
         '''
-        Updates node chef with a mergeable user policy
+        This method updates the policy field on the chef node, with the resulting merge value of the policy for the current object.
+
+        Args:
+            node (ChefNode)        : reserved node in Chef, receiver the policy.
+            action (str)           : Action ("created","changed") that Gecos administrator has performed on the current object ("ou","group","computer")
+            field_chef (str)       : policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.package_list
+            field_ui (str|callable): When is a string type, name of the policy field (package_list). Otherwise (callable), a function.
+            policy (dict)          : complete policy with all its fields.
+            priority_obj           :  the highest priority object. In the case of user policies, the same user.
+            priority_obj_ui        :  policy fields and their values for the policy parameter in priority_obj.
+            update_by_path (str)   : update_by policy field path. Example: gecos_ws_mgmt.software_mgmt.package_res.updated_by
+            obj_ui (dict)          : policy fields and their values for the policy parameter in current object
+                                     Example: {'launchers': [{'name':'evince','version':'current','action':'add'},{'name':'xournal','version':'latest','action':'add'}]}
+            objold_ui (dict)       : policy fields and their values for the policy parameter in old object (before executed action)
+                                     Example: {'launchers': [{'name':'evince','version':'current','action':'remove'},{'name':'xournal','version':'latest','action':'add'}])}
+
+        Returns:
+            bool: True if the update was successful. False otherwise.
         '''
-        if self.has_changed_user_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui) or action == DELETED_POLICY_ACTION:
+        self.log("debug","tasks.py ::: Starting update_user_mergeable_policy ...")
+        if self.has_changed_user_policy(node, obj_ui, objold_ui, field_chef, priority_obj) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
             self.log("debug","tasks.py:::update_user_mergeable_policy - nodes_ids = {0}".format(nodes_ids))
@@ -439,9 +632,10 @@ class ChefTask(Task):
                 
 
             obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
-            if obj_ui_field.get(priority_obj['name']):
+            username = get_username_chef_format(priority_obj)
+            if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(priority_obj['name'])[policy_field] = new_field_chef_value[policy_field]
+                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             else:
                 return False
         
@@ -450,12 +644,12 @@ class ChefTask(Task):
 
         return False
 
-    def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path):
+    def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path):
         '''
         Update node chef with a mergeable workstation emitter policy
         This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
         '''
-        if self.has_changed_ws_emitter_policy(node, obj_ui, field_chef) or action == DELETED_POLICY_ACTION:
+        if self.has_changed_ws_emitter_policy(node, obj_ui, objold_ui, field_chef) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
 
@@ -467,12 +661,12 @@ class ChefTask(Task):
         return False
         
 
-    def update_user_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
+    def update_user_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, priority_obj, priority_obj_ui, field_ui, update_by_path):
         '''
         Update node chef with a mergeable user emitter policy
         This policy is emitter, that is that the policy contains related objects (storage)
         '''
-        if self.has_changed_user_emitter_policy(node, obj_ui, field_ui, field_chef, priority_obj, priority_obj_ui) or action == DELETED_POLICY_ACTION:
+        if self.has_changed_user_emitter_policy(node, obj_ui, objold_ui, field_chef, priority_obj) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
             nodes_ids = self.get_nodes_ids(node_updated_by)
 
@@ -480,15 +674,17 @@ class ChefTask(Task):
             current_objs = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
 
             for objs in related_objects:
-                if objs not in current_objs.get(priority_obj['name']).get('gtkbookmarks'):
-                    current_objs.get(priority_obj['name'])['gtkbookmarks'].append(objs)
+                if objs not in current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]):
+                    current_objs.get(priority_obj['name'],{}).get('gtkbookmarks',[]).append(objs)
             node.attributes.set_dotted(field_chef, current_objs)
             return True
 
         return False
         
 
-    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, action, node, policy, rule_type, parent_id, job_ids_by_computer):
+
+                                                             
+    def update_node_from_rules(self, rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer):
         '''
         This function update a node from rules.
         Rules are the different fields in a policy.
@@ -513,6 +709,16 @@ class ChefTask(Task):
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
 
+            if objold:
+                objold_ui = self.get_object_ui(rule_type, objold, node, policy)
+            else:
+                objold = objold_ui = {}
+            # objcur_ui_field: value of policy field for current object
+            # objold_ui_field: value of policy field for old object (before executed action)
+            # Both of them are used to checking if object changed in has_changed_ws_policy method
+            # obj_ui_field can not be used for not always storing the value of the current object, 
+            # but the priority, which will sometimes match the current or not.
+            curobj_ui_field = objold_ui_field = {}
             if priority_obj != obj:
                 priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
             if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION or is_mergeable:
@@ -520,9 +726,17 @@ class ChefTask(Task):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
+                    if objold and objold_ui:
+                        objold_ui_field = field_ui(objold_ui, obj=objold, node=node, field_chef=field_chef)
+                    self.log("debug","tasks:::update_node_from_rules -> objold_ui = {0}".format(objold_ui))
+                    self.log("debug","tasks:::update_node_from_rules -> objold_ui_field = {0}".format(objold_ui_field))
+                    curobj_ui_field = field_ui(obj_ui, obj=obj, node=node, field_chef=field_chef)
+                    self.log("debug","tasks:::update_node_from_rules -> curobj_ui_field = {0}".format(curobj_ui_field))
                 else:
                     # Policy fields that are not sent in the form are populated with their defaults
                     obj_ui_field = priority_obj_ui.get(field_ui, node.default.get_dotted(field_chef))
+                    curobj_ui_field = obj_ui.get(field_ui, node.default.get_dotted(field_chef))
+                    objold_ui_field  = objold_ui.get(field_ui, node.default.get_dotted(field_chef))
                     self.log("debug","tasks:::update_node_from_rules -> obj_ui_field = {0}".format(obj_ui_field))
                     if field_ui not in obj_ui:
                         obj_ui[field_ui] = node.default.get_dotted(field_chef)
@@ -548,16 +762,15 @@ class ChefTask(Task):
                 elif is_mergeable:
                     update_by_path = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
 
-
-
+                    self.log("debug","tasks.py ::: update_node_from_rules - is_mergeable - update_by_path = {0}".format(update_by_path))
                     if obj_ui.get('type', None) == 'storage':
-                        is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
+                        is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
                     elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
-                        is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, update_by_path)
+                        is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path)
                     elif not is_user_policy(field_chef):
-                        is_policy_updated = self.update_ws_mergeable_policy(node, action, field_chef, field_ui, policy, update_by_path, obj_ui)
+                        is_policy_updated = self.update_ws_mergeable_policy(node, action, field_chef, field_ui, policy, update_by_path, obj_ui, curobj_ui_field, objold_ui_field)
                     elif is_user_policy(field_chef):
-                        is_policy_updated = self.update_user_mergeable_policy(node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui)
+                        is_policy_updated = self.update_user_mergeable_policy(node, action, field_chef, field_ui, policy, priority_obj, priority_obj_ui, update_by_path, obj_ui, objold_ui)
 
                     if is_policy_updated:
                         updated = True
@@ -750,7 +963,7 @@ class ChefTask(Task):
                         rules, obj_ui = self.get_rules_and_object(rule_type, objold, node, policy)
                     else:
                         rules, obj_ui = self.get_rules_and_object(rule_type, obj, node, policy)
-                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, action, node, policy, rule_type, parent_id, job_ids_by_computer)
+                    node, updated_policy = self.update_node_from_rules(rules, user, computer, obj_ui, obj, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
                     if not updated and updated_policy:
                         updated = True
             return (node, updated)
@@ -759,7 +972,7 @@ class ChefTask(Task):
             if force_update or self.is_updated_node(obj, objold):
                 policy = self.db.policies.find_one({'slug': emiter_police_slug(obj['type'])})
                 rules, obj_receptor = self.get_rules_and_object(rule_type, obj, node, policy)
-                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, action, node, policy, rule_type, parent_id, job_ids_by_computer)
+                node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
             return (node, updated)
 
     def validate_data(self, node, cookbook, api):
@@ -819,6 +1032,7 @@ class ChefTask(Task):
         '''
         if an error is produced, save the error in the job
         '''
+        self.log("error",traceback.format_exc())
         message = 'No save in chef server.'
         if prefix:
             message = "%s %s" % (prefix, message)
@@ -858,6 +1072,7 @@ class ChefTask(Task):
         '''
         Report generic error
         '''
+        self.log("error",traceback.format_exc())
         job_storage = JobStorage(self.db.jobs, user)
         job_status = status
         job = dict(obj=obj,
