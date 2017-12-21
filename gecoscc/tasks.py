@@ -378,7 +378,7 @@ class ChefTask(Task):
                             updated = True
                             break
                     if not updated:
-                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]])
+                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui.get(policy_type,[]) if y not in obj_ui.get(policy_type,[])])
          
         self.log("debug","tasks.py ::: has_changed_user_policy - updated = {0}".format(updated))                                                                                                
         return updated
@@ -699,7 +699,11 @@ class ChefTask(Task):
         attributes_updated_by_updated = []
         is_mergeable = policy.get('is_mergeable', False)
         for field_chef, field_ui in rules.items():
+            # Ignore a user policy in a computer not calculated by "get_computer_of_user" method
             if is_user_policy(field_chef) and 'user' not in computer:
+                continue
+            # Ignore a non user policy in a computer calculated by "get_computer_of_user" method
+            if (not is_user_policy(field_chef)) and ('user' in computer):
                 continue
             job_attr = '.'.join(field_chef.split('.')[:3]) + '.job_ids'
             updated_by_attr = self.get_updated_by_fieldname(field_chef, policy, obj, computer)
@@ -1003,6 +1007,8 @@ class ChefTask(Task):
                         initial_value = ''
                     elif attr_type == 'number':
                         initial_value = 0
+                    elif attr_type == 'boolean':
+                        initial_value = False
 
                     # Making required fields dictionary
                     # example: {u'gecos_ws_mgmt': {u'sotfware_mgmt': {u'package_res':{u'new_field':[]}}}}
