@@ -95,12 +95,9 @@ def get_computer_of_user(collection_nodes, user, related_computers=None):
         related_computers = []
     user_computers = collection_nodes.find({'_id': {'$in': user['computers']}})
     for computer in user_computers:
+        computer['user'] = user
         if computer not in related_computers:
-            computer['user'] = user
             related_computers.append(computer)
-        elif 'user' not in computer:
-            computer_index = related_computers.index(computer)
-            related_computers[computer_index]['user'] = user
     return related_computers
 
 
