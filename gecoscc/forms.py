@@ -33,6 +33,7 @@ from gecoscc import messages
 from gecoscc.tasks import cookbook_upload
 from gecoscc.i18n import gettext as _
 from gecoscc.utils import get_chef_api, create_chef_admin_user
+from gecoscc.socks import maintenance_mode
 
 
 default_dir = resource_filename('deform', 'templates/')
@@ -338,3 +339,24 @@ class CookbookRestoreForm(GecosForm):
 
     def save(self, upload):
         self.created_msg(_('Restore cookbook.'))
+class MaintenanceForm(GecosForm):
+    def save(self, postvars):
+        logger.debug("forms.py ::: MaintenanceForm - postvars = {0}".format(postvars))
+
+        if postvars['maintenance_message'] == "":
+            logger.debug("forms.py ::: MaintenanceForm - Deleting maintenance message")
+            self.request.db.settings.remove({'key':'maintenance_message'})
+            self.created_msg(_('Maintenance message was deleted successfully.'))
+        else:
+            logger.debug("forms.py ::: MaintenanceForm - Creating maintenance message")
+            compose = postvars['maintenance_message']
+            maintenance_mode(self.request, compose)
+            msg = self.request.db.settings.find_one({'key':'maintenance_message'})
+            if msg is None:
+                msg = {'key':'maintenance_message', 'value': compose, 'type':'string'}
+                self.request.db.settings.insert(msg)
+            else:
+                self.request.db.settings.update({'key':'maintenance_message'},{'$set':{ 'value': compose}})
+
+            self.request.session['maintenance_message'] = compose
+            self.created_msg(_('Maintenance settings saved successfully.'))
