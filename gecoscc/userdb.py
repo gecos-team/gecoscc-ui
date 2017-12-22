@@ -173,4 +173,4 @@ def get_groups(userid, request):
     user = request.userdb.get_user(userid)
     if user.get('is_superuser',None):
         return ['logged', 'g:maintenance']
-    return ['logger']
+    return ['logged']

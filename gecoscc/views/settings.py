@@ -28,7 +28,7 @@ import json
 from bson.objectid import ObjectId
 logger = logging.getLogger(__name__)
 
-
+# This settings, which are not set in the view, are saved in MongoDB collection
 EXCLUDE_SETTINGS = ['maintenance_mode']
 
 # Create a setting from the default values
