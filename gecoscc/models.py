@@ -415,8 +415,8 @@ class CookbookRestore(colander.MappingSchema):
 
 class Maintenance(colander.MappingSchema):
     maintenance_message = colander.SchemaNode(colander.String(),
-                                              validator=colander.Length(max=100),
-                                              widget=deform.widget.TextAreaWidget(rows=10, cols=40),
+                                              validator=colander.Length(max=500),
+                                              widget=deform.widget.TextAreaWidget(rows=10, cols=80, css_class='deform-widget-textarea-maintenance'),
                                               title=_('Users will be warned with this message'),
                                               default='',
                                               missing='')

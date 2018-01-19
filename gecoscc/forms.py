@@ -339,7 +339,17 @@ class CookbookRestoreForm(GecosForm):
 
     def save(self, upload):
         self.created_msg(_('Restore cookbook.'))
+
 class MaintenanceForm(GecosForm):
+    css_class = 'deform-maintenance'
+
+    def __init__(self, schema, request, *args, **kwargs):
+        self.request = request
+        buttons = (GecosButton(title=_('Submit'),
+                               css_class='deform-maintenance-submit'),)
+
+        super(MaintenanceForm, self).__init__(schema, buttons=buttons, *args, **kwargs)
+
     def save(self, postvars):
         logger.debug("forms.py ::: MaintenanceForm - postvars = {0}".format(postvars))
 
