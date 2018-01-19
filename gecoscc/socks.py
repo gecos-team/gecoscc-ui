@@ -74,7 +74,15 @@ def invalidate_jobs(request, user=None):
         'action': 'jobs',
     }))
 
+def maintenance_mode(request, msg):
+    if not is_websockets_enabled():
+        return
 
+    manager = get_manager()
+    manager.publish(CHANNEL_WEBSOCKET, json.dumps({
+        'action': 'maintenance',
+        'message': msg
+    }))
 def update_tree(path = 'root'):
     if not is_websockets_enabled():
         return

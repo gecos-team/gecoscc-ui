@@ -48,7 +48,7 @@ body {
 }
 
 .page {
-    margin: 0 20px;
+    margin: 0 20px 60px 20px;
 }
 
 /* TABS */
@@ -876,4 +876,13 @@ legend {
 	.tasks-rigth {
 		display: block;
 	}
+}
+
+.maintenance-info {
+    font-size: 14px;
+    font-weight: normal;
+    padding: 9px;
+    position: relative;
+    top: 1px;
+    font-style: italic;
 }

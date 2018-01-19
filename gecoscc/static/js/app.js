@@ -840,6 +840,9 @@ var App;
                 user.set("computers", computers);
             }
         });
+        App.instances.message_manager.bind('maintenance', function (result) {
+            App.showAlert('warning', result.message);
+        });
         
         $(window).on('beforeunload', function () {
             App.instances.message_manager.silent_disconnect();
