@@ -886,3 +886,19 @@ legend {
     top: 1px;
     font-style: italic;
 }
+
+.deform-maintenance .control-label {
+    text-align: center;
+    width: 100%;
+    margin-top: 30px;
+}
+
+.deform-maintenance-submit {
+    margin: auto !important;
+    display: block;
+}
+
+.deform-widget-textarea-maintenance {
+   width: auto !important;
+   margin: auto !important;
+}
