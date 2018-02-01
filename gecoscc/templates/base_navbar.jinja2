@@ -54,6 +54,11 @@
                                     <span class="fa fa-upload"></span> {{ gettext('Uploads') }}
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ request.route_url('admin_maintenance', username=request.user['username']) }}">
+                                    <span class="fa fa-wrench"></span> {{ gettext('Maintenance Mode') }}
+                                </a>
+                            </li>
                             {% endif %}
                             <li role="presentation" class="divider"></li>
                             <li>
@@ -75,6 +80,12 @@
                 {{ msg|safe }}
             </div>
         {% endfor %}
+    {% endif %}
+    {% if 'maintenance_message' in request.session%}
+            <div class="alert alert-warning">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ request.session['maintenance_message']|safe }}
+            </div>
     {% endif %}
     {% block inner_content %}{% endblock %}
 </div>

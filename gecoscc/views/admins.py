@@ -19,9 +19,9 @@ from deform import ValidationFailure
 from gecoscc import messages
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.socks import invalidate_jobs
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, CookbookUploadForm, CookbookRestoreForm
+from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, CookbookUploadForm, CookbookRestoreForm, MaintenanceForm
 from gecoscc.i18n import gettext as _
-from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore
+from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore, Maintenance
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername
 
@@ -29,6 +29,8 @@ from subprocess import call
 from bson import ObjectId
 
 import os
+import time
+import pickle
 import logging
 logger = logging.getLogger(__name__)
 
@@ -251,6 +253,65 @@ def admin_restore(context, request):
     logger.debug("admins_log ::: admin_restore - route_url = %s" % (request.route_url('admin_upload', username=username)))
     return HTTPFound(location=request.route_url('admin_upload', username=username))
 
+@view_config(route_name='admin_maintenance', permission='is_superuser', renderer="templates/admins/maintenance.jinja2")
+def admin_maintenance(context, request):
+
+    schemaMaintenance = Maintenance()
+    form = MaintenanceForm(schema=schemaMaintenance,
+                           request=request)
+
+    instance = data = {}
+    settings = get_current_registry().settings
+    instance = request.db.settings.find_one({'key':'maintenance_message'})
+    if '_submit' in request.POST:
+        data = request.POST.items()
+        try:
+            postdata = form.validate(data)
+            logger.debug("admins_log ::: admin_maintenance  = %s" % (postdata))
+            form.save(postdata)
+            return HTTPFound(location='')
+        except ValidationFailure, e:
+            form = e
+
+    if instance and not data:
+        instance['maintenance_message'] = instance.get('value')
+        form_render = form.render(instance)
+    else:
+        form_render = form.render()
+
+    # Query String: maintenance mode ON/OFF
+    mode = request.GET.get('mode', None) 
+    logger.info("admin_maintenance ::: mode = %s" % mode)
+    obj = request.db.settings.find_one({'key':'maintenance_mode'})
+    if obj is None:
+        obj = {'key':'maintenance_mode', 'value': mode == 'true', 'type':'string'}
+        request.db.settings.insert(obj)
+
+    else:
+        if mode is not None:
+            request.db.settings.update({'key':'maintenance_mode'},{'$set':{ 'value': mode == 'true' }})
+            logger.info("admin_maintenance ::: obj = %s" % (obj))
+            if mode == 'false':
+                request.db.settings.remove({'key':'maintenance_message'})
+
+    # Active users
+    sessions = [pickle.loads(session['value']) for session in request.db.backer_cache.find({},{'_id':0, 'value':1})]
+    logger.info("admin_maintenance ::: sessions = %s" % sessions)
+    last_action = int(time.time()) - int(settings.get('idle_time',15*60))
+    logger.info("admin_maintenance ::: last_action = %s" % last_action)
+    active_users = [ session['auth.userid'] for session in sessions if session.get('auth.userid',None) and int(session['_accessed_time']) > last_action ]
+    logger.info("admin_maintenance ::: active_users = %s" % active_users)
+
+    filters = {'username':{'$in': active_users }}
+    admin_users = request.userdb.list_users(filters).sort('username')
+    page = create_pagination_mongo_collection(request, admin_users)
+
+    return {
+       'admin_users': admin_users,
+       'page': page,
+       'maintenance': obj['value'],
+       'form_maintenance': form_render
+    }
 
 def _check_if_user_belongs_to_admin_group(request, organization, username):
     chefusername = toChefUsername(username)

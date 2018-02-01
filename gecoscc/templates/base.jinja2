@@ -14,6 +14,7 @@
         <link href="{{ request.application_url }}/static/css/bootstrap-admin-theme.css" rel="stylesheet" media="screen">
         <link href="{{ request.application_url }}/static/css/scp-gecos.css" rel="stylesheet" media="screen">
         <link href="{{ request.application_url }}/static/images/fav.ico" rel="shortcut icon" />
+        <link href="{{ request.application_url }}/static/css/bootstrap-switch.min.css" rel="stylesheet" media="screen" />
 
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -99,18 +100,27 @@
         <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/fuelux.min.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/js.cookie.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/bootstrap-switch.min.js"></script>
 
         <script>
             $(document).ready(function () {
                 var confirmModal = $("#confirm-modal").modal({ show: false });
                 window.GecosUtils = {
                     askConfirmation: function (options) {
+                        var dfd = jQuery.Deferred();
                         if (!_.has(options, "callback")) { return; }
                         confirmModal.find("button.btn-danger")
                             .off("click")
                             .on("click", function () {
                                 options.callback();
                                 confirmModal.modal("hide");
+                                dfd.resolve(true);
+                            });
+                        confirmModal.find("button.btn-default")
+                            .off("click")
+                            .on("click", function () {
+                                confirmModal.modal("hide");
+                                dfd.resolve(false);
                             });
                         if (_.has(options, "message")) {
                             confirmModal.find(".modal-body").html(
@@ -119,6 +129,7 @@
                             confirmModal.find(".modal-body").html("");
                         }
                         confirmModal.modal("show");
+                        return dfd.promise();
                     },
                     {% if request.user %}
                         gecosUser: {{ request.user|admin_jsonify|safe }}

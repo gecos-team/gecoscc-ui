@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-10-31 11:21+0100\n"
+"POT-Creation-Date: 2017-12-17 21:12+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -89,59 +89,59 @@ msgstr ""
 msgid "Only the super admin can cut this object"
 msgstr ""
 
-#: gecoscc/static/js/app.js:442
+#: gecoscc/static/js/app.js:511
 msgid "New element"
 msgstr ""
 
-#: gecoscc/static/js/app.js:447
+#: gecoscc/static/js/app.js:516
 msgid "User"
 msgstr ""
 
-#: gecoscc/static/js/app.js:448
+#: gecoscc/static/js/app.js:517
 msgid "Organisational Unit"
 msgstr ""
 
-#: gecoscc/static/js/app.js:449
+#: gecoscc/static/js/app.js:518
 msgid "Group"
 msgstr ""
 
-#: gecoscc/static/js/app.js:450
+#: gecoscc/static/js/app.js:519
 msgid "Workstation"
 msgstr ""
 
-#: gecoscc/static/js/app.js:451
+#: gecoscc/static/js/app.js:520
 msgid "Printer"
 msgstr ""
 
-#: gecoscc/static/js/app.js:452
+#: gecoscc/static/js/app.js:521
 msgid "Remote Storage"
 msgstr ""
 
-#: gecoscc/static/js/app.js:453
+#: gecoscc/static/js/app.js:522
 msgid "Software Repository"
 msgstr ""
 
-#: gecoscc/static/js/app.js:499
+#: gecoscc/static/js/app.js:568
 msgid "First level OUs can only add new OUs."
 msgstr ""
 
-#: gecoscc/static/js/app.js:513
+#: gecoscc/static/js/app.js:582
 msgid "Domain is not Gecos."
 msgstr ""
 
-#: gecoscc/static/js/app.js:514
+#: gecoscc/static/js/app.js:583
 msgid "Only local users can be added."
 msgstr ""
 
-#: gecoscc/static/js/app.js:566
+#: gecoscc/static/js/app.js:635
 msgid "¡¡ OOOOOPSSS !! The url points to a non-existent object."
 msgstr ""
 
-#: gecoscc/static/js/app.js:567
+#: gecoscc/static/js/app.js:636
 msgid "If you came here by clicking on a link in a view, refresh that view."
 msgstr ""
 
-#: gecoscc/static/js/app.js:669
+#: gecoscc/static/js/app.js:738
 msgid "Policy"
 msgstr ""
 

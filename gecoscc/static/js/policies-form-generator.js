@@ -49,7 +49,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         render: function () {
-            var data, policyData, template, $html, options;
+            var data, policyData, template, $html, options, formLayout;
 
             this.isClosed = false;
 
@@ -63,6 +63,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.model.get('slug').slice(-4) === '_res') {
                 policyData.slug = this.model.get('slug').slice(0, -4);
             }
+            formLayout = _.isEmpty(this.model.get('form')) ? "*" : this.model.get('form');
+            //console.log("formLayout: " + formLayout);
 
             template = this.getTemplate();
             $html = $(Marionette.Renderer.render(template, policyData));
@@ -72,7 +74,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 // Object that describes the data model
                 schema: data.schema,
                 // Array that describes the layout of the form
-                form: ["*"],
+                form: [formLayout],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: _.bind(this.processForm, this)
             };

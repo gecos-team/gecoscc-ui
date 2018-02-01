@@ -16,6 +16,7 @@ import colander
 import deform
 import os
 import pyramid
+import datetime
 
 from bson import ObjectId
 from bson.objectid import InvalidId
@@ -25,6 +26,7 @@ from copy import copy
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
 from gecoscc.utils import get_items_ou_children
+from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
@@ -411,6 +413,13 @@ class CookbookRestore(colander.MappingSchema):
                                            title=_('Restore previous version of cookbook'),
                                            widget=deferred_restore_widget)
 
+class Maintenance(colander.MappingSchema):
+    maintenance_message = colander.SchemaNode(colander.String(),
+                                              validator=colander.Length(max=500),
+                                              widget=deform.widget.TextAreaWidget(rows=10, cols=80, css_class='deform-widget-textarea-maintenance'),
+                                              title=_('Users will be warned with this message'),
+                                              default='',
+                                              missing='')
 class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
 
@@ -733,6 +742,9 @@ class Policy(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     name = colander.SchemaNode(colander.String())
     slug = colander.SchemaNode(colander.String())
+    form = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                               default={},
+                               missing={})
     schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                  default={},
                                  missing={})
