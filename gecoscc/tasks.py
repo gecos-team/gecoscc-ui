@@ -383,8 +383,7 @@ class ChefTask(Task):
         for policy_type in obj_ui.keys():
             self.log("debug","tasks.py ::: has_changed_user_policy - policy_type = {0}".format(policy_type))
             if isinstance(field_chef_value.get(username,{}).get(policy_type), list) or field_chef_value.get(username,{}).get(policy_type) is None:
-                if field_chef_value.get(username,{}).get(policy_type) is None:
-                    
+                if field_chef_value.get(username,{}).get(policy_type) is None:                   
                     updated = True
                 elif obj_ui.get(policy_type) != []:
                     for obj in obj_ui.get(policy_type):
@@ -395,6 +394,7 @@ class ChefTask(Task):
                         updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]])
         self.log("debug","tasks.py ::: has_changed_user_policy - updated = {0}".format(updated))                                                                                                
         return updated
+
     def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
         Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
@@ -698,6 +698,7 @@ class ChefTask(Task):
             self.log("debug","tasks.py ::: update_user_mergeable_policy - action = {0}".format(action))
             username = get_username_chef_format(priority_obj)
             self.log("debug","tasks.py ::: update_user_mergeable_policy - username = {0}".format(username))
+
             if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
                     obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
