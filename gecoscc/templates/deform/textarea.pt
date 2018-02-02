@@ -1,0 +1,37 @@
+  <textarea tal:define="rows rows|field.widget.rows;
+                      cols cols|field.widget.cols;
+                      css_class css_class|field.widget.css_class;
+                      oid oid|field.oid;
+                      name name|field.name;
+                      style style|field.widget.style"
+          tal:attributes="rows rows;
+                          cols cols;
+                          class string: form-control ${css_class};
+                          style style"
+          id="${oid}"
+          name="${name}"
+  >${cstruct}</textarea>
+  <div id="charscounter"><span id="chars"></span> ${"characters remaining"}</div>
+
+  <script type="text/javascript">
+   deform.addCallback(
+     '${field.oid}',
+     function(oid) {
+       var maxLength = ${field.widget.maxlength};
+       var initial = $('#' + oid).val().length;
+       $('#chars').text(maxLength-initial);
+
+       $('#' + oid).keyup(function() {
+         var length = $(this).val().length;
+         length = maxLength-length;
+         $('#chars').text(length);
+
+         if (length < 0) { 
+           $('#chars').css('color','red').css('font-weight','bold'); 
+         } else {
+           $('#chars').css('color','black').css('font-weight','normal'); 
+         }
+       });
+     }
+   );
+  </script>

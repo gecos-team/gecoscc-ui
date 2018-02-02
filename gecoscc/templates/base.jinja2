@@ -23,7 +23,9 @@
            <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/respond-1.1.0.min.js"></script>
         <![endif]-->
 
-        
+        <script src="{{ request.application_url }}/static/js/libs/jquery-1.10.2.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/deform.js"></script>                                                                                                
+
         {% block extraheader %}{% endblock %}
     </head>
     <body class="{% block bodyclass %}{% endblock %}">
