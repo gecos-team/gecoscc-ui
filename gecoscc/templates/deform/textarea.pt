@@ -11,7 +11,7 @@
           id="${oid}"
           name="${name}"
   >${cstruct}</textarea>
-  <div id="charscounter"><span id="chars"></span>/${field.widget.maxlength}</div>
+  <div id="charscounter"><span id="chars"></span> (max:${field.widget.maxlength})</div>
 
   <script type="text/javascript">
    deform.addCallback(
