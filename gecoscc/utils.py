@@ -54,6 +54,8 @@ SCRIPTCODES = {
     'mongodb_restore':'99',
     'chefserver_restore':'99'}
     
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def get_policy_emiter_id(collection, obj):
