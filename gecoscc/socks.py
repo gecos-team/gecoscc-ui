@@ -122,7 +122,6 @@ def socktail(logdata):
     if not is_websockets_enabled():
         return
 
-    logger.debug("SOCKTAIL: logdata = %s" % logdata)
     manager = get_manager()
     manager.publish('logdata', json.dumps({
         'action': 'socktail',
@@ -171,16 +170,15 @@ class TailNamespace(BaseNamespace):
             r.subscribe('logdata')
 
             for m in r.listen():
-                logger.debug("TailNamespace: m = %s" % m)
                 if m['type'] == 'message':
                     data = json.loads(m['data'])
                     self.emit('logdata', data)
-                    logger.debug("TailNamespace: logdata event fired")
         except redis.ConnectionError:
             self.emit('logdata', {'redis':'error'})
 
     def on_sendlog(self, *args, **kwargs):
         self.spawn(self.listener)
+
 class GecosNamespace(BaseNamespace):
 
     def listener(self):
