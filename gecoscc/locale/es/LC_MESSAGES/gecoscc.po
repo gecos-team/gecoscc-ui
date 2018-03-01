@@ -1406,19 +1406,19 @@ msgstr "Buscar por nombre de usuario"
 
 #: gecoscc/templates/admins/updates.jinja2:31
 msgid "Sequence"
-msgstr ""
+msgstr "Secuencia"
 
 #: gecoscc/templates/admins/updates.jinja2:33
 msgid "Path"
-msgstr ""
+msgstr "Ruta"
 
 #: gecoscc/templates/admins/updates.jinja2:35
 msgid "Is rollback?"
-msgstr ""
+msgstr "Marcha atrás?"
 
 #: gecoscc/templates/admins/updates.jinja2:36
 msgid "Rollback Log"
-msgstr ""
+msgstr "Log de marcha atrás"
 
 #: gecoscc/templates/admins/updates.jinja2:37
 msgid "Update Log"
