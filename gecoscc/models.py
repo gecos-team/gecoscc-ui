@@ -32,8 +32,6 @@ from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api,
 from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
-import logging
-logger = logging.getLogger(__name__)
 OU_ORDER = 1
 UPDATE_STRUCTURE = ['controlfile','cookbook/','scripts/']
 
@@ -392,11 +390,6 @@ class AdminUser(BaseUser):
 _('There was a problem with your submission')
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
-_('The uploaded file is not followed naming convention')
-_('No valid update sequence. Must be: {$val}')
-_('No valid zip file structure')
-_('Any script out of range (00-99)')
-_('Control file requirements not met')
 
 
 class AdminUserOUManage(colander.MappingSchema):
@@ -417,70 +410,75 @@ class CookbookUpload(colander.MappingSchema):
                                       title=_('URL download'))
 
 # UPDATES: INI
+
 class UpdateBaseValidator(object):
     filename = ''
     decompress = ''
     def __call__(self, node, value):
-        if value['local_file'] is not None:
-            self.filename = os.path.basename(value['local_file']['filename'])
-            self.decompress = value['local_file']['decompress']
+        if value is not None:
+            self.decompress = value['decompress']
+            if 'fp' in value:
+                self.filename = os.path.basename(value['filename'])
+            elif 'url' in value:
+                self.filename = os.path.basename(value['url'])
         else:
-            self.filename = os.path.basename(value['remote_file']['url'])
-            self.decompress = value['remote_file']['decompress']
+            self.filename = ''
+            self.decompress = ''
 
 class UpdateNamingValidator(UpdateBaseValidator):
-    err_msg = 'The uploaded file is not followed naming convention'
+    err_msg = _('The uploaded file is not followed naming convention')
     pattern = '^update-(\w+)\.zip$'
     def __call__(self, node, value):
         super(UpdateNamingValidator, self).__call__(node, value)
-        if not (re.match(self.pattern, self.filename)):
+        if self.filename and not (re.match(self.pattern, self.filename)):
             node.raise_invalid(self.err_msg)
 
 class UpdateSequenceValidator(UpdateBaseValidator):
 
-    err_msg = 'No valid update sequence. Must be: {$val}'
-    _err_msg = _('No valid update sequence. Must be: ${val}')
+    err_msg = _('No valid update sequence. Must be: {$val}')
     pattern = '^update-([0-9]{4})\.zip$'
     def __call__(self, node, value):
         super(UpdateSequenceValidator, self).__call__(node,value)
-        m = re.match(self.pattern, self.filename)
-        request = pyramid.threadlocal.get_current_request()
-        from gecoscc.db import get_db
-        mongodb = get_db(request)
-        nextseq = getNextUpdateSeq(mongodb)
-        # Numeric update naming
-        if m is not None and m.group(1) != nextseq:
-            err_msg = _(self.err_msg, mapping={'val': nextseq})
-            node.raise_invalid(err_msg)
-        else:
-            if mongodb.updates.find({'name':self.filename}).count() > 0:
-                node.raise_invalid(_('This name already exists'))
+        if self.filename:
+            m = re.match(self.pattern, self.filename)
+            request = pyramid.threadlocal.get_current_request()
+            from gecoscc.db import get_db
+            mongodb = get_db(request)
+            nextseq = getNextUpdateSeq(mongodb)
+            # Numeric update naming
+            if m is not None and m.group(1) != nextseq:
+                err_msg = _(self.err_msg, mapping={'val': nextseq})
+                node.raise_invalid(err_msg)
+            else:
+                if mongodb.updates.find({'name':self.filename}).count() > 0:
+                    node.raise_invalid(_('This name already exists'))
 
 class UpdateFileStructureValidator(UpdateBaseValidator):
 
-    err_msg = 'No valid zip file structure'
+    err_msg = _('No valid zip file structure')
 
     def __call__(self, node, value):
 
         super(UpdateFileStructureValidator, self).__call__(node,value)
        
-        for archive in os.listdir(self.decompress):
-            # Adding slash if archive is a dir for comparison
-            if os.path.isdir(self.decompress + archive):
-                archive += os.sep
+        if os.path.isdir(self.decompress):
+            for archive in os.listdir(self.decompress):
+                # Adding slash if archive is a dir for comparison
+                if os.path.isdir(self.decompress + archive):
+                    archive += os.sep
 
-            if archive not in UPDATE_STRUCTURE:
-                node.raise_invalid(self.err_msg)
+                if archive not in UPDATE_STRUCTURE:
+                    node.raise_invalid(gettext(self.err_msg))
 
-        for required in UPDATE_STRUCTURE:
-            if not os.path.exists(self.decompress + required):
-                node.raise_invalid(self.err_msg)
+            for required in UPDATE_STRUCTURE:
+                if not os.path.exists(self.decompress + required):
+                    node.raise_invalid(gettext(self.err_msg))
           
 
 class UpdateScriptRangeValidator(UpdateBaseValidator):
 
     pattern = '^[0-9][0-9]-.*'
-    err_msg = 'Any script out of range (00-99)'
+    err_msg = _('Any script out of range (00-99)')
 
     def __call__(self, node, value):
 
@@ -491,7 +489,7 @@ class UpdateScriptRangeValidator(UpdateBaseValidator):
         if os.path.isdir(scriptdir):
             for script in os.listdir(scriptdir):
                 if not (re.match(self.pattern, script)):
-                    node.raise_invalid(self.err_msg)
+                    node.raise_invalid(gettext(self.err_msg))
         
 
 class UpdateControlFileValidator(UpdateBaseValidator):
@@ -519,16 +517,14 @@ class UpdateControlFileValidator(UpdateBaseValidator):
                         cookbook_require = line
                       
             if gecoscc_require and not iscompatible(gecoscc_require, string_to_tuple(request.VERSION)):
-                node.raise_invalid(self.err_msg)
+                node.raise_invalid(gettext(self.err_msg))
   
             if cookbook_require and not iscompatible(cookbook_require, string_to_tuple(cookbook['version'])):
-                node.raise_invalid(self.err_msg)
+                node.raise_invalid(gettext(self.err_msg))
          
 
 # Update preparer
 def unzip_preparer(value):
-
-    logger.info("unzip_preparer - value = %s" % value)
 
     if value is not colander.null:
         try:
@@ -589,18 +585,31 @@ class UrlFile(object):
 
 class Update(colander.MappingSchema):
 
-    validator = colander.All(UpdateNamingValidator(), 
-                             UpdateSequenceValidator(),
-                             UpdateFileStructureValidator(), 
-                             UpdateControlFileValidator(),
-                             UpdateScriptRangeValidator())
+    #validator = colander.All(UpdateNamingValidator(), 
+    #                         UpdateSequenceValidator(),
+    #                         UpdateFileStructureValidator(), 
+    #                         UpdateControlFileValidator(),
+    #                         UpdateScriptRangeValidator())
     local_file = colander.SchemaNode(deform.FileData(),
                                      widget=FileUploadWidget(filestore),
                                      preparer=unzip_preparer,
+                                     #validator=colander.All(v1(),v2()),
+                                     validator = colander.All(
+                                         UpdateNamingValidator(), 
+                                         UpdateSequenceValidator(),
+                                         UpdateFileStructureValidator(), 
+                                         UpdateControlFileValidator(),
+                                         UpdateScriptRangeValidator()),
                                      missing=colander.null,
                                      title=_('Update ZIP'))
     remote_file = colander.SchemaNode(UrlFile(),
                                       preparer=unzip_preparer,
+                                      #validator=colander.All(v1(),v2()),
+                                      validator = colander.All(
+                                          UpdateNamingValidator(), 
+                                          UpdateSequenceValidator(),
+                                          UpdateFileStructureValidator(), 
+                                          UpdateControlFileValidator()),
                                       missing=colander.null,
                                       title=_('URL download'))
 

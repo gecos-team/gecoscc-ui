@@ -25,6 +25,7 @@ import traceback
 import subprocess
 import pickle
 
+from gettext import gettext as _
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
 
