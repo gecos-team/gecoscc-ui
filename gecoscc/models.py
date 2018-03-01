@@ -415,6 +415,7 @@ class CookbookUpload(colander.MappingSchema):
                                       validator=colander.url,
                                       missing=unicode(''),
                                       title=_('URL download'))
+
 # UPDATES: INI
 class UpdateBaseValidator(object):
     filename = ''
@@ -426,6 +427,7 @@ class UpdateBaseValidator(object):
         else:
             self.filename = os.path.basename(value['remote_file']['url'])
             self.decompress = value['remote_file']['decompress']
+
 class UpdateNamingValidator(UpdateBaseValidator):
     err_msg = 'The uploaded file is not followed naming convention'
     pattern = '^update-(\w+)\.zip$'
@@ -433,6 +435,7 @@ class UpdateNamingValidator(UpdateBaseValidator):
         super(UpdateNamingValidator, self).__call__(node, value)
         if not (re.match(self.pattern, self.filename)):
             node.raise_invalid(self.err_msg)
+
 class UpdateSequenceValidator(UpdateBaseValidator):
 
     err_msg = 'No valid update sequence. Must be: {$val}'
@@ -485,9 +488,10 @@ class UpdateScriptRangeValidator(UpdateBaseValidator):
 
         scriptdir = self.decompress + 'scripts'
  
-        for script in os.listdir(scriptdir):
-            if not (re.match(self.pattern, script)):
-                node.raise_invalid(self.err_msg)
+        if os.path.isdir(scriptdir):
+            for script in os.listdir(scriptdir):
+                if not (re.match(self.pattern, script)):
+                    node.raise_invalid(self.err_msg)
         
 
 class UpdateControlFileValidator(UpdateBaseValidator):
