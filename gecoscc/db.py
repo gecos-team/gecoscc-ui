@@ -94,14 +94,14 @@ class MongoDB(object):
         ])
 
     def dump(self, path, collection=None):
-    '''
-    Back up MongoDB
-    Args:
-        path (str): backup folder
-        collection (str): if this is None, back up database. Otherwise, back up collection
-    Returns:
-        -
-    '''
+        '''
+        Back up MongoDB
+        Args:
+            path (str): backup folder
+            collection (str): if this is None, back up database. Otherwise, back up collection
+        Returns:
+            -
+        '''
         logger.info("Starting mongodump ...")
         if not os.path.exists(path):
             os.mkdir(path)
@@ -132,14 +132,14 @@ class MongoDB(object):
             logger.error(msg.output)
 
     def restore(self, path, collection=None):
-    '''
-    Restore MongoDB
-    Args:
-        path (str): backup folder
-        collection (str): if this is None, restore database. Otherwise, restore collection
-    Returns:
-        -
-    '''
+        '''
+        Restore MongoDB
+        Args:
+            path (str): backup folder
+            collection (str): if this is None, restore database. Otherwise, restore collection
+        Returns:
+            -
+        '''
         logger.info("Starting mongorestore ...")
         command = [
             'mongorestore',

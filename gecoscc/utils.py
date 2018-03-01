@@ -12,6 +12,7 @@
 import datetime
 import json
 import os
+import sys
 import pytz
 import random
 import string
@@ -21,10 +22,13 @@ import pkg_resources
 import logging
 import pymongo
 import traceback
+import subprocess
+import pickle
 
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
 
+from urlparse import urlparse
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
 from chef.exceptions import ChefError
@@ -41,7 +45,14 @@ POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
-
+SCRIPTCODES = { 
+    'mongodb_backup':'00',
+    'chefserver_backup': '00',
+    'upload_cookbook':'25',
+    'import_policies': '26',
+    'mongodb_restore':'99',
+    'chefserver_restore':'99'}
+    
 logger = logging.getLogger(__name__)
 
 def get_policy_emiter_id(collection, obj):
@@ -2244,4 +2255,222 @@ def trace_inheritance(logger, db, action, obj, policy):
         logger.debug("utils.py ::: trace_inheritance - success = {0}".format(success))
 
     return success
+
+
+def getNextUpdateSeq(db):  
+    '''
+    Return next update four digit sequence
+    '''
+
+    pattern = '^update-[0-9]{4}\.zip$'
+    cursor = db.updates.find({'name':{'$regex':pattern}},{'_id':1}).sort('_id',-1).limit(1)
+
+    if cursor.count() == 0:
+        nseq = '0000'
+    else:
+        latest = int(cursor.next().get('_id'))
+        nseq = "%04d" % (latest+1)
+
+    logger.debug("utils.py ::: getNextUpdateSeq - nseq = %s" % nseq)
+
+    return nseq
+
+def is_cli_request():
+    return os.environ.get('CLI_REQUEST') == 'True'
+
+def has_cli_permission(code, name):
+    assert SCRIPTCODES[name] == code, _('No permission to execute this function from script')
+
+def mongodb_backup(path=None, collection=None):
+    logger.info("Backing up mongodb ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], mongodb_backup.__name__)
+            path = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: mongodb_backup - path = %s" % path)
+        logger.debug("utils.py ::: mongodb_backup - collection = %s" % collection)
+
+        assert path is not None, _('Missing required arguments')
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        mongodb = settings['mongodb']
+       
+        mongodb.dump(path, collection)
+        logger.info("mongodb backup ended.")
+
+    except AssertionError, msg:
+        logger.error(msg)
+
+def mongodb_restore(path=None, collection=None):
+    logger.info("Restoring mongodb ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], mongodb_restore.__name__)
+            path = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: mongodb_restore - path = %s" % path)
+        logger.debug("utils.py ::: mongodb_restore - collection = %s" % collection)
+
+        assert path is not None, _('Missing required arguments')
+        assert os.path.exists(path), _('Directory %s can\'t be found.') % path
+
+        mongodb = settings['mongodb']
+
+        mongodb.restore(path, collection)
+        logger.info("mongodb restored from backup.")
+
+    except AssertionError, msg:
+        logger.error(msg)
+ 
+
+def upload_cookbook(user=None,cookbook_path=None):
+    
+    logger.info("Uploading cookbook ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], upload_cookbook.__name__)
+            user = pickle.loads(os.environ['GECOS_USER'])
+            cookbook_path = os.environ['COOKBOOK_DIR']
+
+        assert user is not None and cookbook_path is not None, _('Missing required arguments')
+        assert os.path.isdir(cookbook_path), _('Directory %s can\'t be found.') % cookbook_path
+
+        api = get_chef_api(settings, user)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), user['username'], 'chef_user.pem'])
+        logger.debug("upload_cookbook: admin_cert = %s" % admin_cert)
+
+        chef_url = settings.get('chef.url') + '/organizations/default'
+        logger.debug("upload_cookbook: chef_url = %s" % chef_url)
+
+        command = 'source /opt/rh/rh-ruby24/enable; knife cookbook upload {0} -s {1} -u {2} -k {3} -o {4}'.format(settings['chef.cookbook_name'], chef_url, user['username'], admin_cert, cookbook_path)
+
+        upload_output = subprocess.check_output(command, shell=True)
+        logger.info(upload_output)
+        logger.info("Uploaded cookbook.")
+        
+    except AssertionError, msg:
+        logger.error(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+
+def chefserver_backup(username=None, backupdir=None):
+    logger.info("Backing up Chef Server ...")
+
+    try:
+ 
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_backup.__name__)
+            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
+        logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
+
+        assert username is not None or backupdir is not None, _('Missing required arguments')
+
+        if not os.path.exists(backupdir):
+            os.mkdir(backupdir)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
+
+        command = 'source /opt/rh/rh-ruby24/enable; knife backup export -D {0} -y -s {1} -u {2} -k {3}'.format(backupdir, settings.get('chef.url'), username, admin_cert)
+        backup_output = subprocess.check_output(command, shell=True)
+        logger.info(backup_output)
+        logger.info("Chef Server backup ended.")
+
+    except AssertionError, msg:
+        logger.error(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+def chefserver_restore(username=None, backupdir=None):
+    logger.info("Restoring Chef Server ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_restore.__name__)
+            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
+        logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
+
+        assert username is not None or backupdir is not None, _('Missing required arguments')
+
+        if not os.path.exists(backupdir):
+            os.mkdir(backupdir)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
+
+        command = 'source /opt/rh/rh-ruby24/enable; knife backup restore -D {0} -y -s {1} -u {2} -k {3}'.format(backupdir, settings.get('chef.url'), username, admin_cert)
+        restore_output = subprocess.check_output(command, shell=True)
+        logger.info(restore_output)
+        logger.info("Chef Server restore ended.")
+
+    except AssertionError, msg:
+        logger.error(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+def import_policies(username=None, inifile=None):
+    from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
+
+    logger.info("Importing policies ...")
+ 
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], import_policies.__name__)
+            inifile = os.environ['CONFIG_URI']
+            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: import_policies - inifile = %s" % inifile)
+        logger.debug("utils.py ::: import_policies - username = %s" % username)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: import_policies - admin_cert = %s" % admin_cert)
+
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', inifile, 'import_policies', '-a', username, '-k', admin_cert]
+        command = ImportPoliciesCommand(inifile)
+        command.command()
+        sys.argv = argv_bc
+
+        logger.info("Imported policies.")
+
+    except AssertionError, msg:
+        logger.error(msg)
 
