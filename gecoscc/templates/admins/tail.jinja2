@@ -1,0 +1,74 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block extraheader %}
+{% endblock %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container" id="admin-container">
+        <h1>{{ gettext('Updates') }}</h1>
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                {% if request.user.get('is_superuser') %}
+                    <li><a href="{{ request.route_url('updates') }}">{{ gettext('Updates') }}</a></li>
+                {% endif %}
+                <li class="active">{{ gettext('Online') }}</li>
+            </ol>
+        {% endblock %}
+        
+        {# 
+        {% if request.referrer and 'add' in request.referrer %}
+        <div class="row text-center" style="padding-top: 5px;">
+            <a class="btn btn-danger" href="{{ request.route_url('updates_tail', sequence=sequence, rollback='rollback') }}">{{ gettext('Rollback') }}</a>
+        </div>
+        {% endif %} 
+        #}
+
+        {% if not request.matchdict['rollback'] %}
+        <div class="row text-center" style="padding-top: 5px;">
+            <a class="btn btn-danger" href="{{ request.route_url('updates_tail', sequence=sequence, rollback='rollback') }}">{{ gettext('Rollback') }}</a>
+        </div>
+        {% endif %} 
+
+        <div class="row" style="padding-top: 5px;">
+            <pre id="watchlog"></pre>
+        </div>
+  
+    </div>
+{% endblock %}
+
+
+{% block extrajs %}
+    <script>
+        {% if websockets_enabled %}
+            window.websocketsEnabled = {{ websockets_enabled }};
+        {% else %}
+            window.websocketsEnabled = null;
+        {% endif %}
+    </script>
+
+    <script src="{{request.application_url}}/static/js/libs/backbone-1.1.2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone.paginator-0.8.1.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/backbone-marionette-1.7.3.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/socket.io.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/select2.min.js"></script>
+    <script src="{{request.application_url}}/static/js/libs/select2_locale_{{ request.locale_name }}.js"></script>
+    <script src="{{request.application_url}}/static/js/sock-tail.js"></script>
+
+    <script src="{{request.application_url}}/static/js/app.js"></script>
+    <script src="{{request.application_url}}/static/js/app-utils.js"></script>
+
+    <script>
+
+        function startLogging() {
+            $.ajax({
+                "type": "GET",
+                "url": "/api/tail/?sequence={{ sequence }}{% if rollback %}&rollback=rollback{% endif %}"
+            });
+        }
+
+    </script>
+
+{% endblock %}
