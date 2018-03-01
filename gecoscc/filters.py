@@ -13,7 +13,15 @@ import json
 
 
 from gecoscc.models import AdminUser
+from babel.dates import format_datetime
 
 
 def admin_serialize(admin):
     return json.dumps(AdminUser().serialize(admin));
+
+def datetime(value, format='medium'):
+    if format == 'full':
+        format="EEEE d/MMM/y HH:mm"
+    elif format == 'medium':
+        format="EE dd/MM/y HH:mm"
+    return format_datetime(value, format)

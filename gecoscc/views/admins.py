@@ -13,24 +13,27 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
+from pyramid.response import FileResponse, Response
 
 from deform import ValidationFailure
 
 from gecoscc import messages
 from gecoscc.eventsmanager import JobStorage
-from gecoscc.socks import invalidate_jobs
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, CookbookUploadForm, CookbookRestoreForm, MaintenanceForm
+from gecoscc.socks import invalidate_jobs, socktail, is_websockets_enabled
+from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, CookbookUploadForm, CookbookRestoreForm, MaintenanceForm, UpdateForm
 from gecoscc.i18n import gettext as _
-from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore, Maintenance
+from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore, Maintenance, Update
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername
+from gecoscc.tasks import script_runner
 
-from subprocess import call
 from bson import ObjectId
-
+from glob import glob
 import os
 import time
 import pickle
+import subprocess
+import json
 import logging
 logger = logging.getLogger(__name__)
 
@@ -48,6 +51,41 @@ def admins(context, request):
     page = create_pagination_mongo_collection(request, admin_users)
     return {'admin_users': admin_users,
             'page': page}
+
+@view_config(route_name='updates', renderer='templates/admins/updates.jinja2',
+             permission='is_superuser')
+def updates(context, request):
+    filters = None
+    q = request.GET.get('q', None)
+    if q:
+        filters = {'name': {'$regex': '.*%s.*' % q,
+                            '$options': '-i'}}
+
+    updates = request.db.updates.find(filters).sort('_id')
+    page = create_pagination_mongo_collection(request, updates)
+    return {'updates': updates,
+            'page': page} 
+
+
+@view_config(route_name='updates_log', permission='is_superuser')
+def updates_log(context, request):
+    import urllib
+    sequence = request.matchdict['sequence']
+    rollback = request.matchdict['rollback']
+    settings = get_current_registry().settings
+    logfile = settings['updates.rollback'].format(sequence) if rollback else settings['updates.log'].format(sequence)
+    response = FileResponse(
+        logfile,
+        request=request,
+        content_type='text/plain'
+    )
+    headers = response.headers
+    headers['Content-Type'] = 'application/download'
+    #headers['Accept-Ranges'] = 'bite'
+    headers['Content-Disposition'] = 'attachment;filename=' + os.path.basename(logfile)
+    headers['Content-Disposition'] = "attachment; filename=\"" + os.path.basename(logfile) + "\"; filename*=UTF-8''"+ unicode(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+
+    return response
 
 
 @view_config(route_name='admins_ou_manage', renderer='templates/admins/ou_manage.jinja2',
@@ -205,6 +243,59 @@ def admin_upload(context, request):
             'username': username,
             'restore_choices': restore_choices,
             'cookbook_name': cookbook_name,
+    }
+
+@view_config(route_name='updates_add', renderer='templates/admins/updates_add.jinja2',
+             permission='is_superuser')
+def admin_updates(context, request):
+    schema = Update()
+    form = UpdateForm(schema=schema,
+                      request=request)
+
+    instance = controls = {}
+    if '_submit' in request.POST:
+        controls = request.POST.items()
+        logger.info('admin_updates - controls = %s' % controls)
+        try:
+            params = form.validate(controls)
+            logger.info('admin_updates - params = %s' % params)
+            form.save(params)
+            return HTTPFound(location='')
+        except ValidationFailure, e:
+            form = e
+
+    if instance and not controls:
+        form_render = form.render(instance)
+    else:
+        form_render = form.render()
+
+    return {
+        'update_form': form_render,
+    }
+
+
+@view_config(route_name='updates_tail', permission='is_superuser', renderer='templates/admins/tail.jinja2')
+def updates_tail(context, request):
+    logger.info("Tailing log file ...")
+    sequence = request.matchdict.get('sequence') 
+    rollback = request.matchdict.get('rollback', '')
+    logger.debug('admins.py ::: updates_tail - sequence = %s' % sequence)
+    logger.debug('admins.py ::: updates_tail - rollback = %s' % rollback)
+
+    settings = get_current_registry().settings
+
+    if rollback == 'rollback' and request.referrer and 'tail' in request.referrer:
+        # Update mongo document
+        request.db.updates.update({'_id':sequence},{'$set':{'rollback':1}})
+
+        # Celery task
+        script_runner.delay(request.user, sequence, rollback=True)
+
+    return { 
+        'websockets_enabled': json.dumps(is_websockets_enabled()),
+        'request': request,
+        'sequence': sequence,
+        'rollback': rollback
     }
 
 @view_config(route_name='admin_restore', permission='is_superuser', renderer="templates/admins/restore.jinja2")

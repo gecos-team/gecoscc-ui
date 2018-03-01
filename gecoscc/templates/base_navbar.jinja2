@@ -55,6 +55,11 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="{{ request.route_url('updates') }}">
+                                    <span class="fa fa-spinner"></span> {{ gettext('Updates') }}
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ request.route_url('admin_maintenance', username=request.user['username']) }}">
                                     <span class="fa fa-wrench"></span> {{ gettext('Maintenance Mode') }}
                                 </a>

@@ -30,7 +30,7 @@ from chef.exceptions import ChefServerError
 from deform.template import ZPTRendererFactory
 
 from gecoscc import messages
-from gecoscc.tasks import cookbook_upload
+from gecoscc.tasks import cookbook_upload, script_runner
 from gecoscc.i18n import gettext as _
 from gecoscc.utils import get_chef_api, create_chef_admin_user
 from gecoscc.socks import maintenance_mode
@@ -340,6 +340,58 @@ class CookbookRestoreForm(GecosForm):
     def save(self, upload):
         self.created_msg(_('Restore cookbook.'))
 
+class UpdateForm(GecosForm):
+    def validate(self, data):
+        data_dict = dict(data)
+        logger.debug("forms.py ::: UpdateForm - data = {0}".format(data_dict))
+        return super(UpdateForm, self).validate(data)
+    def save(self, update):
+        settings = get_current_registry().settings
+        update = update['local_file'] if update['local_file'] is not None else update['remote_file']
+        sequence = re.match('^update-(\w+)\.zip$', update['filename']).group(1)
+        logger.debug("forms.py ::: UpdateForm - sequence = %s" % sequence)
+        # Updates directory: /opt/gecoscc/updates/<sequence>
+        updatesdir = settings['updates.dir'] + sequence
+        logger.debug("forms.py ::: UpdateForm - updatesdir = %s" % updatesdir)
+        # Update zip file
+        zipped = settings['updates.tmp'] + update['filename']
+        logger.debug("forms.py ::: UpdateForm - zipped = %s" % zipped)
+        try:
+            # https://docs.python.org/2/library/shutil.html
+            # The destination directory, named by dst, must not already exist; it will be created as well as missing parent directories
+            # Checking copytree NFS
+            shutil.copytree(update['decompress'], updatesdir)
+            shutil.rmtree(update['decompress'])
+            # Move zip file to updates dir
+            shutil.move(zipped, updatesdir)
+
+            # Decompress cookbook zipfile
+            cookbookdir = settings['updates.cookbook'].format(sequence)
+            logger.debug("forms.py ::: UpdateForm - cookbookdir = %s" % cookbookdir)
+            for cookbook in os.listdir(cookbookdir):
+                cookbook = cookbookdir + os.sep + cookbook
+                logger.debug("forms.py ::: UpdateForm - cookbook = %s" % cookbook)
+                if zipfile.is_zipfile(cookbook):
+                    zip_ref = zipfile.ZipFile(cookbook,'r')
+                    zip_ref.extractall(cookbookdir + os.sep + settings['chef.cookbook_name'])
+                    zip_ref.close()
+            # Insert update register
+            self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0})
+            # Launching task for script execution
+            script_runner.delay(self.request.user, sequence)
+            link = '<a href="' +  self.request.application_url + '/updates/tail/' + sequence + '/">' + _("here") + '</a>'
+            self.created_msg(_("Update log. %s") % link)
+        except OSError as e:
+                error = True
+                if e.errno == errno.EACCES:
+                    self.created_msg(_('Permission denied: %s') % updatesdir, 'danger')
+                else:
+                    self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+        except (IOError, os.error) as e:
+            pass
+        except errors.DuplicateKeyError as e:
+            logger.error('Duplicate key error')
+            self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
 class MaintenanceForm(GecosForm):
     css_class = 'deform-maintenance'
 

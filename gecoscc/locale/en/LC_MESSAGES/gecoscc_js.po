@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-12-17 21:12+0100\n"
+"POT-Creation-Date: 2018-03-01 10:18+0100\n"
 "PO-Revision-Date: 2014-03-19 11:03+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -221,21 +221,21 @@ msgstr ""
 msgid "Only the super admin can delete this object"
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:100
+#: gecoscc/static/js/policies-form-generator.js:102
 msgid "This is an auto-reverting policy."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:101
+#: gecoscc/static/js/policies-form-generator.js:103
 msgid ""
 "Any configuration element removed from the form will be inmediatly "
 "removed from the corresponding workstations."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:147
+#: gecoscc/static/js/policies-form-generator.js:149
 msgid "Policy successfully saved."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:172
+#: gecoscc/static/js/policies-form-generator.js:174
 msgid "Policy successfully deleted."
 msgstr ""
 

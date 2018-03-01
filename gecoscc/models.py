@@ -11,7 +11,9 @@
 #
 
 import re
-
+import zipfile
+import tempfile
+import urllib2
 import colander
 import deform
 import os
@@ -25,11 +27,15 @@ from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
-from gecoscc.utils import get_items_ou_children
+from gecoscc.i18n import gettext                                
+from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
 from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
+import logging
+logger = logging.getLogger(__name__)
 OU_ORDER = 1
+UPDATE_STRUCTURE = ['controlfile','cookbook/','scripts/']
 
 
 class MemoryTmpStore(dict):
@@ -383,8 +389,14 @@ class AdminUser(BaseUser):
 
                                        
 # Only to makemessages
+_('There was a problem with your submission')
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
+_('The uploaded file is not followed naming convention')
+_('No valid update sequence. Must be: {$val}')
+_('No valid zip file structure')
+_('Any script out of range (00-99)')
+_('Control file requirements not met')
 
 
 class AdminUserOUManage(colander.MappingSchema):
@@ -403,6 +415,193 @@ class CookbookUpload(colander.MappingSchema):
                                       validator=colander.url,
                                       missing=unicode(''),
                                       title=_('URL download'))
+# UPDATES: INI
+class UpdateBaseValidator(object):
+    filename = ''
+    decompress = ''
+    def __call__(self, node, value):
+        if value['local_file'] is not None:
+            self.filename = os.path.basename(value['local_file']['filename'])
+            self.decompress = value['local_file']['decompress']
+        else:
+            self.filename = os.path.basename(value['remote_file']['url'])
+            self.decompress = value['remote_file']['decompress']
+class UpdateNamingValidator(UpdateBaseValidator):
+    err_msg = 'The uploaded file is not followed naming convention'
+    pattern = '^update-(\w+)\.zip$'
+    def __call__(self, node, value):
+        super(UpdateNamingValidator, self).__call__(node, value)
+        if not (re.match(self.pattern, self.filename)):
+            node.raise_invalid(self.err_msg)
+class UpdateSequenceValidator(UpdateBaseValidator):
+
+    err_msg = 'No valid update sequence. Must be: {$val}'
+    _err_msg = _('No valid update sequence. Must be: ${val}')
+    pattern = '^update-([0-9]{4})\.zip$'
+    def __call__(self, node, value):
+        super(UpdateSequenceValidator, self).__call__(node,value)
+        m = re.match(self.pattern, self.filename)
+        request = pyramid.threadlocal.get_current_request()
+        from gecoscc.db import get_db
+        mongodb = get_db(request)
+        nextseq = getNextUpdateSeq(mongodb)
+        # Numeric update naming
+        if m is not None and m.group(1) != nextseq:
+            err_msg = _(self.err_msg, mapping={'val': nextseq})
+            node.raise_invalid(err_msg)
+        else:
+            if mongodb.updates.find({'name':self.filename}).count() > 0:
+                node.raise_invalid(_('This name already exists'))
+
+class UpdateFileStructureValidator(UpdateBaseValidator):
+
+    err_msg = 'No valid zip file structure'
+
+    def __call__(self, node, value):
+
+        super(UpdateFileStructureValidator, self).__call__(node,value)
+       
+        for archive in os.listdir(self.decompress):
+            # Adding slash if archive is a dir for comparison
+            if os.path.isdir(self.decompress + archive):
+                archive += os.sep
+
+            if archive not in UPDATE_STRUCTURE:
+                node.raise_invalid(self.err_msg)
+
+        for required in UPDATE_STRUCTURE:
+            if not os.path.exists(self.decompress + required):
+                node.raise_invalid(self.err_msg)
+          
+
+class UpdateScriptRangeValidator(UpdateBaseValidator):
+
+    pattern = '^[0-9][0-9]-.*'
+    err_msg = 'Any script out of range (00-99)'
+
+    def __call__(self, node, value):
+
+        super(UpdateScriptRangeValidator, self).__call__(node,value)
+
+        scriptdir = self.decompress + 'scripts'
+ 
+        for script in os.listdir(scriptdir):
+            if not (re.match(self.pattern, script)):
+                node.raise_invalid(self.err_msg)
+        
+
+class UpdateControlFileValidator(UpdateBaseValidator):
+    err_msg = 'Control file requirements not met'
+
+    def __call__(self, node, value):
+
+        from iscompatible import iscompatible, string_to_tuple
+        super(UpdateControlFileValidator, self).__call__(node,value)
+
+        request = pyramid.threadlocal.get_current_request()
+        controlfile = self.decompress + os.sep + 'controlfile'
+
+        settings = get_current_registry().settings
+        api = get_chef_api(settings, request.user)
+        cookbook = get_cookbook(api, settings.get('chef.cookbook_name'))
+
+        if os.path.exists(controlfile):
+            gecoscc_require = cookbook_require = None
+            with open(controlfile,'r') as f:
+                for line in f:
+                    if line.startswith('gecoscc'):
+                        gecoscc_require = line
+                    elif line.startswith('cookbook'):
+                        cookbook_require = line
+                      
+            if gecoscc_require and not iscompatible(gecoscc_require, string_to_tuple(request.VERSION)):
+                node.raise_invalid(self.err_msg)
+  
+            if cookbook_require and not iscompatible(cookbook_require, string_to_tuple(cookbook['version'])):
+                node.raise_invalid(self.err_msg)
+         
+
+# Update preparer
+def unzip_preparer(value):
+
+    logger.info("unzip_preparer - value = %s" % value)
+
+    if value is not colander.null:
+        try:
+            if 'fp' in value:
+                # local_file
+                with open('/tmp/' + value['filename'], 'wb') as zipped:
+                    zipped.write(value['fp'].read())
+            else: 
+                # remote_file
+                f = urllib2.urlopen(value['url'])
+                with open('/tmp/' + os.path.basename(value['url']), "wb") as zipped:
+                    zipped.write(f.read())
+
+            # Decompress zipfile into temporal dir
+            tmpdir = tempfile.mkdtemp()
+            zip_ref = zipfile.ZipFile(zipped.name,'r')
+            zip_ref.extractall(tmpdir)
+            zip_ref.close()
+
+            value['decompress'] = tmpdir + '/'
+
+            return value
+
+        except urllib2.HTTPError as e:
+            pass
+        except urllib2.URLError as e:
+            pass
+        except zipfile.BadZipfile as e:
+            pass
+        except OSError as e:
+            pass
+        except IOError as e:
+            pass
+
+class UrlFile(object):
+    def serialize(self, node, appstruct):
+        if not appstruct or appstruct is colander.null:
+            if isinstance(node.missing, colander._drop):
+                return colander.drop
+            return colander.null
+        if not isinstance(appstruct, basestring):
+            raise colander.Invalid(node, '{0} is not a url'.format(
+                appstruct))
+        return unicode(appstruct)
+
+    def deserialize(self, node, pstruct):
+        if not pstruct or pstruct is colander.null:
+            if isinstance(node.missing, colander._drop):
+                return colander.drop
+            return colander.null
+        try:
+            return dict({'url': pstruct,'decompress':''})
+        except TypeError:
+            raise colander.Invalid(node, '{0} is not a string'.format(
+                pstruct))
+
+
+
+class Update(colander.MappingSchema):
+
+    validator = colander.All(UpdateNamingValidator(), 
+                             UpdateSequenceValidator(),
+                             UpdateFileStructureValidator(), 
+                             UpdateControlFileValidator(),
+                             UpdateScriptRangeValidator())
+    local_file = colander.SchemaNode(deform.FileData(),
+                                     widget=FileUploadWidget(filestore),
+                                     preparer=unzip_preparer,
+                                     missing=colander.null,
+                                     title=_('Update ZIP'))
+    remote_file = colander.SchemaNode(UrlFile(),
+                                      preparer=unzip_preparer,
+                                      missing=colander.null,
+                                      title=_('URL download'))
+
+# UPDATES: END
+
 @colander.deferred
 def deferred_restore_widget(node, kw):
     choices = kw.get('restore_choices')

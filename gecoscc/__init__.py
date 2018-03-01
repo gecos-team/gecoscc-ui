@@ -41,10 +41,17 @@ def read_setting_from_env(settings, key, default=None):
     else:
         return settings.get(key, default)
 
+def pregen(request, elements, kw):
+    kw.setdefault('rollback', '')
+    return elements, kw
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
+    config.add_route('updates', '/updates/', factory=SuperUserFactory)
+    config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
     config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)

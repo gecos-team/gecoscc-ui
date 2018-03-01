@@ -118,6 +118,16 @@ def delete_computer(object_id, path):
         'user': 'Chef server'
     }))
 
+def socktail(logdata):
+    if not is_websockets_enabled():
+        return
+
+    logger.debug("SOCKTAIL: logdata = %s" % logdata)
+    manager = get_manager()
+    manager.publish('logdata', json.dumps({
+        'action': 'socktail',
+        'logdata': unicode(logdata)
+    }))
 
 class GecosWSGIHandler(GunicornWSGIHandler):
 
@@ -147,8 +157,30 @@ class GecosGeventSocketIOWorker(GeventSocketIOWorker):
 
     server_class = GecosSocketIOServer
     wsgi_handler = GecosWSGIHandler
+class TailNamespace(BaseNamespace):
+    def listener(self):
+        if not is_websockets_enabled():
+            return
 
+        settings = get_current_registry().settings
 
+        r = redis.StrictRedis.from_url(settings['sockjs_url'])
+        r = r.pubsub()
+
+        try:
+            r.subscribe('logdata')
+
+            for m in r.listen():
+                logger.debug("TailNamespace: m = %s" % m)
+                if m['type'] == 'message':
+                    data = json.loads(m['data'])
+                    self.emit('logdata', data)
+                    logger.debug("TailNamespace: logdata event fired")
+        except redis.ConnectionError:
+            self.emit('logdata', {'redis':'error'})
+
+    def on_sendlog(self, *args, **kwargs):
+        self.spawn(self.listener)
 class GecosNamespace(BaseNamespace):
 
     def listener(self):
@@ -175,7 +207,8 @@ class GecosNamespace(BaseNamespace):
 
 
 def socketio_service(request):
-    socketio_manage(request.environ,
-                    {'': GecosNamespace},
-                    request=request)
+    socketio_manage(request.environ, {
+                    '': GecosNamespace,
+                    '/tail': TailNamespace
+                    }, request=request)
     return Response('no-data')

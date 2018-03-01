@@ -1,0 +1,52 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+    <div class="container" id="admin-container">
+        <h1>{{ gettext('Updates') }}</h1>
+        {% block breadcrumbs %}
+            <ol class="breadcrumb">
+                {% if request.user.get('is_superuser') %}
+                    <li><a href="{{ request.route_url('updates') }}">{{ gettext('Updates') }}</a></li>
+                {% endif %}
+                <li class="active">{{ gettext('Add update') }}</li>
+            </ol>
+        {% endblock %}
+        {% block form_content %}
+            <div id="update_errs" class="alert alert-danger hide">
+                <span></span>
+            </div>
+
+            <div class="alert alert-info">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                {{ gettext("Browser file or Download URL required.") }}
+            </div>
+
+            {{ update_form|safe }}
+        {% endblock %}
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    <script type="text/javascript">
+        (function($){
+            $(document).ready(function () {
+                $('form').submit( function(evt) {
+                    var local  = $("input[type=file]").val();
+                    var remote = $("input[name='remote_file']").val();
+                    var filename = local ? local : remote;
+                    var extension = filename.split('.').pop().toLowerCase();
+                    switch(extension) {
+                        case 'zip': break;
+                        default:
+                            evt.preventDefault();
+                            $('#update_errs span').text(gettext("File is not a zip file.")); 
+                            $('#update_errs').removeClass('hide');
+                    } 
+                });
+            });
+        })(jQuery);
+    </script>
+{% endblock %}
