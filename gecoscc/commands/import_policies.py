@@ -302,7 +302,8 @@ class Command(BaseCommand):
             'is_emitter_policy': True,
             'schema': schema,
             'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default'],
-            'is_mergeable': True
+            'is_mergeable': True,
+            'autoreverse': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[-2]].get('autoreverse', False)
         }
         for lan in languages:
             policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]
