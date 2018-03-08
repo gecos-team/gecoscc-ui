@@ -20,9 +20,9 @@ from deform import ValidationFailure
 from gecoscc import messages
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.socks import invalidate_jobs, socktail, is_websockets_enabled
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, CookbookUploadForm, CookbookRestoreForm, MaintenanceForm, UpdateForm
+from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, MaintenanceForm, UpdateForm
 from gecoscc.i18n import gettext as _
-from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore, Maintenance, Update
+from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, Update
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
 from gecoscc.tasks import script_runner
