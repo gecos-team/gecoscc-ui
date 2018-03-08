@@ -114,23 +114,26 @@
                                         </a>
                                     </li>
                                 {% else %}
+                                    {% if latest==update._id or not update._id|regex_match('^[0-9]{4}$') %}
                                     <li>
                                         <a class="btn btn-danger btn-xs"
                                            href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}"> {{ gettext('Rollback') }}
                                         </a>                                
                                     </li>
+                                    {% endif %}
                                 {% endif %}
                                 </ul>
                             </td>
 
                             <td>
-                                <span>
+                                <div>
                                     <a data-toggle="tooltip" 
                                        data-placement="top"
                                        style="text-decoration:none;"
-                                       title="{{ include_file(controlfile|format(update._id))}}"> {{ gettext('Hover here') }}
+                                       title="{{ include_file(controlfile|format(update._id))}}">
+                                           <span class="fa fa-hand-o-right"></span> {{ gettext('Hover here') }}
                                     </a>
-                                </span>
+                                </div>
                             </td>
 
                             <td>

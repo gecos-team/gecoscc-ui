@@ -33,7 +33,7 @@ from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
-UPDATE_STRUCTURE = ['controlfile','cookbook/','scripts/']
+UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
 
 
 class MemoryTmpStore(dict):
@@ -501,7 +501,7 @@ class UpdateControlFileValidator(UpdateBaseValidator):
         super(UpdateControlFileValidator, self).__call__(node,value)
 
         request = pyramid.threadlocal.get_current_request()
-        controlfile = self.decompress + os.sep + 'controlfile'
+        controlfile = self.decompress + os.sep + 'control'
 
         settings = get_current_registry().settings
         api = get_chef_api(settings, request.user)

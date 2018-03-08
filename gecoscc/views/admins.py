@@ -24,7 +24,7 @@ from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariable
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, CookbookUpload, CookbookRestore, Maintenance, Update
 from gecoscc.pagination import create_pagination_mongo_collection
-from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername
+from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
 from gecoscc.tasks import script_runner
 
 from bson import ObjectId
@@ -66,10 +66,12 @@ def updates(context, request):
     # "format" filter in jinja2 only admits "%s", not "{0}"
     settings = get_current_registry().settings
     controlfile = settings['updates.control'].replace('{0}','%s')
-    
+
+    latest =  "%04d" % (int(getNextUpdateSeq(request.db))-1)
     page = create_pagination_mongo_collection(request, updates)
     
     return {'updates': updates,
+            'latest': latest,
             'controlfile': controlfile,
             'page': page} 
 

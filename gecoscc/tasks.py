@@ -2174,7 +2174,7 @@ def script_runner(user, sequence, rollback=False):
     self.log("debug", "tasks.py ::: script_runner - scripts = {0}".format(scripts))
     self.log("debug", "tasks.py ::: script_runner - logname = {0}".format(logname))
 
-    bufsize = 1
+    bufsize =0 
     logfile = open(logname,'a+', bufsize)
 
     env = os.environ.copy()

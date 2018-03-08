@@ -1448,7 +1448,7 @@ msgstr "Descargar"
 
 #: gecoscc/templates/admins/updates.jinja2:131
 msgid "Hover here"
-msgstr "Coloque el puntero del ratón aqui"
+msgstr "Coloque el puntero del raton"
 
 #: gecoscc/templates/admins/updates.jinja2:140
 msgid "Updated finished unsuccessfully"

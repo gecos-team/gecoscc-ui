@@ -10,7 +10,8 @@
 #
 
 import json
-
+import re
+import six
 
 from gecoscc.models import AdminUser
 from babel.dates import format_datetime
@@ -25,3 +26,12 @@ def datetime(value, format='medium'):
     elif format == 'medium':
         format="dd/MM/y HH:mm"
     return format_datetime(value, format)
+
+def _get_regex_flags(ignorecase=False):
+    return re.I if ignorecase else 0
+
+def regex_match(value, pattern='', ignorecase=False):
+    if not isinstance(value, six.string_types):
+        value = str(value)
+    flags = _get_regex_flags(ignorecase)
+    return bool(re.match(pattern, value, flags))
