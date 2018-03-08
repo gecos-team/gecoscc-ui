@@ -47,7 +47,6 @@ def pregen(request, elements, kw):
     return elements, kw
 
 def include_file(name):
-    import logging
     with open(name) as f:
         return jinja2.Markup(f.read())
 
@@ -66,8 +65,6 @@ def route_config(config):
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
-    config.add_route('admin_upload','/admins/upload/{username}/', factory=SuperUserFactory)
-    config.add_route('admin_restore','/admins/restore/{name}/{version}/', factory=SuperUserFactory)
     config.add_route('admin_maintenance','/admins/maintenance/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)

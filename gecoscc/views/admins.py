@@ -202,57 +202,6 @@ def admin_delete(context, request):
     messages.created_msg(request, _('User deleted successfully'), 'success')
     return {'ok': 'ok'}
 
-@view_config(route_name='admin_upload', renderer='templates/admins/restore.jinja2',
-             permission='is_superuser')
-def admin_upload(context, request):
-    username = request.matchdict['username']
-
-    schemaUpload = CookbookUpload()
-    form = CookbookUploadForm(schema=schemaUpload,
-                              username=username,
-                              request=request)
-
-    instance = data = {}
-    if '_submit' in request.POST:
-        data = request.POST.items()
-        logger.info('admin_uploads - data = %s'%(data))
-        try:
-            upload = form.validate(data)
-            form.save(upload)
-            return HTTPFound(location='')
-        except ValidationFailure, e:
-            form = e
-
-    if instance and not data:
-        form_render = form.render(instance)
-    else:
-        form_render = form.render()
-
-    settings = get_current_registry().settings
-    api = get_chef_api(settings, request.user)
-    organization = 'default'
-    cookbook_name = settings['chef.cookbook_name']
-    restore_choices = ['-']
-    try:
-        # Chef12
-        response = api['/organizations/%s/cookbooks/%s'%(organization,cookbook_name)]
-        # Chef11
-        #response = api['/cookbooks/%s' % (cookbook_name)]
-        restore_choices = [x['version'].encode('utf-8') for x in response['gecos_ws_mgmt']['versions']]
-        restore_choices.sort(reverse=True)
-
-    except ChefServerNotFoundError, e:
-         logger.info('admin_uploads - ChefServerNotFoundError: %s'%(e))
-    except ChefServerError, e:
-         logger.info('admin_uploads - ChefServerError: %s'%(e))
-         messages.created_msg(request, _('Cookbook deleted unsuccessfully from chef'), 'danger')
-
-    return { 
-            'upload_form': form_render,
-            'username': username,
-            'restore_choices': restore_choices,
-            'cookbook_name': cookbook_name,
-    }
 
 @view_config(route_name='updates_add', renderer='templates/admins/updates_add.jinja2',
              permission='is_superuser')
@@ -307,51 +256,6 @@ def updates_tail(context, request):
         'rollback': rollback
     }
 
-@view_config(route_name='admin_restore', permission='is_superuser', renderer="templates/admins/restore.jinja2")
-def admin_restore(context, request):
-    name = request.matchdict.get('name')
-    logger.debug('admin_restore - name = %s'%(name))
-    ver = request.matchdict.get('version')
-    logger.debug('admin_restore - version = %s'%(ver))
-    username = request.user['username']
-    organization = 'default'
-    chefusername = toChefUsername(username)
-    settings = get_current_registry().settings
-    api = get_chef_api(settings, request.user)
-    try:
-        data = {"user": chefusername}
-        # Chef11
-        #response = api.api_request('DELETE', '/cookbooks/%s/%s' %(name,ver), data=data)
-        # Chef12
-        response = api.api_request('DELETE', '/organizations/%s/cookbooks/%s/%s' %(organization,name,ver), data=data)
-        logger.debug('admin_restore - response = %s'%(response))
-        logbook_link = '<a href="' +  request.application_url + '/#logbook' + '">' + _("here") + '</a>'
-        messages.created_msg(request, _('Cookbook deleted successfully. Visit logbook %s') % logbook_link, 'success')
-
-        obj = {
-            "_id": ObjectId(),
-            "name": "%s %s" % (name,ver),
-            "path": None,
-            "type": 'delete'
-        }
-
-        macrojob_storage = JobStorage(request.db.jobs, request.user)
-        macrojob_id = macrojob_storage.create(obj=obj,
-                                    op='restore',
-                                    computer=None,
-                                    status='finished',
-                                    policy={'name': 'policy restored','name_es':_('policy restored')},
-                                    administrator_username=username,
-                                    message= _('Cookbook deleted successfully %s') % (obj['name']))
-        invalidate_jobs(request, request.user)
-    except ChefServerNotFoundError, e:
-        logger.error("admin_restore - ChefServerNotFoundError: %s" % e)
-    except ChefServerError, e:
-        messages.created_msg(request, _('Cookbook deleted unsuccessfully from chef'), 'danger')
-        logger.error("admin_restore - cookbook deleted unsuccessfully: %s" % e)
-
-    logger.debug("admins_log ::: admin_restore - route_url = %s" % (request.route_url('admin_upload', username=username)))
-    return HTTPFound(location=request.route_url('admin_upload', username=username))
 
 @view_config(route_name='admin_maintenance', permission='is_superuser', renderer="templates/admins/maintenance.jinja2")
 def admin_maintenance(context, request):

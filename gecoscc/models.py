@@ -400,15 +400,6 @@ class AdminUserOUManage(colander.MappingSchema):
                                         title=_('Organizational Units available to register workstations'),
                                         widget=deferred_choices_widget)
 
-class CookbookUpload(colander.MappingSchema):
-    local_file = colander.SchemaNode(deform.FileData(),
-                                     widget=FileUploadWidget(filestore),
-                                     title=_('Cookbook ZIP'))
-    remote_file = colander.SchemaNode(colander.String(),
-                                      validator=colander.url,
-                                      missing=unicode(''),
-                                      title=_('URL download'))
-
 # UPDATES: INI
 
 class UpdateBaseValidator(object):
@@ -614,16 +605,6 @@ class Update(colander.MappingSchema):
                                       title=_('URL download'))
 
 # UPDATES: END
-
-@colander.deferred
-def deferred_restore_widget(node, kw):
-    choices = kw.get('restore_choices')
-    return SelectWithDisabledOptions(values=choices)
-
-class CookbookRestore(colander.MappingSchema):
-    restore_versions = colander.SchemaNode(colander.List(),
-                                           title=_('Restore previous version of cookbook'),
-                                           widget=deferred_restore_widget)
 
 class Maintenance(colander.MappingSchema):
     maintenance_message = colander.SchemaNode(colander.String(),
