@@ -17,7 +17,6 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.permissions import api_login_required
 from gecoscc.socks import socktail
 from pyramid.httpexceptions import HTTPBadRequest
-from ansi2html import Ansi2HTMLConverter
 
 import os
 import re
