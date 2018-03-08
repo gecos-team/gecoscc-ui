@@ -18,6 +18,7 @@ import subprocess
 import traceback
 import sys
 import pickle
+import shutil
 
 from glob import glob
 from copy import deepcopy
@@ -2167,12 +2168,14 @@ def script_runner(user, sequence, rollback=False):
         scripts = glob(scriptdir + "[0-8][0-9]*") + glob(scriptdir + "9[0-8]*")
         scripts.sort()
         logname = self.app.conf.get('updates.log').format(sequence)
+        controlfile = self.app.conf.get('updates.control').format(sequence)
+        shutil.copyfile(controlfile, logname)
 
     self.log("debug", "tasks.py ::: script_runner - scripts = {0}".format(scripts))
     self.log("debug", "tasks.py ::: script_runner - logname = {0}".format(logname))
 
     bufsize = 1
-    logfile = open(logname,'w+', bufsize)
+    logfile = open(logname,'a+', bufsize)
 
     env = os.environ.copy()
     env['CLI_REQUEST'] = 'True'
@@ -2182,6 +2185,7 @@ def script_runner(user, sequence, rollback=False):
     env['CONFIG_URI']  = self.app.conf.get('config_uri')
     env['GECOS_USER']  = pickle.dumps(user)
 
+    returncode = 0
     for script in scripts:
          
         header = 'SCRIPT %s' % os.path.basename(script)
@@ -2199,5 +2203,8 @@ def script_runner(user, sequence, rollback=False):
             # Boton dinamico. Deshabilitado en la plantilla desde el principio y habilitado en caso de error
             #enable_rollback()
             break
+
+    if not rollback:
+        self.db.updates.update({'_id': sequence},{'$set': {'state': returncode }})
 
     logfile.close()

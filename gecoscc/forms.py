@@ -376,7 +376,7 @@ class UpdateForm(GecosForm):
                     zip_ref.extractall(cookbookdir + os.sep + settings['chef.cookbook_name'])
                     zip_ref.close()
             # Insert update register
-            self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0})
+            self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0, 'user': self.request.user['username']})
             # Launching task for script execution
             script_runner.delay(self.request.user, sequence)
             link = '<a href="' +  self.request.application_url + '/updates/tail/' + sequence + '/">' + _("here") + '</a>'

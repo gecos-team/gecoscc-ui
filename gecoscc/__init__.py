@@ -17,6 +17,7 @@ import os
 import pymongo
 import sys
 import subprocess
+import jinja2
 
 from ConfigParser import ConfigParser
 
@@ -44,6 +45,11 @@ def read_setting_from_env(settings, key, default=None):
 def pregen(request, elements, kw):
     kw.setdefault('rollback', '')
     return elements, kw
+
+def include_file(name):
+    import logging
+    with open(name) as f:
+        return jinja2.Markup(f.read())
 
 def route_config(config):
     config.add_static_view('static', 'static')
@@ -249,6 +255,9 @@ def main(global_config, **settings):
     config.include('pyramid_beaker')
     config.include('pyramid_celery')
     config.include('cornice')
+
+    jinja2_env = config.get_jinja2_environment()
+    jinja2_env.globals["include_file"] = include_file
 
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings

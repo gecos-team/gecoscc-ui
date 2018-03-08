@@ -2309,7 +2309,7 @@ def mongodb_backup(path=None, collection=None):
         logger.info("mongodb backup ended.")
 
     except AssertionError, msg:
-        logger.error(msg)
+        logger.warning(msg)
 
 def mongodb_restore(path=None, collection=None):
     logger.info("Restoring mongodb ...")
@@ -2334,7 +2334,7 @@ def mongodb_restore(path=None, collection=None):
         logger.info("mongodb restored from backup.")
 
     except AssertionError, msg:
-        logger.error(msg)
+        logger.warning(msg)
  
 
 def upload_cookbook(user=None,cookbook_path=None):
@@ -2368,7 +2368,7 @@ def upload_cookbook(user=None,cookbook_path=None):
         logger.info("Uploaded cookbook.")
         
     except AssertionError, msg:
-        logger.error(msg)
+        logger.warning(msg)
 
     except subprocess.CalledProcessError, msg:
         logger.error(msg.cmd)
@@ -2439,7 +2439,7 @@ def chefserver_restore(username=None, backupdir=None):
         logger.info("Chef Server restore ended.")
 
     except AssertionError, msg:
-        logger.error(msg)
+        logger.warning(msg)
 
     except subprocess.CalledProcessError, msg:
         logger.error(msg.cmd)
@@ -2475,5 +2475,5 @@ def import_policies(username=None, inifile=None):
         logger.info("Imported policies.")
 
     except AssertionError, msg:
-        logger.error(msg)
+        logger.warning(msg)
 

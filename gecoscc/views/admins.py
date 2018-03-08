@@ -61,9 +61,16 @@ def updates(context, request):
         filters = {'name': {'$regex': '.*%s.*' % q,
                             '$options': '-i'}}
 
-    updates = request.db.updates.find(filters).sort('_id')
+    updates = request.db.updates.find(filters).sort('_id',-1)
+    
+    # "format" filter in jinja2 only admits "%s", not "{0}"
+    settings = get_current_registry().settings
+    controlfile = settings['updates.control'].replace('{0}','%s')
+    
     page = create_pagination_mongo_collection(request, updates)
+    
     return {'updates': updates,
+            'controlfile': controlfile,
             'page': page} 
 
 
@@ -247,7 +254,7 @@ def admin_upload(context, request):
 
 @view_config(route_name='updates_add', renderer='templates/admins/updates_add.jinja2',
              permission='is_superuser')
-def admin_updates(context, request):
+def updates_add(context, request):
     schema = Update()
     form = UpdateForm(schema=schema,
                       request=request)
@@ -284,9 +291,9 @@ def updates_tail(context, request):
 
     settings = get_current_registry().settings
 
-    if rollback == 'rollback' and request.referrer and 'tail' in request.referrer:
+    if rollback == 'rollback' and request.db.updates.find_one({'_id': sequence}).get('rollback', 0) == 0:
         # Update mongo document
-        request.db.updates.update({'_id':sequence},{'$set':{'rollback':1}})
+        request.db.updates.update({'_id':sequence},{'$set':{'rollback':1, 'timestamp_rollback': int(time.time()), 'rolluser': request.user['username']}})
 
         # Celery task
         script_runner.delay(request.user, sequence, rollback=True)

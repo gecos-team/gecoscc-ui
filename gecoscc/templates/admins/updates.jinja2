@@ -15,7 +15,7 @@
         <div class="col-sm-6 col-sm-offset-6 col-lg-4 col-lg-offset-8">
             <form method="GET" role="form">
                 <div class="input-group  item-username" title="" id="item-deformField1">
-                    <input type="text" name="q" value="{{ request.GET.get('q', '') }}" class="form-control" placeholder="{{ gettext('Search for name') }}">
+                    <input type="text" name="q" value="{{ request.GET.get('q', '') }}" class="form-control" placeholder="{{ gettext('Search for filename') }}">
                     <span class="input-group-btn">
                         <button id="updates-search-btn" class="btn btn-primary" type="submit"><span class="fa fa-search"></span></button>
                     </span>
@@ -23,18 +23,17 @@
             </form>
         </div>
     </div>
-    <div class="row" id="users">
+    <div class="row" id="updates">
         <div class="col-sm-12">
             <table class="table">
                 <thead>
                     <tr>
                         <th>{{ gettext('Sequence') }}</th>
                         <th>{{ gettext('Name') }}</th>
-                        <th>{{ gettext('Path') }}</th>
-                        <th>{{ gettext('Date') }}</th>
-                        <th>{{ gettext('Is rollback?') }}</th>
-                        <th>{{ gettext('Rollback Log') }}</th>
                         <th>{{ gettext('Update Log') }}</th>
+                        <th>{{ gettext('Rollback Log') }}</th>
+                        <th>{{ gettext('Control File') }}</th>
+                        <th>{{ gettext('State') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -42,29 +41,112 @@
                         <tr>
                             <td>{{ update._id }}</td>
                             <td>{{ update.name }}</td>
-                            <td>{{ update.path }}</td>
-                            <td>{{ update.timestamp | datetime }}</td>
-
-                            {% if update.get('rollback') %}
-                                <td>
-                                    {{ gettext('Yes') }}
-                                </td>
-                                <td>
-                                    <a style="padding: 0 3px" href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}"><span class="fa fa-file"></span> {{ gettext('View') }}</a>
-                                    <a style="padding: 0 3px" href="{{ request.route_url('updates_log', sequence=update._id, rollback='rollback') }}"><span class="fa fa-download"></span> {{ gettext('Download') }}</a>
-                                </td>
-                            {% else %}
-                                <td>
-                                    {{ gettext('No') }}
-                                </td>
-                                <td>
-                                    - 
-                                </td>
-                            {% endif %}
+                            <td>
+                                <ul class="list-inline">
+                                    <li> 
+                                        <div data-toggle="tooltip" 
+                                           data-placement="top" 
+                                           title="{{ gettext('Date') }}">
+                                               <span class="fa fa-clock-o"></span> {{ update.timestamp|datetime }}
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div data-toggle="tooltip"
+                                           data-placement="top" 
+                                           title="{{ gettext('User') }}">
+                                               <span class="fa fa-user"></span> {{ update.user }}
+                                        </div> 
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tooltip" 
+                                           data-placement="top" 
+                                           title="{{ gettext('View') }}" 
+                                           style="text-decoration:none" 
+                                           href="{{ request.route_url('updates_tail', sequence=update._id) }}">
+                                               <span class="fa fa-file"></span> 
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tooltip" 
+                                          data-placement="top"
+                                          title="{{ gettext('Download') }}" 
+                                          style="text-decoration:none" 
+                                          href="{{ request.route_url('updates_log', sequence=update._id) }}">
+                                               <span class="fa fa-download"></span> 
+                                        </a>
+                                    </li>
+                                </ul>
+                            </td>
 
                             <td>
-                                <a style="padding: 0 3px" href="{{ request.route_url('updates_tail', sequence=update._id) }}"><span class="fa fa-file"></span> {{ gettext('View') }}</a>
-                                <a style="padding: 0 3px" href="{{ request.route_url('updates_log', sequence=update._id) }}"><span class="fa fa-download"></span> {{ gettext('Download') }}</a>
+                                <ul class="list-inline">
+                                {% if update.get('rollback') %}
+                                    <li>
+                                        <div data-toggle="tooltip"
+                                           data-placement="top"
+                                           title="{{ gettext('Date') }}">
+                                               <span class="fa fa-clock-o"></span> {{ update.timestamp_rollback|datetime }}
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <div data-toggle="tooltip"
+                                           data-placement="top" 
+                                           title="{{ gettext('User') }}">
+                                              <span class="fa fa-user"></span> {{ update.rolluser }}
+                                        </div>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tooltip"
+                                           data-placement="top" 
+                                           title="{{ gettext('View') }}" 
+                                           style="text-decoration:none" 
+                                           href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}">
+                                               <span class="fa fa-file"></span>
+                                       </a>
+                                    </li>
+                                    <li>
+                                        <a data-toggle="tooltip" 
+                                           data-placement="top"
+                                           title="{{ gettext('Download') }}" 
+                                           style="text-decoration:none" 
+                                           href="{{ request.route_url('updates_log', sequence=update._id, rollback='rollback') }}">
+                                               <span class="fa fa-download"></span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li>
+                                        <a class="btn btn-danger btn-xs"
+                                           href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}"> {{ gettext('Rollback') }}
+                                        </a>                                
+                                    </li>
+                                {% endif %}
+                                </ul>
+                            </td>
+
+                            <td>
+                                <span>
+                                    <a data-toggle="tooltip" 
+                                       data-placement="top"
+                                       style="text-decoration:none;"
+                                       title="{{ include_file(controlfile|format(update._id))}}"> {{ gettext('Hover here') }}
+                                    </a>
+                                </span>
+                            </td>
+
+                            <td>
+                            {% if update.get('state') %}
+                                <span data-toggle="tooltip" 
+                                      data-placement="top"
+                                      title="{{ gettext('Updated finished unsuccessfully') }}"
+                                      class="fa fa-times" 
+                                      style="color:red;"></span>
+                            {% else %}
+                                <span data-toggle="tooltip"
+                                      data-placement="top"
+                                      title="{{ gettext('Updated finished succesfully') }}"
+                                      class="fa fa-check" 
+                                      style="color:green;"></span>
+                            {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -74,7 +156,7 @@
     </div>
     <div class="row">
         <div class="col-sm-6">
-            <a href="{{ request.route_url('updates_add') }}" class="btn btn-primary"><span class="fa fa-upload"></span> {{ gettext('Add update') }}</a>
+            <a href="{{ request.route_url('updates_add') }}" class="btn btn-primary"><span class="fa fa-upload"></span> {{ gettext('Execute update') }}</a>
         </div>
         <div class="col-sm-6">
             <ul class="pagination pull-right">
