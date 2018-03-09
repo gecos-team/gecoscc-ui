@@ -2088,7 +2088,13 @@ def chef_status_sync(node_id, auth_user):
 
 @task(base=ChefTask)
 def script_runner(user, sequence, rollback=False):
-
+    ''' Launches scripts from an update
+    
+    Args:
+      user(object):         user doing update
+      sequence(str):        sequence of update
+      rollback(boolean):    True if rollback action. Otherwise, False
+    '''
     self = script_runner
     self.log("info","tasks.py ::: script_runner - Starting ...")
     self.log("debug", "tasks.py ::: script_runner - user = {0}".format(user))
@@ -2138,8 +2144,6 @@ def script_runner(user, sequence, rollback=False):
 
         if returncode != 0:
             self.log("error", "tasks.py ::: script_runner - returncode = {0}".format(returncode))
-            # Boton dinamico. Deshabilitado en la plantilla desde el principio y habilitado en caso de error
-            #enable_rollback()
             break
 
     if not rollback:

@@ -403,6 +403,12 @@ class AdminUserOUManage(colander.MappingSchema):
 # UPDATES: INI
 
 class UpdateBaseValidator(object):
+    ''' Base class from which the rest of classes inherit to validate an update
+    
+    Attributes:
+      filename (str):       name of uploaded zip file
+      decompress (str):     temporal directory where decompressing zip file
+    '''
     filename = ''
     decompress = ''
     def __call__(self, node, value):
@@ -417,6 +423,12 @@ class UpdateBaseValidator(object):
             self.decompress = ''
 
 class UpdateNamingValidator(UpdateBaseValidator):
+    ''' Subclass for validating naming convention of an update
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid naming convention
+    '''
     err_msg = _('The uploaded file is not followed naming convention')
     pattern = '^update-(\w+)\.zip$'
     def __call__(self, node, value):
@@ -425,7 +437,12 @@ class UpdateNamingValidator(UpdateBaseValidator):
             node.raise_invalid(self.err_msg)
 
 class UpdateSequenceValidator(UpdateBaseValidator):
-
+    ''' Subclass for validating numeric sequence of an update
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid numeric sequence
+    '''
     err_msg = _('No valid update sequence. Must be: {$val}')
     pattern = '^update-([0-9]{4})\.zip$'
     def __call__(self, node, value):
@@ -445,7 +462,14 @@ class UpdateSequenceValidator(UpdateBaseValidator):
                     node.raise_invalid(_('This name already exists'))
 
 class UpdateFileStructureValidator(UpdateBaseValidator):
-
+    ''' Subclass for validating zip file content
+    
+    This structure is defined by UPDATE_STRUCTURE variable in this file.
+    UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
+    
+    Attributes:
+      err_msg (str):    error message
+    '''
     err_msg = _('No valid zip file structure')
 
     def __call__(self, node, value):
@@ -467,7 +491,12 @@ class UpdateFileStructureValidator(UpdateBaseValidator):
           
 
 class UpdateScriptRangeValidator(UpdateBaseValidator):
-
+    ''' Subclass for validating numeric range of scripts (00-99)
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid numeric range 
+    '''
     pattern = '^[0-9][0-9]-.*'
     err_msg = _('Any script out of range (00-99)')
 
@@ -484,6 +513,11 @@ class UpdateScriptRangeValidator(UpdateBaseValidator):
         
 
 class UpdateControlFileValidator(UpdateBaseValidator):
+    ''' Subclass for verifying requisites of control file
+    
+    Attributes:
+      err_msg (str):    error message
+    '''
     err_msg = 'Control file requirements not met'
 
     def __call__(self, node, value):
@@ -516,7 +550,10 @@ class UpdateControlFileValidator(UpdateBaseValidator):
 
 # Update preparer
 def unzip_preparer(value):
-
+    '''
+    From deform documentation: "The preparer of a schema node is called after deserialization but before validation."
+    The data is prepared by decompressing the zip file in a temporary directory. After that, validators are called.
+    '''
     if value is not colander.null:
         try:
             if 'fp' in value:
@@ -551,6 +588,8 @@ def unzip_preparer(value):
             pass
 
 class UrlFile(object):
+    ''' Custom type for URL string 
+    '''
     def serialize(self, node, appstruct):
         if not appstruct or appstruct is colander.null:
             if isinstance(node.missing, colander._drop):
@@ -575,16 +614,12 @@ class UrlFile(object):
 
 
 class Update(colander.MappingSchema):
-
-    #validator = colander.All(UpdateNamingValidator(), 
-    #                         UpdateSequenceValidator(),
-    #                         UpdateFileStructureValidator(), 
-    #                         UpdateControlFileValidator(),
-    #                         UpdateScriptRangeValidator())
+    '''
+    Schema for representing an update in form 
+    '''
     local_file = colander.SchemaNode(deform.FileData(),
                                      widget=FileUploadWidget(filestore),
                                      preparer=unzip_preparer,
-                                     #validator=colander.All(v1(),v2()),
                                      validator = colander.All(
                                          UpdateNamingValidator(), 
                                          UpdateSequenceValidator(),
@@ -595,7 +630,6 @@ class Update(colander.MappingSchema):
                                      title=_('Update ZIP'))
     remote_file = colander.SchemaNode(UrlFile(),
                                       preparer=unzip_preparer,
-                                      #validator=colander.All(v1(),v2()),
                                       validator = colander.All(
                                           UpdateNamingValidator(), 
                                           UpdateSequenceValidator(),

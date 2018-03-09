@@ -46,6 +46,8 @@ POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
+
+# Reserved codes for functions called from scripts
 SCRIPTCODES = { 
     'mongodb_backup':'00',
     'chefserver_backup': '00',
@@ -2261,8 +2263,10 @@ def trace_inheritance(logger, db, action, obj, policy):
 
 
 def getNextUpdateSeq(db):  
-    '''
-    Return next update four digit sequence
+    ''' Return next four digit sequence of an update
+
+    Args:
+      db (object):    database connection
     '''
 
     pattern = '^update-[0-9]{4}\.zip$'
@@ -2281,10 +2285,17 @@ def getNextUpdateSeq(db):
 def is_cli_request():
     return os.environ.get('CLI_REQUEST') == 'True'
 
+
 def has_cli_permission(code, name):
     assert SCRIPTCODES[name] == code, _('No permission to execute this function from script')
 
 def mongodb_backup(path=None, collection=None):
+    ''' Back up of mongo collection or database
+    
+    Args:
+      path(str):        backup directory where hold files
+      collection(str):  mongo collection for backing up. If is None, then all database is backed up.
+    '''
     logger.info("Backing up mongodb ...")
 
     try:
@@ -2312,6 +2323,12 @@ def mongodb_backup(path=None, collection=None):
         logger.warning(msg)
 
 def mongodb_restore(path=None, collection=None):
+    ''' Restore of mongo collection or database
+    
+    Args:
+      path(str):        directory where backup files are.
+      collection(str):  mongo collection for restoring. If is None, then all database is restored.
+    '''
     logger.info("Restoring mongodb ...")
 
     try:
@@ -2338,7 +2355,12 @@ def mongodb_restore(path=None, collection=None):
  
 
 def upload_cookbook(user=None,cookbook_path=None):
+    ''' Upload cookbook to chef server
     
+    Args:
+      user(str):            user with permission for uploading cookbook to chef server
+      cookbook_path(str):   path to cookbook files
+    '''
     logger.info("Uploading cookbook ...")
 
     try:
@@ -2376,6 +2398,12 @@ def upload_cookbook(user=None,cookbook_path=None):
 
 
 def chefserver_backup(username=None, backupdir=None):
+    ''' Backing up all Chef server data
+    
+    Args:
+      username(str):    user with permission in chef server
+      backupdir(str):   backup directory where hold files
+    '''
     logger.info("Backing up Chef Server ...")
 
     try:
@@ -2411,6 +2439,12 @@ def chefserver_backup(username=None, backupdir=None):
         logger.error(msg.output)
 
 def chefserver_restore(username=None, backupdir=None):
+    ''' Restoring Chef server data from a backup that was created by the chefserver_backup function
+    
+    Args:
+      username(str):    user with permission in chef server
+      backupdir(str):   directory where backup files are
+    '''
     logger.info("Restoring Chef Server ...")
 
     try:
@@ -2446,6 +2480,12 @@ def chefserver_restore(username=None, backupdir=None):
         logger.error(msg.output)
 
 def import_policies(username=None, inifile=None):
+    ''' Import policies from Chef Server to mongo database
+    
+    Args:
+      username(str):    user with permission in chef server
+      inifile(str):     path to gecoscc.ini
+    '''
     from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
 
     logger.info("Importing policies ...")

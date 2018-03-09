@@ -21,6 +21,7 @@ import zipfile
 import tempfile
 
 from bson import ObjectId
+from pymongo import errors
 
 from pkg_resources import resource_filename
 
@@ -227,6 +228,9 @@ class AdminUserVariablesForm(GecosForm):
 
 
 class UpdateForm(GecosForm):
+    ''' Class for update form
+    
+    '''
     def validate(self, data):
         data_dict = dict(data)
         logger.debug("forms.py ::: UpdateForm - data = {0}".format(data_dict))
@@ -265,7 +269,7 @@ class UpdateForm(GecosForm):
             self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0, 'user': self.request.user['username']})
             # Launching task for script execution
             script_runner.delay(self.request.user, sequence)
-            link = '<a href="' +  self.request.application_url + '/updates/tail/' + sequence + '/">' + _("here") + '</a>'
+            link = '<a href="' +  self.request.route_url('updates_tail',sequence=sequence) + '">' + _("here") + '</a>'
             self.created_msg(_("Update log. %s") % link)
         except OSError as e:
                 error = True

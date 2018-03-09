@@ -156,7 +156,10 @@ class GecosGeventSocketIOWorker(GeventSocketIOWorker):
 
     server_class = GecosSocketIOServer
     wsgi_handler = GecosWSGIHandler
+    
 class TailNamespace(BaseNamespace):
+    ''' Defines a namespace for '/tail' endpoint, where socket working for view update log
+    '''
     def listener(self):
         if not is_websockets_enabled():
             return
