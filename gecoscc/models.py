@@ -554,16 +554,17 @@ def unzip_preparer(value):
     From deform documentation: "The preparer of a schema node is called after deserialization but before validation."
     The data is prepared by decompressing the zip file in a temporary directory. After that, validators are called.
     '''
+    settings = get_current_registry().settings
     if value is not colander.null:
         try:
             if 'fp' in value:
                 # local_file
-                with open('/tmp/' + value['filename'], 'wb') as zipped:
+                with open(settings['updates.tmp'] + value['filename'], 'wb') as zipped:
                     zipped.write(value['fp'].read())
             else: 
                 # remote_file
                 f = urllib2.urlopen(value['url'])
-                with open('/tmp/' + os.path.basename(value['url']), "wb") as zipped:
+                with open(settings['updates.tmp'] + os.path.basename(value['url']), "wb") as zipped:
                     zipped.write(f.read())
 
             # Decompress zipfile into temporal dir

@@ -23,7 +23,6 @@ import logging
 import pymongo
 import traceback
 import subprocess
-import pickle
 
 from gettext import gettext as _
 from bson import ObjectId, json_util
@@ -2288,7 +2287,7 @@ def is_cli_request():
 
 def has_cli_permission(code, name):
     assert SCRIPTCODES[name] == code, _('No permission to execute this function from script')
-
+    
 def mongodb_backup(path=None, collection=None):
     ''' Back up of mongo collection or database
     
@@ -2369,7 +2368,7 @@ def upload_cookbook(user=None,cookbook_path=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], upload_cookbook.__name__)
-            user = pickle.loads(os.environ['GECOS_USER'])
+            user = {'username': os.environ['GECOS_USER']}
             cookbook_path = os.environ['COOKBOOK_DIR']
 
         assert user is not None and cookbook_path is not None, _('Missing required arguments')
@@ -2383,9 +2382,9 @@ def upload_cookbook(user=None,cookbook_path=None):
         chef_url = settings.get('chef.url') + '/organizations/default'
         logger.debug("upload_cookbook: chef_url = %s" % chef_url)
 
-        command = 'source /opt/rh/rh-ruby24/enable; knife cookbook upload {0} -s {1} -u {2} -k {3} -o {4}'.format(settings['chef.cookbook_name'], chef_url, user['username'], admin_cert, cookbook_path)
+        command = 'knife cookbook upload {0} -s {1} -u {2} -k {3} -o {4}'.format(settings['chef.cookbook_name'], chef_url, user['username'], admin_cert, cookbook_path)
 
-        upload_output = subprocess.check_output(command, shell=True)
+        upload_output = subprocess.check_output(command, shell=True, env=env)
         logger.info(upload_output)
         logger.info("Uploaded cookbook.")
         
@@ -2412,7 +2411,7 @@ def chefserver_backup(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_backup.__name__)
-            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
         logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
@@ -2426,7 +2425,7 @@ def chefserver_backup(username=None, backupdir=None):
         admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
         logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
 
-        command = 'source /opt/rh/rh-ruby24/enable; knife backup export -D {0} -y -s {1} -u {2} -k {3}'.format(backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'), username, admin_cert)
         backup_output = subprocess.check_output(command, shell=True)
         logger.info(backup_output)
         logger.info("Chef Server backup ended.")
@@ -2453,7 +2452,7 @@ def chefserver_restore(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_restore.__name__)
-            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
         logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
@@ -2467,7 +2466,7 @@ def chefserver_restore(username=None, backupdir=None):
         admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
         logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
 
-        command = 'source /opt/rh/rh-ruby24/enable; knife backup restore -D {0} -y -s {1} -u {2} -k {3}'.format(backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'), username, admin_cert)
         restore_output = subprocess.check_output(command, shell=True)
         logger.info(restore_output)
         logger.info("Chef Server restore ended.")
@@ -2497,7 +2496,7 @@ def import_policies(username=None, inifile=None):
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], import_policies.__name__)
             inifile = os.environ['CONFIG_URI']
-            username = pickle.loads(os.environ['GECOS_USER']).get('username',None)
+            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
         logger.debug("utils.py ::: import_policies - inifile = %s" % inifile)

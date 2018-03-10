@@ -17,7 +17,6 @@ import re
 import subprocess
 import traceback
 import sys
-import pickle
 import shutil
 
 from glob import glob
@@ -2127,7 +2126,7 @@ def script_runner(user, sequence, rollback=False):
     env['COOKBOOK_DIR']= self.app.conf.get('updates.cookbook').format(sequence)
     env['BACKUP_DIR']  = self.app.conf.get('updates.backups').format(sequence)
     env['CONFIG_URI']  = self.app.conf.get('config_uri')
-    env['GECOS_USER']  = pickle.dumps(user)
+    env['GECOS_USER']  = user.get('username', None)
 
     returncode = 0
     for script in scripts:
