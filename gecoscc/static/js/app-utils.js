@@ -80,6 +80,11 @@
             return this.save({}, { url: that.url() + "?token=" + App.instances.staging.token });
         },
 
+        refreshWithToken: function () {
+            var that = this;
+            return this.save({}, { url: that.url() + "?action=refresh_policies&token=" + App.instances.staging.token });
+        },
+
         save: function () {
             return App.instances.staging.add(this, { arguments: arguments });
         },
