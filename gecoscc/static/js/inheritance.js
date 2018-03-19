@@ -131,7 +131,10 @@ App.module("Inheritance.Views", function (Views, App, Backbone, Marionette, $, _
                             icon = 'fa-random';
                         } 
                         
-                        var name = policy['name_'+App.language];
+                        var name = policy['name'];
+                        if (('name_'+App.language) in policy) {
+                            name = policy['name_'+App.language];
+                        }
                         if (!policy['inherited']) {
                             name = '<span class="no-inherited">'+name+'</span>';
                         }
