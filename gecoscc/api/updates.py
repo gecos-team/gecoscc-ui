@@ -14,6 +14,8 @@ from cornice.resource import resource
 import pyramid.threadlocal
 from pyramid.threadlocal import get_current_registry
 
+from gecoscc.api import ResourcePaginatedReadOnly
+from gecoscc.models import Update, Updates
 from gecoscc.permissions import api_login_required
 from gecoscc.socks import socktail
 from pyramid.httpexceptions import HTTPBadRequest
@@ -24,6 +26,7 @@ import time
 import gettext
 import threading
 import subprocess
+import pymongo
 import logging
 logger = logging.getLogger(__name__)
 
@@ -36,18 +39,23 @@ COLORS = {
 }
 
 
-@resource(collection_path='/api/tail/',
-          path='/api/tail/',
-          description='Tail resource',
+@resource(collection_path='/api/updates/',
+          path='/api/updates/{oid}/',
+          description='Updates resource',
           validators=(api_login_required,))
-class TailResource(object):
+class UpdateResource(ResourcePaginatedReadOnly):
 
-    def __init__(self, request):
-        self.request = request
-        localedir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'locale')
-        gettext.bindtextdomain('gecoscc', localedir)
-        gettext.textdomain('gecoscc')
-        self._ = gettext.gettext
+    schema_collection = Updates
+    schema_detail = Update
+    objtype = 'updates'
+    order_field = [('_id', pymongo.DESCENDING)]
+
+    mongo_filter = {}
+
+    collection_name = objtype
+
+    def get_oid_filter(self, oid):
+        return {self.key: oid}
 
     def tail_f(self, file):
         while True:
@@ -84,22 +92,26 @@ class TailResource(object):
 
     def get(self):
 
-        sequence = self.request.GET.get('sequence', None)
+        oid = self.request.matchdict['oid']
+        tail = self.request.GET.get('tail', None)
         rollback = self.request.GET.get('rollback', '')
-        logger.debug('TAILRESOURCE: sequence = %s' % sequence)
+        logger.debug('TAILRESOURCE: tail = %s' % tail)
         logger.debug('TAILRESOURCE: rollback = %s' % rollback)
+     
+        if tail:
+            settings = get_current_registry().settings
 
-        settings = get_current_registry().settings
+            logfile = settings['updates.rollback'].format(oid) if rollback else settings['updates.log'].format(oid)
+            logger.debug('TAILRESOURCE: logfile = %s' % logfile)
 
-        logfile = settings['updates.rollback'].format(sequence) if rollback else settings['updates.log'].format(sequence)
-        logger.debug('TAILRESOURCE: logfile = %s' % logfile)
-
-        if os.path.exists(logfile):
-            pyramid_thread_locals = pyramid.threadlocal.manager.get()
-            t = threading.Thread(target=self.reader, args=(logfile, pyramid_thread_locals, ))
-            t.start()
-        else:
-            raise HTTPBadRequest()
+            if os.path.exists(logfile):
+                pyramid_thread_locals = pyramid.threadlocal.manager.get()
+                t = threading.Thread(target=self.reader, args=(logfile, pyramid_thread_locals, ))
+                t.start()
+            else:
+                raise HTTPBadRequest()
             
-        logger.debug('TAILRESOURCE: ENDING')
-        return 
+            logger.debug('TAILRESOURCE: ENDING')
+            return 
+
+        return super(UpdateResource, self).get()

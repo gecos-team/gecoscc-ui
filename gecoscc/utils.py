@@ -2384,7 +2384,7 @@ def upload_cookbook(user=None,cookbook_path=None):
 
         command = 'knife cookbook upload {0} -s {1} -u {2} -k {3} -o {4}'.format(settings['chef.cookbook_name'], chef_url, user['username'], admin_cert, cookbook_path)
 
-        upload_output = subprocess.check_output(command, shell=True, env=env)
+        upload_output = subprocess.check_output(command, shell=True)
         logger.info(upload_output)
         logger.info("Uploaded cookbook.")
         

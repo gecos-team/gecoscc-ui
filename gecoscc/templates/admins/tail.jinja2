@@ -51,7 +51,7 @@
         function startLogging() {
             $.ajax({
                 "type": "GET",
-                "url": "/api/tail/?sequence={{ sequence }}{% if rollback %}&rollback=rollback{% endif %}"
+                "url": "/api/updates/{{ sequence }}/?tail=true{% if rollback %}&rollback=true{% endif %}"
             });
         }
 

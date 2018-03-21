@@ -22,7 +22,7 @@ from gecoscc.eventsmanager import JobStorage
 from gecoscc.socks import invalidate_jobs, socktail, is_websockets_enabled
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, MaintenanceForm, UpdateForm
 from gecoscc.i18n import gettext as _
-from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, Update
+from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, UpdateModel
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
 from gecoscc.tasks import script_runner
@@ -206,7 +206,7 @@ def admin_delete(context, request):
 @view_config(route_name='updates_add', renderer='templates/admins/updates_add.jinja2',
              permission='is_superuser')
 def updates_add(context, request):
-    schema = Update()
+    schema = UpdateModel()
     form = UpdateForm(schema=schema,
                       request=request)
 

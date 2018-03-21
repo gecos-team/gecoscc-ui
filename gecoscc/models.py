@@ -614,7 +614,7 @@ class UrlFile(object):
 
 
 
-class Update(colander.MappingSchema):
+class UpdateModel(colander.MappingSchema):
     '''
     Schema for representing an update in form 
     '''
@@ -639,6 +639,39 @@ class Update(colander.MappingSchema):
                                       missing=colander.null,
                                       title=_('URL download'))
 
+class Update(colander.MappingSchema):
+    _id = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    path = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    name = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    timestamp = colander.DateTime()
+    rollback = colander.SchemaNode(colander.Integer(),
+                                default = 0,
+                                missing = 0)
+    state = colander.SchemaNode(colander.Integer(),
+                                default = 0,
+                                missing = 0)
+    timestamp_rollback = colander.DateTime()
+    rolluser = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    user = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    
+
+class Updates(colander.SequenceSchema):
+    updates = Update()
 # UPDATES: END
 
 class Maintenance(colander.MappingSchema):
