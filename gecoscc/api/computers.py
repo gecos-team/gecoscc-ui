@@ -19,7 +19,6 @@ from chef import ChefError
 from chef.exceptions import ChefServerError
 from gecoscc.utils import get_chef_api, get_inheritance_tree_policies_list
 
-
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
@@ -101,3 +100,14 @@ class ComputerResource(TreeLeafResourcePaginated):
         except (urllib2.URLError, ChefError, ChefServerError):
             pass
         return result
+
+    def put(self):
+        
+        if ('action' in self.request.GET and 
+            self.request.GET['action'] == 'refresh_policies'):
+            # Refresh policies
+            return super(ComputerResource, self).refresh_policies()
+        
+        else:
+            # Save object
+            return super(ComputerResource, self).put()
