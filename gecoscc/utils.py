@@ -12,6 +12,7 @@
 import datetime
 import json
 import os
+import sys
 import pytz
 import random
 import string
@@ -21,10 +22,13 @@ import pkg_resources
 import logging
 import pymongo
 import traceback
+import subprocess
 
+from gettext import gettext as _
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
 
+from urlparse import urlparse
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
 from chef.exceptions import ChefError
@@ -42,6 +46,17 @@ USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
 
+# Reserved codes for functions called from scripts
+SCRIPTCODES = { 
+    'mongodb_backup':'00',
+    'chefserver_backup': '00',
+    'upload_cookbook':'25',
+    'import_policies': '26',
+    'mongodb_restore':'99',
+    'chefserver_restore':'99'}
+    
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def get_policy_emiter_id(collection, obj):
@@ -2244,4 +2259,260 @@ def trace_inheritance(logger, db, action, obj, policy):
         logger.debug("utils.py ::: trace_inheritance - success = {0}".format(success))
 
     return success
+
+
+def getNextUpdateSeq(db):  
+    ''' Return next four digit sequence of an update
+
+    Args:
+      db (object):    database connection
+    '''
+
+    pattern = '^update-[0-9]{4}\.zip$'
+    cursor = db.updates.find({'name':{'$regex':pattern}},{'_id':1}).sort('_id',-1).limit(1)
+
+    if cursor.count() == 0:
+        nseq = '0000'
+    else:
+        latest = int(cursor.next().get('_id'))
+        nseq = "%04d" % (latest+1)
+
+    logger.debug("utils.py ::: getNextUpdateSeq - nseq = %s" % nseq)
+
+    return nseq
+
+def is_cli_request():
+    return os.environ.get('CLI_REQUEST') == 'True'
+
+
+def has_cli_permission(code, name):
+    assert SCRIPTCODES[name] == code, _('No permission to execute this function from script')
+    
+def mongodb_backup(path=None, collection=None):
+    ''' Back up of mongo collection or database
+    
+    Args:
+      path(str):        backup directory where hold files
+      collection(str):  mongo collection for backing up. If is None, then all database is backed up.
+    '''
+    logger.info("Backing up mongodb ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], mongodb_backup.__name__)
+            path = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: mongodb_backup - path = %s" % path)
+        logger.debug("utils.py ::: mongodb_backup - collection = %s" % collection)
+
+        assert path is not None, _('Missing required arguments')
+
+        if not os.path.exists(path):
+            os.mkdir(path)
+
+        mongodb = settings['mongodb']
+       
+        mongodb.dump(path, collection)
+        logger.info("mongodb backup ended.")
+
+    except AssertionError, msg:
+        logger.warning(msg)
+
+def mongodb_restore(path=None, collection=None):
+    ''' Restore of mongo collection or database
+    
+    Args:
+      path(str):        directory where backup files are.
+      collection(str):  mongo collection for restoring. If is None, then all database is restored.
+    '''
+    logger.info("Restoring mongodb ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], mongodb_restore.__name__)
+            path = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: mongodb_restore - path = %s" % path)
+        logger.debug("utils.py ::: mongodb_restore - collection = %s" % collection)
+
+        assert path is not None, _('Missing required arguments')
+        assert os.path.exists(path), _('Directory %s can\'t be found.') % path
+
+        mongodb = settings['mongodb']
+
+        mongodb.restore(path, collection)
+        logger.info("mongodb restored from backup.")
+
+    except AssertionError, msg:
+        logger.warning(msg)
+ 
+
+def upload_cookbook(user=None,cookbook_path=None):
+    ''' Upload cookbook to chef server
+    
+    Args:
+      user(str):            user with permission for uploading cookbook to chef server
+      cookbook_path(str):   path to cookbook files
+    '''
+    logger.info("Uploading cookbook ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], upload_cookbook.__name__)
+            user = {'username': os.environ['GECOS_USER']}
+            cookbook_path = os.environ['COOKBOOK_DIR']
+
+        assert user is not None and cookbook_path is not None, _('Missing required arguments')
+        assert os.path.isdir(cookbook_path), _('Directory %s can\'t be found.') % cookbook_path
+
+        api = get_chef_api(settings, user)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), user['username'], 'chef_user.pem'])
+        logger.debug("upload_cookbook: admin_cert = %s" % admin_cert)
+
+        chef_url = settings.get('chef.url') + '/organizations/default'
+        logger.debug("upload_cookbook: chef_url = %s" % chef_url)
+
+        command = 'knife cookbook upload {0} -s {1} -u {2} -k {3} -o {4}'.format(settings['chef.cookbook_name'], chef_url, user['username'], admin_cert, cookbook_path)
+
+        upload_output = subprocess.check_output(command, shell=True)
+        logger.info(upload_output)
+        logger.info("Uploaded cookbook.")
+        
+    except AssertionError, msg:
+        logger.warning(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+
+def chefserver_backup(username=None, backupdir=None):
+    ''' Backing up all Chef server data
+    
+    Args:
+      username(str):    user with permission in chef server
+      backupdir(str):   backup directory where hold files
+    '''
+    logger.info("Backing up Chef Server ...")
+
+    try:
+ 
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_backup.__name__)
+            username = os.environ['GECOS_USER']
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
+        logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
+
+        assert username is not None or backupdir is not None, _('Missing required arguments')
+
+        if not os.path.exists(backupdir):
+            os.mkdir(backupdir)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
+
+        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'), username, admin_cert)
+        backup_output = subprocess.check_output(command, shell=True)
+        logger.info(backup_output)
+        logger.info("Chef Server backup ended.")
+
+    except AssertionError, msg:
+        logger.error(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+def chefserver_restore(username=None, backupdir=None):
+    ''' Restoring Chef server data from a backup that was created by the chefserver_backup function
+    
+    Args:
+      username(str):    user with permission in chef server
+      backupdir(str):   directory where backup files are
+    '''
+    logger.info("Restoring Chef Server ...")
+
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_restore.__name__)
+            username = os.environ['GECOS_USER']
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
+        logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
+
+        assert username is not None or backupdir is not None, _('Missing required arguments')
+
+        if not os.path.exists(backupdir):
+            os.mkdir(backupdir)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
+
+        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'), username, admin_cert)
+        restore_output = subprocess.check_output(command, shell=True)
+        logger.info(restore_output)
+        logger.info("Chef Server restore ended.")
+
+    except AssertionError, msg:
+        logger.warning(msg)
+
+    except subprocess.CalledProcessError, msg:
+        logger.error(msg.cmd)
+        logger.error(msg.output)
+
+def import_policies(username=None, inifile=None):
+    ''' Import policies from Chef Server to mongo database
+    
+    Args:
+      username(str):    user with permission in chef server
+      inifile(str):     path to gecoscc.ini
+    '''
+    from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
+
+    logger.info("Importing policies ...")
+ 
+    try:
+
+        settings = get_current_registry().settings
+
+        if is_cli_request():
+            has_cli_permission(os.environ['SCRIPT_CODE'], import_policies.__name__)
+            inifile = os.environ['CONFIG_URI']
+            username = os.environ['GECOS_USER']
+            backupdir = os.environ['BACKUP_DIR']
+
+        logger.debug("utils.py ::: import_policies - inifile = %s" % inifile)
+        logger.debug("utils.py ::: import_policies - username = %s" % username)
+
+        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
+        logger.debug("utils.py ::: import_policies - admin_cert = %s" % admin_cert)
+
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', inifile, 'import_policies', '-a', username, '-k', admin_cert]
+        command = ImportPoliciesCommand(inifile)
+        command.command()
+        sys.argv = argv_bc
+
+        logger.info("Imported policies.")
+
+    except AssertionError, msg:
+        logger.warning(msg)
 

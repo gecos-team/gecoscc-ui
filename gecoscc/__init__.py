@@ -17,6 +17,7 @@ import os
 import pymongo
 import sys
 import subprocess
+import jinja2
 
 from ConfigParser import ConfigParser
 
@@ -41,10 +42,21 @@ def read_setting_from_env(settings, key, default=None):
     else:
         return settings.get(key, default)
 
+def pregen(request, elements, kw):
+    kw.setdefault('rollback', '')
+    return elements, kw
+
+def include_file(name):
+    with open(name) as f:
+        return jinja2.Markup(f.read())
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
+    config.add_route('updates', '/updates/', factory=SuperUserFactory)
+    config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
     config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)
@@ -53,8 +65,6 @@ def route_config(config):
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
-    config.add_route('admin_upload','/admins/upload/{username}/', factory=SuperUserFactory)
-    config.add_route('admin_restore','/admins/restore/{name}/{version}/', factory=SuperUserFactory)
     config.add_route('admin_maintenance','/admins/maintenance/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
@@ -242,6 +252,9 @@ def main(global_config, **settings):
     config.include('pyramid_beaker')
     config.include('pyramid_celery')
     config.include('cornice')
+
+    jinja2_env = config.get_jinja2_environment()
+    jinja2_env.globals["include_file"] = include_file
 
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings

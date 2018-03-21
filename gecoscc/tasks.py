@@ -13,13 +13,14 @@
 import datetime
 import random
 import os
+import re
 import subprocess
 import traceback
 import sys
+import shutil
 
-
+from glob import glob
 from copy import deepcopy
-
 from bson import ObjectId
 
 from chef import Node, Client
@@ -375,6 +376,7 @@ class ChefTask(Task):
 
         # Checking changes in Chef node.
         field_chef_value = node.attributes.get_dotted(field_chef)
+                                                                                                            
         self.log("debug","tasks.py ::: has_changed_user_policy - field_chef_value = {0}".format(field_chef_value))
         username = get_username_chef_format(priority_obj)
         self.log("debug","tasks.py ::: has_changed_user_policy -  username = {0}".format(username))
@@ -1387,9 +1389,13 @@ class ChefTask(Task):
         Theses changes are called actions and can be: changed, created, moved and deleted.
         if the node is free, the method can get the node, it reserves the node and runs the action, later the node is saved and released.
         '''
+                                                                   
+                                                                              
+                                                                                    
         api = get_chef_api(self.app.conf, user)
         cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
+                                                                                          
         # MacroJob
         job_ids_by_order = []
         name = "%s %s" % (obj['type'], action)
@@ -1455,6 +1461,7 @@ class ChefTask(Task):
                                       'childs':  len(job_ids_by_order),
                                       'counter': len(job_ids_by_order),
                                       'message': self._("Pending: %d") % len(job_ids_by_order)}})
+
         if are_new_jobs or job_status == 'finished':
             invalidate_jobs(self.request, user)
             
@@ -1880,68 +1887,6 @@ def object_detached(user, objtype, obj, computers=None):
         self.log('error', 'The method {0}_detached does not exist'.format(
             objtype))
 
-@task(base=ChefTask)
-def cookbook_upload(user, objtype, obj, computers=None):
-    self = cookbook_upload
-    macrojob_storage = JobStorage(self.db.jobs, user)
-    macrojob_id = macrojob_storage.create(obj=obj,
-                                          op='upload',
-                                          computer=None,
-                                          status='processing',
-                                          policy={'name':'policy uploaded','name_es': self._('policy uploaded')},
-                                          administrator_username=user['username'],
-                                          message=self._('policy uploading...'))
-
-    userdir = "%s/%s/" % (self.app.conf.get('firstboot_api.media'), user['username']) 
-    admincert = userdir + 'chef_user.pem'
-    knifeconf = userdir + '/knife.rb'
-
-
-    if not os.path.isfile(knifeconf):
-       chefurl = self.app.conf.get('chef.url') + '/organizations/default'    
-       textfile = """
-log_level                :info
-log_location             STDOUT
-node_name                "%s"
-client_key               "%s"
-chef_server_url          "%s"
-ssl_verify_mode          :verify_none
-""" % (user['username'],admincert,chefurl)
-     
-       with open(knifeconf,'w') as file: 
-           file.write(textfile)
-    
-    cmd_upload = self.app.conf.get('cmd_upload') % (obj['name'], obj['path'], knifeconf)
-    cmd_import = self.app.conf.get('cmd_import') % (user['username'], admincert)
-    self.log("debug", "tasks.py ::: cmd_upload = {0}".format(cmd_upload))
-    self.log("debug", "tasks.py ::: cmd_import = {0}".format(cmd_import))
-
-    #output_upload = subprocess.call(cmd_upload, shell=True)
-    p1 = subprocess.Popen(cmd_upload, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    output_upload, errors_upload = p1.communicate()
-
-    self.log("debug", "tasks.py ::: output_upload = {0}".format(output_upload))
-    self.log("debug", "tasks.py ::: errors_upload = {0}".format(errors_upload))
-    if p1.returncode and errors_upload:
-        status = 'errors'
-        msg = errors_upload
-    else:
-        #output_import = subprocess.call(cmd_import, shell=True)
-        p2 = subprocess.Popen(cmd_import, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        output_import, errors_import = p2.communicate()
-        self.log("debug", "tasks.py ::: output_import = {0}".format(output_import))
-        self.log("debug", "tasks.py ::: errors_import = {0}".format(errors_import))
-
-        if p2.returncode and errors_import:
-            status = 'errors'
-            msg = errors_import
-        else:
-            status = 'finished'
-            msg = self._("Cookbook uploaded successfully %s %s") % (obj['name'], obj['version'])
-     
-    self.db.jobs.update({'_id':ObjectId(macrojob_id)},{'$set':{'status':status, 'message':msg}})
-
-    invalidate_jobs(self.request, user)   
 
 @task(base=ChefTask)
 def chef_status_sync(node_id, auth_user):
@@ -2139,3 +2084,68 @@ def chef_status_sync(node_id, auth_user):
     # Save node and free
     if job_status:
         save_node_and_free(node)
+
+@task(base=ChefTask)
+def script_runner(user, sequence, rollback=False):
+    ''' Launches scripts from an update
+    
+    Args:
+      user(object):         user doing update
+      sequence(str):        sequence of update
+      rollback(boolean):    True if rollback action. Otherwise, False
+    '''
+    self = script_runner
+    self.log("info","tasks.py ::: script_runner - Starting ...")
+    self.log("debug", "tasks.py ::: script_runner - user = {0}".format(user))
+    self.log("debug", "tasks.py ::: script_runner - sequence = {0}".format(sequence))
+
+    scriptdir = self.app.conf.get('updates.scripts').format(sequence)
+    self.log("debug", "tasks.py ::: script_runner - scriptdir = {0}".format(scriptdir))
+
+
+    if rollback:
+        scripts = glob(scriptdir + "99-*")
+        logname = self.app.conf.get('updates.rollback').format(sequence)
+    else:
+        # Exclude 99-rollback from automatic execution
+        scripts = glob(scriptdir + "[0-8][0-9]*") + glob(scriptdir + "9[0-8]*")
+        scripts.sort()
+        logname = self.app.conf.get('updates.log').format(sequence)
+        controlfile = self.app.conf.get('updates.control').format(sequence)
+        shutil.copyfile(controlfile, logname)
+
+    self.log("debug", "tasks.py ::: script_runner - scripts = {0}".format(scripts))
+    self.log("debug", "tasks.py ::: script_runner - logname = {0}".format(logname))
+
+    bufsize =0 
+    logfile = open(logname,'a+', bufsize)
+
+    env = os.environ.copy()
+    env['CLI_REQUEST'] = 'True'
+    env['UPDATE_DIR']  = self.app.conf.get('updates.dir') + sequence
+    env['COOKBOOK_DIR']= self.app.conf.get('updates.cookbook').format(sequence)
+    env['BACKUP_DIR']  = self.app.conf.get('updates.backups').format(sequence)
+    env['CONFIG_URI']  = self.app.conf.get('config_uri')
+    env['GECOS_USER']  = user.get('username', None)
+
+    returncode = 0
+    for script in scripts:
+         
+        header = 'SCRIPT %s' % os.path.basename(script)
+        header = header.center(150,'*')
+        logfile.write('\n\n ' + header + ' \n\n')
+        self.log("debug", "tasks.py ::: script_runner - script = {0}".format(script))
+        os.chmod(script, 0755)
+
+        env['SCRIPT_CODE'] = re.match('.*(\d{2})-.*', script).group(1)
+
+        returncode = subprocess.call(script, shell=True, stdout=logfile, stderr=subprocess.STDOUT, env=env)
+
+        if returncode != 0:
+            self.log("error", "tasks.py ::: script_runner - returncode = {0}".format(returncode))
+            break
+
+    if not rollback:
+        self.db.updates.update({'_id': sequence},{'$set': {'state': returncode }})
+
+    logfile.close()
