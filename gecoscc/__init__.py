@@ -135,17 +135,12 @@ def check_server_list(config):
         server_name, err = p.communicate()
 
     if not server_name:
-        raise ConfigurationError("The server_name option is required")
+        raise ConfigurationError("server_name option required in gecoscc.ini" )
 
-    server_ip = read_setting_from_env(settings, 'server_ip', None)
-    if not server_ip:
-        # Try to get the server IP from "ifconfig" command
-        p = subprocess.Popen('/sbin/ifconfig eth0 | grep "inet addr" | awk -F: \'{print $2}\' | awk \'{print $1}\'', 
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        server_ip, err = p.communicate()
-    
-    if not server_ip:
-        raise ConfigurationError("The server_ip option is required")
+    server_address = read_setting_from_env(settings, 'server_address', None)
+
+    if not server_address:
+        raise ConfigurationError("server_address option required in gecoscc.ini")
     
     db = config.registry.settings['mongodb'].get_database()
         
