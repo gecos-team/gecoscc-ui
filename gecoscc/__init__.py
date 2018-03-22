@@ -147,9 +147,9 @@ def check_server_list(config):
     # Check if this server is in the collection
     server = db.servers.find_one({'name': server_name.strip()})
     if server is None:
-        db.servers.insert({'name': server_name.strip(), 'address':server_ip.strip()})
+        db.servers.insert({'name': server_name.strip(), 'address':server_address.strip()})
     else:
-        server['address'] = server_ip.strip()
+        server['address'] = server_address.strip()
         db.servers.update({'name': server_name.strip()}, server, new=False)
         
     
