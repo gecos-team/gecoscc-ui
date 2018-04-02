@@ -370,6 +370,9 @@ class ChefTask(Task):
         self.log("debug","tasks.py ::: has_changed_user_policy - obj_ui = {0}".format(obj_ui))
         self.log("debug","tasks.py ::: has_changed_user_policy - objold_ui = {0}".format(objold_ui))
         # Checking changes in object.
+        if objold_ui is None:
+            return True
+        
         if obj_ui == objold_ui:
             return False
 
@@ -386,12 +389,27 @@ class ChefTask(Task):
                 if field_chef_value.get(username,{}).get(policy_type) is None:                   
                     updated = True
                 elif obj_ui.get(policy_type) != []:
+                    # Check if all the values in the policy are in Chef
                     for obj in obj_ui.get(policy_type):
                         if obj not in field_chef_value.get(username,{}).get(policy_type):
+                            # There is a new value added in the policy
                             updated = True
                             break
+                    
+                    # Check if objold_ui contains this policy             
+                    if not updated and not (policy_type in objold_ui.keys()):
+                        # The policy has been added to the object
+                        updated = True
+                        break
+                    
                     if not updated:
-                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]])
+                        # Get the keys that exists in objold_ui[policy_type] but does not exists in obj_ui[policy_type]
+                        keysdiff = [y for y in objold_ui[policy_type] if y not in obj_ui[policy_type]]
+                        
+                        # Check if any of the keys exists is in chef is updated
+                        # (the user removed a value from the policy)
+                        updated = any(x in field_chef_value.get(username,{}).get(policy_type) for x in keysdiff)
+                        
         self.log("debug","tasks.py ::: has_changed_user_policy - updated = {0}".format(updated))                                                                                                
         return updated
 
@@ -1777,16 +1795,20 @@ class ChefTask(Task):
         refreshed_groups = []
         
         computers = [obj]
+        users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
         for u in users:
             # Do not apply policies to sudoers
             if u['name'] in gcc_sudoers:
+                self.log('warning', 'User {0} in sudoers'.format(u['name']))
                 continue
 
             # Set user for the policies calculation      
             comp = deepcopy(obj)   
             comp['user'] = u    
             computers.append(comp)
+            self.log('warning', 'User {0} NOT in sudoers'.format(u['name']))
         
+        self.log('warning', 'Computers: {0}'.format(len(computers)))
         
         # 5 - Recalculate policies of the OUs
         ous = self.db.nodes.find(get_filter_ous_from_path(obj['path']))
@@ -1821,15 +1843,15 @@ class ChefTask(Task):
             for ou in ous:
                 if ou.get('policies', {}) and ou['_id'] not in refreshed_ous:
                     self.log('warning', 'Recaculate policies for OU: {0} in user: {1}'.format(ou['name'], u['name']))
-                    self.object_refresh_policies(user, ou, computers=computers)
+                    self.object_refresh_policies(user, ou, computers=[obj])
                     refreshed_ous.append(ou['_id'])
         
             # 7.2 - Recalculate policies of user groups
             groups = self.db.nodes.find({'_id': {'$in': u.get('memberof', [])}})
             for group in groups:
-                if group.get('policies', {}) and group['_id'] not in refreshed_ous:
+                if group.get('policies', {}) and group['_id'] not in refreshed_groups:
                     self.log('warning', 'Recaculate policies for group: {0} in user: {1}'.format(group['name'], u['name']))
-                    self.object_refresh_policies(user, group, computers=computers)
+                    self.object_refresh_policies(user, group, computers=[obj])
                     refreshed_groups.append(group['_id'])
         
             # 7.3 - Recalculate policies of user
