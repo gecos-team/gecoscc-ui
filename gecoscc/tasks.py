@@ -909,13 +909,13 @@ class ChefTask(Task):
         is_mergeable = policy.get('is_mergeable', False)
 
         for field_chef, field_ui in rules.items():
-            self.log("warning","tasks.py ::: update_node_from_rules - field_ui = {0}".format(field_ui))
-            self.log("warning","tasks.py ::: update_node_from_rules - field_chef = {0}".format(field_chef))
+            self.log("debug","tasks.py ::: update_node_from_rules - field_ui = {0}".format(field_ui))
+            self.log("debug","tasks.py ::: update_node_from_rules - field_chef = {0}".format(field_chef))
             # Ignore a user policy in a computer not calculated by "get_computer_of_user" method
             if 'user' in computer:
-                self.log("warning","tasks.py ::: update_node_from_rules - COMPUTER = {0} USER = {1}".format(computer['name'], computer['user']['name']))
+                self.log("debug","tasks.py ::: update_node_from_rules - COMPUTER = {0} USER = {1}".format(computer['name'], computer['user']['name']))
             else:
-                self.log("warning","tasks.py ::: update_node_from_rules - COMPUTER = {0} USER = {1}".format(computer['name'], 'None'))
+                self.log("debug","tasks.py ::: update_node_from_rules - COMPUTER = {0} USER = {1}".format(computer['name'], 'None'))
 
             # Removing get_related_computers_of_computer and get_related_computers_of_group
             if is_user_policy(field_chef) and 'user' not in computer:
@@ -932,16 +932,16 @@ class ChefTask(Task):
             if (rule_type == 'policies' or not policy.get('is_emitter_policy', False)) and updated_by_attr not in attributes_updated_by_updated:
                 updated_updated_by = updated_updated_by or self.update_node_updated_by(node, field_chef, obj, action, updated_by_attr, attributes_updated_by_updated)
             priority_obj = self.priority_object(node, updated_by_attr, obj, action)
-            self.log("warning","tasks:::update_node_from_rules -> priority_obj = {0}".format(priority_obj))
-            self.log("warning","tasks:::update_node_from_rules -> obj = {0}".format(obj))
-            self.log("warning","tasks:::update_node_from_rules -> objold = {0}".format(objold))
+            self.log("debug","tasks:::update_node_from_rules -> priority_obj = {0}".format(priority_obj))
+            self.log("debug","tasks:::update_node_from_rules -> obj = {0}".format(obj))
+            self.log("debug","tasks:::update_node_from_rules -> objold = {0}".format(objold))
 
             if objold:
                 objold_ui = self.get_object_ui(rule_type, objold, node, policy)
             else:
                 objold = objold_ui = {}
-            self.log("warning","tasks:::update_node_from_rules -> obj_ui = {0}".format(obj_ui))
-            self.log("warning","tasks:::update_node_from_rules -> OBJOLD_UI = {0}".format(objold_ui))
+            self.log("debug","tasks:::update_node_from_rules -> obj_ui = {0}".format(obj_ui))
+            self.log("debug","tasks:::update_node_from_rules -> OBJOLD_UI = {0}".format(objold_ui))
 
             # objcur_ui_field: value of policy field for current object
             # objold_ui_field: value of policy field for old object (before executed action)
@@ -957,16 +957,6 @@ class ChefTask(Task):
                 if callable(field_ui):
                     if is_user_policy(field_chef):
                         priority_obj = computer['user']
-
-
-
-
-                                                                                                            
-                                                                                                                              
-                                                                 
-                                                                                                                                            
-                                                                
-
 
                     obj_ui_field = field_ui(priority_obj_ui, obj=priority_obj, node=node, field_chef=field_chef)
                     if objold and objold_ui:
@@ -1274,10 +1264,10 @@ class ChefTask(Task):
                 action = 'changed'
         
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
-            self.log('warning', 'force_update: {0} is_updating_policies: {1}'.format(force_update, self.is_updating_policies(obj, objold)))
+            self.log('debug', 'task.py:: update_node - force_update: {0} is_updating_policies: {1}'.format(force_update, self.is_updating_policies(obj, objold)))
             if force_update or self.is_updating_policies(obj, objold):
                 rule_type = 'policies'
-                self.log('warning', 'policies: {0}'.format(self.get_policies(rule_type, action, obj, objold)))
+                self.log('debug', 'task.py:: update_node - policies: {0}'.format(self.get_policies(rule_type, action, obj, objold)))
                 for policy_id, action in self.get_policies(rule_type, action, obj, objold):
                     policy = self.db.policies.find_one({"_id": ObjectId(policy_id)})
                     if action == DELETED_POLICY_ACTION:
@@ -1695,12 +1685,12 @@ class ChefTask(Task):
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
         
-        self.log('warning', 'Recreate user-computer relashionship --------------')
-        self.log('warning', 'obj={0}'.format(obj))
+        self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
+        self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
         # 1 - Disassociate computer from its users
         users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
         for u in users:
-            self.log('warning', 'remove computer from user: {0}'.format(u['name']))
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - remove computer from user: {0}'.format(u['name']))
             self.db.nodes.update({
                 '_id': u['_id']
             }, {
@@ -1723,7 +1713,7 @@ class ChefTask(Task):
                 usr = self.db.nodes.find_one({'name': username, 'type': 'user', 'path': get_filter_in_domain(obj)})
 
                 if not usr:
-                    self.log('warning', 'Create user: {0}'.format(username))
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Create user: {0}'.format(username))
                     user_model = User()
                     usr = user_model.serialize({'name': username,
                                                  'path': obj.get('path', ''),
@@ -1738,7 +1728,7 @@ class ChefTask(Task):
                     usr = self.db.nodes.find_one({'_id': usr_id})
     
                 else:
-                    self.log('warning', 'Add computer to user: {0}'.format(username))
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Add computer to user: {0}'.format(username))
                     comptrs = usr.get('computers', [])
                     if obj['_id'] not in comptrs:
                         comptrs.append(obj['_id'])
@@ -1749,18 +1739,18 @@ class ChefTask(Task):
                 # Sudoers
                 if u['sudo']:
                     gcc_sudoers.add(username)
-                    self.log("warning", "tasks.py ::: chef_status_sync - gcc_sudoers: {0}".format(gcc_sudoers))                
+                    self.log("debug", "tasks.py ::: computer_refresh_policies - gcc_sudoers: {0}".format(gcc_sudoers))                
                 
                 
             # Set sudoers information
-            self.log('warning', 'Update sudoers: {0}'.format(gcc_sudoers))
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
             self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
             
         # Clean inheritance information
         self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
 
         # Ser processing jobs as finished
-        self.log('warning', 'Set processing jobs as finished!')
+        self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
         processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
         for job in processing_jobs:
             macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
@@ -1782,7 +1772,7 @@ class ChefTask(Task):
             ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
             for attr in node.normal:
                 if not attr in ATTRIBUTES_WHITE_LIST:
-                    self.log('warning', 'Remove from Chef: {0}'.format(attr))
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
                     del node.normal[attr]
         
             save_node_and_free(node)
@@ -1799,22 +1789,22 @@ class ChefTask(Task):
         for u in users:
             # Do not apply policies to sudoers
             if u['name'] in gcc_sudoers:
-                self.log('warning', 'User {0} in sudoers'.format(u['name']))
+                self.log('debug', 'tasks.py ::: computer_refresh_policies - User {0} in sudoers'.format(u['name']))
                 continue
 
             # Set user for the policies calculation      
             comp = deepcopy(obj)   
             comp['user'] = u    
             computers.append(comp)
-            self.log('warning', 'User {0} NOT in sudoers'.format(u['name']))
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - User {0} NOT in sudoers'.format(u['name']))
         
-        self.log('warning', 'Computers: {0}'.format(len(computers)))
+        self.log('debug', 'tasks.py ::: computer_refresh_policies - Computers: {0}'.format(len(computers)))
         
         # 5 - Recalculate policies of the OUs
         ous = self.db.nodes.find(get_filter_ous_from_path(obj['path']))
         for ou in ous:
             if ou.get('policies', {}):
-                self.log('warning', 'Recaculate policies for OU: {0}'.format(ou['name']))
+                self.log('debug', 'tasks.py ::: computer_refresh_policies - Recaculate policies for OU: {0}'.format(ou['name']))
                 self.object_refresh_policies(user, ou, computers=computers)
                 refreshed_ous.append(ou['_id'])
                 
@@ -1823,7 +1813,7 @@ class ChefTask(Task):
         groups = self.db.nodes.find({'_id': {'$in': obj.get('memberof', [])}})
         for group in groups:
             if group.get('policies', {}):
-                self.log('warning', 'Recaculate policies for group: {0}'.format(group['name']))
+                self.log('debug', 'tasks.py ::: computer_refresh_policies - Recaculate policies for group: {0}'.format(group['name']))
                 self.object_refresh_policies(user, group, computers=computers)   
                 refreshed_groups.append(group['_id'])
         
@@ -1837,12 +1827,12 @@ class ChefTask(Task):
             # Set user for the policies calculation         
             obj['user'] = u
             
-            self.log('warning', 'Recaculate policies for user: {0}'.format(u['name']))
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Recaculate policies for user: {0}'.format(u['name']))
             # 7.1 - Recalculate policies of user OUs
             ous = self.db.nodes.find(get_filter_ous_from_path(u['path']))
             for ou in ous:
                 if ou.get('policies', {}) and ou['_id'] not in refreshed_ous:
-                    self.log('warning', 'Recaculate policies for OU: {0} in user: {1}'.format(ou['name'], u['name']))
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Recaculate policies for OU: {0} in user: {1}'.format(ou['name'], u['name']))
                     self.object_refresh_policies(user, ou, computers=[obj])
                     refreshed_ous.append(ou['_id'])
         
@@ -1850,7 +1840,7 @@ class ChefTask(Task):
             groups = self.db.nodes.find({'_id': {'$in': u.get('memberof', [])}})
             for group in groups:
                 if group.get('policies', {}) and group['_id'] not in refreshed_groups:
-                    self.log('warning', 'Recaculate policies for group: {0} in user: {1}'.format(group['name'], u['name']))
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Recaculate policies for group: {0} in user: {1}'.format(group['name'], u['name']))
                     self.object_refresh_policies(user, group, computers=[obj])
                     refreshed_groups.append(group['_id'])
         
