@@ -1677,7 +1677,6 @@ class ChefTask(Task):
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
         
-        
         self.log('warning', 'Recreate user-computer relashionship --------------')
         self.log('warning', 'obj={0}'.format(obj))
         # 1 - Disassociate computer from its users
@@ -1738,6 +1737,28 @@ class ChefTask(Task):
             # Set sudoers information
             self.log('warning', 'Update sudoers: {0}'.format(gcc_sudoers))
             self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+            
+        # Clean inheritance information
+        self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
+
+        # Ser processing jobs as finished
+        self.log('warning', 'Set processing jobs as finished!')
+        processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
+        for job in processing_jobs:
+            macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
+            
+            self.db.jobs.update({'_id': job['_id']},
+                                {'$set': {'status': 'finished',
+                                          'last_update': datetime.datetime.utcnow()}})
+            
+            # Decrement number of children in parent
+            if macrojob and 'counter' in macrojob:
+                macrojob['counter'] -= 1
+                self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                                    {'$set': {'counter': macrojob['counter'],
+                                              'message': self._("Pending: %d") % macrojob['counter'],
+                                              'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
+
                 
             # 3 - Clean policies information
             ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
@@ -1747,7 +1768,7 @@ class ChefTask(Task):
                     del node.normal[attr]
         
             save_node_and_free(node)
-        
+            
         # 4 - Recalculate policies of the computer
         if obj.get('policies', {}): 
             self.object_refresh_policies(user, obj, computers=None)
