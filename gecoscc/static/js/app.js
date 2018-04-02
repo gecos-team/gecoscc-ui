@@ -844,6 +844,9 @@ var App;
             App.showAlert('warning', result.message);
         });
         
+        App.instances.message_manager.bind('socktail', function(result) {
+             $("#watchlog").append(result.logdata);
+        });
         $(window).on('beforeunload', function () {
             App.instances.message_manager.silent_disconnect();
         });

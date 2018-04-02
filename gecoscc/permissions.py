@@ -21,6 +21,7 @@ from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, 
 
 import time
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -222,7 +223,7 @@ class InternalAccessFactory(object):
         
         # Check if the remote IP address belongs to a GECOSCC server
         for server in server_list:
-            if server['address'] == remote_addr:
+            if socket.gethostbyname(server['address']) == remote_addr:
                 logger.debug('InternalAccessFactory: access allowed for GECOS CC server: %s'%(server['name']))
                 remember(self.request, server['name'])
                 return [(Allow, Everyone, 'view')]      

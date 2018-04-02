@@ -1,14 +1,14 @@
 # Translations template for gecoscc.
-# Copyright (C) 2017 ORGANIZATION
+# Copyright (C) 2018 ORGANIZATION
 # This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2017.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.2.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-12-17 21:12+0100\n"
+"POT-Creation-Date: 2018-03-08 16:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,21 +219,21 @@ msgstr ""
 msgid "Only the super admin can delete this object"
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:100
+#: gecoscc/static/js/policies-form-generator.js:102
 msgid "This is an auto-reverting policy."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:101
+#: gecoscc/static/js/policies-form-generator.js:103
 msgid ""
 "Any configuration element removed from the form will be inmediatly removed "
 "from the corresponding workstations."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:147
+#: gecoscc/static/js/policies-form-generator.js:149
 msgid "Policy successfully saved."
 msgstr ""
 
-#: gecoscc/static/js/policies-form-generator.js:172
+#: gecoscc/static/js/policies-form-generator.js:174
 msgid "Policy successfully deleted."
 msgstr ""
 

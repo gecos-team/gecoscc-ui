@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2018-04-02 12:55+0200\n"
+"POT-Creation-Date: 2018-03-08 16:54+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:66 gecoscc/forms.py:138 gecoscc/forms.py:348
+#: gecoscc/forms.py:66 gecoscc/forms.py:138 gecoscc/forms.py:286
 #: gecoscc/templates/login.jinja2:31 gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr "Enviar"
@@ -45,347 +45,343 @@ msgstr "Añadir otra"
 msgid "Variables updated successfully"
 msgstr "Variables actualizadas con éxito"
 
-#: gecoscc/forms.py:299 gecoscc/forms.py:302
-msgid "There was an error downloading zip file"
-msgstr ""
+#: gecoscc/forms.py:268
+msgid "here"
+msgstr "aquí"
 
-#: gecoscc/forms.py:305
+#: gecoscc/forms.py:269
 #, python-format
-msgid "File is not a zip file: %s"
-msgstr ""
+msgid "Update log. %s"
+msgstr "Log de actualización. %s"
 
-#: gecoscc/forms.py:309
+#: gecoscc/forms.py:273
 #, python-format
 msgid "Permission denied: %s"
 msgstr "Problemas de permisos para crear carpeta: %s"
 
-#: gecoscc/forms.py:312
+#: gecoscc/forms.py:275 gecoscc/forms.py:280
 msgid ""
-"There was an error attempting to upload the cookbook. Please contact an "
+"There was an error attempting to upload an update. Please contact an "
 "administrator"
 msgstr ""
 "Hubo un problema al subir el archivo de políticas. Por favor, contacte "
 "con un administrador."
 
-#: gecoscc/forms.py:316
-msgid "No such file or directory: metadata.rb"
-msgstr ""
-
-#: gecoscc/forms.py:320
-msgid "No cookbook name or version found in metadata.rb"
-msgstr ""
-"No se encuentra el nombre o versión del archivo de políticas en "
-"metadata.rb"
-
-#: gecoscc/forms.py:331 gecoscc/views/admins.py:228
-msgid "here"
-msgstr "aquí"
-
-#: gecoscc/forms.py:332
-#, python-format
-msgid "Upload cookbook enqueue. Visit logbook %s"
-msgstr ""
-"Orden de subida e importación de archivo de políticas pendiente. Visite "
-"bitácora %s"
-
-#: gecoscc/forms.py:341
-msgid "Restore cookbook."
-msgstr "Restaurar archivo de políticas"
-
-#: gecoscc/forms.py:359
+#: gecoscc/forms.py:297
 msgid "Maintenance message was deleted successfully."
 msgstr "Mensaje de mantenimiento eliminado con éxito"
 
-#: gecoscc/forms.py:372
+#: gecoscc/forms.py:310
 msgid "Maintenance settings saved successfully."
 msgstr "Configuración modificada con éxito"
 
-#: gecoscc/models.py:96
+#: gecoscc/models.py:100
 msgid "There is some object with this value: ${val}"
 msgstr "Hay algún objeto con este valor: ${val}"
 
-#: gecoscc/models.py:142
+#: gecoscc/models.py:146
 msgid "Only lowercase letters, numbers or dots"
 msgstr "Solo letras minúsculas, números o puntos"
 
-#: gecoscc/models.py:163
+#: gecoscc/models.py:167
 msgid "The passwords do not match"
 msgstr "Las contraseñas con coinciden"
 
-#: gecoscc/models.py:227 gecoscc/templates/bb-repository.html:37
+#: gecoscc/models.py:231 gecoscc/templates/bb-repository.html:37
 msgid "Key"
 msgstr "Clave"
 
-#: gecoscc/models.py:231
+#: gecoscc/models.py:235
 msgid "Value"
 msgstr "Valor"
 
-#: gecoscc/models.py:235 gecoscc/templates/bb-computer.html:71
+#: gecoscc/models.py:239 gecoscc/templates/bb-computer.html:71
 #: gecoscc/templates/bb-computer.html:181 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/reports.py:94
 msgid "Type"
 msgstr "Tipo"
 
-#: gecoscc/models.py:242 gecoscc/templates/bb-user.html:41
+#: gecoscc/models.py:246 gecoscc/templates/bb-user.html:41
 #: gecoscc/templates/admins/list.jinja2:33
 #: gecoscc/templates/admins/maintenance.jinja2:22 gecoscc/views/reports.py:80
 msgid "First name"
 msgstr "Nombre"
 
-#: gecoscc/models.py:246 gecoscc/templates/bb-user.html:45
+#: gecoscc/models.py:250 gecoscc/templates/bb-user.html:45
 #: gecoscc/templates/admins/list.jinja2:34
 #: gecoscc/templates/admins/maintenance.jinja2:23 gecoscc/views/reports.py:81
 msgid "Last name"
 msgstr "Apellidos"
 
-#: gecoscc/models.py:341 gecoscc/templates/bb-user.html:37
+#: gecoscc/models.py:345 gecoscc/templates/bb-user.html:37
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/templates/admins/maintenance.jinja2:20 gecoscc/views/reports.py:79
 msgid "Username"
 msgstr "Nombre de usuario"
 
-#: gecoscc/models.py:347 gecoscc/templates/login.jinja2:29
+#: gecoscc/models.py:351 gecoscc/templates/login.jinja2:29
 msgid "Password"
 msgstr "Contraseña"
 
-#: gecoscc/models.py:352
+#: gecoscc/models.py:356
 msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
-#: gecoscc/models.py:356 gecoscc/templates/bb-user.html:51
+#: gecoscc/models.py:360 gecoscc/templates/bb-user.html:51
 #: gecoscc/views/reports.py:82
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: gecoscc/models.py:364
+#: gecoscc/models.py:368
 msgid "Navigation tree page size:"
 msgstr "Tamaño de página del árbol de navegación:"
 
-#: gecoscc/models.py:369
+#: gecoscc/models.py:373
 msgid "Policies list page size:"
 msgstr "Tamaño de página de la lista de políticas:"
 
-#: gecoscc/models.py:374
+#: gecoscc/models.py:378
 msgid "Actions list page size:"
 msgstr "Tamaño de página de la lista de acciones:"
 
-#: gecoscc/models.py:379
+#: gecoscc/models.py:383
 msgid "Group nodes list page size:"
 msgstr "Tamaño de página de la lista de nodos que pertenecen a un grupo:"
 
-#: gecoscc/models.py:386
+#: gecoscc/models.py:390
+msgid "There was a problem with your submission"
+msgstr "Ha ocurrido un problema al intentar guardar los datos"
+
+#: gecoscc/models.py:391
 msgid "There is a user with this email: ${val}"
 msgstr "Hay un usuario con este correo electrónico: ${val}"
 
-#: gecoscc/models.py:387
+#: gecoscc/models.py:392
 msgid "There is a user with this username: ${val}"
 msgstr "Hay un usuario con este nombre de usuario: ${val}"
 
-#: gecoscc/models.py:392
+#: gecoscc/models.py:397
 msgid "This user can manage workstations under these Organizational Units"
 msgstr "Este usuario puede administrar puestos en estas unidades organizativas"
 
-#: gecoscc/models.py:395
+#: gecoscc/models.py:400
 msgid "Organizational Units available to register workstations"
 msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
 
-#: gecoscc/models.py:401
-msgid "Cookbook ZIP"
-msgstr "Archivo de políticas (.zip)"
-
-#: gecoscc/models.py:405
-msgid "URL download"
-msgstr "URL de descarga"
-
-#: gecoscc/models.py:413
-msgid "Restore previous version of cookbook"
-msgstr "Eliminar la última versión del archivo de politicas"
-
 #: gecoscc/models.py:420
-msgid "Users will be warned with this message"
-msgstr "Se avisará a los usuarios con este mensaje"
+msgid "The uploaded file is not followed naming convention"
+msgstr "El fichero no cumple con la nomenclatura establecida"
 
 #: gecoscc/models.py:429
-msgid "uri"
-msgstr "uri"
+msgid "No valid update sequence. Must be: {$val}"
+msgstr "Secuencia no válida: Debe ser: {$val}"
 
-#: gecoscc/models.py:432
-msgid "base"
-msgstr ""
-
-#: gecoscc/models.py:435
-msgid "base group"
-msgstr ""
-
-#: gecoscc/models.py:438
-msgid "binddn"
-msgstr ""
-
-#: gecoscc/models.py:441
-msgid "bindpwd"
-msgstr ""
-
-#: gecoscc/models.py:447
-msgid "FQDN"
+#: gecoscc/models.py:445
+msgid "This name already exists"
 msgstr ""
 
 #: gecoscc/models.py:449
-msgid "WORKGROUP"
+msgid "No valid zip file structure"
+msgstr "Estructura de zip no válida."
+
+#: gecoscc/models.py:472
+msgid "Any script out of range (00-99)"
+msgstr "Algún script fuera de rango (00-99)"
+
+#: gecoscc/models.py:595
+msgid "Update ZIP"
+msgstr "Fichero de actualización (ZIP)"
+
+#: gecoscc/models.py:605
+msgid "URL download"
+msgstr "URL de descarga"
+
+#: gecoscc/models.py:613
+msgid "Users will be warned with this message"
+msgstr "Se avisará a los usuarios con este mensaje"
+
+#: gecoscc/models.py:622
+msgid "uri"
+msgstr "uri"
+
+#: gecoscc/models.py:625
+msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:455
-msgid "SSSD conf"
+#: gecoscc/models.py:628
+msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:458
-msgid "KRB5 conf"
-msgstr ""
-
-#: gecoscc/models.py:461
-msgid "SMB conf"
-msgstr ""
-
-#: gecoscc/models.py:464
-msgid "PAM conf"
-msgstr ""
-
-#: gecoscc/models.py:473
-msgid "URI ntp"
-msgstr ""
-
-#: gecoscc/models.py:475
-msgid "Auth type"
-msgstr "Tipo de autenticación"
-
-#: gecoscc/models.py:479
-msgid "Specific conf"
-msgstr "Configuración específica"
-
-#: gecoscc/models.py:481
-msgid "Auth LDAP"
-msgstr "Autenticación LDAP"
-
-#: gecoscc/models.py:482 gecoscc/models.py:483
-msgid "Auth Active directory"
-msgstr "Autenticación Active directory"
-
-#: gecoscc/models.py:526 gecoscc/templates/bb-computer.html:73
-msgid "Desktop"
-msgstr "Sobremesa"
-
-#: gecoscc/models.py:527 gecoscc/templates/bb-computer.html:74
-msgid "Laptop"
-msgstr "Portátil"
-
-#: gecoscc/models.py:528 gecoscc/templates/bb-computer.html:75
-msgid "Netbook"
-msgstr ""
-
-#: gecoscc/models.py:529 gecoscc/templates/bb-computer.html:76
-msgid "Tablet"
-msgstr "Tableta"
-
-#: gecoscc/models.py:571
-msgid "Laser"
-msgstr "Láser"
-
-#: gecoscc/models.py:572
-msgid "Ink"
-msgstr "Tinta"
-
-#: gecoscc/models.py:573
-msgid "Dot matrix"
-msgstr "Matricial"
-
-#: gecoscc/models.py:577
-msgid "Network"
-msgstr "En red"
-
-#: gecoscc/models.py:578
-msgid "Local"
-msgstr "Local"
-
-#: gecoscc/models.py:582
-msgid "Default"
-msgstr ""
-
-#: gecoscc/models.py:583
-msgid "Authenticated"
-msgstr ""
-
-#: gecoscc/models.py:584
-msgid "Kerberos-AD"
-msgstr ""
-
-#: gecoscc/models.py:632
-msgid "FTP"
-msgstr ""
-
-#: gecoscc/models.py:633
-msgid "SSHFS"
+#: gecoscc/models.py:631
+msgid "binddn"
 msgstr ""
 
 #: gecoscc/models.py:634
-msgid "NFS"
-msgstr ""
-
-#: gecoscc/models.py:635
-msgid "SAMBA v3"
-msgstr ""
-
-#: gecoscc/models.py:636
-msgid "SAMBA v4"
+msgid "bindpwd"
 msgstr ""
 
 #: gecoscc/models.py:640
+msgid "FQDN"
+msgstr ""
+
+#: gecoscc/models.py:642
+msgid "WORKGROUP"
+msgstr ""
+
+#: gecoscc/models.py:648
+msgid "SSSD conf"
+msgstr ""
+
+#: gecoscc/models.py:651
+msgid "KRB5 conf"
+msgstr ""
+
+#: gecoscc/models.py:654
+msgid "SMB conf"
+msgstr ""
+
+#: gecoscc/models.py:657
+msgid "PAM conf"
+msgstr ""
+
+#: gecoscc/models.py:666
+msgid "URI ntp"
+msgstr ""
+
+#: gecoscc/models.py:668
+msgid "Auth type"
+msgstr "Tipo de autenticación"
+
+#: gecoscc/models.py:672
+msgid "Specific conf"
+msgstr "Configuración específica"
+
+#: gecoscc/models.py:674
+msgid "Auth LDAP"
+msgstr "Autenticación LDAP"
+
+#: gecoscc/models.py:675 gecoscc/models.py:676
+msgid "Auth Active directory"
+msgstr "Autenticación Active directory"
+
+#: gecoscc/models.py:719 gecoscc/templates/bb-computer.html:73
+msgid "Desktop"
+msgstr "Sobremesa"
+
+#: gecoscc/models.py:720 gecoscc/templates/bb-computer.html:74
+msgid "Laptop"
+msgstr "Portátil"
+
+#: gecoscc/models.py:721 gecoscc/templates/bb-computer.html:75
+msgid "Netbook"
+msgstr ""
+
+#: gecoscc/models.py:722 gecoscc/templates/bb-computer.html:76
+msgid "Tablet"
+msgstr "Tableta"
+
+#: gecoscc/models.py:764
+msgid "Laser"
+msgstr "Láser"
+
+#: gecoscc/models.py:765
+msgid "Ink"
+msgstr "Tinta"
+
+#: gecoscc/models.py:766
+msgid "Dot matrix"
+msgstr "Matricial"
+
+#: gecoscc/models.py:770
+msgid "Network"
+msgstr "En red"
+
+#: gecoscc/models.py:771
+msgid "Local"
+msgstr "Local"
+
+#: gecoscc/models.py:775
+msgid "Default"
+msgstr ""
+
+#: gecoscc/models.py:776
+msgid "Authenticated"
+msgstr ""
+
+#: gecoscc/models.py:777
+msgid "Kerberos-AD"
+msgstr ""
+
+#: gecoscc/models.py:825
+msgid "FTP"
+msgstr ""
+
+#: gecoscc/models.py:826
+msgid "SSHFS"
+msgstr ""
+
+#: gecoscc/models.py:827
+msgid "NFS"
+msgstr ""
+
+#: gecoscc/models.py:828
+msgid "SAMBA v3"
+msgstr ""
+
+#: gecoscc/models.py:829
+msgid "SAMBA v4"
+msgstr ""
+
+#: gecoscc/models.py:833
 msgid "System mounts (fstab)"
 msgstr "En el arranque del sistema (fstab)"
 
-#: gecoscc/models.py:641
+#: gecoscc/models.py:834
 msgid "User space mounts (gvfs)"
 msgstr "En espacio de usuario (gvfs)"
 
-#: gecoscc/models.py:681
+#: gecoscc/models.py:874
 msgid "Processing"
 msgstr "Procesando"
 
-#: gecoscc/models.py:684
+#: gecoscc/models.py:877
 msgid "Applying changes"
 msgstr "Aplicando cambios"
 
-#: gecoscc/models.py:687
+#: gecoscc/models.py:880
 msgid "Changes applied"
 msgstr "Cambios aplicados"
 
-#: gecoscc/models.py:690 gecoscc/models.py:693
+#: gecoscc/models.py:883 gecoscc/models.py:886
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
-#: gecoscc/tasks.py:1415 gecoscc/tasks.py:1609 gecoscc/tasks.py:1922
+#: gecoscc/tasks.py:1405 gecoscc/tasks.py:1597 gecoscc/tasks.py:1741
 msgid "type"
 msgstr "Tipo"
 
-#: gecoscc/tasks.py:1474 gecoscc/tasks.py:1767 gecoscc/tasks.py:2207
+#: gecoscc/tasks.py:1464 gecoscc/tasks.py:1950
 #, python-format
 msgid "Pending: %d"
 msgstr "Pendientes: %d"
 
-#: gecoscc/tasks.py:1609 gecoscc/tasks.py:1922
+#: gecoscc/tasks.py:1597 gecoscc/tasks.py:1741
 msgid "deleted"
 msgstr "Borrado"
 
-#: gecoscc/tasks.py:2095
-msgid "policy uploaded"
-msgstr "Política subida"
+#: gecoscc/utils.py:2285
+msgid "No permission to execute this function from script"
+msgstr ""
 
-#: gecoscc/tasks.py:2097
-msgid "policy uploading..."
-msgstr "Actualizando política..."
+#: gecoscc/utils.py:2301 gecoscc/utils.py:2328 gecoscc/utils.py:2353
+#: gecoscc/utils.py:2393 gecoscc/utils.py:2428
+msgid "Missing required arguments"
+msgstr ""
 
-#: gecoscc/tasks.py:2144
+#: gecoscc/utils.py:2329 gecoscc/utils.py:2354
 #, python-format
-msgid "Cookbook uploaded successfully %s %s"
-msgstr "Archivo de políticas actualizado con éxito %s %s"
+msgid "Directory %s can't be found."
+msgstr ""
 
 #: gecoscc/templates/base.jinja2:4 gecoscc/templates/base_navbar.jinja2:16
 msgid "Control Center"
@@ -450,8 +446,6 @@ msgstr "Inicio"
 #: gecoscc/templates/admins/maintenance.jinja2:11
 #: gecoscc/templates/admins/ou_manage.jinja2:8
 #: gecoscc/templates/admins/ou_manage.jinja2:12
-#: gecoscc/templates/admins/upload.jinja2:8
-#: gecoscc/templates/admins/upload.jinja2:12
 #: gecoscc/templates/admins/variables.jinja2:8
 #: gecoscc/templates/admins/variables.jinja2:12
 msgid "Administrators"
@@ -490,8 +484,14 @@ msgid "Set variables"
 msgstr "Establecer variables"
 
 #: gecoscc/templates/base_navbar.jinja2:54
-msgid "Uploads"
-msgstr "Subir Archivo de políticas"
+#: gecoscc/templates/admins/tail.jinja2:11
+#: gecoscc/templates/admins/tail.jinja2:15
+#: gecoscc/templates/admins/updates.jinja2:8
+#: gecoscc/templates/admins/updates.jinja2:11
+#: gecoscc/templates/admins/updates_add.jinja2:8
+#: gecoscc/templates/admins/updates_add.jinja2:12
+msgid "Updates"
+msgstr "Actualizaciones"
 
 #: gecoscc/templates/base_navbar.jinja2:59
 #: gecoscc/templates/admins/maintenance.jinja2:8
@@ -517,6 +517,7 @@ msgstr "Buscar por"
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
 #: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
+#: gecoscc/templates/admins/updates.jinja2:32
 #: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
 msgid "Name"
 msgstr "Nombre"
@@ -527,7 +528,8 @@ msgstr "Dirección IP"
 
 #: gecoscc/templates/base_tree.jinja2:43 gecoscc/templates/bb-jobs.html:24
 #: gecoscc/templates/bb-jobs.html:66 gecoscc/templates/bb-new-element.html:12
-#: gecoscc/templates/bb-user.html:12
+#: gecoscc/templates/bb-user.html:12 gecoscc/templates/admins/updates.jinja2:56
+#: gecoscc/templates/admins/updates.jinja2:94
 msgid "User"
 msgstr "Usuario"
 
@@ -608,7 +610,7 @@ msgstr ""
 "perdido. Por favor realiza tus cambios de nuevo."
 
 #: gecoscc/templates/bb-change-alert.html:24
-#: gecoscc/templates/bb-staging-report.html:32
+#: gecoscc/templates/bb-staging-report.html:30
 #: gecoscc/templates/server/status.jinja2:53
 msgid "Close"
 msgstr "Cerrar"
@@ -934,7 +936,8 @@ msgstr "Archivar Tareas"
 msgid "Backstrack"
 msgstr "Volver"
 
-#: gecoscc/templates/bb-jobs.html:60
+#: gecoscc/templates/bb-jobs.html:60 gecoscc/templates/admins/updates.jinja2:49
+#: gecoscc/templates/admins/updates.jinja2:87
 msgid "Date"
 msgstr "Fecha"
 
@@ -942,7 +945,7 @@ msgstr "Fecha"
 msgid "Policy"
 msgstr "Política"
 
-#: gecoscc/templates/bb-jobs.html:75 gecoscc/templates/admins/restore.jinja2:17
+#: gecoscc/templates/bb-jobs.html:75
 msgid "Action"
 msgstr "Acciones"
 
@@ -1028,7 +1031,6 @@ msgid "Actions"
 msgstr "Acciones"
 
 #: gecoscc/templates/bb-policies-list.html:35
-#: gecoscc/templates/admins/restore.jinja2:31
 msgid "Remove"
 msgstr "Eliminar"
 
@@ -1037,6 +1039,8 @@ msgid "Edit"
 msgstr "Editar"
 
 #: gecoscc/templates/bb-policies-list.html:42
+#: gecoscc/templates/admins/updates.jinja2:63
+#: gecoscc/templates/admins/updates.jinja2:101
 msgid "View"
 msgstr "Ver"
 
@@ -1051,11 +1055,6 @@ msgstr "Si tu quieres añadir una política, por favor encola los cambios"
 #: gecoscc/templates/bb-policies-list.html:64
 msgid "Add a policy to this resource"
 msgstr "Añade una política a este recurso"
-
-#: gecoscc/templates/bb-policies-list.html:69
-#: gecoscc/templates/bb-staging-report.html:19
-msgid "Refresh policies"
-msgstr "Refrescar políticas"
 
 #: gecoscc/templates/bb-policy.html:9
 msgid "Configure policy:"
@@ -1143,7 +1142,7 @@ msgid "In progress"
 msgstr "En progreso"
 
 #: gecoscc/templates/bb-staging-button.html:8
-#: gecoscc/templates/bb-staging-report.html:33
+#: gecoscc/templates/bb-staging-report.html:31
 msgid "Apply changes"
 msgstr "Aplicar cambios"
 
@@ -1163,11 +1162,11 @@ msgstr "Movido"
 msgid "Modified"
 msgstr "Modificado"
 
-#: gecoscc/templates/bb-staging-report.html:21
+#: gecoscc/templates/bb-staging-report.html:19
 msgid "Added"
 msgstr "Añadido"
 
-#: gecoscc/templates/bb-staging-report.html:24
+#: gecoscc/templates/bb-staging-report.html:22
 msgid "Discard changes"
 msgstr "Descartar cambios"
 
@@ -1327,27 +1326,64 @@ msgstr "¿Estás seguro de que quieres quitar el modo mantenimiento?"
 msgid "Select an Organisational Unit"
 msgstr "Selecciona una Unidad Organizativa"
 
-#: gecoscc/templates/admins/restore.jinja2:9
-msgid "Restore previous version of Cookbook"
-msgstr "Eliminar la última versión del archivo de politicas"
+#: gecoscc/templates/admins/tail.jinja2:17
+msgid "Online"
+msgstr "Online"
 
-#: gecoscc/templates/admins/restore.jinja2:15
-msgid "Cookbook Name"
-msgstr "Nombre del archivo de políticas"
+#: gecoscc/templates/admins/updates.jinja2:18
+msgid "Search for filename"
+msgstr "Buscar por nombre"
 
-#: gecoscc/templates/admins/restore.jinja2:16
-msgid "Version"
-msgstr ""
+#: gecoscc/templates/admins/updates.jinja2:31
+msgid "Sequence"
+msgstr "Secuencia"
 
-#: gecoscc/templates/admins/restore.jinja2:50
-msgid "Are you sure that you want to delete this cookbook version?"
-msgstr "¿Estás seguro de que quieres borrar este archivo de políticas?"
+#: gecoscc/templates/admins/updates.jinja2:33
+msgid "Update Log"
+msgstr "Log actualización"
 
-#: gecoscc/templates/admins/upload.jinja2:14
-msgid "Upload Cookbook"
-msgstr "Subir Archivo de política"
+#: gecoscc/templates/admins/updates.jinja2:34
+msgid "Rollback Log"
+msgstr "Log de deshacer"
 
-#: gecoscc/templates/admins/upload.jinja2:24
+#: gecoscc/templates/admins/updates.jinja2:35
+msgid "Control File"
+msgstr "Fichero de Control"
+
+#: gecoscc/templates/admins/updates.jinja2:36
+msgid "State"
+msgstr "Estado"
+
+#: gecoscc/templates/admins/updates.jinja2:72
+#: gecoscc/templates/admins/updates.jinja2:110
+msgid "Download"
+msgstr "Descargar"
+
+#: gecoscc/templates/admins/updates.jinja2:120
+msgid "Rollback"
+msgstr "Deshacer"
+
+#: gecoscc/templates/admins/updates.jinja2:134
+msgid "Hover here"
+msgstr "Coloque el puntero del raton"
+
+#: gecoscc/templates/admins/updates.jinja2:143
+msgid "Updated finished unsuccessfully"
+msgstr "Actualización finalizada con errores"
+
+#: gecoscc/templates/admins/updates.jinja2:149
+msgid "Updated finished succesfully"
+msgstr "Actualización finalizada con éxito"
+
+#: gecoscc/templates/admins/updates.jinja2:162
+msgid "Execute update"
+msgstr "Ejecutar actualización"
+
+#: gecoscc/templates/admins/updates_add.jinja2:14
+msgid "Add update"
+msgstr "Cargar actualización"
+
+#: gecoscc/templates/admins/updates_add.jinja2:24
 msgid "Browser file or Download URL required."
 msgstr "Archivo o URL de descarga requerido"
 
@@ -1439,31 +1475,13 @@ msgstr ""
 msgid "Connections"
 msgstr "Última conexión"
 
-#: gecoscc/views/admins.py:153
+#: gecoscc/views/admins.py:200
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:155
+#: gecoscc/views/admins.py:202
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
-
-#: gecoscc/views/admins.py:201 gecoscc/views/admins.py:250
-msgid "Cookbook deleted unsuccessfully from chef"
-msgstr "Archivo de políticas borrado insatisfactoriamente de chef"
-
-#: gecoscc/views/admins.py:229
-#, python-format
-msgid "Cookbook deleted successfully. Visit logbook %s"
-msgstr "Archivo de políticas borrado con éxito. Visite bitácora %s"
-
-#: gecoscc/views/admins.py:243
-msgid "policy restored"
-msgstr "Política restaurada"
-
-#: gecoscc/views/admins.py:245
-#, python-format
-msgid "Cookbook deleted successfully %s"
-msgstr "Archivo de políticas borrado con éxito %s"
 
 #: gecoscc/views/portal.py:64 gecoscc/views/portal.py:70
 msgid "Please enter the correct username and password"
@@ -1583,4 +1601,94 @@ msgstr "Configuración modificada con éxito"
 
 #~ msgid "Nodes"
 #~ msgstr "Nodos"
+
+#~ msgid "Control file requirements not met"
+#~ msgstr "No se cumplen con los requisitos especificados en el fichero de control"
+
+#~ msgid "No valid update sequence. Must be: ${val}"
+#~ msgstr ""
+
+#~ msgid "Path"
+#~ msgstr "Ruta"
+
+#~ msgid "Add upload"
+#~ msgstr ""
+
+#~ msgid "There was an error downloading zip file"
+#~ msgstr "Hubo un error descargando el fichero ZIP"
+
+#~ msgid "File is not a zip file: %s"
+#~ msgstr "El fichero no es un ZIP"
+
+#~ msgid ""
+#~ "There was an error attempting to "
+#~ "upload the cookbook. Please contact an"
+#~ " administrator"
+#~ msgstr ""
+#~ "Hubo un problema al subir el "
+#~ "archivo de políticas. Por favor, "
+#~ "contacte con un administrador."
+
+#~ msgid "No such file or directory: metadata.rb"
+#~ msgstr "No existe el fichero o directorio: metadata.rb"
+
+#~ msgid "No cookbook name or version found in metadata.rb"
+#~ msgstr ""
+#~ "No se encuentra el nombre o "
+#~ "versión del archivo de políticas en "
+#~ "metadata.rb"
+
+#~ msgid "Upload cookbook enqueue. Visit logbook %s"
+#~ msgstr ""
+#~ "Orden de subida e importación de "
+#~ "archivo de políticas pendiente. Visite "
+#~ "bitácora %s"
+
+#~ msgid "Restore cookbook."
+#~ msgstr "Restaurar archivo de políticas"
+
+#~ msgid "Cookbook ZIP"
+#~ msgstr "Archivo de políticas (.zip)"
+
+#~ msgid "Restore previous version of cookbook"
+#~ msgstr "Eliminar la última versión del archivo de politicas"
+
+#~ msgid "policy uploaded"
+#~ msgstr "Política subida"
+
+#~ msgid "policy uploading..."
+#~ msgstr "Actualizando política..."
+
+#~ msgid "Cookbook uploaded successfully %s %s"
+#~ msgstr "Archivo de políticas actualizado con éxito %s %s"
+
+#~ msgid "Uploads"
+#~ msgstr "Subir Archivo de políticas"
+
+#~ msgid "Restore previous version of Cookbook"
+#~ msgstr "Eliminar la última versión del archivo de politicas"
+
+#~ msgid "Cookbook Name"
+#~ msgstr "Nombre del archivo de políticas"
+
+#~ msgid "Version"
+#~ msgstr ""
+
+#~ msgid "Are you sure that you want to delete this cookbook version?"
+#~ msgstr "¿Estás seguro de que quieres borrar este archivo de políticas?"
+
+#~ msgid "Upload Cookbook"
+#~ msgstr "Subir Archivo de política"
+
+#~ msgid "Cookbook deleted unsuccessfully from chef"
+#~ msgstr "Archivo de políticas borrado insatisfactoriamente de chef"
+
+#~ msgid "Cookbook deleted successfully. Visit logbook %s"
+#~ msgstr "Archivo de políticas borrado con éxito. Visite bitácora %s"
+
+#~ msgid "policy restored"
+#~ msgstr "Política restaurada"
+
+#~ msgid "Cookbook deleted successfully %s"
+#~ msgstr "Archivo de políticas borrado con éxito %s"
 
