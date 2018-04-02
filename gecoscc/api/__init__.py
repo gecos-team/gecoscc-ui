@@ -26,7 +26,8 @@ from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
                                  is_gecos_master_or_403,
                                  master_policy_no_updated_or_403)
 from gecoscc.socks import invalidate_change, invalidate_delete
-from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
+from gecoscc.tasks import (object_created, object_changed, object_deleted, 
+                           object_moved, object_refresh_policies)
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
@@ -348,6 +349,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         object_deleted.delay(self.request.user, self.objtype, obj)
         invalidate_delete(self.request, obj)
 
+    def notify_refresh_policies(self, obj):
+        object_refresh_policies.delay(self.request.user, self.objtype, obj)
+        invalidate_change(self.request, obj)
+
+
+
     def put(self):
         obj = self.request.validated
         oid = self.request.matchdict['oid']
@@ -400,6 +407,35 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             obj['inheritance'] = inheritance_backup
         
         return obj
+
+
+
+    def refresh_policies(self):
+        obj = self.request.validated
+        oid = self.request.matchdict['oid']
+
+        if oid != str(obj[self.key]):
+            raise HTTPBadRequest('The object id is not the same that the id in'
+                                 ' the url')
+
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request, self.collection, obj)
+            is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
+            master_policy_no_updated_or_403(self.request, self.collection, obj)
+
+        obj_filter = self.get_oid_filter(oid)
+        obj_filter.update(self.mongo_filter)
+
+        real_obj = self.collection.find_one(obj_filter)
+        if not real_obj:
+            raise HTTPNotFound()
+            
+        self.notify_refresh_policies(real_obj)
+        
+        obj = self.parse_item(real_obj)
+        
+        return obj
+
 
     def delete(self):
 

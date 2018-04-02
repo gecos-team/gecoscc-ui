@@ -15,7 +15,9 @@
                                 <span class="label label-warning">{{ gettext('Moved') }}</span>
                             <% } else if (_.contains(modified, model.id)) { %>
                                 <span class="label label-primary">{{ gettext('Modified') }}</span>
-                            <% } else { %>
+                            <% } else if (_.contains(refreshed, model.id)) { %>
+                                <span class="label label-primary">{{ gettext('Refresh policies') }}</span>
+                            <% } else { %>                            
                                 <span class="label label-info">{{ gettext('Added') }}</span>
                             <% } %>
                             <%= model.name %>

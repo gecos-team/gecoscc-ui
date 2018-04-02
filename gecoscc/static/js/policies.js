@@ -262,7 +262,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click table#policies-table button.btn-danger": "remove",
             "click table#policies-table button.btn-default": "edit",
             "click table#policies-table button.btn-info": "edit",
-            "click button#add-policy": "add"
+            "click button#add-policy": "add",
+            "click button#refresh-policies": "refresh"
         },
 
         getPolicyUrl: function (id) {
@@ -293,6 +294,20 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         add: function (evt) {
             App.instances.router.navigate(this.getPolicyUrl(), { trigger: true });
         },
+        
+        refresh: function (evt) {
+            // Refresh policies of a computer
+            var that = this,
+                promise;
+
+            promise = this.resource.refreshWithToken();
+            promise.fail(function (response) {
+                that._showErrorMessage(response);
+            });
+
+            App.instances.staging.toRefreshPolicies.push(this.resource.get("id"));
+        },
+        
         serializeData: function () {
             return {items: this.collection.toJSON(),
                     resource: this.resource};

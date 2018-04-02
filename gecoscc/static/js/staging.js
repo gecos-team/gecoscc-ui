@@ -23,6 +23,7 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
             this.toDelete = [];
             this.toMove = [];
             this.toModify = [];
+            this.toRefreshPolicies = [];
             this.listenTo(App, 'action_change', this.onAction);
             this.listenTo(App, 'action_delete', this.onAction);
             this.token =  this.createToken();
@@ -119,6 +120,9 @@ App.module("Staging.Models", function (Models, App, Backbone, Marionette, $, _) 
                 that.toModify = _.reject(that.toModify, function (objId) {
                     return objId === id;
                 });
+                that.toRefreshPolicies = _.reject(that.toRefreshPolicies, function (objId) {
+                    return objId === id;
+                });                
                 that.remove(model, options); // Actually remove it from the collection
 
                 if (!options.avoidRestore) {
@@ -197,7 +201,8 @@ App.module("Staging.Views", function (Views, App, Backbone, Marionette, $, _) {
                 items: this.collection.toJSON(),
                 deletions: this.collection.toDelete,
                 moves: this.collection.toMove,
-                modified: this.collection.toModify
+                modified: this.collection.toModify,
+                refreshed: this.collection.toRefreshPolicies
             };
         },
 
