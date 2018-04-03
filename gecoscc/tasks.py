@@ -1741,7 +1741,6 @@ class ChefTask(Task):
                         comptrs.append(obj['_id'])
                         self.db.nodes.update({'_id': usr['_id']}, {'$set': {'computers': comptrs}})
                         add_computer_to_user(obj['_id'], usr['_id'])
-                        invalidate_change(self.request, user)
     
                 # Sudoers
                 if u['sudo']:
@@ -1756,7 +1755,7 @@ class ChefTask(Task):
         # Clean inheritance information
         self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
 
-        # Ser processing jobs as finished
+        # Set processing jobs as finished
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
         processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
         for job in processing_jobs:
