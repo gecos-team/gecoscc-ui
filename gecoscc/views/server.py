@@ -18,18 +18,14 @@ import sys
 import traceback
 import socket
 import os
+import re
 
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
-from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
 
-from deform import ValidationFailure
-
-from gecoscc import messages
 from gecoscc.i18n import gettext as _
-from gecoscc.utils import getURLComponents
+from gecoscc.utils import getURLComponents, get_chef_api
 
 from xmlrpclib import ServerProxy, ProtocolError
 
@@ -83,7 +79,7 @@ def parseProcFile(filename_):
         infos[k.strip()] = v.strip()
     
     return infos
-	
+
 def getCPUInfos():
     infos = parseProcFile("/proc/cpuinfo")
     
@@ -92,11 +88,11 @@ def getCPUInfos():
         nb = int(infos["processor"]) + 1
         
     except Exception, e:
-        Logger.error("getCPUInfos %s"%(str(e)))
+        logger.error("getCPUInfos %s"%(str(e)))
         return (1, "Unknown")
     
     return (nb, name)
-	
+
 def _getMeminfo():
     try:
         fd = file("/proc/meminfo", "r")
@@ -121,7 +117,7 @@ def _getMeminfo():
         infos[k.strip()] = v.strip()
     
     return infos
-	
+
 
 def getRAMUsed():
     infos = _getMeminfo()
@@ -132,12 +128,12 @@ def getRAMUsed():
         cached = int(infos["Cached"])
         buffers = int(infos["Buffers"])
     except Exception, e:
-        Logger.warn("getRAMUsed: %s"%(str(e)))
+        logger.warn("getRAMUsed: %s"%(str(e)))
         return 0.0
     
     return total - (free + cached + buffers)
-	
-	
+
+
 
 def getRAMTotal():
     infos = _getMeminfo()
@@ -146,7 +142,7 @@ def getRAMTotal():
         total = int(infos["MemTotal"])
     
     except Exception, e:
-        Logger.warn("getRAMTotal: %s"%(str(e)))
+        logger.warn("getRAMTotal: %s"%(str(e)))
         return 0.0
     
     return total
@@ -320,7 +316,7 @@ def _remove_empty(array):
 def internal_server_connections(context, request):
     # Prepare the connection filter
     settings = get_current_registry().settings
-    filter = []
+    cfilter = []
     
     chef_url = settings.get('chef.url')
     chef_url_comp = getURLComponents(chef_url)
@@ -330,7 +326,7 @@ def internal_server_connections(context, request):
     chef_filter['remote_host'] = socket.gethostbyname(chef_url_comp['host_name'])
     chef_filter['remote_port'] = chef_url_comp['port']
     logger.debug("internal_server_connections: chef filter: %s:%s"%(chef_filter['remote_host'], chef_filter['remote_port']))
-    filter.append(chef_filter)
+    cfilter.append(chef_filter)
 
     mongo_uri = settings.get('mongo_uri')
     mongo_url_comp = getURLComponents(mongo_uri)
@@ -339,7 +335,7 @@ def internal_server_connections(context, request):
     mongo_filter['remote_host'] = socket.gethostbyname(mongo_url_comp['host_name'])
     mongo_filter['remote_port'] = mongo_url_comp['port']
     logger.debug("internal_server_connections: mongo filter: %s:%s"%(mongo_filter['remote_host'], mongo_filter['remote_port']))
-    filter.append(mongo_filter)
+    cfilter.append(mongo_filter)
     
     
     # Get the connection list of this server
@@ -374,7 +370,7 @@ def internal_server_connections(context, request):
             #uid = pwd.getpwuid(int(line_array[7]))[0]       # Get user from UID.
             #inode = line_array[9]                           # Need the inode to get process pid.
             
-            for f in filter:
+            for f in cfilter:
                 if r_host == f['remote_host'] and r_port == f['remote_port']:
                     connection = {}
                     connection['remote_service'] = f['name']
@@ -405,7 +401,8 @@ def server_status(context, request):
     if server_name:
         request.db.servers.remove({"name": server_name})
     
-
+    
+    # Calculate server status list
     server_list = request.db.servers.find().sort('name')
     server_status = []
     
@@ -427,6 +424,7 @@ def server_status(context, request):
             status['disk']['mountpoints'] = []
             status['disk']['total'] = 0
             status['disk']['used'] = 0
+            
         else:
             for mpt in status['disk']['mountpoints']:
                 factor = 1
@@ -453,10 +451,28 @@ def server_status(context, request):
             
         status['name'] = server['name']
         status['address'] = server['address']
-        
+        # Check if the address is actually an IP address
+        if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", 
+                        status['address']):
+            # Try to resolve the IP address
+            status['address'] = socket.gethostbyname(status['address'])
+            
         server_status.append(status)
 
-    return {'server_status': server_status}
+
+    # Get cookbook info
+    settings = get_current_registry().settings
+    api = get_chef_api(settings, request.user)
+    organization = 'default'
+
+    cookbook_info = []
+    try:
+        cookbook_info = api['/organizations/%s/cookbooks'%(organization)]
+
+    except Exception as e:
+        logger.error("server_status: error getting cookbook info: %s"%(str(e)))
+
+    return {'server_status': server_status, 'cookbook_info': cookbook_info}
 
 @view_config(route_name='server_connections', renderer='templates/server/connections.jinja2',
              permission='is_superuser')
@@ -472,8 +488,6 @@ def server_connections(context, request):
         logger.error("server_log: can't find server by server name: %s"%(server_name))
         return {'server_name': "ERROR: Unknown server", 'connections': []}
         
-    ip_address = server['address']
-    
     # Get the connections of the server
     connections = getServerConnections(server['address'])
 

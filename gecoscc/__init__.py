@@ -171,6 +171,8 @@ def auth_config(config):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
+def env_override(value, key):
+    return os.getenv(key, value)
 
 def jinja2_config(config):
     settings = config.registry.settings
@@ -250,6 +252,7 @@ def main(global_config, **settings):
 
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.globals["include_file"] = include_file
+    jinja2_env.filters['env_override'] = env_override
 
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings
