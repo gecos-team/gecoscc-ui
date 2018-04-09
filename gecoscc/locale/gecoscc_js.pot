@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: gecoscc 2.2.0\n"
+"Project-Id-Version: gecoscc 2.2.2\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-03-08 16:54+0100\n"
+"POT-Creation-Date: 2018-04-09 16:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,75 +17,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/static/js/app-utils.js:98
+#: gecoscc/static/js/app-utils.js:103
 msgid "Applying changes has failed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:108
+#: gecoscc/static/js/app-utils.js:113
 msgid "Something went wrong, please check errors and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:114
+#: gecoscc/static/js/app-utils.js:119
 msgid "Status"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:120 gecoscc/static/js/app-utils.js:126
-#: gecoscc/static/js/app-utils.js:140 gecoscc/static/js/app-utils.js:145
+#: gecoscc/static/js/app-utils.js:125 gecoscc/static/js/app-utils.js:131
+#: gecoscc/static/js/app-utils.js:145 gecoscc/static/js/app-utils.js:150
 msgid "Error in node: "
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:121 gecoscc/static/js/app-utils.js:140
+#: gecoscc/static/js/app-utils.js:126 gecoscc/static/js/app-utils.js:145
 msgid "Server response: "
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:127 gecoscc/static/js/app-utils.js:146
+#: gecoscc/static/js/app-utils.js:132 gecoscc/static/js/app-utils.js:151
 msgid "This node has been deleted by another administrator."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:173
+#: gecoscc/static/js/app-utils.js:178
 msgid "Object changed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:174
+#: gecoscc/static/js/app-utils.js:179
 msgid ""
 "Someone has changed this object while you were working on it, please reload "
 "before applying any changes."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:184
+#: gecoscc/static/js/app-utils.js:189
 msgid "Object deleted."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:185
+#: gecoscc/static/js/app-utils.js:190
 msgid "Someone has deleted this object while you were working on it"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:295
-msgid "Staging"
-msgstr ""
-
-#: gecoscc/static/js/app-utils.js:299
-msgid "Save"
-msgstr ""
-
-#: gecoscc/static/js/app-utils.js:299 gecoscc/static/js/tree-views-renderer.js:82
-msgid "Delete"
-msgstr ""
-
-#: gecoscc/static/js/app-utils.js:300
-msgid "Done"
-msgstr ""
-
-#: gecoscc/static/js/app-utils.js:315
+#: gecoscc/static/js/app-utils.js:302
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:316
+#: gecoscc/static/js/app-utils.js:303
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:422 gecoscc/static/js/ou.js:85
+#: gecoscc/static/js/app-utils.js:409 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:504
+msgid "Staging"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:508 gecoscc/static/js/tree-views-renderer.js:82
+msgid "Delete"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:510
+msgid "Save"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:512
+msgid "Refresh policies"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:514
+msgid "Done"
 msgstr ""
 
 #: gecoscc/static/js/app.js:511
@@ -237,11 +241,11 @@ msgstr ""
 msgid "Policy successfully deleted."
 msgstr ""
 
-#: gecoscc/static/js/staging.js:75
+#: gecoscc/static/js/staging.js:76
 msgid "Resource marked for deletion."
 msgstr ""
 
-#: gecoscc/static/js/staging.js:76
+#: gecoscc/static/js/staging.js:77
 msgid "Your latest changes in this resource will be ignored."
 msgstr ""
 
