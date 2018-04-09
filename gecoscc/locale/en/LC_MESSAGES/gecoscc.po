@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2018-03-08 16:54+0100\n"
+"POT-Creation-Date: 2018-04-09 13:05+0200\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -17,16 +17,16 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: gecoscc/forms.py:66 gecoscc/forms.py:138 gecoscc/forms.py:286
+#: gecoscc/forms.py:67 gecoscc/forms.py:139 gecoscc/forms.py:290
 #: gecoscc/templates/login.jinja2:31 gecoscc/templates/settings.jinja2:135
 msgid "Submit"
 msgstr ""
 
-#: gecoscc/forms.py:125
+#: gecoscc/forms.py:126
 msgid "User created successfully"
 msgstr ""
 
-#: gecoscc/forms.py:141 gecoscc/templates/bb-computer.html:124
+#: gecoscc/forms.py:142 gecoscc/templates/bb-computer.html:124
 #: gecoscc/templates/bb-groups-form.html:37 gecoscc/templates/bb-ou.html:62
 #: gecoscc/templates/bb-policy.html:20 gecoscc/templates/bb-printer.html:109
 #: gecoscc/templates/bb-repository.html:71 gecoscc/templates/bb-storage.html:29
@@ -34,43 +34,43 @@ msgstr ""
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/forms.py:159 gecoscc/forms.py:187
+#: gecoscc/forms.py:160 gecoscc/forms.py:188
 msgid "User edited successfully"
 msgstr ""
 
-#: gecoscc/forms.py:176 gecoscc/forms.py:177
+#: gecoscc/forms.py:177 gecoscc/forms.py:178
 msgid "Add another"
 msgstr ""
 
-#: gecoscc/forms.py:226
+#: gecoscc/forms.py:227
 msgid "Variables updated successfully"
 msgstr ""
 
-#: gecoscc/forms.py:268
+#: gecoscc/forms.py:272
 msgid "here"
-msgstr ""
-
-#: gecoscc/forms.py:269
-#, python-format
-msgid "Update log. %s"
 msgstr ""
 
 #: gecoscc/forms.py:273
 #, python-format
+msgid "Update log. %s"
+msgstr ""
+
+#: gecoscc/forms.py:277
+#, python-format
 msgid "Permission denied: %s"
 msgstr ""
 
-#: gecoscc/forms.py:275 gecoscc/forms.py:280
+#: gecoscc/forms.py:279 gecoscc/forms.py:284
 msgid ""
 "There was an error attempting to upload an update. Please contact an "
 "administrator"
 msgstr ""
 
-#: gecoscc/forms.py:297
+#: gecoscc/forms.py:301
 msgid "Maintenance message was deleted successfully."
 msgstr ""
 
-#: gecoscc/forms.py:310
+#: gecoscc/forms.py:314
 msgid "Maintenance settings saved successfully."
 msgstr ""
 
@@ -167,217 +167,217 @@ msgstr ""
 msgid "Organizational Units available to register workstations"
 msgstr ""
 
-#: gecoscc/models.py:420
+#: gecoscc/models.py:432
 msgid "The uploaded file is not followed naming convention"
 msgstr ""
 
-#: gecoscc/models.py:429
+#: gecoscc/models.py:446
 msgid "No valid update sequence. Must be: {$val}"
 msgstr ""
 
-#: gecoscc/models.py:445
+#: gecoscc/models.py:462
 msgid "This name already exists"
 msgstr ""
 
-#: gecoscc/models.py:449
+#: gecoscc/models.py:473
 msgid "No valid zip file structure"
 msgstr ""
 
-#: gecoscc/models.py:472
+#: gecoscc/models.py:501
 msgid "Any script out of range (00-99)"
 msgstr ""
 
-#: gecoscc/models.py:595
+#: gecoscc/models.py:631
 msgid "Update ZIP"
 msgstr ""
 
-#: gecoscc/models.py:605
+#: gecoscc/models.py:640
 msgid "URL download"
 msgstr ""
 
-#: gecoscc/models.py:613
+#: gecoscc/models.py:681
 msgid "Users will be warned with this message"
 msgstr ""
 
-#: gecoscc/models.py:622
+#: gecoscc/models.py:690
 msgid "uri"
 msgstr ""
 
-#: gecoscc/models.py:625
+#: gecoscc/models.py:693
 msgid "base"
 msgstr ""
 
-#: gecoscc/models.py:628
+#: gecoscc/models.py:696
 msgid "base group"
 msgstr ""
 
-#: gecoscc/models.py:631
+#: gecoscc/models.py:699
 msgid "binddn"
 msgstr ""
 
-#: gecoscc/models.py:634
+#: gecoscc/models.py:702
 msgid "bindpwd"
 msgstr ""
 
-#: gecoscc/models.py:640
+#: gecoscc/models.py:708
 msgid "FQDN"
 msgstr ""
 
-#: gecoscc/models.py:642
+#: gecoscc/models.py:710
 msgid "WORKGROUP"
 msgstr ""
 
-#: gecoscc/models.py:648
+#: gecoscc/models.py:716
 msgid "SSSD conf"
 msgstr ""
 
-#: gecoscc/models.py:651
+#: gecoscc/models.py:719
 msgid "KRB5 conf"
 msgstr ""
 
-#: gecoscc/models.py:654
+#: gecoscc/models.py:722
 msgid "SMB conf"
 msgstr ""
 
-#: gecoscc/models.py:657
+#: gecoscc/models.py:725
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:666
+#: gecoscc/models.py:734
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:668
+#: gecoscc/models.py:736
 msgid "Auth type"
 msgstr ""
 
-#: gecoscc/models.py:672
+#: gecoscc/models.py:740
 msgid "Specific conf"
 msgstr ""
 
-#: gecoscc/models.py:674
+#: gecoscc/models.py:742
 msgid "Auth LDAP"
 msgstr ""
 
-#: gecoscc/models.py:675 gecoscc/models.py:676
+#: gecoscc/models.py:743 gecoscc/models.py:744
 msgid "Auth Active directory"
 msgstr ""
 
-#: gecoscc/models.py:719 gecoscc/templates/bb-computer.html:73
+#: gecoscc/models.py:787 gecoscc/templates/bb-computer.html:73
 msgid "Desktop"
 msgstr ""
 
-#: gecoscc/models.py:720 gecoscc/templates/bb-computer.html:74
+#: gecoscc/models.py:788 gecoscc/templates/bb-computer.html:74
 msgid "Laptop"
 msgstr ""
 
-#: gecoscc/models.py:721 gecoscc/templates/bb-computer.html:75
+#: gecoscc/models.py:789 gecoscc/templates/bb-computer.html:75
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:722 gecoscc/templates/bb-computer.html:76
+#: gecoscc/models.py:790 gecoscc/templates/bb-computer.html:76
 msgid "Tablet"
 msgstr ""
 
-#: gecoscc/models.py:764
+#: gecoscc/models.py:832
 msgid "Laser"
 msgstr ""
 
-#: gecoscc/models.py:765
+#: gecoscc/models.py:833
 msgid "Ink"
 msgstr ""
 
-#: gecoscc/models.py:766
+#: gecoscc/models.py:834
 msgid "Dot matrix"
 msgstr ""
 
-#: gecoscc/models.py:770
+#: gecoscc/models.py:838
 msgid "Network"
 msgstr ""
 
-#: gecoscc/models.py:771
+#: gecoscc/models.py:839
 msgid "Local"
 msgstr ""
 
-#: gecoscc/models.py:775
+#: gecoscc/models.py:843
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:776
+#: gecoscc/models.py:844
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:777
+#: gecoscc/models.py:845
 msgid "Kerberos-AD"
 msgstr ""
 
-#: gecoscc/models.py:825
+#: gecoscc/models.py:893
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:826
+#: gecoscc/models.py:894
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:827
+#: gecoscc/models.py:895
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:828
+#: gecoscc/models.py:896
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:829
+#: gecoscc/models.py:897
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:833
+#: gecoscc/models.py:901
 msgid "System mounts (fstab)"
 msgstr ""
 
-#: gecoscc/models.py:834
+#: gecoscc/models.py:902
 msgid "User space mounts (gvfs)"
 msgstr ""
 
-#: gecoscc/models.py:874
+#: gecoscc/models.py:942
 msgid "Processing"
 msgstr ""
 
-#: gecoscc/models.py:877
+#: gecoscc/models.py:945
 msgid "Applying changes"
 msgstr ""
 
-#: gecoscc/models.py:880
+#: gecoscc/models.py:948
 msgid "Changes applied"
 msgstr ""
 
-#: gecoscc/models.py:883 gecoscc/models.py:886
+#: gecoscc/models.py:951 gecoscc/models.py:954
 msgid "There were errors"
 msgstr ""
 
-#: gecoscc/tasks.py:1405 gecoscc/tasks.py:1597 gecoscc/tasks.py:1741
+#: gecoscc/tasks.py:1421 gecoscc/tasks.py:1616 gecoscc/tasks.py:1928
 msgid "type"
 msgstr ""
 
-#: gecoscc/tasks.py:1464 gecoscc/tasks.py:1950
+#: gecoscc/tasks.py:1480 gecoscc/tasks.py:1773 gecoscc/tasks.py:2151
 #, python-format
 msgid "Pending: %d"
 msgstr ""
 
-#: gecoscc/tasks.py:1597 gecoscc/tasks.py:1741
+#: gecoscc/tasks.py:1616 gecoscc/tasks.py:1928
 msgid "deleted"
 msgstr ""
 
-#: gecoscc/utils.py:2285
+#: gecoscc/utils.py:2289
 msgid "No permission to execute this function from script"
 msgstr ""
 
-#: gecoscc/utils.py:2301 gecoscc/utils.py:2328 gecoscc/utils.py:2353
-#: gecoscc/utils.py:2393 gecoscc/utils.py:2428
+#: gecoscc/utils.py:2311 gecoscc/utils.py:2344 gecoscc/utils.py:2374
+#: gecoscc/utils.py:2420 gecoscc/utils.py:2461
 msgid "Missing required arguments"
 msgstr ""
 
-#: gecoscc/utils.py:2329 gecoscc/utils.py:2354
+#: gecoscc/utils.py:2345 gecoscc/utils.py:2375
 #, python-format
 msgid "Directory %s can't be found."
 msgstr ""
@@ -517,7 +517,8 @@ msgstr ""
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
 #: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
 #: gecoscc/templates/admins/updates.jinja2:32
-#: gecoscc/templates/server/status.jinja2:67 gecoscc/views/reports.py:93
+#: gecoscc/templates/server/status.jinja2:67
+#: gecoscc/templates/server/status.jinja2:113 gecoscc/views/reports.py:93
 msgid "Name"
 msgstr ""
 
@@ -607,7 +608,7 @@ msgid ""
 msgstr ""
 
 #: gecoscc/templates/bb-change-alert.html:24
-#: gecoscc/templates/bb-staging-report.html:30
+#: gecoscc/templates/bb-staging-report.html:32
 #: gecoscc/templates/server/status.jinja2:53
 msgid "Close"
 msgstr ""
@@ -1049,6 +1050,11 @@ msgstr ""
 msgid "Add a policy to this resource"
 msgstr ""
 
+#: gecoscc/templates/bb-policies-list.html:69
+#: gecoscc/templates/bb-staging-report.html:19
+msgid "Refresh policies"
+msgstr ""
+
 #: gecoscc/templates/bb-policy.html:9
 msgid "Configure policy:"
 msgstr ""
@@ -1135,7 +1141,7 @@ msgid "In progress"
 msgstr ""
 
 #: gecoscc/templates/bb-staging-button.html:8
-#: gecoscc/templates/bb-staging-report.html:31
+#: gecoscc/templates/bb-staging-report.html:33
 msgid "Apply changes"
 msgstr ""
 
@@ -1155,11 +1161,11 @@ msgstr ""
 msgid "Modified"
 msgstr ""
 
-#: gecoscc/templates/bb-staging-report.html:19
+#: gecoscc/templates/bb-staging-report.html:21
 msgid "Added"
 msgstr ""
 
-#: gecoscc/templates/bb-staging-report.html:22
+#: gecoscc/templates/bb-staging-report.html:24
 msgid "Discard changes"
 msgstr ""
 
@@ -1468,6 +1474,14 @@ msgstr ""
 msgid "Connections"
 msgstr ""
 
+#: gecoscc/templates/server/status.jinja2:107
+msgid "Cookbooks"
+msgstr ""
+
+#: gecoscc/templates/server/status.jinja2:114
+msgid "Version"
+msgstr ""
+
 #: gecoscc/views/admins.py:200
 msgid "User deleted unsuccessfully from chef"
 msgstr ""
@@ -1504,1006 +1518,4 @@ msgstr ""
 #: gecoscc/views/settings.py:201
 msgid "Settings modified successfully"
 msgstr ""
-
-#~ msgid "NFS v3"
-#~ msgstr ""
-
-#~ msgid "NFS v4"
-#~ msgstr ""
-
-#~ msgid "Filtra"
-#~ msgstr ""
-
-#~ msgid "Automatic installation"
-#~ msgstr ""
-
-#~ msgid "Manual installation"
-#~ msgstr ""
-
-#~ msgid "Low"
-#~ msgstr ""
-
-#~ msgid "Medium"
-#~ msgstr ""
-
-#~ msgid "High"
-#~ msgstr ""
-
-#~ msgid "Very high"
-#~ msgstr ""
-
-#~ msgid "Reports"
-#~ msgstr ""
-
-#~ msgid "Change password"
-#~ msgstr ""
-
-#~ msgid "Filter"
-#~ msgstr ""
-
-#~ msgid "Users"
-#~ msgstr ""
-
-#~ msgid "Organisational units"
-#~ msgstr ""
-
-#~ msgid "Anything"
-#~ msgstr ""
-
-#~ msgid "Last execution"
-#~ msgstr ""
-
-#~ msgid "Identifier"
-#~ msgstr ""
-
-#~ msgid "IP"
-#~ msgstr ""
-
-#~ msgid "MAC"
-#~ msgstr ""
-
-#~ msgid "Graphics card"
-#~ msgstr ""
-
-#~ msgid "Hard disk"
-#~ msgstr ""
-
-#~ msgid "used"
-#~ msgstr ""
-
-#~ msgid "Running"
-#~ msgstr ""
-
-#~ msgid "Down"
-#~ msgstr ""
-
-#~ msgid "Failed tasks (26 out of 200)"
-#~ msgstr ""
-
-#~ msgid "Completed tasks (166 out of 200)"
-#~ msgstr ""
-
-#~ msgid "Inventory"
-#~ msgstr ""
-
-#~ msgid "Controller"
-#~ msgstr ""
-
-#~ msgid ""
-#~ msgstr ""
-
-#~ msgid "Clear the selected file"
-#~ msgstr ""
-
-#~ msgid "Clear"
-#~ msgstr ""
-
-#~ msgid "Default preferences"
-#~ msgstr ""
-
-#~ msgid "Paper size"
-#~ msgstr ""
-
-#~ msgid "Print quality"
-#~ msgstr ""
-
-#~ msgid "Paper tray"
-#~ msgstr ""
-
-#~ msgid "Duplex mode"
-#~ msgstr ""
-
-#~ msgid "Duplex printing"
-#~ msgstr ""
-
-#~ msgid "The main Linux Mint repository"
-#~ msgstr ""
-
-#~ msgid "Connection string"
-#~ msgstr ""
-
-#~ msgid "Server"
-#~ msgstr ""
-
-#~ msgid "Port"
-#~ msgstr ""
-
-#~ msgid "Extra options"
-#~ msgstr ""
-
-#~ msgid "Connection protocol"
-#~ msgstr ""
-
-#~ msgid "Path of local directory"
-#~ msgstr ""
-
-#~ msgid "Mount"
-#~ msgstr ""
-
-#~ msgid "When booting (fstab)"
-#~ msgstr ""
-
-#~ msgid "In user space (gvfs)"
-#~ msgstr ""
-
-#~ msgid "Authentication Required"
-#~ msgstr ""
-
-#~ msgid "You need to enter your credentials to access the requested resource."
-#~ msgstr ""
-
-#~ msgid "welcome ${username}"
-#~ msgstr ""
-
-#~ msgid "OU availables to register computers by this user"
-#~ msgstr ""
-
-#~ msgid "Computer specifications"
-#~ msgstr ""
-
-#~ msgid "Computer"
-#~ msgstr ""
-
-#~ msgid "Computer specifications (Ohai)"
-#~ msgstr ""
-
-#~ msgid "http://computer_name:631/ipp/port1"
-#~ msgstr ""
-
-#~ msgid "OU managed by this user"
-#~ msgstr ""
-
-#~ msgid "OU availables to register workstations by this user"
-#~ msgstr ""
-
-#~ msgid "Set OU managed by this user"
-#~ msgstr ""
-
-#~ msgid "This user can register workstation under this Organitation Unit"
-#~ msgstr ""
-
-#~ msgid "Administrator"
-#~ msgstr ""
-
-#~ msgid "Events and queue"
-#~ msgstr ""
-
-#~ msgid "Another administrator has changed the following nodes:"
-#~ msgstr ""
-
-#~ msgid "Your changes are lost. Please make your changes again."
-#~ msgstr ""
-
-#~ msgid "Work stations"
-#~ msgstr ""
-
-#~ msgid "first name"
-#~ msgstr ""
-
-#~ msgid "last name"
-#~ msgstr ""
-
-#~ msgid "email"
-#~ msgstr ""
-
-#~ msgid "phone"
-#~ msgstr ""
-
-#~ msgid "address"
-#~ msgstr ""
-
-#~ msgid "Registry"
-#~ msgstr ""
-
-#~ msgid "Serial"
-#~ msgstr ""
-
-#~ msgid "Node Chef id"
-#~ msgstr ""
-
-#~ msgid "Invalid URL"
-#~ msgstr ""
-
-#~ msgid "Execute changes"
-#~ msgstr ""
-
-#~ msgid "Staged changes pending of execution"
-#~ msgstr ""
-
-#~ msgid "Stored changes, execution pending"
-#~ msgstr ""
-
-#~ msgid "There was errors"
-#~ msgstr ""
-
-#~ msgid "Submit"
-#~ msgstr ""
-
-#~ msgid "User created successfully"
-#~ msgstr ""
-
-#~ msgid "Delete"
-#~ msgstr ""
-
-#~ msgid "User edited successfully"
-#~ msgstr ""
-
-#~ msgid "Add another"
-#~ msgstr ""
-
-#~ msgid "Variables updated successfully"
-#~ msgstr ""
-
-#~ msgid "There is some object with this value: ${val}"
-#~ msgstr ""
-
-#~ msgid "Only lowercase letters or numbers"
-#~ msgstr ""
-
-#~ msgid "The passwords do not match"
-#~ msgstr ""
-
-#~ msgid "First name"
-#~ msgstr ""
-
-#~ msgid "Last name"
-#~ msgstr ""
-
-#~ msgid "Username"
-#~ msgstr ""
-
-#~ msgid "Password"
-#~ msgstr ""
-
-#~ msgid "Repeat the password"
-#~ msgstr ""
-
-#~ msgid "Email"
-#~ msgstr ""
-
-#~ msgid "There is a user with this email: ${val}"
-#~ msgstr ""
-
-#~ msgid "There is a user with this username: ${val}"
-#~ msgstr ""
-
-#~ msgid "This user can register workstation under these Organitation Units"
-#~ msgstr ""
-
-#~ msgid "Organitation Unit availables to register workstations by this user"
-#~ msgstr ""
-
-#~ msgid "uri"
-#~ msgstr ""
-
-#~ msgid "base"
-#~ msgstr ""
-
-#~ msgid "base group"
-#~ msgstr ""
-
-#~ msgid "binddn"
-#~ msgstr ""
-
-#~ msgid "bindpwd"
-#~ msgstr ""
-
-#~ msgid "FQDN"
-#~ msgstr ""
-
-#~ msgid "WORKGROUP"
-#~ msgstr ""
-
-#~ msgid "SSSD conf"
-#~ msgstr ""
-
-#~ msgid "KRB5 conf"
-#~ msgstr ""
-
-#~ msgid "SMB conf"
-#~ msgstr ""
-
-#~ msgid "PAM conf"
-#~ msgstr ""
-
-#~ msgid "URI ntp"
-#~ msgstr ""
-
-#~ msgid "Auth type"
-#~ msgstr ""
-
-#~ msgid "Specific conf"
-#~ msgstr ""
-
-#~ msgid "Auth LDAP"
-#~ msgstr ""
-
-#~ msgid "Auth Active directory"
-#~ msgstr ""
-
-#~ msgid "Desktop"
-#~ msgstr ""
-
-#~ msgid "Laptop"
-#~ msgstr ""
-
-#~ msgid "Netbook"
-#~ msgstr ""
-
-#~ msgid "Tablet"
-#~ msgstr ""
-
-#~ msgid "Laser"
-#~ msgstr ""
-
-#~ msgid "Ink"
-#~ msgstr ""
-
-#~ msgid "Dot matrix"
-#~ msgstr ""
-
-#~ msgid "Network"
-#~ msgstr ""
-
-#~ msgid "Local"
-#~ msgstr ""
-
-#~ msgid "Default"
-#~ msgstr ""
-
-#~ msgid "Authenticated"
-#~ msgstr ""
-
-#~ msgid "FTP"
-#~ msgstr ""
-
-#~ msgid "SSHFS"
-#~ msgstr ""
-
-#~ msgid "NFS"
-#~ msgstr ""
-
-#~ msgid "SAMBA v3"
-#~ msgstr ""
-
-#~ msgid "SAMBA v4"
-#~ msgstr ""
-
-#~ msgid "System mounts (fstab)"
-#~ msgstr ""
-
-#~ msgid "User space mounts (gvfs)"
-#~ msgstr ""
-
-#~ msgid "Processing"
-#~ msgstr ""
-
-#~ msgid "Applying changes"
-#~ msgstr ""
-
-#~ msgid "Changes applied"
-#~ msgstr ""
-
-#~ msgid "There were errors"
-#~ msgstr ""
-
-#~ msgid "Control Center"
-#~ msgstr ""
-
-#~ msgid "Are you sure?"
-#~ msgstr ""
-
-#~ msgid "Cancel"
-#~ msgstr ""
-
-#~ msgid "Yes, continue"
-#~ msgstr ""
-
-#~ msgid "Connection problems"
-#~ msgstr ""
-
-#~ msgid "There are problems to connect with the server, please reload page."
-#~ msgstr ""
-
-#~ msgid "Reload page"
-#~ msgstr ""
-
-#~ msgid "Redis server is stopped, please contact an administrator."
-#~ msgstr ""
-
-#~ msgid "Add new root OU"
-#~ msgstr ""
-
-#~ msgid "Home"
-#~ msgstr ""
-
-#~ msgid "Administrators"
-#~ msgstr ""
-
-#~ msgid "Help"
-#~ msgstr ""
-
-#~ msgid "User options"
-#~ msgstr ""
-
-#~ msgid "Edit profile"
-#~ msgstr ""
-
-#~ msgid "Set variables"
-#~ msgstr ""
-
-#~ msgid "Log out"
-#~ msgstr ""
-
-#~ msgid "Search"
-#~ msgstr ""
-
-#~ msgid "Loading"
-#~ msgstr ""
-
-#~ msgid "The following nodes have changed:"
-#~ msgstr ""
-
-#~ msgid "Modified by"
-#~ msgstr ""
-
-#~ msgid "Deleted by"
-#~ msgstr ""
-
-#~ msgid "Close"
-#~ msgstr ""
-
-#~ msgid "Information"
-#~ msgstr ""
-
-#~ msgid "Workstation specifications"
-#~ msgstr ""
-
-#~ msgid "Policies"
-#~ msgstr ""
-
-#~ msgid "Workstation"
-#~ msgstr ""
-
-#~ msgid "Reload"
-#~ msgstr ""
-
-#~ msgid "Users that have logged in"
-#~ msgstr ""
-
-#~ msgid "None"
-#~ msgstr ""
-
-#~ msgid "Uptime"
-#~ msgstr ""
-
-#~ msgid "Manufacturer and model"
-#~ msgstr ""
-
-#~ msgid "Gecos cc id"
-#~ msgstr ""
-
-#~ msgid "Node chef id"
-#~ msgstr ""
-
-#~ msgid "Last connection"
-#~ msgstr ""
-
-#~ msgid "Name"
-#~ msgstr ""
-
-#~ msgid "e.g."
-#~ msgstr ""
-
-#~ msgid "John's laptop"
-#~ msgstr ""
-
-#~ msgid "Type"
-#~ msgstr ""
-
-#~ msgid "Registry number"
-#~ msgstr ""
-
-#~ msgid "Serial number"
-#~ msgstr ""
-
-#~ msgid "Groups"
-#~ msgstr ""
-
-#~ msgid "If you want to add any group, please execute the changes"
-#~ msgstr ""
-
-#~ msgid "Save"
-#~ msgstr ""
-
-#~ msgid "Cut"
-#~ msgstr ""
-
-#~ msgid "Workstation specifications (Ohai)"
-#~ msgstr ""
-
-#~ msgid "CPU"
-#~ msgstr ""
-
-#~ msgid "RAM"
-#~ msgstr ""
-
-#~ msgid "Distribution"
-#~ msgstr ""
-
-#~ msgid "Kernel"
-#~ msgstr ""
-
-#~ msgid "File system"
-#~ msgstr ""
-
-#~ msgid "Device"
-#~ msgstr ""
-
-#~ msgid "Mount point"
-#~ msgstr ""
-
-#~ msgid "Used"
-#~ msgstr ""
-
-#~ msgid "Complete JSON returned by Ohai"
-#~ msgstr ""
-
-#~ msgid "Policies list"
-#~ msgstr ""
-
-#~ msgid "Group"
-#~ msgstr ""
-
-#~ msgid "Nodes that belong to this group"
-#~ msgstr ""
-
-#~ msgid "Service and tasks status"
-#~ msgstr ""
-
-#~ msgid "Processing tasks"
-#~ msgstr ""
-
-#~ msgid "out of"
-#~ msgstr ""
-
-#~ msgid "Failed tasks"
-#~ msgstr ""
-
-#~ msgid "Completed tasks"
-#~ msgstr ""
-
-#~ msgid "My tasks"
-#~ msgstr ""
-
-#~ msgid "All Tasks"
-#~ msgstr ""
-
-#~ msgid "Processing Tasks"
-#~ msgstr ""
-
-#~ msgid "Finished Tasks"
-#~ msgstr ""
-
-#~ msgid "Warnings Tasks"
-#~ msgstr ""
-
-#~ msgid "Errors Tasks"
-#~ msgstr ""
-
-#~ msgid "Active"
-#~ msgstr ""
-
-#~ msgid "Archived"
-#~ msgstr ""
-
-#~ msgid "Maximize"
-#~ msgstr ""
-
-#~ msgid "Minimize"
-#~ msgstr ""
-
-#~ msgid "Archive Tasks"
-#~ msgstr ""
-
-#~ msgid "Emiter node"
-#~ msgstr ""
-
-#~ msgid "User"
-#~ msgstr ""
-
-#~ msgid "Policy"
-#~ msgstr ""
-
-#~ msgid "Trace"
-#~ msgstr ""
-
-#~ msgid "Add new element"
-#~ msgstr ""
-
-#~ msgid "Domain"
-#~ msgstr ""
-
-#~ msgid "Organisational Unit"
-#~ msgstr ""
-
-#~ msgid "Printer"
-#~ msgstr ""
-
-#~ msgid "Remote storage"
-#~ msgstr ""
-
-#~ msgid "Software repository"
-#~ msgstr ""
-
-#~ msgid "Master"
-#~ msgstr ""
-
-#~ msgid "Read-only Policies"
-#~ msgstr ""
-
-#~ msgid "Testing department"
-#~ msgstr ""
-
-#~ msgid "Extra information"
-#~ msgstr ""
-
-#~ msgid "Add policy to"
-#~ msgstr ""
-
-#~ msgid "Add"
-#~ msgstr ""
-
-#~ msgid "External"
-#~ msgstr ""
-
-#~ msgid "No supported OS"
-#~ msgstr ""
-
-#~ msgid "Support OS"
-#~ msgstr ""
-
-#~ msgid "Actions"
-#~ msgstr ""
-
-#~ msgid "Remove"
-#~ msgstr ""
-
-#~ msgid "Edit"
-#~ msgstr ""
-
-#~ msgid "View"
-#~ msgstr ""
-
-#~ msgid "Empty!"
-#~ msgstr ""
-
-#~ msgid "There are no policies assigned to this resource yet."
-#~ msgstr ""
-
-#~ msgid "If you want to add any policy, please execute the changes"
-#~ msgstr ""
-
-#~ msgid "Add a policy to this resource"
-#~ msgstr ""
-
-#~ msgid "Configure policy:"
-#~ msgstr ""
-
-#~ msgid "Back"
-#~ msgstr ""
-
-#~ msgid "Description"
-#~ msgstr ""
-
-#~ msgid "Main printer at sales department"
-#~ msgstr ""
-
-#~ msgid "Location"
-#~ msgstr ""
-
-#~ msgid "Connection type"
-#~ msgstr ""
-
-#~ msgid "Printer path"
-#~ msgstr ""
-
-#~ msgid "http://workstation_name:631/ipp/port1"
-#~ msgstr ""
-
-#~ msgid "Operation Policy"
-#~ msgstr ""
-
-#~ msgid "PPD URI"
-#~ msgstr ""
-
-#~ msgid "Manufacturer"
-#~ msgstr ""
-
-#~ msgid "Select manufacturer"
-#~ msgstr ""
-
-#~ msgid "Model"
-#~ msgstr ""
-
-#~ msgid "Select model"
-#~ msgstr ""
-
-#~ msgid "Repository"
-#~ msgstr ""
-
-#~ msgid "Url"
-#~ msgstr ""
-
-#~ msgid "Key"
-#~ msgstr ""
-
-#~ msgid "Key server"
-#~ msgstr ""
-
-#~ msgid "Components"
-#~ msgstr ""
-
-#~ msgid "Deb sources"
-#~ msgstr ""
-
-#~ msgid "In progress"
-#~ msgstr ""
-
-#~ msgid "Apply changes"
-#~ msgstr ""
-
-#~ msgid "Stored changes, pending of execution"
-#~ msgstr ""
-
-#~ msgid "Deleted"
-#~ msgstr ""
-
-#~ msgid "Moved"
-#~ msgstr ""
-
-#~ msgid "Modified"
-#~ msgstr ""
-
-#~ msgid "Added"
-#~ msgstr ""
-
-#~ msgid "Discard changes"
-#~ msgstr ""
-
-#~ msgid "Remote Storage"
-#~ msgstr ""
-
-#~ msgid "Access to the network storage S01"
-#~ msgstr ""
-
-#~ msgid "URI"
-#~ msgstr ""
-
-#~ msgid "/path/to/the/directory"
-#~ msgstr ""
-
-#~ msgid "More"
-#~ msgstr ""
-
-#~ msgid "Selection:"
-#~ msgstr ""
-
-#~ msgid "Add to:"
-#~ msgstr ""
-
-#~ msgid "Computers this user has logged in:"
-#~ msgstr ""
-
-#~ msgid "john"
-#~ msgstr ""
-
-#~ msgid "John"
-#~ msgstr ""
-
-#~ msgid "Doe"
-#~ msgstr ""
-
-#~ msgid "john.doe"
-#~ msgstr ""
-
-#~ msgid "Address"
-#~ msgstr ""
-
-#~ msgid "123, Main Street, Bigtown"
-#~ msgstr ""
-
-#~ msgid "Phone number"
-#~ msgstr ""
-
-#~ msgid "GECOS CC Login"
-#~ msgstr ""
-
-#~ msgid "Export to CSV"
-#~ msgstr ""
-
-#~ msgid "Workstations"
-#~ msgstr ""
-
-#~ msgid "Add Administrator"
-#~ msgstr ""
-
-#~ msgid "If you don't fill the password fields, these won't be updated"
-#~ msgstr ""
-
-#~ msgid "Edit %(username)s"
-#~ msgstr ""
-
-#~ msgid "Set Organitation Unit managed by this user"
-#~ msgstr ""
-
-#~ msgid "Set like superuser"
-#~ msgstr ""
-
-#~ msgid "Remove like superuser"
-#~ msgstr ""
-
-#~ msgid "Are you sure that you want to delete this user?"
-#~ msgstr ""
-
-#~ msgid "Search for username"
-#~ msgstr ""
-
-#~ msgid "E-mail"
-#~ msgstr ""
-
-#~ msgid "Is superuser?"
-#~ msgstr ""
-
-#~ msgid "Yes"
-#~ msgstr ""
-
-#~ msgid "No"
-#~ msgstr ""
-
-#~ msgid "Select an Organisational Unit"
-#~ msgstr ""
-
-#~ msgid "Now the user is a super user"
-#~ msgstr ""
-
-#~ msgid "Now the user is not a super user"
-#~ msgstr ""
-
-#~ msgid "User deleted unsuccessfully from chef"
-#~ msgstr ""
-
-#~ msgid "User deleted successfully"
-#~ msgstr ""
-
-#~ msgid "Please enter the correct username and password"
-#~ msgstr ""
-
-#~ msgid "Welcome ${username}"
-#~ msgstr ""
-
-#~ msgid "Id"
-#~ msgstr ""
-
-#~ msgid "Phone"
-#~ msgstr ""
-
-#~ msgid "Created"
-#~ msgstr ""
-
-#~ msgid "Order"
-#~ msgstr ""
-
-#~ msgid "Station"
-#~ msgstr ""
-
-#~ msgid "Nodes"
-#~ msgstr ""
-
-#~ msgid "Control file requirements not met"
-#~ msgstr ""
-
-#~ msgid "No valid update sequence. Must be: ${val}"
-#~ msgstr ""
-
-#~ msgid "Search for name"
-#~ msgstr ""
-
-#~ msgid "Path"
-#~ msgstr ""
-
-#~ msgid "Is rollback?"
-#~ msgstr ""
-
-#~ msgid "Add upload"
-#~ msgstr ""
-
-#~ msgid "There was an error downloading zip file"
-#~ msgstr ""
-
-#~ msgid "File is not a zip file: %s"
-#~ msgstr ""
-
-#~ msgid ""
-#~ "There was an error attempting to "
-#~ "upload the cookbook. Please contact an"
-#~ " administrator"
-#~ msgstr ""
-
-#~ msgid "No such file or directory: metadata.rb"
-#~ msgstr ""
-
-#~ msgid "No cookbook name or version found in metadata.rb"
-#~ msgstr ""
-
-#~ msgid "Upload cookbook enqueue. Visit logbook %s"
-#~ msgstr ""
-
-#~ msgid "Restore cookbook."
-#~ msgstr ""
-
-#~ msgid "Cookbook ZIP"
-#~ msgstr ""
-
-#~ msgid "Restore previous version of cookbook"
-#~ msgstr ""
-
-#~ msgid "policy uploaded"
-#~ msgstr ""
-
-#~ msgid "policy uploading..."
-#~ msgstr ""
-
-#~ msgid "Cookbook uploaded successfully %s %s"
-#~ msgstr ""
-
-#~ msgid "Uploads"
-#~ msgstr ""
-
-#~ msgid "Restore previous version of Cookbook"
-#~ msgstr ""
-
-#~ msgid "Cookbook Name"
-#~ msgstr ""
-
-#~ msgid "Version"
-#~ msgstr ""
-
-#~ msgid "Are you sure that you want to delete this cookbook version?"
-#~ msgstr ""
-
-#~ msgid "Upload Cookbook"
-#~ msgstr ""
-
-#~ msgid "Cookbook deleted unsuccessfully from chef"
-#~ msgstr ""
-
-#~ msgid "Cookbook deleted successfully. Visit logbook %s"
-#~ msgstr ""
-
-#~ msgid "policy restored"
-#~ msgstr ""
-
-#~ msgid "Cookbook deleted successfully %s"
-#~ msgstr ""
 
