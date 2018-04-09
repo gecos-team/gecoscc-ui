@@ -87,7 +87,7 @@
         </div>
 
         <footer>
-            <span class="pull-right">{{ request.registry.settings.get('server_address', ("UNKNOWN" | env_override('HOSTNAME')) ) }}</span>
+            <span class="pull-right" data-toggle="tooltip" data-placement="top" title="{{ request.registry.settings.get('server_address', 'UNKNOWN') }}">{{ "HOSTNAME" | env_override('HOSTNAME') }}</span> 
             <a href="http://www.github.com/gecos-team/gecoscc-ui/tree/{{ request.VERSION }}" target="_blank">GECOS CC (v{{ request.VERSION }}) &copy; 2013</a></span>
         </footer>
 
