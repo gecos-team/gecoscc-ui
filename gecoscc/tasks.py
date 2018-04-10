@@ -34,27 +34,23 @@ from jsonschema.exceptions import ValidationError
 from pyramid.threadlocal import get_current_registry
 
 import gettext
-from gecoscc.models import Job
 from gecoscc.models import User
 
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs, update_tree, invalidate_change, add_computer_to_user
-# It is necessary import here: apply_policies_to_computer, apply_policies_to_printer and apply_policies_to_user...
 from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou, get_filter_in_domain,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
-                           save_node_and_free, NodeBusyException, NodeNotLinked,
-                           apply_policies_to_computer, apply_policies_to_user,
-                           apply_policies_to_printer, apply_policies_to_storage,
-                           apply_policies_to_repository, apply_policies_to_group,
-                           apply_policies_to_ou, remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
+                           save_node_and_free, NodeBusyException, 
+                           NodeNotLinked, apply_policies_to_user,
+                           remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
-                           order_groups_by_depth, order_ou_by_depth, calculate_initial_inheritance_for_node, move_in_inheritance_and_recalculate_policies,
+                           order_groups_by_depth, order_ou_by_depth, move_in_inheritance_and_recalculate_policies,
                            recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
-                           recalculate_inheritance_for_node, get_filter_ous_from_path)
+                           recalculate_inheritance_for_node, get_filter_ous_from_path, recalculate_policies_for_computers)
 
 DELETED_POLICY_ACTION = 'deleted'
 SOFTWARE_PROFILE_SLUG = 'package_profile_res'
@@ -1497,7 +1493,21 @@ class ChefTask(Task):
                 if 'inheritance' in updated_obj:
                     obj['inheritance'] = updated_obj['inheritance']
                 
-            if action == 'created' or action == 'recalculate policies':
+                
+            if action == 'recalculate policies':
+                # When recalculating policies only the node policies information must be updated
+                recalculate_policies_for_computers(self.logger, self.db, obj, computers)
+                
+                # The inheritance field may have been updated
+                updated_obj = self.db.nodes.find_one({'_id': obj['_id']})
+                if not updated_obj:
+                    self.log("error","object_action - Node not found  %s (%s,%s)" %(str(obj['_id']), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                    return False   
+                    
+                if 'inheritance' in updated_obj:
+                    obj['inheritance'] = updated_obj['inheritance']
+                
+            if action == 'created':
                 # When creating or moving an object we must change the inheritance of the node
                 # event when it has no policies applied
                 move_in_inheritance_and_recalculate_policies(self.logger, self.db, obj, obj)

@@ -299,6 +299,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             // Refresh policies of a computer
             var that = this,
                 promise;
+                
+            App.showSavingProcess($(evt.target), "progress");
 
             promise = this.resource.refreshWithToken();
             promise.fail(function (response) {
@@ -306,6 +308,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             App.instances.staging.toRefreshPolicies.push(this.resource.get("id"));
+            
+            App.showSavingProcess($(evt.target), "refreshed");
         },
         
         serializeData: function () {

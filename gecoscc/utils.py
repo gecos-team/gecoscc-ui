@@ -1441,6 +1441,64 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
     return nodes_added      
     
 # ------------------------------------------------------------------------------------------------------
+def recalculate_policies_for_computers(logger, db, srcobj, computers):
+    """Recalculate the policies of the object in the inheritance tree of
+    the computers list.
+
+    Args:
+        logger (object): Logger.
+        db (object): Mongo DB access object.
+        srcobj (object): Node (computer, user, OU or group) that contains the policies.
+        computers (object): Computers list wich inheritance tree must be updated.
+
+    Returns:
+        bool: The return value. True if success, false otherwise.
+
+    """
+    # Parameter checking
+    if logger is None:
+        raise ValueError('logger is None')    
+        
+    if db is None:
+        raise ValueError('db is None')    
+        
+    if srcobj is None:
+        raise ValueError('obj is None')    
+
+    if computers is None:
+        raise ValueError('obj is None')    
+    
+    logger.debug("recalculate_policies_for_computers - source node name=%s type=%s"%(srcobj['name'], srcobj['type']))
+    
+    for computer in computers:
+        obj = computer
+        if 'user' in computer:
+            # Policies that affect to the user aren't displayed in the 
+            # computer's inheritance tab
+            continue 
+
+        logger.debug("recalculate_policies_for_computers - recalculate for node: name=%s type=%s"%(obj['name'], obj['type']))
+        
+        # Calculate inheritance tree for the first time when neccessary
+        if not calculate_initial_inheritance_for_node(logger, db, obj):
+            return False
+        
+        # Recalculate policies for the source node
+        for policy_id in srcobj['policies']:
+            policydata = db.policies.find_one({'_id': ObjectId(policy_id)})
+            if not policydata:
+                logger.error("recalculate_policies_for_computers - Policy not found %s" % str(policy_id))
+                return False             
+                
+            trace_inheritance(logger, db, 'change', srcobj, policydata)                
+        
+        # Finaly recalculate the 'inherited' field of all the non mergeable policies
+        recalculate_inherited_field(logger, db, str(obj['_id']))   
+    
+    return True
+
+
+# ------------------------------------------------------------------------------------------------------
 def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
     """Move an object to another position in the inheritance Tree and recalculate
        the policies of the added nodes.
