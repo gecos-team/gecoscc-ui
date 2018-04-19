@@ -453,6 +453,22 @@ jsonform.elementTypes = {
         '</label></div>',
     'fieldtemplate': true,
     'inputfield': true,
+    // INI: Boolean flag (the checkbox type)
+    // https://github.com/joshfire/jsonform/wiki#fields-checkbox
+    'onInsert': function (evt, node) {
+      if (node.formElement.toggleNext) {
+        var nextN = node.formElement.toggleNext === true ? 1 : node.formElement.toggleNext;
+        var toggleNextClass = 'jsonform-toggle-next jsonform-toggle-next-' + nextN;
+        var $next = nextN === 1 ? $(node.el).parent().next() : (nextN === 'all' ? $(node.el).parent().nextAll() : $(node.el).parent().nextAll().slice(0, nextN));
+        $next.addClass('jsonform-toggle-next-target');
+        $(node.el).addClass(toggleNextClass).find(':checkbox').on('change', function() {
+          var $this = $(this);
+          var checked = $this.is(':checked');
+          $(node.el).toggleClass('checked', checked);
+          $next.toggle(checked).toggleClass('jsonform-toggled-visible', checked);
+        }).change();
+      }
+    }, // END
     'getElement': function (el) {
       return $(el).parent().get(0);
     }
@@ -3376,6 +3392,17 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
   var node = new formNode();
   var view = null;
   var key = null;
+
+  // INI: Boolean flag (the checkbox type)
+  // http://ulion.github.io/jsonform/playground/?example=fields-checkbox
+  if (formElement.key && this.formDesc.customFormItems) {
+    var formEl = this.formDesc.customFormItems[formElement.key];
+    if (formEl !== undefined) {
+      formEl.key = formElement.key;
+      formElement = formEl;
+    }
+  }
+  // END
 
   // The form element parameter directly comes from the initial
   // JSONForm object. We'll make a shallow copy of it and of its children
