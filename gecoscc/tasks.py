@@ -1240,7 +1240,18 @@ class ChefTask(Task):
         return members_add + members_delete        
         
         
+    def has_changed_user_data(self, obj, objold):
+        if objold is None:
+            return True
         
+        if (obj['email'] != objold['email'] 
+            or  obj['first_name'] != objold['first_name']
+            or  obj['last_name'] != objold['last_name']):
+            
+            return True
+     
+        
+        return False
         
     def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
         '''
@@ -1262,6 +1273,36 @@ class ChefTask(Task):
                 action = 'changed'
         
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            # Update object data
+            if obj['type'] == 'user':
+                if self.has_changed_user_data(obj, objold):
+                    self.log('debug', 'task.py:: update_node - Updating user data: {0}'.format(obj['name']))
+                    # Update user data
+                    if not node.normal.has_dotted('gecos_info'):
+                        node.normal.set_dotted('gecos_info', {})
+                        
+                    if not node.normal.has_dotted('gecos_info.%s'%(obj['name'])):
+                        node.normal.set_dotted('gecos_info.%s'%(obj['name']), {})
+                        
+                    node.normal.set_dotted('gecos_info.%s.email'%(obj['name']), obj['email'])
+                    node.normal.set_dotted('gecos_info.%s.firstName'%(obj['name']), obj['first_name'])
+                    node.normal.set_dotted('gecos_info.%s.lastName'%(obj['name']), obj['last_name'])
+    
+                    updated = True
+                    
+                if ((action == 'deleted' or action == 'detached') 
+                    and node.normal.has_dotted('gecos_info')
+                    and node.normal.has_dotted('gecos_info.%s'%(obj['name']))):
+                    self.log('debug', 'task.py:: update_node - Deleting user data: {0}'.format(obj['name']))
+                    
+                    normal_dict = node.normal.to_dict()
+                    del normal_dict['gecos_info'][obj['name']]
+                    setattr(node,'normal',NodeAttributes(normal_dict))
+                        
+                    updated = True            
+                    
+            
+            # Update policies
             self.log('debug', 'task.py:: update_node - force_update: {0} is_updating_policies: {1}'.format(force_update, self.is_updating_policies(obj, objold)))
             if force_update or self.is_updating_policies(obj, objold):
                 rule_type = 'policies'
@@ -1424,8 +1465,13 @@ class ChefTask(Task):
                                     administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         are_new_jobs = False
+        
+        if computers is None or len(computers) == 0:
+            self.log("debug","No computers related with {0} {1}".format(obj['name'], obj['type']))
+            
         for computer in computers:
             try:
+                self.log("debug","object_action {0}".format(computer['name']))
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
