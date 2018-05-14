@@ -263,9 +263,7 @@ class Command(BaseCommand):
             for node_id in ChefNode.list():
                 node = ChefNode(node_id, self.api)
                 if node.normal.has_dotted('gecos_info'):
-                    normal_dict = node.normal.to_dict()
-                    del normal_dict['gecos_info']
-                    setattr(node,'normal',NodeAttributes(normal_dict))
+                    del node.normal['gecos_info']
                     node.save()                    
             
         

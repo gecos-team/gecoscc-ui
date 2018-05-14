@@ -1300,10 +1300,7 @@ class ChefTask(Task):
                     and node.normal.has_dotted('gecos_info.%s'%(username))):
                     self.log('debug', 'task.py:: update_node - Deleting user data: {0}'.format(obj['name']))
                     
-                    normal_dict = node.normal.to_dict()
-                    del normal_dict['gecos_info'][username]
-                    setattr(node,'normal',NodeAttributes(normal_dict))
-                        
+                    del node.normal['gecos_info'][username]
                     updated = True            
                     
             
@@ -1752,7 +1749,7 @@ class ChefTask(Task):
 
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
-        
+
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
         # 1 - Disassociate computer from its users
@@ -1774,6 +1771,12 @@ class ChefTask(Task):
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+
+            # Remove variables data
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Removing variables data')
+            if node.normal.has_dotted('gecos_info'):
+                del node.normal['gecos_info']
+ 
 
             for u in node.attributes.get_dotted(USERS_OHAI):
                 username = u['username']
@@ -1813,34 +1816,34 @@ class ChefTask(Task):
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
             self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
             
-        # Clean inheritance information
-        self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
-
-        # Set processing jobs as finished
-        self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
-        processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
-        for job in processing_jobs:
-            macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
-            
-            self.db.jobs.update({'_id': job['_id']},
-                                {'$set': {'status': 'finished',
-                                          'last_update': datetime.datetime.utcnow()}})
-            
-            # Decrement number of children in parent
-            if macrojob and 'counter' in macrojob:
-                macrojob['counter'] -= 1
-                self.db.jobs.update({'_id': macrojob['_id']},                                                                
-                                    {'$set': {'counter': macrojob['counter'],
-                                              'message': self._("Pending: %d") % macrojob['counter'],
-                                              'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
-
+            # Clean inheritance information
+            self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
+    
+            # Set processing jobs as finished
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
+            processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
+            for job in processing_jobs:
+                macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 
-            # 3 - Clean policies information
-            ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
-            for attr in node.normal:
-                if not attr in ATTRIBUTES_WHITE_LIST:
-                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
-                    del node.normal[attr]
+                self.db.jobs.update({'_id': job['_id']},
+                                    {'$set': {'status': 'finished',
+                                              'last_update': datetime.datetime.utcnow()}})
+                
+                # Decrement number of children in parent
+                if macrojob and 'counter' in macrojob:
+                    macrojob['counter'] -= 1
+                    self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                                        {'$set': {'counter': macrojob['counter'],
+                                                  'message': self._("Pending: %d") % macrojob['counter'],
+                                                  'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
+    
+                    
+                # 3 - Clean policies information
+                ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
+                for attr in node.normal:
+                    if not attr in ATTRIBUTES_WHITE_LIST:
+                        self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
+                        del node.normal[attr]
         
             save_node_and_free(node)
             
