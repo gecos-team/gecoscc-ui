@@ -39,7 +39,7 @@ from gecoscc.models import User
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs, update_tree, invalidate_change, add_computer_to_user
-from gecoscc.utils import (get_chef_api, get_cookbook, toChefUsername,
+from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou, get_filter_in_domain,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
@@ -1279,28 +1279,31 @@ class ChefTask(Task):
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
             # Update object data
             if obj['type'] == 'user':
-                username = toChefUsername(obj['name'])
+                username = get_username_chef_format(obj)
                 if self.has_changed_user_data(obj, objold):
                     self.log('debug', 'task.py:: update_node - Updating user data: {0}'.format(obj['name']))
                     # Update user data
                     if not node.normal.has_dotted('gecos_info'):
                         node.normal.set_dotted('gecos_info', {})
+
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
                         
-                    if not node.normal.has_dotted('gecos_info.%s'%(username)):
-                        node.normal.set_dotted('gecos_info.%s'%(username), {})
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(username), {})
                         
-                    node.normal.set_dotted('gecos_info.%s.email'%(username), obj['email'])
-                    node.normal.set_dotted('gecos_info.%s.firstName'%(username), obj['first_name'])
-                    node.normal.set_dotted('gecos_info.%s.lastName'%(username), obj['last_name'])
+                    node.normal.set_dotted('gecos_info.users.%s.email'%(username), obj['email'])
+                    node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), obj['first_name'])
+                    node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), obj['last_name'])
     
                     updated = True
                     
                 if ((action == 'deleted' or action == 'detached') 
                     and node.normal.has_dotted('gecos_info')
-                    and node.normal.has_dotted('gecos_info.%s'%(username))):
+                    and node.normal.has_dotted('gecos_info.users.%s'%(username))):
                     self.log('debug', 'task.py:: update_node - Deleting user data: {0}'.format(obj['name']))
                     
-                    del node.normal['gecos_info'][username]
+                    del node.normal['gecos_info']['users'][username]
                     updated = True            
                     
             

@@ -9,32 +9,22 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
-import sys
-import string
-import random
-import subprocess
 import json
 import requests
 import re
 from copy import deepcopy
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
+from chef.exceptions import ChefServerNotFoundError
 from chef import Node as ChefNode
-from chef.node import NodeAttributes
-from getpass import getpass
 from optparse import make_option
 from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
-from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername, trace_inheritance, order_groups_by_depth
+from gecoscc.utils import (_get_chef_api, toChefUsername, 
+                           trace_inheritance, order_groups_by_depth)
+from gecoscc.rules import get_username_chef_format
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
-
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +33,8 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     description = """
        Check the policies data for all the workstations in the database. 
-       This script must be executed on major policies updates when the changes in the policies structure may
+       This script must be executed on major policies updates when the changes 
+       in the policies structure may
        cause problems if the Chef nodes aren't properly updated.
        
        So, the curse of action is:
@@ -515,24 +506,27 @@ class Command(BaseCommand):
                     if not node.normal.has_dotted('gecos_info'):
                         node.normal.set_dotted('gecos_info', {})
                         
-                    username = toChefUsername(user['name'])
-                    if not node.normal.has_dotted('gecos_info.%s'%(username)):
-                        node.normal.set_dotted('gecos_info.%s'%(username), {})
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
+                                                
+                    username = get_username_chef_format(user)
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(username), {})
                         
                     updated = False
-                    if (not node.normal.has_dotted('gecos_info.%s.email'%(username))
-                        or node.normal.get_dotted('gecos_info.%s.email'%(username)) != user['email']):
-                        node.normal.set_dotted('gecos_info.%s.email'%(username), user['email'])
+                    if (not node.normal.has_dotted('gecos_info.users.%s.email'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.email'%(username)) != user['email']):
+                        node.normal.set_dotted('gecos_info.users.%s.email'%(username), user['email'])
                         updated = True
                         
-                    if (not node.normal.has_dotted('gecos_info.%s.firstName'%(username))
-                        or node.normal.get_dotted('gecos_info.%s.firstName'%(username)) != user['first_name']):
-                        node.normal.set_dotted('gecos_info.%s.firstName'%(username), user['first_name'])
+                    if (not node.normal.has_dotted('gecos_info.users.%s.firstName'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.firstName'%(username)) != user['first_name']):
+                        node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), user['first_name'])
                         updated = True
 
-                    if (not node.normal.has_dotted('gecos_info.%s.lastName'%(username))
-                        or node.normal.get_dotted('gecos_info.%s.lastName'%(username)) != user['last_name']):
-                        node.normal.set_dotted('gecos_info.%s.lastName'%(username), user['last_name'])
+                    if (not node.normal.has_dotted('gecos_info.users.%s.lastName'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.lastName'%(username)) != user['last_name']):
+                        node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), user['last_name'])
                         updated = True
                         
                     if updated:
