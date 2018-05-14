@@ -463,6 +463,9 @@ class ChefTask(Task):
         if obj_ui == objold_ui:
             return False
 
+        if objold_ui is None or objold_ui=={}:
+            return True
+
         field_chef_value = node.attributes.get_dotted(field_chef)
         self.log("debug","tasks.py ::: has_changed_user_emitter_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
         username = get_username_chef_format(priority_obj)
@@ -1276,7 +1279,7 @@ class ChefTask(Task):
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
             # Update object data
             if obj['type'] == 'user':
-                username = toChefUsername(user['name'])
+                username = toChefUsername(obj['name'])
                 if self.has_changed_user_data(obj, objold):
                     self.log('debug', 'task.py:: update_node - Updating user data: {0}'.format(obj['name']))
                     # Update user data
