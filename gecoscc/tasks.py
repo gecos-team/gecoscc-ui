@@ -211,8 +211,10 @@ class ChefTask(Task):
         if obj == {}:
             return {}
         if rule_type == 'save':
-            if policy.get('is_emitter_policy', False):
-                obj = self.db.nodes.find_one({'node_chef_id': node.name})
+            self.log("info","tasks:::get_object_ui rule_type='save' is_emitter_policy=%s"%(policy.get('is_emitter_policy', False)))
+            #if policy.get('is_emitter_policy', False):
+            #    obj = self.db.nodes.find_one({'node_chef_id': node.name})
+            self.log("info","tasks:::get_object_ui obj['type']=%s"%(obj['type']))
             return obj
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
@@ -953,8 +955,17 @@ class ChefTask(Task):
             curobj_ui_field = objold_ui_field = {}
 
             if priority_obj != obj:
-                priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-                self.log("debug","tasks:::update_node_from_rules -> priority_obj_ui = {0}".format(priority_obj_ui))
+                if rule_type == 'save' and not is_mergeable:
+                    # We are saving an emitter type that is nor mergeable and 
+                    # priority_obj != obj, so we don't have to take any action
+                    continue 
+                    
+                if rule_type == 'policies':
+                    # Priority obj_ui only have meaning on non emitter types
+                    priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
+                    self.log("debug","tasks:::update_node_from_rules -> priority_obj_ui = {0}".format(priority_obj_ui))
+                
+                
             if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION or is_mergeable:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
