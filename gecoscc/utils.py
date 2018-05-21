@@ -2354,6 +2354,7 @@ def mongodb_backup(path=None, collection=None):
       collection(str):  mongo collection for backing up. If is None, then all database is backed up.
     '''
     logger.info("Backing up mongodb ...")
+    exitstatus = 0
 
     try:
 
@@ -2373,11 +2374,14 @@ def mongodb_backup(path=None, collection=None):
 
         mongodb = settings['mongodb']
        
-        mongodb.dump(path, collection)
+        exitstatus = mongodb.dump(path, collection)
         logger.info("mongodb backup ended.")
 
     except AssertionError, msg:
         logger.warning(msg)
+        exitstatus = 1
+
+    return exitstatus
 
 def mongodb_restore(path=None, collection=None):
     ''' Restore of mongo collection or database
@@ -2404,11 +2408,14 @@ def mongodb_restore(path=None, collection=None):
 
         mongodb = settings['mongodb']
 
-        mongodb.restore(path, collection)
+        exitstatus = mongodb.restore(path, collection)
         logger.info("mongodb restored from backup.")
 
     except AssertionError, msg:
         logger.warning(msg)
+        exitstatus = 1
+
+    return exitstatus
  
 
 def upload_cookbook(user=None,cookbook_path=None):
@@ -2419,6 +2426,7 @@ def upload_cookbook(user=None,cookbook_path=None):
       cookbook_path(str):   path to cookbook files
     '''
     logger.info("Uploading cookbook ...")
+    exitstatus = 0
 
     try:
 
@@ -2448,10 +2456,14 @@ def upload_cookbook(user=None,cookbook_path=None):
         
     except AssertionError, msg:
         logger.warning(msg)
+        exitstatus = 1
 
     except subprocess.CalledProcessError, msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
+        exitstatus = msg.returncode
+
+    return exitstatus
 
 
 def chefserver_backup(username=None, backupdir=None):
@@ -2462,6 +2474,7 @@ def chefserver_backup(username=None, backupdir=None):
       backupdir(str):   backup directory where hold files
     '''
     logger.info("Backing up Chef Server ...")
+    exitstatus = 0
 
     try:
  
@@ -2490,10 +2503,14 @@ def chefserver_backup(username=None, backupdir=None):
 
     except AssertionError, msg:
         logger.error(msg)
+        exitstatus = 1
 
     except subprocess.CalledProcessError, msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
+        exitstatus = msg.returncode
+
+    return exitstatus
 
 def chefserver_restore(username=None, backupdir=None):
     ''' Restoring Chef server data from a backup that was created by the chefserver_backup function
@@ -2503,6 +2520,7 @@ def chefserver_restore(username=None, backupdir=None):
       backupdir(str):   directory where backup files are
     '''
     logger.info("Restoring Chef Server ...")
+    exitstatus = 0
 
     try:
 
@@ -2531,10 +2549,15 @@ def chefserver_restore(username=None, backupdir=None):
 
     except AssertionError, msg:
         logger.warning(msg)
+        exitstatus = 1
 
     except subprocess.CalledProcessError, msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
+        exitstatus = msg.returncode
+
+    return exitstatus
+     
 
 def import_policies(username=None, inifile=None):
     ''' Import policies from Chef Server to mongo database
