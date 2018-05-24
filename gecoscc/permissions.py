@@ -19,7 +19,9 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
 
+import time
 import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +58,7 @@ def is_path_right(request, path, ou_type='ou_managed'):
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
             return True
-            break
+            
     return False
 
 
@@ -69,6 +71,10 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
             obj = oid_or_obj
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
+        
+        if obj is None:
+            raise HTTPForbidden()
+            
         path = obj['path']
         if (path == 'root' or len(path.split(',')) == 2) and request.method == 'DELETE':
             raise HTTPForbidden()
@@ -166,14 +172,25 @@ class RootFactory(object):
 
 
 class LoggedFactory(object):
-    __acl__ = [
-        (Allow, Authenticated, ALL_PERMISSIONS),
-    ]
 
+    def __acl__(self):
+        if self.maintenance and self.maintenance.get('value') is True:
+            return [(Allow,'g:maintenance', ALL_PERMISSIONS)]
+
+        return [(Allow, Authenticated, ALL_PERMISSIONS)]
     def __init__(self, request):
         self.request = request
+        self.maintenance = self.request.db.settings.find_one({'key':'maintenance_mode'})
+        maintenance_msg = self.request.db.settings.find_one({'key':'maintenance_message'})
+        if maintenance_msg is not None:
+            self.request.session['maintenance_message'] = maintenance_msg.get('value')
+        else:
+            if 'maintenance_message' in self.request.session:
+                del self.request.session['maintenance_message']
+        logger.debug("LoggedFactory ::: self.maintenance = %s" % self.maintenance)
         try:
             self.request.user
+            logger.debug("LoggedFactory ::: user = %s" % self.request.user)
         except UserDoesNotExist:
             forget(request)
 
@@ -206,7 +223,7 @@ class InternalAccessFactory(object):
         
         # Check if the remote IP address belongs to a GECOSCC server
         for server in server_list:
-            if server['address'] == remote_addr:
+            if socket.gethostbyname(server['address']) == remote_addr:
                 logger.debug('InternalAccessFactory: access allowed for GECOS CC server: %s'%(server['name']))
                 remember(self.request, server['name'])
                 return [(Allow, Everyone, 'view')]      
@@ -238,6 +255,8 @@ class SuperUserOrMyProfileFactory(LoggedFactory):
         if user:
             username = self.request.matchdict.get('username') or self.request.GET.get('username')
             is_superuser = user.get('is_superuser')
+            if self.maintenance and self.maintenance.get('value') is True:
+                return [(Allow,'g:maintenance',ALL_PERMISSIONS)]
             if is_superuser or user.get('username') == username:
                 return [(Allow, Authenticated, ALL_PERMISSIONS)]
         return [(Allow, Authenticated, [])]

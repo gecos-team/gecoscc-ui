@@ -21,6 +21,7 @@ import zipfile
 import tempfile
 
 from bson import ObjectId
+from pymongo import errors
 
 from pkg_resources import resource_filename
 
@@ -30,9 +31,10 @@ from chef.exceptions import ChefServerError
 from deform.template import ZPTRendererFactory
 
 from gecoscc import messages
-from gecoscc.tasks import cookbook_upload
+from gecoscc.tasks import script_runner
 from gecoscc.i18n import gettext as _
 from gecoscc.utils import get_chef_api, create_chef_admin_user
+from gecoscc.socks import maintenance_mode
 
 
 default_dir = resource_filename('deform', 'templates/')
@@ -92,6 +94,7 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
                      'repeat_password', 'first_name', 'last_name',
+                     'nav_tree_pagesize', 'policies_pagesize', 'jobs_pagesize', 'group_nodes_pagesize',
                      'ou_managed', 'ou_availables',)
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
@@ -101,6 +104,10 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('nav_tree_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('policies_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('jobs_pagesize')].ignore_unique = self.ignore_unique
+        schema.children[self.sorted_fields.index('group_nodes_pagesize')].ignore_unique = self.ignore_unique
 
 
 class AdminUserAddForm(BaseAdminUserForm):
@@ -219,117 +226,89 @@ class AdminUserVariablesForm(GecosForm):
         self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
         self.created_msg(_('Variables updated successfully'))
 
-class ParseMetadataException(Exception):
-    pass
 
-class CookbookUploadForm(GecosForm):
-
+class UpdateForm(GecosForm):
+    ''' Class for update form
+    
+    '''
     def validate(self, data):
         data_dict = dict(data)
-        if not data_dict['upload'] and data_dict['remote_file']:
-            self.schema.get('local_file').missing=''
-
-        return super(CookbookUploadForm, self).validate(data)
-
-    def save(self, upload):
-        
-        logger.info("CookbookUpload - upload - %s" % upload)
-        error = False
+        logger.debug("forms.py ::: UpdateForm - data = {0}".format(data_dict))
+        return super(UpdateForm, self).validate(data)
+    def save(self, update):
         settings = get_current_registry().settings
-        rootdir = settings['cookbook_upload_rootdir'] + '/'
-        logger.debug("forms.py ::: CookbookUpload - rootdir = %s" % rootdir)
-        uploadir = rootdir + self.username + "/uploads/" + str(int(time.time())) + "/"
-        logger.debug("forms.py ::: CookbookUpload - uploadir = %s" % uploadir)
-
+        update = update['local_file'] if update['local_file'] is not None else update['remote_file']
+        sequence = re.match('^update-(\w+)\.zip$', update['filename']).group(1)
+        logger.debug("forms.py ::: UpdateForm - sequence = %s" % sequence)
+        # Updates directory: /opt/gecoscc/updates/<sequence>
+        updatesdir = settings['updates.dir'] + sequence
+        logger.debug("forms.py ::: UpdateForm - updatesdir = %s" % updatesdir)
+        # Update zip file
+        zipped = settings['updates.tmp'] + update['filename']
+        logger.debug("forms.py ::: UpdateForm - zipped = %s" % zipped)
         try:
-            if not os.path.exists(uploadir):
-                os.makedirs(uploadir)
-            if upload['local_file']:
-                f = upload['local_file']
-                with open('/tmp/' + f['filename'], 'wb') as zipped: 
-                    zipped.write(f['fp'].read())
+            # https://docs.python.org/2/library/shutil.html
+            # The destination directory, named by dst, must not already exist; it will be created as well as missing parent directories
+            # Checking copytree NFS
+            shutil.copytree(update['decompress'], updatesdir)
+            shutil.rmtree(update['decompress'])
+            # Move zip file to updates dir
+            shutil.move(zipped, updatesdir)
 
-            elif upload['remote_file']:
-                f = urllib2.urlopen(upload['remote_file'])
-                with open('/tmp/' + os.path.basename(upload['remote_file']), "wb") as zipped:
-                    zipped.write(f.read())
-
-            logger.info("forms.py ::: CookbookUpload - zipped = %s" % zipped)
-
-            # Decompress zipfile into temporal dir
-            tmpdir = tempfile.mkdtemp()
-            zip_ref = zipfile.ZipFile(zipped.name,'r')
-            zip_ref.extractall(tmpdir)
-            zip_ref.close()
-
-            # Getting cookbook's name
-            cookbook_name = cookbook_ver = ""
-            for name in glob.glob(tmpdir + "/*"):
-                logger.info("forms.py ::: CookbookUpload - name = %s" % name)
-                tmpdir = name
-                logger.info("forms.py ::: CookbookUpload - tmpdir = %s" % tmpdir)
-                with open("%s/metadata.rb" % name) as metafile:
-                    for line in metafile:
-                        logger.debug("forms.py ::: CookbookUpload - line = %s" % line)
-                        matchname = re.search(r'name[ \t]+(")?(\w+)(?(1)\1|)', line)
-                        matchver  = re.search(r'version[ \t]+(")?([\d.]+)(?(1)\1|)', line)
-                        if matchname:
-                            cookbook_name = matchname.group(2)
-                        elif matchver:
-                            cookbook_ver  = matchver.group(2)
-                            break
-            
-            if  not (cookbook_name and cookbook_ver):            
-                raise ParseMetadataException()
-
-            logger.debug("forms.py ::: CookbookUpload - cookbook_name = %s" % cookbook_name)
-            logger.debug("forms.py ::: CookbookUpload - cookbook_ver = %s" % cookbook_ver)
-            cookbook_path = uploadir + cookbook_name
-            logger.debug("forms.py ::: CookbookUpload - cookbook_path = %s" % cookbook_path)
-            shutil.move(tmpdir, cookbook_path)
-
-        except urllib2.HTTPError as e:
-                error = True
-                self.created_msg(_('There was an error downloading zip file'), 'danger')
-        except urllib2.URLError as e:
-                error = True
-                self.created_msg(_('There was an error downloading zip file'), 'danger')
-        except zipfile.BadZipfile as e:
-                error = True
-                self.created_msg(_('File is not a zip file: %s') % zipped.name, 'danger')
+            # Decompress cookbook zipfile
+            cookbookdir = settings['updates.cookbook'].format(sequence)
+            logger.debug("forms.py ::: UpdateForm - cookbookdir = %s" % cookbookdir)
+            for cookbook in os.listdir(cookbookdir):
+                cookbook = cookbookdir + os.sep + cookbook
+                logger.debug("forms.py ::: UpdateForm - cookbook = %s" % cookbook)
+                if zipfile.is_zipfile(cookbook):
+                    zip_ref = zipfile.ZipFile(cookbook,'r')
+                    zip_ref.extractall(cookbookdir + os.sep + settings['chef.cookbook_name'])
+                    zip_ref.close()
+            # Insert update register
+            self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0, 'user': self.request.user['username']})
+            # Launching task for script execution
+            script_runner.delay(self.request.user, sequence)
+            link = '<a href="' +  self.request.route_url('updates_tail',sequence=sequence) + '">' + _("here") + '</a>'
+            self.created_msg(_("Update log. %s") % link)
         except OSError as e:
                 error = True
                 if e.errno == errno.EACCES:
-                    self.created_msg(_('Permission denied: %s') % uploadir, 'danger')
+                    self.created_msg(_('Permission denied: %s') % updatesdir, 'danger')
                 else:
-                    logger.error("forms.py ::: CookbookUpload - Error = %s" % e.strerror)
-                    self.created_msg(_('There was an error attempting to upload the cookbook. Please contact an administrator'), 'danger')
-        except IOError as e:
-                logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
-                error = True
-                self.created_msg(_('No such file or directory: metadata.rb'), 'danger')
-        except ParseMetadataException as e:
-                logger.debug("forms.py ::: CookbookUpload - e = %s" % e)
-                error = True
-                self.created_msg(_('No cookbook name or version found in metadata.rb'),'danger')
+                    self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+        except (IOError, os.error) as e:
+            pass
+        except errors.DuplicateKeyError as e:
+            logger.error('Duplicate key error')
+            self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+class MaintenanceForm(GecosForm):
+    css_class = 'deform-maintenance'
 
-        if not error:
-            obj = {
-                "_id": ObjectId(),
-                "name": cookbook_name,
-                "path": uploadir,
-                "type": 'upload',
-                "version": cookbook_ver
-            }
-            cookbook_upload.delay(self.request.user, 'upload', obj)
-            logbook_link = '<a href="' +  self.request.application_url + '/#logbook' + '">' + _("here") + '</a>'
-            self.created_msg(_("Upload cookbook enqueue. Visit logbook %s") % logbook_link)
+    def __init__(self, schema, request, *args, **kwargs):
+        self.request = request
+        buttons = (GecosButton(title=_('Submit'),
+                               css_class='deform-maintenance-submit'),)
 
+        super(MaintenanceForm, self).__init__(schema, buttons=buttons, *args, **kwargs)
 
-class CookbookRestoreForm(GecosForm):
-    def validate(self, data):
-        data_dict = dict(data)
-        return super(CookbookUploadForm, self).validate(data)
+    def save(self, postvars):
+        logger.debug("forms.py ::: MaintenanceForm - postvars = {0}".format(postvars))
 
-    def save(self, upload):
-        self.created_msg(_('Restore cookbook.'))
+        if postvars['maintenance_message'] == "":
+            logger.debug("forms.py ::: MaintenanceForm - Deleting maintenance message")
+            self.request.db.settings.remove({'key':'maintenance_message'})
+            self.created_msg(_('Maintenance message was deleted successfully.'))
+        else:
+            logger.debug("forms.py ::: MaintenanceForm - Creating maintenance message")
+            compose = postvars['maintenance_message']
+            maintenance_mode(self.request, compose)
+            msg = self.request.db.settings.find_one({'key':'maintenance_message'})
+            if msg is None:
+                msg = {'key':'maintenance_message', 'value': compose, 'type':'string'}
+                self.request.db.settings.insert(msg)
+            else:
+                self.request.db.settings.update({'key':'maintenance_message'},{'$set':{ 'value': compose}})
+
+            self.request.session['maintenance_message'] = compose
+            self.created_msg(_('Maintenance settings saved successfully.'))

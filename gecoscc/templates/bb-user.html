@@ -2,6 +2,7 @@
 <ul class="nav nav-tabs">
     <li class="active"><a href="#info" data-toggle="tab">{{ gettext('Information') }}</a></li>
     <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
+    <li id="inheritance-tab"><a href="#inheritance" data-toggle="tab">{{ gettext('Inheritance') }}</a></li>
 </ul>
 
 <div class="tab-content">
@@ -103,6 +104,45 @@
                 <div class="text-muted bootstrap-admin-box-title">{{ gettext('Policies list') }}</div>
             </div>
             <div class="bootstrap-admin-panel-content"></div>
+        </div>
+    </div>
+
+    <div class="tab-pane fade in" id="inheritance">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div class="text-muted bootstrap-admin-box-title">{{ gettext('Inheritance list') }}</div>
+                <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
+                    <span class="fa fa-refresh"></span>
+                </button>                
+            </div>
+            <div class="bootstrap-admin-panel-content"></div>
+            
+                <% if (computers_inheritance && computers_inheritance.length > 0) { %>
+                <div class="bootstrap-admin-panel-content">
+                    <div class="row"><div class="col-sm-12"><strong>{{ gettext('Workstation policies') }}</strong></div></div>
+                    <div class="object_related_list">
+                        <table class="table table-bordered">
+                        <% computers_inheritance.forEach(function (computer, index) { %>
+                            <% if ( (index%4) == 0) { %>
+                                <tr>
+                            <% } %>
+
+                                    <td>
+                                        <a style="white-space: nowrap;" href="#ou/<%= _.last(computer.path.split(',')) %>/computer/<%= computer._id %>/inheritance"><span class="fa fa-desktop"></span> <%= computer.name %></a> 
+                                    </td>
+                                    
+                            <% if ( (index%4) == 3) { %>
+                                </tr>
+                            <% } %>
+                                    
+                        <% }) %>
+                        </table>
+                    </div>    
+                    </div>                    
+                    
+                </div>
+                <% } %>            
+            
         </div>
     </div>
 </div>

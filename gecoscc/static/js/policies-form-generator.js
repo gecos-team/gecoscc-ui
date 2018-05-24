@@ -49,7 +49,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         render: function () {
-            var data, policyData, template, $html, options;
+            var data, policyData, template, $html, options, formLayout;
 
             this.isClosed = false;
 
@@ -63,6 +63,8 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (this.model.get('slug').slice(-4) === '_res') {
                 policyData.slug = this.model.get('slug').slice(0, -4);
             }
+            formLayout = _.isEmpty(this.model.get('form')) ? "*" : this.model.get('form');
+            //console.log("formLayout: " + formLayout);
 
             template = this.getTemplate();
             $html = $(Marionette.Renderer.render(template, policyData));
@@ -72,7 +74,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 // Object that describes the data model
                 schema: data.schema,
                 // Array that describes the layout of the form
-                form: ["*"],
+                form: [formLayout],
                 // Callback function called upon form submission when values are valid
                 onSubmitValid: _.bind(this.processForm, this)
             };
@@ -81,6 +83,7 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             options.resourceId = this.resource.get("id");
             options.ouId = _.last(this.resource.get("path").split(","));
             options.slug = policyData.slug;
+            options.customFormItems = data.schema['customFormItems'];
             $html.find("form").jsonForm(options);
 
             this.$el.html($html);
@@ -90,6 +93,27 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             this.triggerMethod("item:rendered", this);
 
             return this;
+        },
+
+        onBeforeRender: function () {
+            var autoreverse = this.model.get('autoreverse');
+
+            if (autoreverse) {
+                this.alertWarning(
+                    gettext("This is an auto-reverting policy."),
+                    "<br/> - " + gettext("Any configuration element removed from the form will be inmediatly removed from the corresponding workstations.")
+                );
+            }
+        },
+
+        alertWarning: function (strong, text) {
+            this.model.set("iconClass", "info-icon-warning");
+            this.model.set("labelClass", "label-warning");
+            App.showAlert(
+                "warning",
+                strong,
+                text
+            );
         },
 
         onRender: function () {

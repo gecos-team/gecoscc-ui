@@ -1,37 +1,60 @@
-<div class="panel-heading">
-    <div class="text-muted bootstrap-admin-box-title">
+<div class="panel-heading tasks-heading">
+    <div class="text-muted bootstrap-admin-box-title tasks-filters">
         {{ gettext('My actions') }}
-        <span class="filters <% if (!isMaximized) { print('hide'); } %>">
+        <span class="filters">
             <a href="#" id="tasksAll" class="<% if (status == '') { print('active'); } %>">{{ gettext('All Actions') }}</a> |
             <a href="#" id="tasksProcessing" class="<% if (status == 'processing') { print('active'); } %>">{{ gettext('Processing Actions') }}</a> |
             <a href="#" id="tasksFinished" class="<% if (status == 'finished') { print('active'); } %>">{{ gettext('Finished Actions') }}</a> |
             <a href="#" id="tasksWarnings" class="<% if (status == 'warnings') { print('active'); } %>">{{ gettext('Warnings Actions') }}</a> |
             <a href="#" id="tasksErrors" class="<% if (status == 'errors') { print('active'); } %>">{{ gettext('Errors Actions') }}</a>
         </span>
-        <span class="filters <% if (!isMaximized) { print('hide'); } %>">
+        <span class="filters">
             <a href="#" id="tasksActives" class="<% if (!archived) { print('active'); } %>">{{ gettext('Active') }}</a> |
             <a href="#" id="tasksArchived" class="<% if (archived) { print('active'); } %>">{{ gettext('Archived') }}</a>
         </span>
     </div>
-    <button id="maximize" class="btn btn-xs btn-default pull-right <% if (isMaximized) { print('hide'); } %>" title="{{ gettext('Maximize') }}">
-        <span class="fa fa-plus"></span>
-    </button>
-    <button id="minimize" class="btn btn-xs btn-default pull-right <% if (!isMaximized) { print('hide'); } %>" title="{{ gettext('Minimize') }}">
-        <span class="fa fa-minus"></span>
-    </button>
-    <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
-        <span class="fa fa-refresh"></span>
-    </button>
-    <button class="btn btn-xs btn-default pull-right archiveTasks <% if (parentId) { print('hide'); } %>" title="{{ gettext('Archive Tasks') }}">
-        <span class="fa fa-archive"></span>
-    </button>
-    <button id="backstack" class="btn btn-xs btn-default pull-right backstack <% if (!parentId) { print('hide'); } %>" title="{{ gettext('Backstrack') }}">
-        <span class="fa fa-reply"></span>
-    </button>
+    <div class="tasks-rigth">
+      <div class="tasks-search">
+        <div class="form-inline">
+            <div class="form-group">
+                <input id="tasksBySource" type="text" class="tasks-search-input" placeholder="{{ gettext('Origin') }}" maxlength="80" value="<%= source %>">
+                <button id="tasksBySource-close-search-btn" class="btn btn-danger tasks-close-search-btn hidden" type="button"><i class="fa fa-times fa-right-sided"></i></button>
+            </div>
+            <div class="form-group">
+                <input id="tasksByUser" type="text" class="tasks-search-input" placeholder="{{ gettext('User') }}" maxlength="80" value="<%= userfilter %>"> 
+                <button id="tasksByUser-close-search-btn" class="btn btn-danger tasks-close-search-btn hidden" type="button"><i class="fa fa-times fa-right-sided"></i></button> 
+            </div>
+            <div class="form-group">
+                <input id="tasksByWorkstation" type="text" class="tasks-search-input" placeholder="{{ gettext('Workstation') }}" maxlength="80" value="<%= workstation %>">
+                <button id="tasksByWorkstation-close-search-btn" class="btn btn-danger tasks-close-search-btn hidden" type="button"><i class="fa fa-times fa-right-sided"></i></button> 
+            </div>
+            <button class="btn btn-primary tasks-search-btn" type="button"><span class="fa fa-search"></span></button> 
+            <div class="form-group seeAll {% if request.user and request.user.get('is_superuser') %}admin{% endif %}">
+                <label class="links">{{ gettext('See All') }}
+                    <input type="checkbox" data-size="mini" id="seeAll" name="seeAll" checked>
+                </label>
+            </div>
+        </div>
+      </div>
+      <div class="tasks-buttons">
+        <button id="minimize" class="btn btn-xs btn-default pull-right" title="{{ gettext('Minimize') }}">
+          <span class="fa fa-minus"></span>
+        </button>
+        <button class="btn btn-xs btn-default pull-right refresh" title="{{ gettext('Reload') }}">
+          <span class="fa fa-refresh"></span>
+        </button>
+        <button class="btn btn-xs btn-default pull-right archiveTasks <% if (parentId) { print('hide'); } %>" title="{{ gettext('Archive Tasks') }}">
+          <span class="fa fa-archive"></span>
+        </button>
+        <button id="backstack" class="btn btn-xs btn-default pull-right backstack <% if (!parentId) { print('hide'); } %>" title="{{ gettext('Backstrack') }}">
+          <span class="fa fa-reply"></span>
+        </button>
+      </div>
+    </div>
 </div>
 <div class="bootstrap-admin-panel-content table-responsive">
     <table id="macrojobs" class="table table-striped table-bordered">
-        <thead class="long <% if (!isMaximized) { print('hide'); } %>">
+        <thead class="long">
             <tr>
                 <th>
                     {{ gettext("Date") }}
@@ -72,7 +95,7 @@
                     <span class="fa fa-<%= getIcon(item) %>"></span>
                     <%= item.objname %>
                 </td>
-                <td class="long <% if (!isMaximized) { print('hide'); } %>">
+                <td class="long">
                     <% if (parentId) { %>
                         <%= item.computername %>
                     <% } else { %>
@@ -97,19 +120,19 @@
                                         else if (item.status==='warnings') { %> fa-exclamation<% }
                                         else { %> fa-clock-o<% } %>"
                                         title="<%= item.status %>"></span>
-                    <span class="long <% if (!isMaximized) { print('hide'); } %>"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
+                    <span class="long"><%= item.last_update %><% if (item.message) { print(": "); print(item.message); } %> </span>
                 </td>
             </tr>
         <% }); %>
         </tbody>
     </table>
 
-    <div class="pull-left total <% if (!isMaximized) { print('hide'); } %>">
+    <div class="pull-left total">
         <span>{{ gettext('Total') }}: <%= total %></span>
     </div>
 
     <% if (showPaginator) { %>
-        <ul class="pagination pull-right <% if (!isMaximized) { print('hide'); } %>">
+        <ul class="pagination pull-right">
             <li <% if (!prev) { print('class="disabled"'); } %>>
                 <a class="previous" href="#">&laquo;</a>
             </li>

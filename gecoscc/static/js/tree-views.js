@@ -23,6 +23,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         rendered: undefined,
         selectionInfoView: undefined,
         activeNode: null,
+        activeNodeModel: null,
 
         events: {
             "click a": "stopPropagation",
@@ -35,8 +36,6 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         initialize: function () {
-            var $search = $("#tree-search");
-
             this.renderer = new Views.Renderer({
                 $el: this.$el,
                 model: this.model
@@ -48,12 +47,41 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 .off("click")
                 .on("click", function (evt) {
                     evt.preventDefault();
-                    var keyword = $search.val().trim();
+                    var keyword = $("#tree-search").val().trim();
+                    var search_by = $('input:radio[name=search_by]:checked').val();
+                    var search_filter = App.instances.tree.getSearchFilter();
+
+                    // If all the elements are selected do not filter
+                    if (search_filter.length == 7) {
+                        search_filter = []
+                    }
+
                     //empty search reload tree
                     if (!keyword) {
-                        App.instances.tree.loadFromPath("root");
+                        if (!_.isUndefined(App.tree.currentView.activeNode) 
+                            && !_.isUndefined(App.tree.currentView.activeNodeModel)
+                            && App.tree.currentView.activeNodeModel != null) {
+                            // There is an active node
+                            var model = App.tree.currentView.activeNodeModel;
+                            var path = "root";
+                            if (model.get) {
+                                path = model.get('path');
+                            }
+                            else {
+                                path = model.path;
+                            }
+                            
+                            App.tree.currentView.closeAllExcept(path+','+App.tree.currentView.activeNode);
+                            App.instances.tree.loadFromPath(path, App.tree.currentView.activeNode, false, search_filter);
+                        }
+                        else {
+                            // Reload root
+                            App.instances.tree.loadFromPath("root", null, false, search_filter);
+                        }
+
+                        
                     } else {
-                        App.instances.router.navigate("search/" + keyword,
+                        App.instances.router.navigate("search/" + keyword + "?searchby="+search_by+"&searchfilter="+search_filter,
                                                   { trigger: true });
                         $("#tree-close-search-btn").show();
                     }
@@ -64,6 +92,10 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                     $("#tree-search-btn").click();
                 }
             });
+            
+            $('#tree_search_drowpdown').on('hidden.bs.dropdown', function () {
+                $("#tree-search-btn").click();
+            });                 
 
             $("#tree-close-search-btn")
                 .hide()
@@ -94,7 +126,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         stopPropagation: function (evt) {
             evt.stopPropagation();
         },
-
+        
         editNode: function (evt) {
             var $el = $(evt.target).parents(".tree-node").first(),
                 that = this,
@@ -126,7 +158,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         paginate: function (evt) {
-            var that, $el, prev, node, page, searchId, id;
+            var that, $el, prev, node, page, searchId, id, path;
 
             that = this;
             $el = $(evt.target);
@@ -136,6 +168,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             prev = $el.data("pagination") === "up";
             $el = $el.parents(".tree-container").first();
             id = $el.attr("id");
+            path = $el.attr("data-path");
             node = this.model.get("tree").first(function (obj) {
                 return obj.model.id === id;
             });
@@ -143,11 +176,26 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             if (node.model.status === "paginated") {
                 page = node.model.paginatedChildren.currentPage;
                 page = prev ? page - 1 : page + 1;
-                node.model.paginatedChildren.goTo(page, {
+                if (page < 1) {
+                    page = 1;
+                }
+                
+                if (page > node.model.paginatedChildren.totalPages) {
+                    page = node.model.paginatedChildren.totalPages;
+                }
+                
+                // Only save current page for root node
+                if ("root" == path) {
+                    this.setCurrentPageforNode(id, page);
+                }
+                node.model.paginatedChildren.goToPage(page, {
                     success: function () { that.model.trigger("change"); }
                 });
             } else {
                 searchId = $el.find(".tree-container").first().attr("id");
+                if ("root" == path) {
+                    this.setCurrentPageforNode(id, 0);
+                }
                 this.model.loadFromPath(node.model.path + ',' + id, searchId);
             }
         },
@@ -161,7 +209,7 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
                 return obj.model.id === id;
             });
 
-            if (!_.isUndefined(node)) {
+            if (!_.isUndefined(node) && node.children.length > 0) {
                 node.model.closed = !opened;
             } else {
                 $content.html(this.renderer._loader());
@@ -169,29 +217,101 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
 
+        openContainerForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            var header = elem.find(".tree-container-header").first();
+            var icon = header.find(".fa-plus-square-o");
+            
+            content.show();
+            icon.removeClass("fa-plus-square-o")
+                .addClass("fa-minus-square-o");   
+
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = false;
+            }
+                
+        },
+
+        closeContainerForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            var header = elem.find(".tree-container-header").first();
+            var icon = header.find(".fa-minus-square-o");
+            
+            content.hide();
+            icon.removeClass("fa-minus-square-o")
+                .addClass("fa-plus-square-o");      
+
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.model.closed = true;
+            }                
+        },
+
+        removeChildrenForNodeId: function (nodeId) {
+            var elem = $('#'+nodeId);
+            var content = elem.find(".tree-container-content").first();
+            content.empty();
+            
+            var node = this.model.get("tree");
+            node = node.first(function (obj) {
+                return obj.model.id === nodeId;
+            });
+
+            if (!_.isUndefined(node)) {
+                node.children = [];
+            }                
+        },
+        
+        
+        
         openContainer: function (evt) {
             evt.stopPropagation();
-            var $el, $content, $header, $icon, opened, cssclass;
-
+            var $el, $content, $header, isClosed, cssclass;
+            
             $el = $(evt.target).parents(".tree-container").first();
-            $content = $el.find(".tree-container-content").first();
             $header = $el.find(".tree-container-header").first();
-            opened = $header.find(".fa-plus-square-o").length > 0;
+            $content = $el.find(".tree-container-content").first();
+            isClosed = $header.find(".fa-plus-square-o").length > 0;
 
-            this._openContainerAux($el, $content, opened);
-            if (opened) {
-                $icon = $header.find(".fa-plus-square-o");
-                $content.show();
-                cssclass = "fa-minus-square-o";
+            var that = this;
+
+            if (isClosed) {
+                // Check if we must close other nodes before opening this one
+                var path = $el.attr("data-path");
+                this.closeAllExcept(path);  
+
+                // Remove active node
+                if (!_.isUndefined(App.tree.currentView.activeNode) 
+                    && !_.isUndefined(App.tree.currentView.activeNodeModel)
+                    && App.tree.currentView.activeNodeModel != null) {            
+                    App.tree.currentView.activeNode = null;
+                    App.tree.currentView.activeNodeModel = null;
+                }
+
+            }
+            
+            this._openContainerAux($el, $content, isClosed);
+            if (isClosed) {
+                // Open node
+                this.saveOpenNode($el.attr("id"));
+                this.openContainerForNodeId($el.attr("id"));
             } else {
-                $icon = $header.find(".fa-minus-square-o");
-                $content.hide();
-                cssclass = "fa-plus-square-o";
+                // Close node
+                this.saveCloseNode($el.attr("id"));
+                this.closeContainerForNodeId($el.attr("id"));
             }
 
-            $icon
-                .removeClass("fa-plus-square-o fa-minus-square-o")
-                .addClass(cssclass);
         },
 
         _deleteOU: function () {
@@ -289,6 +409,12 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
             } else {
                 $item.addClass("tree-selected");
             }
+
+            if ( !this.isNodeOpen(id) ) {
+                // Clear the saved state and recalculate the state for current selected node
+                this.clearSavedState();
+                this.calculateStateForNode(id);
+            }
         },
 
         selectNode: function (evt) {
@@ -315,6 +441,214 @@ App.module("Tree.Views", function (Views, App, Backbone, Marionette, $, _) {
         clearNodeSelection: function () {
             this.$el.find("input.tree-selection").attr("checked", false);
             this.$el.find(".multiselected").removeClass("multiselected");
+        },
+        
+        /**
+         * Adds a node to the list of open nodes.
+         * @node_id Node ID to add to the list.
+         */
+        saveOpenNode: function(node_id) {
+            if (this.isNodeOpen(node_id)) {
+                // Already opened
+                return;
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            openNodes[username].push(node_id); 
+            Cookies.set('main_tree_opened_nodes',  JSON.stringify(openNodes));
+            
+        },
+        
+        /**
+         * Removes a node to the list of open nodes.
+         * @node_id Node ID to remove from the list.
+         */
+        saveCloseNode: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            if (openNodes[username].indexOf(node_id) < 0) {
+                return;
+            }
+            
+            openNodes[username].splice(openNodes[username].indexOf(node_id), 1);
+            Cookies.set('main_tree_opened_nodes',  JSON.stringify(openNodes));
+        },
+        
+        /**
+         * Checks if a node is in the list of open nodes.
+         * @node_id Node ID to check.
+         * @returns true if the node is in the list.
+         */
+        isNodeOpen: function(node_id) {
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            return (openNodes[username].indexOf(node_id) >= 0);
+        },
+        
+        /**
+         * Saves the curren page for a Node in the browser cookies.
+         * @node_id Node ID.
+         * @page Page number.
+         */
+        setCurrentPageforNode: function(node_id, page) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            nodePage[username][node_id] = page; 
+            Cookies.set('main_tree_node_pages',  JSON.stringify(nodePage));
+            
+        },
+        
+       
+        /**
+         * Get the current page of a Node from browser cookies.
+         * @node_id Node ID.
+         */
+        getCurrentPageforNode: function(node_id) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }            
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            return nodePage[username][node_id];
+        },
+        
+        /**
+         * Clears the state saved in cookies.
+         */
+        clearSavedState: function() {
+            Cookies.remove('main_tree_node_pages');
+            Cookies.remove('main_tree_opened_nodes');
+        },
+        
+        /**
+         * Calculates the saved state for a selected node.
+         * @node_id Node ID.
+         */
+        calculateStateForNode: function(node_id) {
+            var nodePage = {};
+            if(jQuery.type(Cookies.get('main_tree_node_pages')) != "undefined") {
+                nodePage = JSON.parse(Cookies.get('main_tree_node_pages'));
+            }            
+            if (jQuery.type(nodePage[username]) == "undefined") {
+                nodePage[username] = {}
+            }
+            
+            var openNodes = {};
+            if(jQuery.type(Cookies.get('main_tree_opened_nodes')) != "undefined") {
+                openNodes = JSON.parse(Cookies.get('main_tree_opened_nodes'));
+            }            
+            if (jQuery.type(openNodes[username]) == "undefined") {
+                openNodes[username] = []
+            }
+            
+            var root = this.$el.find(".tree-container").first();
+            var rootId = false;
+            if (jQuery.type(root) != "undefined" && root.attr('data-path') == "root") {
+                // Only the super-admin users has root node
+                rootId = root.attr('id');
+            }
+            
+            // Calculate open nodes
+            var item = this.$el.find('#' + node_id);
+            if (item.length <= 0) {
+                // Element not found
+                //console.log("Element not found!");
+                return;
+            }
+            
+            if (!item.hasClass("tree-container")) {
+                // Find the container that contains the item
+                item = item.parents(".tree-container").first();
+                node_id = item.attr('id');
+            }
+            
+            
+            // The container ID if it's open
+            var isOpen = (item.find(".tree-container-header").first().find(".fa-minus-square-o").length > 0);
+            if (isOpen) {
+                this.saveOpenNode(node_id);
+            }
+
+            // Add the container path
+            var path = item.attr('data-path');
+            var parts = path.split(',');
+            for (var i = 0; i < parts.length; i++) {
+                var ou = parts[i];
+                if (ou != "root" && this.$el.find('#' + ou).length > 0) {
+                    this.saveOpenNode(ou);
+                }
+            }
+            
+            if (rootId) {
+                // Calculate root node page
+                var node = this.model.get("tree").first(function (obj) {
+                    return obj.model.id === rootId;
+                });
+
+                var page = 1;
+                if (node.model.status === "paginated") {
+                    page = node.model.paginatedChildren.currentPage;   
+                }                
+                //console.log('Current page is: '+page);
+                
+                this.setCurrentPageforNode(rootId, page);
+            }
+            
+        },        
+        
+        /**
+         * Closes all open nodes except the nodes that belongs a to certain path.
+         */
+        closeAllExcept: function (path) {
+            var that = this;
+            var pathElements = path.split(',');
+            $('#nav-tree').find(".fa-minus-square-o").each(function() {
+                var elem = $(this).parent().parent().parent();
+                
+                var id = elem.attr('id');
+                if ( jQuery.inArray( id, pathElements) < 0 ) {
+                    that.saveCloseNode(id);
+                    that.closeContainerForNodeId(id);
+                    that.removeChildrenForNodeId(id);
+                }
+            });
+        },
+        
+        
+        /**
+         * Closes all open nodes.
+         */
+        closeAll: function () {
+            this.closeAllExcept("");
         }
+        
     });
 });

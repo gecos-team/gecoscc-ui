@@ -14,6 +14,7 @@
         <link href="{{ request.application_url }}/static/css/bootstrap-admin-theme.css" rel="stylesheet" media="screen">
         <link href="{{ request.application_url }}/static/css/scp-gecos.css" rel="stylesheet" media="screen">
         <link href="{{ request.application_url }}/static/images/fav.ico" rel="shortcut icon" />
+        <link href="{{ request.application_url }}/static/css/bootstrap-switch.min.css" rel="stylesheet" media="screen" />
 
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -21,6 +22,9 @@
            <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/html5shiv-3.6.2.min.js"></script>
            <script type="text/javascript" async src="{{ request.application_url }}/static/js/libs/respond-1.1.0.min.js"></script>
         <![endif]-->
+
+        <script src="{{ request.application_url }}/static/js/libs/jquery-1.10.2.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/deform.js"></script>                                                                                                
 
         {% block extraheader %}{% endblock %}
     </head>
@@ -83,8 +87,8 @@
         </div>
 
         <footer>
-            <span class="pull-right">&copy; 2013</span>
-            <a href="http://www.github.com/gecos-team/gecoscc-ui/tree/{{ request.VERSION }}" target="_blank">GECOS CC (v{{ request.VERSION }})</a></span>
+            <span class="pull-right" data-toggle="tooltip" data-placement="top" title="{{ request.registry.settings.get('server_address', 'UNKNOWN') }}">{{ "HOSTNAME" | env_override('HOSTNAME') }}</span> 
+            <a href="http://www.github.com/gecos-team/gecoscc-ui/tree/{{ request.VERSION }}" target="_blank">GECOS CC (v{{ request.VERSION }}) &copy; 2013</a></span>
         </footer>
 
         <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -96,18 +100,29 @@
         <script src="{{ request.application_url }}/static/js/i18n.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/bootstrap-3.0.2.min.js"></script>
         <script async src="{{ request.application_url }}/static/js/libs/twitter-bootstrap-hover-dropdown.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/fuelux.min.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/js.cookie.js"></script>
+        <script src="{{ request.application_url }}/static/js/libs/bootstrap-switch.min.js"></script>
 
         <script>
             $(document).ready(function () {
                 var confirmModal = $("#confirm-modal").modal({ show: false });
                 window.GecosUtils = {
                     askConfirmation: function (options) {
+                        var dfd = jQuery.Deferred();
                         if (!_.has(options, "callback")) { return; }
                         confirmModal.find("button.btn-danger")
                             .off("click")
                             .on("click", function () {
                                 options.callback();
                                 confirmModal.modal("hide");
+                                dfd.resolve(true);
+                            });
+                        confirmModal.find("button.btn-default")
+                            .off("click")
+                            .on("click", function () {
+                                confirmModal.modal("hide");
+                                dfd.resolve(false);
                             });
                         if (_.has(options, "message")) {
                             confirmModal.find(".modal-body").html(
@@ -116,6 +131,7 @@
                             confirmModal.find(".modal-body").html("");
                         }
                         confirmModal.modal("show");
+                        return dfd.promise();
                     },
                     {% if request.user %}
                         gecosUser: {{ request.user|admin_jsonify|safe }}
@@ -132,6 +148,22 @@
             {% else %}
             var emptyTree = "";
             {% endif %}
+            
+            {% if request.user %}
+            var username = "{{ request.user['username'] }}";
+            var nav_tree_pagesize = {% if 'nav_tree_pagesize' in request.user %} {{ request.user['nav_tree_pagesize'] }} {% else %} 10 {% endif %};
+            var policies_pagesize = {% if 'policies_pagesize' in request.user %} {{ request.user['policies_pagesize'] }} {% else %} 8 {% endif %};
+            var jobs_pagesize = {% if 'jobs_pagesize' in request.user %} {{ request.user['jobs_pagesize'] }} {% else %} 30 {% endif %};
+            var group_nodes_pagesize = {% if 'group_nodes_pagesize' in request.user %} {{ request.user['group_nodes_pagesize'] }} {% else %} 10 {% endif %};
+            {% else %}
+            var username = false;
+            var nav_tree_pagesize = 10;
+            var policies_pagesize = 8;
+            var jobs_pagesize = 30;
+            var group_nodes_pagesize = 10;
+
+            {% endif %}
+            
         </script>
         {% block extrajs %}{% endblock %}
     </body>

@@ -79,6 +79,46 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.Container = Backbone.Paginator.requestPager.extend({
         model: Models.Node,
 
+        // There must be only one pagination running!
+        in_pagination: false,
+        currentLoadedPage: 1,
+
+        goToPage: function(page, params){
+            if (this.in_pagination) {
+                //console.log("Error, previous pagination in course!");
+                if (!_.isUndefined(params) && !_.isUndefined(params.error)) {
+                    params.error();
+                }                
+                
+                return;
+            }
+            
+            this.in_pagination = true;
+            var that = this;
+            
+            var paginationOk = function() {
+                //console.log("success!");
+                that.in_pagination = false;
+                that.currentLoadedPage = page;
+                if (!_.isUndefined(params) && !_.isUndefined(params.success)) {
+                    params.success();
+                }
+            }
+            
+            var paginationError = function() {
+                //console.log("error!");
+                that.in_pagination = false;
+                if (!_.isUndefined(params) && !_.isUndefined(params.error)) {
+                    params.error();
+                }
+            }            
+            
+            this.goTo(page, {
+                success: paginationOk,
+                error: paginationError
+            });
+        },
+        
         paginator_core: {
             type: "GET",
             dataType: "json",
@@ -86,7 +126,8 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 // maxdepth must be zero for pagination to work because in the
                 // answer from the server there is no information about the
                 // number of children in a container (OU)
-                return "/api/nodes/?maxdepth=0&path=" + this.path;
+                return "/api/nodes/?maxdepth=0&path=" + this.path +
+                    ((this.search_filter.length > 0)?"&type=" + this.search_filter:'');
             },
             statusCode: {
                 403: function() {
@@ -98,7 +139,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 10,
+            perPage: nav_tree_pagesize,
             pagesInRange: 1,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
@@ -113,7 +154,11 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.path)) {
                 throw "Container collections require a path attribute";
             }
+            if (!_.isString(options.search_filter)) {
+                throw "Container collections require a search_filter attribute";
+            }
             this.path = options.path;
+            this.search_filter = options.search_filter;
         },
 
         parse: function (response) {
@@ -127,14 +172,22 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             if (!_.isString(options.keyword)) {
                 throw "Search collections require a keyword attribute";
             }
+            if (!_.isString(options.search_by)) {
+                throw "Search collections require a 'search by' attribute";
+            }
+            if (!_.isString(options.search_filter)) {
+                throw "Search collections require a 'search filter' attribute";
+            }
             this.keyword = options.keyword;
+            this.search_by = options.search_by;
+            this.search_filter = options.search_filter;
         },
 
         paginator_core: {
             type: "GET",
             dataType: "json",
             url: function () {
-                return "/api/nodes/?iname=" + this.keyword;
+                return "/api/nodes/?iname=" + this.keyword + "&search_by=" + this.search_by+"&type="+this.search_filter;
             },
             statusCode: {
                 403: function() {
@@ -148,12 +201,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         parser: new TreeModel(),
 
         defaults: {
-            tree: null
+            tree: null,
+            search_filter: [],
         },
 
         initialize: function (options) {
             var that = this,
                 parent;
+            this.search_filter = [];
             this.listenTo(App, 'action_change', function (result) {
                 that.updateNodeById(result.objectId);
             });
@@ -172,6 +227,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         getUrl: function (options) {
             var params =  ["pagesize=99999"];
             if (_.has(options, "path")) { params.push("path=" + options.path); }
+            if (this.search_filter.length > 0) { params.push("type=" + this.search_filter); }
             if (_.has(options, "oids")) {
                 params.push("oids=" + options.oids);
             } else {
@@ -202,8 +258,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var promise = $.Deferred(),
                 path = node.path + ',' + node.id;
 
-            node.paginatedChildren = new Models.Container({ path: path });
-            node.paginatedChildren.goTo(1, {
+            var search_filter = App.instances.tree.getSearchFilter();
+                
+            node.paginatedChildren = new Models.Container({ path: path, search_filter: search_filter.join() });
+            node.paginatedChildren.goToPage(1, {
                 success: function () { promise.resolve(); },
                 error: function () { promise.reject(); }
             });
@@ -319,13 +377,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
         _getNodesToLoad: function (path, unknownIds) {
             var nodes = {};
 
+            // Get the parent node of this node
             nodes.parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
                 return n.model.id === path.parentId;
             }) || this.get("tree");
+            
+            // Get this node from parent node children
             nodes.oldNode = _.find(nodes.parentNode.children, function (n) {
                 return n.model.id === path.last;
             });
 
+            // Get new node model
             nodes.newNode = this.getNodeModel(nodes.parentNode, nodes.oldNode, path.last);
             if (nodes.newNode.status === "unknown") {
                 unknownIds.push(path.last);
@@ -335,8 +397,25 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             return nodes;
         },
 
-        loadFromPath: function (path, childToShow, silent) {
+        getSearchFilter: function() {
+            var search_filter = ['ou'];
+            $("input:checkbox[name=filter_type]:checked").each(function ()
+            {
+                search_filter.push($(this).val());
+            });   
+            return search_filter;
+        },
+        
+        loadFromPath: function (path, childToShow, silent, search_filter) {
             var that, nodes, promises, unknownIds;
+            //console.log("loadFromPath('"+path+"', '"+childToShow+"'");
+
+            if (typeof search_filter !== 'undefined') {
+                this.search_filter = search_filter;
+            }
+            else {
+                var search_filter = this.getSearchFilter();
+            }
 
             if (path === "root") { return [this.reloadTree()]; }
 
@@ -345,30 +424,59 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             unknownIds = this.makePath(path.parentPath);
             nodes = this._getNodesToLoad(path, unknownIds);
 
+            if (nodes.newNode.status === "unknown" 
+                && nodes.parentNode.model.status === "unknown") {
+                // Both this node and its parent are "unknown", probably 
+                // the user can't view the parentNode because of lacking permissions.
+                
+                var newNode = this.findNodeById(nodes.newNode.id);
+                if (!_.isUndefined(newNode)) {
+                    nodes.newNode = newNode;
+                }
+            }
+            
             nodes.newNode.status = "paginated";
             promises = [this._addPaginatedChildrenToModel(nodes.newNode)];
+            
+            // Reload all nodes of this path up to the root
+            for (var i = 2; i<path.parentPath.length; i++) {
+                // Check if the node is visible in nav-tree
+                if ($("#" + path.parentPath[i]).length > 0) {
+                    var ppath = this.findNodeById(path.parentPath[i]);  
+                    promises.push(this._addPaginatedChildrenToModel(ppath));
+                }
+            }
+            
             nodes.newNode = this.parser.parse(nodes.newNode);
             if (!_.isUndefined(nodes.oldNode)) {
-                nodes.newNode.children = nodes.oldNode.children;
-                nodes.newNode.model.children = nodes.oldNode.model.children;
                 nodes.oldNode.drop();
             }
             nodes.parentNode.addChild(nodes.newNode);
             promises.push(this.resolveUnknownNodes(unknownIds, true));
 
-            if (!_.isUndefined(childToShow)) {
+            var completePath = nodes.newNode.model.path.split(",");
+            var rootId = completePath[1];
+            var root = this.findNodeById(rootId);                
+            
+            
+            if (!_.isUndefined(childToShow) && childToShow!=null) {
+                // Check if the child to show is an OU and must be reloaded
+                var cts = this.findNodeById(childToShow);
+                if (!_.isUndefined(cts) && cts.type == 'ou' 
+                    && App.tree.currentView.isNodeOpen(childToShow)) {
+                    promises.push(this._addPaginatedChildrenToModel(cts));
+                }                
+                
+                // Open the correct page to show the child
                 promises[0].done(function () {
-                    var completePath = nodes.newNode.model.path.split(","),
-                        rootPath = completePath[1],
-                        domainPath,
-                        root;
+
+                    var  domainPath;
                     that.searchPageForNode(
                         nodes.newNode.model.paginatedChildren,
                         childToShow,
                         false
                     );
 
-                    root = that.findNodeById(rootPath);
                     if (completePath.length > 1 && !_.isUndefined(root)) {
                         domainPath = completePath[2] || nodes.newNode.model.id;
                         that.searchPageForNode(
@@ -379,6 +487,17 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     }
                 });
             }
+            else {
+                // Restore last saved page for root node
+                var page = App.tree.currentView.getCurrentPageforNode(rootId);
+                if (jQuery.type(page) != "undefined" && root.paginatedChildren.currentPage != page) {
+                    //console.log( "GOTO page: "+page );
+                    root.paginatedChildren.goToPage(page, {
+                        success: function () { that.trigger("change"); }
+                    }); 
+                }
+            }
+
             this.openPath(path.array);
             if (!silent) {
                 $.when.apply($, promises).done(function () {
@@ -476,9 +595,10 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
 
             search = function () {
                 var node = paginatedCollection.get(nodeId),
-                    page = paginatedCollection.currentPage + 1;
+                    page = paginatedCollection.currentLoadedPage + 1;
                 if (_.isUndefined(node) && page <= paginatedCollection.totalPages) {
-                    paginatedCollection.goTo(page, {
+                    //console.log("GOTO: "+page+" NODE:"+nodeId);
+                    paginatedCollection.goToPage(page, {
                         success: function () { search(); }
                     });
                 } else if (!silent && !_.isUndefined(node)) {

@@ -46,9 +46,11 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         className: "col-sm-12",
 
         groupsWidget: undefined,
+        inheritanceList: undefined,
 
         ui: {
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -67,6 +69,40 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 that = this,
                 isEditable;
 
+            //CHECK IS EMPTY
+            var computers = this.model.get("computers"),
+                path = this.model.get("path"),
+                id = this.model.get("id"),
+                that = this;
+
+            if(typeof App.instances.noMaintenance == 'undefined'){
+                App.instances.noMaintenance = [];
+            }
+
+            var search_filter = App.instances.tree.getSearchFilter();
+            var page = new App.Tree.Models.Container({path:path+','+id, search_filter: search_filter.join()});
+
+            page.goTo(1, {
+               success: function (data) {
+                   var $button = $('#delete');
+                   if(!_.isEmpty(computers)) {
+                        $button.removeClass('btn-danger');
+                        $button.addClass('btn-group');
+                        $button.removeAttr('id');
+                        $button.unbind('click');
+                        $button.css('margin-right','5px');
+                        $button.click(function (e){
+                           e.preventDefault();
+                           App.showAlert('warning',
+                                         gettext('Can not delete user because it is linked to a computer.'),
+                                         "<br/> - " + gettext("Delete first locally on the computer"));
+
+                        });
+                        App.instances.noMaintenance[that.model.get('id')] = false;
+                   }
+                }
+            });
+
             if (this.model.get("isEditable") !== undefined) { return; }
             domain = path.split(',')[2];
 
@@ -81,6 +117,13 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                     that.model.set("master_policies", isEditable ? [] : domain.get("master_policies"));
                     that.render();
                 });
+            }
+
+        },
+
+        onShow: function () {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
             }
         },
 
@@ -105,9 +148,19 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
                 resource: this.model
             });
             this.policiesList.render();
+
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
+
             if (!this.model.get("isEditable")) {
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
             }
+
+            // Ensure the execution of onShow after onRender
+            this.onShow();            
         },
 
         saveForm: function (evt) {

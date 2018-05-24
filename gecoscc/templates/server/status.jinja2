@@ -14,7 +14,7 @@
     
     {% for status in server_status %}
      <!-- Modal -->
-    <div id="disk_{{ status.name }}" class="modal fade" role="dialog">
+    <div id="disk_{{ status.name|replace('.', '_') }}" class="modal fade" role="dialog">
       <div class="modal-dialog"  style="width: 1024px">
 
         <!-- Modal content-->
@@ -76,19 +76,19 @@
                 <tbody>
                     {% for status in server_status %}
                         <tr>
-                            <td>{{ status.name }}</td>
-                            <td>{{ status.address }}</td>
-                            <td>{{ status.cpu.name }} x{{ status.cpu.ncores }}</td>
-                            <td>{{ status.cpu.load|round(1, 'floor') }}%</td>
-                            <td>{{ (status.ram.used/1024)|round|int }}M / {{ (status.ram.total/1024)|round|int }}M</td>
-                            <td>
+                            <td style="vertical-align: middle;">{{ status.name }}</td>
+                            <td style="vertical-align: middle;">{{ status.address }}</td>
+                            <td style="vertical-align: middle;">{{ status.cpu.name }} x{{ status.cpu.ncores }}</td>
+                            <td style="vertical-align: middle;">{{ status.cpu.load|round(1, 'floor') }}%</td>
+                            <td style="vertical-align: middle;">{{ (status.ram.used/1024)|round|int }}M / {{ (status.ram.total/1024)|round|int }}M</td>
+                            <td style="vertical-align: middle;">
                                 {% if  status.disk.total==0 %}
                                     {{ gettext('Unknown') }}
                                 {% else %}
-                                    <a href="#" data-toggle="modal" data-target="#disk_{{ status.name }}">{{ (status.disk.used*100/status.disk.total)|round(1, 'floor') }}%</a>
+                                    <a href="#" data-toggle="modal" data-target="#disk_{{ status.name|replace('.', '_') }}">{{ (status.disk.used*100/status.disk.total)|round(1, 'floor') }}%</a>
                                 {% endif %}                            
                             </td>
-                            <td>
+                            <td style="vertical-align: middle;">
                                 {% if  status.cpu.load==0 and status.ram.used==0 %}
                                     <a href="{{ request.route_url('server_status') }}?delete={{ status.name }}" class="btn btn-primary"><span class="fa fa-trash"></span> {{ gettext('Delete') }}</a>
                                 {% else %}
@@ -102,4 +102,31 @@
             </table>
         </div>
     </div>
+    
+    
+    <h1>{{ gettext('Cookbooks') }}</h1>
+    <div class="row" id="cookbook_info">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Name') }}</th>
+                        <th>{{ gettext('Version') }}</th>
+                    </tr>
+                </thead>
+                    <tbody>
+                    {% for name in cookbook_info %}
+                        {% for version in cookbook_info[name]['versions'] %}
+                        <tr>
+                            <td style="vertical-align: middle;">{{ name }}</td>
+                            <td style="vertical-align: middle;">{{ version['version'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>                
+            </table>
+        </div>
+    </div>
+    
+    
 {% endblock %}

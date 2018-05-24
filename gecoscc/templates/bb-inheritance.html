@@ -1,0 +1,44 @@
+<% if (resource && resource.attributes && ('type' in resource.attributes)) { %>
+    <% if (resource.attributes['type'] == 'computer') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('Workstation policies') }}</strong></div></div>
+    <% } %>
+    <% if (resource.attributes['type'] == 'group' || resource.attributes['type'] == 'ou') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('Policies') }}</strong></div></div>
+    <% } %>
+    <% if (resource.attributes['type'] == 'user') { %> 
+    <div class="row"><div class="col-sm-12"><strong>{{ gettext('User policies') }}</strong></div></div>
+    <% } %>
+<% } %>
+
+<div class="row"><div class="col-sm-12">
+<% if (items && ((items.children && items.children.length > 0) || (items.policies && !jQuery.isEmptyObject(items.policies)))) { %>
+<div class="fuelux">
+    <ul class="tree" role="tree" id="inheritance_tree">
+        <li class="tree-branch hide" data-template="treebranch" role="treeitem" aria-expanded="true">
+          <div class="tree-branch-header">
+            <button type="button" class="tree-branch-name">
+              <span class="glyphicon icon-folder glyphicon-folder-close no-visited"></span>
+              <span class="tree-label"></span>
+            </button>
+          </div>
+          <ul class="tree-branch-children" role="group"></ul>
+          <div class="tree-loader" role="alert">Loading...</div>
+        </li>
+        <li class="tree-item hide" data-template="treeitem" role="treeitem">
+          <div class="tree-item-name" style="cursor: default; color: black !important;">
+            <span class="glyphicon icon-item fueluxicon-bullet"></span>
+            <span class="tree-label"></span>
+          </div>
+        </li>
+    </ul>
+</div>
+<% } else { %>
+    <div class="alert alert-info alert-dismissable">
+        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+        <% if (typeof resource.id !== 'undefined') { %>
+            <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no inheritance assigned to this resource yet.') }}
+        <% } %>
+    </div>
+<% } %>
+
+</div></div>

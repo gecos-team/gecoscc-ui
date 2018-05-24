@@ -26,7 +26,8 @@ from gecoscc.permissions import (can_access_to_this_path, nodes_path_filter,
                                  is_gecos_master_or_403,
                                  master_policy_no_updated_or_403)
 from gecoscc.socks import invalidate_change, invalidate_delete
-from gecoscc.tasks import object_created, object_changed, object_deleted, object_moved
+from gecoscc.tasks import (object_created, object_changed, object_deleted, 
+                           object_moved, object_refresh_policies)
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
@@ -107,12 +108,48 @@ class ResourcePaginatedReadOnly(BaseAPI):
                 }
             })
 
+    def set_username_filter(self, query):
+        if 'iname' in self.request.GET:
+            # Look for users with that username (or similar)
+            users = self.request.db.nodes.find({"type": "user", "name": {
+                    '$regex': u'.*{0}.*'.format(self.request.GET.get('iname')),
+                    '$options': '-i'
+                }})
+            
+            # Merge the list of computers
+            computer_ids = []
+            for user in users:
+                computer_ids = computer_ids + user['computers']
+
+            # Append the list of computers to the query
+            query.append({
+                "_id": {
+                    "$in": computer_ids
+                }
+            })    
+            
     def get_objects_filter(self):
         query = []
         if not self.request.method == 'GET':
             return []
 
-        self.set_name_filter(query)
+        if 'search_by' in self.request.GET:
+            search_by = self.request.GET.get('search_by')
+            if search_by == 'ip':
+                # Search by IPv4 address
+                self.set_name_filter(query, 'ipaddress')
+
+            elif search_by == 'username':
+                # Search by username
+                self.set_username_filter(query)
+
+            else:
+                # Default: search by node name
+                self.set_name_filter(query)
+            
+        else:
+            # Default: search by node name
+            self.set_name_filter(query)
 
         if 'oids' in self.request.GET:
             oid_filters = oids_filter(self.request)
@@ -186,11 +223,12 @@ class ResourcePaginatedReadOnly(BaseAPI):
         if not node:
             raise HTTPNotFound()
         node = self.parse_item(node)
+        
         if node.get('type', None) in RESOURCES_EMITTERS_TYPES:
             node['is_assigned'] = self.is_assigned(node)
             return node
         return node
-
+        
     def is_assigned(self, related_object):
         node_with_related_object = get_object_related_list(self.request.db, related_object)
         return bool(node_with_related_object.count())
@@ -311,6 +349,12 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         object_deleted.delay(self.request.user, self.objtype, obj)
         invalidate_delete(self.request, obj)
 
+    def notify_refresh_policies(self, obj):
+        object_refresh_policies.delay(self.request.user, self.objtype, obj)
+        invalidate_change(self.request, obj)
+
+
+
     def put(self):
         obj = self.request.validated
         oid = self.request.matchdict['oid']
@@ -341,7 +385,14 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if obj is None:
             return
 
+        inheritance_backup = None
+        if 'inheritance' in obj:
+            # Do not save the inheritance field
+            inheritance_backup = obj['inheritance']
+            del obj['inheritance']
+            
         real_obj.update(obj)
+        
         try:
             self.collection.update(obj_filter, real_obj, new=True)
         except DuplicateKeyError, e:
@@ -351,7 +402,40 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         obj = self.post_save(obj, old_obj=old_obj)
         self.notify_changed(obj, old_obj)
         obj = self.parse_item(obj)
+        
+        if inheritance_backup is not None:
+            obj['inheritance'] = inheritance_backup
+        
         return obj
+
+
+
+    def refresh_policies(self):
+        obj = self.request.validated
+        oid = self.request.matchdict['oid']
+
+        if oid != str(obj[self.key]):
+            raise HTTPBadRequest('The object id is not the same that the id in'
+                                 ' the url')
+
+        if issubclass(self.schema_detail, Node):
+            can_access_to_this_path(self.request, self.collection, obj)
+            is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
+            master_policy_no_updated_or_403(self.request, self.collection, obj)
+
+        obj_filter = self.get_oid_filter(oid)
+        obj_filter.update(self.mongo_filter)
+
+        real_obj = self.collection.find_one(obj_filter)
+        if not real_obj:
+            raise HTTPNotFound()
+            
+        self.notify_refresh_policies(real_obj)
+        
+        obj = self.parse_item(real_obj)
+        
+        return obj
+
 
     def delete(self):
 
@@ -502,6 +586,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         removes = [n for n in oldmemberof if n not in newmemberof]
 
         for group_id in removes:
+            group = self.request.db.nodes.find_one({'_id': group_id})
             self.request.db.nodes.update({
                 '_id': group_id
             }, {
@@ -509,7 +594,6 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
                     'members': obj['_id']
                 }
             }, multi=False)
-            group = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)

@@ -201,16 +201,18 @@ class Command(BaseCommand):
             
             if key == MIMETYPES_POLICY:
                 self.set_mimetypes_url(value)
-                
+
             support_os = value['properties']['support_os']['default']
-            
+
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
                 if ex_attr in value['properties']:
                     del(value['properties'][ex_attr])
-                    
+
             path = value.pop('path')
 
+            form_layout = value.pop('form', {})
             is_mergeable = value.pop('is_mergeable', False)
+            autoreverse = value.pop('autoreverse', False)
 
             if is_user_policy(path):
                 targets = ['ou', 'user', 'group']
@@ -226,7 +228,7 @@ class Command(BaseCommand):
                 for lan in languages:
                     value['title_' + lan] = titles[lan]
 
-            elif 'network_mgmt' in path:
+            elif 'single_node' in path:
                 targets = ['computer']
             else:
                 targets = DEFAULT_TARGETS
@@ -236,10 +238,12 @@ class Command(BaseCommand):
                 'slug': key,
                 'path': path,
                 'schema': value,
+                'form': form_layout,
                 'targets': targets,
                 'is_emitter_policy': False,
                 'support_os': support_os,
                 'is_mergeable': is_mergeable,
+                'autoreverse': autoreverse,
             }
 
             for lan in languages:
@@ -265,17 +269,18 @@ class Command(BaseCommand):
                     'is_emitter_policy': True,
                     'schema': schema,
                     'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default'],
-                    'is_mergeable': True
+                    'is_mergeable': True,
+                    'autoreverse': policies[POLICY_EMITTER_PATH[slug].split('.')[-2]].get('autoreverse', False)
                 }
                 for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
 
     def set_packages_url(self, value):
-        value['properties']['package_list']['autocomplete_url'] = PACKAGE_POLICY_URL
-        value['properties']['package_list']['items']['enum'] = []
-        value['properties']['pkgs_to_remove']['autocomplete_url'] = PACKAGE_POLICY_URL
-        value['properties']['pkgs_to_remove']['items']['enum'] = []
+        value['properties']['package_list']['items']['properties']['name']['autocomplete_url'] = PACKAGE_POLICY_URL
+        value['properties']['package_list']['items']['properties']['name']['enum'] = []
+        value['properties']['package_list']['items']['properties']['version']['autocomplete_url'] = 'javascript:calculateVersions'
+        value['properties']['package_list']['items']['properties']['version']['enum'] = []
     
     def set_mimetypes_url(self, value):
         value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL
@@ -297,7 +302,8 @@ class Command(BaseCommand):
             'is_emitter_policy': True,
             'schema': schema,
             'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default'],
-            'is_mergeable': True
+            'is_mergeable': True,
+            'autoreverse': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[-2]].get('autoreverse', False)
         }
         for lan in languages:
             policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]

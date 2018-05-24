@@ -1,0 +1,119 @@
+/*
+ * Fuel UX Tree
+ * https://github.com/ExactTarget/fuelux
+ *
+ * Copyright (c) 2012 ExactTarget
+ * Licensed under the MIT license.
+ */
+
+.fuelux_mod .tree {
+    position: relative;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.fuelux_mod .tree .tree-node {
+    white-space: nowrap;
+}
+
+.fuelux_mod .tree .tree-container {
+    width: 100%;
+    min-height: 20px;
+    margin-top: 1px;
+    cursor: pointer;
+}
+
+/* tree-container-header */
+
+.fuelux_mod .tree .tree-container .tree-container-header {
+    position: relative;
+    height: 20px;
+}
+
+.fuelux_mod .tree .tree-container .tree-container-header .tree-highlight > span {
+    position: absolute;
+    top: 2px;
+    left: 20px;
+    float: left;
+}
+
+.fuelux_mod .tree .tree-container .tree-container-header .tree-highlight > span:first-child {
+    left: 5px;
+}
+
+.fuelux_mod .tree .tree-container .tree-container-header .tree-name {
+    padding-left: 40px;
+}
+
+/* tree-container-content */
+
+.fuelux_mod .tree .tree-container .tree-container-content {
+    margin-left: 23px;
+    border-left: solid 0.2em rgb(230, 230, 230);
+}
+
+/* tree-leaf and tree-pagination */
+
+.fuelux_mod .tree .tree-leaf,
+.fuelux_mod .tree .tree-pagination {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    margin-top: 1px;
+    cursor: pointer;
+}
+
+.fuelux_mod .tree .tree-leaf .tree-name,
+.fuelux_mod .tree .tree-pagination .tree-name {
+    padding-left: 29px;
+}
+
+.fuelux_mod .tree .tree-leaf .fa,
+.fuelux_mod .tree .tree-pagination .fa {
+    position: absolute;
+    top: 3px;
+    left: 6px;
+    display: block;
+}
+
+/* tree-name */
+
+.fuelux_mod .tree .tree-name {
+    white-space: nowrap;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+/* tree-highlight */
+
+.fuelux_mod .tree .tree-highlight {
+    display: inline-block;
+    -webkit-border-radius: 6px;
+       -moz-border-radius: 6px;
+            border-radius: 6px;
+}
+
+.fuelux_mod .tree .tree-highlight:hover {
+    background-color: #dfeef5 !important;
+}
+
+.fuelux_mod .tree .multiselected .tree-highlight {
+    background-color: #CEFA96;
+}
+
+.fuelux_mod .tree .tree-selected .tree-highlight {
+    background-color: #b9dff1 !important;
+}
+
+/* tree-selection */
+
+.fuelux_mod .tree .tree-selection {
+    display: none;
+}
+
+.fuelux_mod .tree .tree-container .tree-container-header:hover .tree-selection,
+.fuelux_mod .tree .tree-leaf:hover .tree-selection {
+    display: inline-block;
+    margin-left: 15px;
+    margin-right: 3px;
+}
