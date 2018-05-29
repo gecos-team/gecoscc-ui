@@ -10,7 +10,8 @@
 #
 
 # Pathname for knife executable command. Please, make sure it is correct
-KNIFE_BIN=/opt/opscode/bin/knife
+#KNIFE_BIN=/opt/opscode/bin/knife
+KNIFE_BIN=/opt/chef/bin/knife 
 
 # Checking number of arguments
 [[ $# -ne  4 ]] && echo "Illegal number of parameters" && exit 1
