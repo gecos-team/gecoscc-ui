@@ -2466,7 +2466,7 @@ def upload_cookbook(user=None,cookbook_path=None):
     return exitstatus
 
 
-def chefserver_backup(username=None, backupdir=None):
+def chefserver_backup(backupdir=None):
     ''' Backing up all Chef server data
     
     Args:
@@ -2482,21 +2482,16 @@ def chefserver_backup(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_backup.__name__)
-            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
-        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
         logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
 
-        assert username is not None or backupdir is not None, _('Missing required arguments')
+        assert backupdir is not None, _('Missing required arguments')
 
         if not os.path.exists(backupdir):
             os.mkdir(backupdir)
 
-        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
-        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
-
-        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'))
         backup_output = subprocess.check_output(command, shell=True)
         logger.info(backup_output)
         logger.info("Chef Server backup ended.")
@@ -2512,7 +2507,7 @@ def chefserver_backup(username=None, backupdir=None):
 
     return exitstatus
 
-def chefserver_restore(username=None, backupdir=None):
+def chefserver_restore(backupdir=None):
     ''' Restoring Chef server data from a backup that was created by the chefserver_backup function
     
     Args:
@@ -2528,21 +2523,16 @@ def chefserver_restore(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_restore.__name__)
-            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
-        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
         logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
 
-        assert username is not None or backupdir is not None, _('Missing required arguments')
+        assert backupdir is not None, _('Missing required arguments')
 
         if not os.path.exists(backupdir):
             os.mkdir(backupdir)
 
-        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
-        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
-
-        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'))
         restore_output = subprocess.check_output(command, shell=True)
         logger.info(restore_output)
         logger.info("Chef Server restore ended.")
