@@ -1823,8 +1823,24 @@ class ChefTask(Task):
                 # Sudoers
                 if u['sudo']:
                     gcc_sudoers.add(username)
-                    self.log("debug", "tasks.py ::: computer_refresh_policies - gcc_sudoers: {0}".format(gcc_sudoers))                
-                
+                    self.log("debug", "tasks.py ::: computer_refresh_policies - gcc_sudoers: {0}".format(gcc_sudoers))
+                    
+                else:
+                    # Update node user data
+                    usrname = get_username_chef_format(usr)
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Add info to gecos_info.users.{0}'.format(usrname))
+                    if not node.normal.has_dotted('gecos_info'):
+                        node.normal.set_dotted('gecos_info', {})
+    
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
+                        
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(usrname)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(usrname), {})
+                        
+                    node.normal.set_dotted('gecos_info.users.%s.email'%(usrname), usr['email'])
+                    node.normal.set_dotted('gecos_info.users.%s.firstName'%(usrname), usr['first_name'])
+                    node.normal.set_dotted('gecos_info.users.%s.lastName'%(usrname), usr['last_name'])     
                 
             # Set sudoers information
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
@@ -1853,7 +1869,7 @@ class ChefTask(Task):
     
                     
                 # 3 - Clean policies information
-                ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
+                ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list', 'gecos_info']
                 for attr in node.normal:
                     if not attr in ATTRIBUTES_WHITE_LIST:
                         self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
