@@ -698,7 +698,11 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
         object_created = object_created.delay
         object_changed = object_changed.delay
     children_path = ou['path'] + ',' + unicode(ou['_id'])
-    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}})
+    # From the pymongo documentation:
+    # Cursors in MongoDB can timeout on the server if they have been open for a long time without any operations being 
+    # performed on them. This can lead to an CursorNotFound exception being raised when attempting to iterate the cursor.
+    # OUs with a lot of depth levels
+    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}}, no_cursor_timeout=True)
 
     visibility_object_related(nodes_collection.database, ou)
 
@@ -710,6 +714,8 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
         child['path'] = children_path
         object_moved(auth_user, child['type'], child, child_old)
 
+    # Closes pymongo cursor
+    ou_children.close()
     object_created(auth_user, 'ou', ou)
 
 
