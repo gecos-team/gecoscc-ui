@@ -189,7 +189,7 @@ class MongoDB(object):
         except subprocess.CalledProcessError, msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
-            existatus = msg.returncode
+            exitstatus = msg.returncode
 
         return exitstatus
 
