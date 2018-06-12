@@ -44,7 +44,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, 
-                           NodeNotLinked, apply_policies_to_user,
+                           NodeNotLinked, apply_policies_to_user, apply_policies_to_computer, apply_policies_to_group, apply_policies_to_ou,
+                           apply_policies_to_printer, apply_policies_to_storage, apply_policies_to_repository,
                            remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
@@ -472,10 +473,19 @@ class ChefTask(Task):
             related_objects = obj_ui['object_related_list']
 
             for obj in related_objects:
+                # Find a new related object added for current obj
                 if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
                     return True
-            return any(x in [j['name'] for j in field_chef_value_storage] for x in [y['name'] for y in objold_ui['object_related_list'] if y['name'] not in [z['name'] for z in obj_ui['object_related_list']]])
 
+            # Find related objects that has been removed in current policy
+            old_rel_objnames = [x['name'] for x in objold_ui.get('object_related_list',[])] # objold = {} when invokes apply_policies_to_%s (ou,group,user,computer)
+            cur_rel_objnames = [y['name'] for y in obj_ui.get('object_related_list',[])]
+            removed_objnames = [oldname for oldname in old_rel_objnames if oldname not in cur_rel_objnames]
+
+            # True if related objects which have been removed are in chef node. It's necessary apply merge algorithm,
+            # because they may not be there anymore.
+            return any(x in [j['name'] in field_chef_value_storage] for x in removed_objnames)
+            
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
             if related_objects['name'] == field_value['name']:
@@ -717,7 +727,8 @@ class ChefTask(Task):
 
             if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
+                    if policy_field in obj_ui_field.get(username) and policy_field in new_field_chef_value:
+                        obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             elif action == DELETED_POLICY_ACTION:  # update node
                 pass
             else:
