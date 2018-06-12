@@ -620,8 +620,14 @@ class ChefTask(Task):
             for updater_node in updater_nodes:
 
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
+                try:
+                    updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
+                except KeyError as e:
+                    # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
+                    # but this attribute was not updated correctly in chef. In this case, node_policy = {}
+                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points to mongo node ({0}) without policy ({1})".format(updater_node['name'],unicode(policy['name'])))
+                    continue
 
-                updater_node_ui = updater_node['policies'].get(unicode(policy['_id']), {})
                 if callable(field_ui): # encrypt_password
                     innode = field_ui(updater_node_ui, obj=updater_node, node=node, field_chef=field_chef)
                     self.log("debug","tasks.py ::: update_ws_mergeable_policy - innode = {0}".format(innode))
@@ -690,7 +696,14 @@ class ChefTask(Task):
             updater_nodes = self.order_items_by_priority(nodes_ids)
 
             for updater_node in updater_nodes:
-                node_policy = updater_node['policies'][unicode(policy['_id'])]
+                try:
+                    node_policy = updater_node['policies'][unicode(policy['_id'])]
+                except KeyError as e:
+                    # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
+                    # but this attribute was not updated correctly in chef. In this case, node_policy = {}
+                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by points to mongo node ({0}) without policy ({1})".format(updater_node['name'],unicode(policy['name'])))
+                    continue
+
                 for policy_field in node_policy.keys():
                     # Finding merge index fields
                     mergeIdField, mergeActionField = self.search_mergefields(field_chef,policy_field,policy)
