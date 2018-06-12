@@ -625,7 +625,7 @@ class ChefTask(Task):
                 except KeyError as e:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points to mongo node ({0}) without policy ({1})".format(updater_node['name'],unicode(policy['name'])))
+                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points to mongo node (id:{0}) without policy (id:{1})".format(updater_node['_id'],unicode(policy['_id'])))
                     continue
 
                 if callable(field_ui): # encrypt_password
@@ -701,7 +701,7 @@ class ChefTask(Task):
                 except KeyError as e:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by points to mongo node ({0}) without policy ({1})".format(updater_node['name'],unicode(policy['name'])))
+                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by points to mongo node (id:{0}) without policy (id:{1})".format(updater_node['_id'],unicode(policy['_id'])))
                     continue
 
                 for policy_field in node_policy.keys():
