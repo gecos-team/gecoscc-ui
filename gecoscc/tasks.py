@@ -1276,8 +1276,6 @@ class ChefTask(Task):
             2 - object type is emitter: printer, storage or repository
         '''
         updated = False
-        if action == 'detached':
-            return(node, False)
         if action not in ['changed', 'created', 'deleted', 'recalculate policies']:
             raise ValueError('The action should be changed, created, deleted or recalculate policies')
         
@@ -1669,12 +1667,6 @@ class ChefTask(Task):
         object_changed = getattr(self, '%s_changed' % obj['type'])
         object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
-    def object_detached(self, user, obj, computers=None):
-        obj_without_policies = deepcopy(obj)
-        obj_without_policies['policies'] = {}
-        object_changed = getattr(self, '%s_changed' % obj['type'])
-        object_changed(user, obj_without_policies, obj, action='detached', computers=computers)
-        
     def object_moved(self, user, objnew, objold):
         api = get_chef_api(self.app.conf, user)
         try:
@@ -1984,18 +1976,6 @@ class ChefTask(Task):
             self.disassociate_object_from_group(obj)
         self.log_action('deleted', 'Computer', obj)
 
-    def computer_detached(self, user, obj, computers=None):
-        self.object_detached(user, obj, computers=computers)
-        node_chef_id = obj.get('node_chef_id', None)
-        if node_chef_id:
-            api = get_chef_api(self.app.conf, user)
-            node = Node(node_chef_id, api)
-            node.delete()
-            client = Client(node_chef_id, api=api)
-            client.delete()
-
-        self.log_action('detached', 'Computer', obj)
-        
     def ou_created(self, user, objnew, computers=None):
         self.object_created(user, objnew, computers=computers)
         self.log_action('created', 'OU', objnew)
@@ -2169,21 +2149,6 @@ def object_deleted(user, objtype, obj, computers=None):
     else:
         self.log('error', 'The method {0}_deleted does not exist'.format(
             objtype))
-
-@task(base=ChefTask)
-def object_detached(user, objtype, obj, computers=None):
-    self = object_detached
-    func = getattr(self, '{0}_detached'.format(objtype), None)
-    if func is not None:
-        try:
-            return func(user, obj, computers=computers)
-        except Exception as e:
-            self.report_unknown_error(e, user, obj, 'deleted')
-            invalidate_jobs(self.request, user)
-    else:
-        self.log('error', 'The method {0}_detached does not exist'.format(
-            objtype))
-
 
 @task(base=ChefTask)
 def chef_status_sync(node_id, auth_user):

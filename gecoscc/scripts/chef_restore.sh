@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 #
 # Restore Chef Server
 #
@@ -10,20 +9,17 @@
 # http://www.osor.eu/eupl
 #
 
+# Pathname for knife executable command. Please, make sure it is correct
+#KNIFE_BIN=/opt/opscode/bin/knife
+KNIFE_BIN=/opt/chef/bin/knife 
+
 # Checking number of arguments
-[[ $# -ne  4 ]] && echo "Illegal number of parameters" && exit 1
+[[ $# -ne 2 ]] && echo "Illegal number of parameters" && exit 1
 
-# Enable ruby environment
-RBENV_ENABLE=/opt/rh/rh-ruby24/enable
-
-. $RBENV_ENABLE
-
-# Knife-backup plugin execution
+# knife-ec-backup plugin execution
 # Params:
-#   -D, --backup-directory DIR       Restore backup data from DIR
 #   -s, --server-url URL             Chef Server URL
-#   -u, --user USER                  API Client Username
-#   -k, --key KEY                    API Client Key
+#   --webui-key                      Used to set the path to the WebUI Key. If your chef server is in a different machine,
+#                                    please, copy /etc/opscode/webui_priv.pem to this server and point this path to the file
 
-
-knife backup restore -D $1 -y -s $2 -u $3 -k $4
+$KNIFE_BIN ec restore $1 -y -s $2 --webui-key /etc/opscode/webui_priv.pem

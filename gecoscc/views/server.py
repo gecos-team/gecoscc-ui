@@ -19,7 +19,7 @@ import traceback
 import socket
 import os
 import re
-
+import ssl
 
 from pyramid.view import view_config
 from pyramid.threadlocal import get_current_registry
@@ -152,7 +152,7 @@ def getJSON(url):
     obj = None
     req = urllib2.Request(url)
     try:
-        stream = urllib2.urlopen(req, timeout=5)
+        stream = urllib2.urlopen(req, timeout=5, context=ssl._create_unverified_context())
         
         if not stream.headers.has_key("Content-Type"):
             return None

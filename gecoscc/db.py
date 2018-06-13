@@ -103,6 +103,8 @@ class MongoDB(object):
             -
         '''
         logger.info("Starting mongodump ...")
+        exitstatus = 0
+
         if not os.path.exists(path):
             os.mkdir(path)
 
@@ -130,6 +132,9 @@ class MongoDB(object):
         except subprocess.CalledProcessError, msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
+            exitstatus = msg.returncode
+
+        return exitstatus
 
     def restore(self, path, collection=None):
         '''
@@ -141,6 +146,8 @@ class MongoDB(object):
             -
         '''
         logger.info("Starting mongorestore ...")
+        exitstatus = 0
+
         command = [
             'mongorestore',
             '-host', '%s' % urlparse(self.db_uri).hostname,
@@ -169,6 +176,9 @@ class MongoDB(object):
         except subprocess.CalledProcessError, msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
+            existatus = msg.returncode
+     
+        return exitstatus
 
 def get_db(request):
     return request.registry.settings['mongodb'].get_database()
