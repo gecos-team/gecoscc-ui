@@ -117,7 +117,7 @@
             </div>
             <div class="bootstrap-admin-panel-content"></div>
             
-                <% if (computers_inheritance && computers_inheritance.length > 0) { %>
+                <% if ( (typeof computers_inheritance !== "undefined") && computers_inheritance && computers_inheritance.length > 0) { %>
                 <div class="bootstrap-admin-panel-content">
                     <div class="row"><div class="col-sm-12"><strong>{{ gettext('Workstation policies') }}</strong></div></div>
                     <div class="object_related_list">
