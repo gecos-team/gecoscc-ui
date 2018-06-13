@@ -637,13 +637,18 @@ class ChefTask(Task):
 
                 if mergeIdField and mergeActionField: # NEW MERGE
 
-                    # At node: Removing opposites actions
-                    nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
-                    self.log("debug","tasks.py ::: update_ws_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
+                    try:
+                        # At node: Removing opposites actions
+                        nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
+                        self.log("debug","tasks.py ::: update_ws_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
 
-                    # At hierarchy of nodes: Prioritizing the last action (closer to node)
-                    new_field_chef_value += nodupes_innode
-                    new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
+                        # At hierarchy of nodes: Prioritizing the last action (closer to node)
+                        new_field_chef_value += nodupes_innode
+                        new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
+                    except (AssertionError, TypeError) as e:
+                        # Do not merge. Invalid group_by_multiple_key args
+                        self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
+                        continue
 
                 else: # OLD MERGE
                     new_field_chef_value += innode
@@ -709,21 +714,26 @@ class ChefTask(Task):
                     mergeIdField, mergeActionField = self.search_mergefields(field_chef,policy_field,policy)
                     
                     if mergeIdField and mergeActionField:
-                        innode = node_policy[policy_field]
-                        self.log("debug","tasks.py ::: update_user_mergeable_policy - innode = {0}".format(innode))
+                        try:
+                            innode = node_policy[policy_field]
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - innode = {0}".format(innode))
 
-                        # At node: Removing opposites actions
-                        nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
-                        self.log("debug","tasks.py ::: update_user_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
+                            # At node: Removing opposites actions
+                            nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
 
-                        # At hierarchy of nodes: Prioritizing the last action (closer to node)
-                        if policy_field not in new_field_chef_value:
-                            # Initializing 
-                            new_field_chef_value[policy_field] = []
-                         
-                        # Accumulator
-                        new_field_chef_value[policy_field] += nodupes_innode
-                        new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
+                            # At hierarchy of nodes: Prioritizing the last action (closer to node)
+                            if policy_field not in new_field_chef_value:
+                                # Initializing 
+                                new_field_chef_value[policy_field] = []
+                           
+                            # Accumulator
+                            new_field_chef_value[policy_field] += nodupes_innode
+                            new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
+                        except (AssertionError, TypeError) as e:
+                            # Do not merge. Invalid group_by_multiple_key args
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
+                            continue
 
                     else:                    
                         if policy_field not in new_field_chef_value:
@@ -816,6 +826,10 @@ class ChefTask(Task):
         '''
         from itertools import groupby
         from operator import itemgetter
+
+        # Checking input_data is a list of dictionaries
+        assert isinstance(input_data, list)
+        assert all(isinstance(x,dict) for x in input_data)
 
         self.log("debug","tasks.py ::: Starting group_by_multiple_key ...")
         self.log("debug","tasks.py ::: group_by_multiple_keys - input_data = {0}".format(input_data))
