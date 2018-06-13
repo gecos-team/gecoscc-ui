@@ -24,6 +24,10 @@ DEFAULT_MONGODB_URI = 'mongodb://%s:%d/%s' % (DEFAULT_MONGODB_HOST,
                                               DEFAULT_MONGODB_PORT,
                                               DEFAULT_MONGODB_NAME)
 
+# Simulates mongodump --excludeCollection option (new in version 3.0)
+# Excludes the specified collections from the mongodump output
+DEFAULT_EXCLUDE_COLLECTIONS = ['updates','backer_cache']
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -93,7 +97,7 @@ class MongoDB(object):
             ('userid', pymongo.DESCENDING),
         ])
 
-    def dump(self, path, collection=None):
+    def dump(self, path, collection=None, excludes=DEFAULT_EXCLUDE_COLLECTIONS):
         '''
         Back up MongoDB
         Args:
@@ -116,8 +120,6 @@ class MongoDB(object):
             '-o', '%s' % path
         ]
 
-        if collection:
-            command += ['--collection', '%s' % collection]
 
         if self.parsed_uri.get('username', None):
             command += ['-u', '%s' % self.parsed_uri.get('username')]
@@ -126,8 +128,19 @@ class MongoDB(object):
         logger.debug("db.py ::: dump - command = %s" % command)
 
         try:
-            dump_output = subprocess.check_output(command)
-            logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
+            if collection:
+                command += ['--collection', '%s' % collection]
+                logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
+                dump_output = subprocess.check_output(command)
+            else:
+                allcolls = self.get_database().collection_names()
+                includes = list(set(allcolls) - set(excludes))
+
+                # dump each collection individually
+                for coll in includes:
+                    cmd = command + ['--collection', '%s' % coll]
+                    dump_output = subprocess.check_output(cmd)
+                logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             logger.info("mongodump ended.")
         except subprocess.CalledProcessError, msg:
             logger.error(msg.cmd)
@@ -176,8 +189,8 @@ class MongoDB(object):
         except subprocess.CalledProcessError, msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
-            existatus = msg.returncode
-     
+            exitstatus = msg.returncode
+
         return exitstatus
 
 def get_db(request):
