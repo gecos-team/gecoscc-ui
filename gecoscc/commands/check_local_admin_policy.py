@@ -107,7 +107,7 @@ class Command(BaseCommand):
                     validate(instance, schema)
                     break
                 except ValidationError as e: 
-                     logger.error('Validation error on instance = %s'%str(e.message))
+                     logger.warning('Validation error on instance = %s'%str(e.message))
                      # Sanitize instance
                      self.sanitize(e, instance)
                      sanitized = True

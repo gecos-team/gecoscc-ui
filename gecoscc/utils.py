@@ -37,6 +37,12 @@ from chef.node import NodeAttributes
 from pyramid.threadlocal import get_current_registry
 
 from collections import defaultdict
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+
 DELETED_POLICY_ACTION = 'deleted'
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
