@@ -2288,6 +2288,22 @@ def chef_status_sync(node_id, auth_user):
             else:
                 gcc_sudoers.add(add)
                 self.log("info", "tasks.py ::: chef_status_sync - gcc_sudoers: {0}".format(gcc_sudoers))
+                
+            # Update user data in chef node
+            username = get_username_chef_format(user)
+            if not node.normal.has_dotted('gecos_info'):
+                node.normal.set_dotted('gecos_info', {})
+
+            if not node.normal.has_dotted('gecos_info.users'):
+                node.normal.set_dotted('gecos_info.users', {})
+                
+            if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                node.normal.set_dotted('gecos_info.users.%s'%(username), {})
+                
+            node.normal.set_dotted('gecos_info.users.%s.email'%(username), user['email'])
+            node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), user['first_name'])
+            node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), user['last_name'])
+    
         # Removed users
         delusers = set.difference(gcc_node_usernames, chef_node_usernames)
         self.log("debug", "tasks.py ::: chef_status_sync - delusers = {0}".format(delusers))
@@ -2302,6 +2318,11 @@ def chef_status_sync(node_id, auth_user):
                 computers.remove(computer['_id'])
                 self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 invalidate_change(self.request, auth_user)
+            
+            username = get_username_chef_format(user)
+            if (node.normal.has_dotted('gecos_info')
+                and node.normal.has_dotted('gecos_info.users.%s'%(username))):
+                del node.normal['gecos_info']['users'][username]
 
     else: # Sudoers (only rol changed)
 
