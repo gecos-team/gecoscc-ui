@@ -317,7 +317,7 @@ class Command(BaseCommand):
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
             # Check default data for chef node
-            if not computer_node.default.to_dict():
+            if not computer_node.default.to_dict() or not computer_node.attributes.has_dotted('gecos_ws_mgmt'):
                 logger.info("FIXED: For an unknown reason Chef node: %s has no default attributes."%(node_id))
                 computer_node.default = default_data
                 computer_node.save()
