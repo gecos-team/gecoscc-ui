@@ -317,6 +317,25 @@ def admin_maintenance(context, request):
        'form_maintenance': form_render
     }
 
+
+
+@view_config(route_name='statistics', permission='is_superuser', renderer="templates/admins/statistics.jinja2")
+def statistics(context, request):
+
+    object_counters=request.db.nodes.aggregate([ {"$group" : {"_id":"$type", "count":{"$sum":1}}}  ])
+
+    policy_counters=[]
+
+    for pol in request.db.policies.find().sort("name"):
+        c=request.db.nodes.find({"policies."+str(pol['_id']): { '$exists': True} } ).count()
+        policy_counters.append([pol['name'],c])
+         
+    return {
+       'policy_counters': policy_counters,
+       'object_counters': object_counters,
+    }
+
+
 def _check_if_user_belongs_to_admin_group(request, organization, username):
     chefusername = toChefUsername(username)
     settings = get_current_registry().settings
