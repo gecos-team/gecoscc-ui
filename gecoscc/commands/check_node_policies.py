@@ -317,8 +317,8 @@ class Command(BaseCommand):
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
             # Check default data for chef node
-            if not computer_node.default.to_dict():
-                logger.warning("For an unknown reason Chef node: %s has no default attributes. Fixing it!"%(node_id))
+            if not computer_node.default.to_dict() or not computer_node.attributes.has_dotted('gecos_ws_mgmt'):
+                logger.info("FIXED: For an unknown reason Chef node: %s has no default attributes."%(node_id))
                 computer_node.default = default_data
                 computer_node.save()
                 
@@ -426,7 +426,7 @@ class Command(BaseCommand):
             (not 'inheritance' in node) or (inheritance_node['inheritance'] != node['inheritance'])):
             
             # Save inheritance field
-            logger.info('FIX: updating inheritance field!')
+            logger.info('FIXED: updating inheritance field!')
             self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'inheritance': inheritance_node['inheritance']}})
         
         # Check referenced nodes
@@ -435,14 +435,14 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['computers'], ['computer'], 'computers')
             difference = set(node['computers']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'computers': new_id_list}})
             
             # Check memberof
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
             
             
@@ -451,7 +451,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
 
             
@@ -460,7 +460,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
                 
             
@@ -468,7 +468,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['members'], ['user', 'computer', 'group'], 'members')
             difference = set(node['members']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
         
         
