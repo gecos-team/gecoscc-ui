@@ -57,6 +57,7 @@ def route_config(config):
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
     config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
     config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)
@@ -77,6 +78,7 @@ def route_config(config):
     config.add_route('forbidden-view', '/error403/')
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
     
+    config.add_route('statistics', '/admins/statistics/', factory=SuperUserFactory)
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
     config.add_route('internal_server_status', '/internal/server/status', factory=InternalAccessFactory)
     config.add_route('server_connections', '/server/connections', factory=SuperUserFactory)

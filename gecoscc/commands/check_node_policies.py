@@ -246,6 +246,7 @@ class Command(BaseCommand):
                 logger.debug('Serialized policy: %s'%(json.dumps(Policy().serialize(policy))))
             except Exception as err:
                 logger.error('Policy %s with slug %s can\'t be serialized: %s'%(policy['_id'], policy['slug'], str(err)))
+                logger.warn('Possible cause: New fields in models (Colander) but the import_policies command has not yet been executed to update schema.')
                 
         if self.options.clean_inheritance:
             logger.info('Cleaning inheritance field...')
@@ -315,10 +316,11 @@ class Command(BaseCommand):
                     pass
                         
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
+                logger.warn("Possible cause: The node has been deleted in Gecos Control Center but not in Chef server, either because it was in use at that time or for another unknown reason.")
         
             # Check default data for chef node
-            if not computer_node.default.to_dict():
-                logger.warning("For an unknown reason Chef node: %s has no default attributes. Fixing it!"%(node_id))
+            if not computer_node.default.to_dict() or not computer_node.attributes.has_dotted('gecos_ws_mgmt'):
+                logger.info("FIXED: For an unknown reason Chef node: %s has no default attributes."%(node_id))
                 computer_node.default = default_data
                 computer_node.save()
                 
@@ -426,7 +428,7 @@ class Command(BaseCommand):
             (not 'inheritance' in node) or (inheritance_node['inheritance'] != node['inheritance'])):
             
             # Save inheritance field
-            logger.info('FIX: updating inheritance field!')
+            logger.info('FIXED: updating inheritance field!')
             self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'inheritance': inheritance_node['inheritance']}})
         
         # Check referenced nodes
@@ -435,14 +437,14 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['computers'], ['computer'], 'computers')
             difference = set(node['computers']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'computers': new_id_list}})
             
             # Check memberof
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
             
             
@@ -451,7 +453,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
 
             
@@ -460,7 +462,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'memberof': new_id_list}})
                 
             
@@ -468,7 +470,7 @@ class Command(BaseCommand):
             new_id_list = self.check_referenced_nodes(node['members'], ['user', 'computer', 'group'], 'members')
             difference = set(node['members']).difference(set(new_id_list))
             if len(difference) > 0:
-                logger.info('FIX: remove %s references'%(difference))
+                logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
         
         
@@ -490,6 +492,7 @@ class Command(BaseCommand):
                 
             if not found:
                 logger.error('Can\'t find referenced node %s for property %s'%(id, property))                
+                logger.warn('Possible cause: Unknown. Node references non-existent node in MongoDB.')                
                 continue
                 
             new_id_list.append(id)

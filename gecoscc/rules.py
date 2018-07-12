@@ -23,7 +23,9 @@ def encrypt_password(objs_ui, obj, node, field_chef, **kwargs):
     sha_512_code = "$6$"
     users = deepcopy(objs_ui.get(field_ui, []))
     for user in users:
-        user['password'] = crypt.crypt(user['password'], sha_512_code)
+        if 'password' in user:
+            user['password'] = crypt.crypt(user['password'], sha_512_code)
+            
     return users
 
 

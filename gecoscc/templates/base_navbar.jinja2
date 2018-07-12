@@ -50,6 +50,11 @@
                             </li>
                             {% if request.user.get('is_superuser') %}
                             <li>
+                                <a href="{{ request.route_url('statistics', username=request.user['username']) }}">
+                                    <span class="fa fa-area-chart"></span> {{ gettext('Statistics') }}
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{{ request.route_url('updates') }}">
                                     <span class="fa fa-spinner"></span> {{ gettext('Updates') }}
                                 </a>

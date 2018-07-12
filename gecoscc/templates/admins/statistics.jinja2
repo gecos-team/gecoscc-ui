@@ -1,0 +1,65 @@
+{% extends "base_navbar.jinja2" %}
+
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_admins %}active{% endblock %}
+
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Statistics') }}</h1>
+    {% block breadcrumbs %}
+        <ol class="breadcrumb" class="pull-right">
+            <li class="active">{{ gettext('Statistics') }}</li>
+        </ol>
+    {% endblock %}
+    <div class="row"> 
+        <div class="col-sm-6 col-sm-offset-6 col-lg-4 col-lg-offset-8">
+            <form method="GET" role="form">
+                <div class="input-group  item-username" title="" id="item-deformField1">
+                    <input type="text" name="q" value="{{ request.GET.get('q', '') }}" class="form-control" placeholder="{{ gettext('Search for username') }}">
+                    <span class="input-group-btn">
+                        <button id="tree-search-btn" class="btn btn-primary" type="submit"><span class="fa fa-search"></span></button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" id="statistics">
+        <div class="col-sm-6">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Object Type') }}</th>
+                        <th alignt=right>{{ gettext('Count') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for counter in object_counters.result %}
+                        <tr>
+                            <td>{{ counter._id }}</td>
+                            <td align=right>{{ counter.count }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div> 
+        <div class="col-sm-6">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{{ gettext('Policy') }}</th>
+                        <th align=right>{{ gettext('Times Used') }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for counter in policy_counters %}
+                        <tr>
+                            <td>{{ counter[0] }}</td>
+                            <td align=right>{{ counter[1] }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}
