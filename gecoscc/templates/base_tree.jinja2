@@ -2,7 +2,7 @@
 
 {% block extraheader %}
 <!-- Tree CSS -->
-<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/fuelux_mod.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart.css" rel="stylesheet" media="screen">
 <link href="{{request.application_url}}/static/css/jquery.easy-pie-chart_custom.css" rel="stylesheet" media="screen">
 <link href="{{request.application_url}}/static/css/chosen.min.css" rel="stylesheet">
@@ -10,12 +10,14 @@
 <link href="{{request.application_url}}/static/css/select2-bootstrap.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/jquery.dataTables.css" rel="stylesheet">
 <link href="{{request.application_url}}/static/css/dataTables.bootstrap.min.css" rel="stylesheet">
+<link href="{{request.application_url}}/static/css/fuelux.css" rel="stylesheet">
 {% block moreheader %}{% endblock %}
 {% endblock %}
 
 {% block inner_content %}
     <!-- left, vertical navbar -->
-    <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux">
+    <div id="sidebar" class="col-sm-3 bootstrap-admin-col-left fuelux_mod">
+        <div id="sidebar-right"><span id="sidebar-size-handler" class="fa fa-th"></span></div>
         <div id="nav-tree" class="panel panel-default bootstrap-admin-no-table-panel">
             <div class="panel-heading">
                 <div class="input-group">
@@ -24,7 +26,51 @@
                     </span>
                     <input id="tree-search" type="text" class="form-control" placeholder="{{ gettext('Search') }}">
                     <span class="input-group-btn">
-                        <button id="tree-search-btn" class="btn btn-primary" type="button"><span class="fa fa-search"></span></button>
+                        <span id="tree_search_drowpdown" class="dropdown">
+                            <button id="tree-search-setup-btn" class="btn btn-default"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" type="button"><span class="glyphicon glyphicon-wrench"></span></button>
+                            <!-- Tree search dropdown menu -->
+                            <div class="dropdown-menu tree-dropdown" aria-labelledby="tree-search-setup-btn">
+                                <div id="tree_search_setup_drowpdown" class="row-fluid">
+                                    <div class="col-xs-6 dropdown-column">
+                                        <div class="column-title">{{ gettext('Search by') }}</div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_nodename" type="radio" name="search_by" checked value="nodename">{{ gettext('Name') }}</label>
+                                        </div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_ip" type="radio" name="search_by" value="ip">{{ gettext('IP address') }}</label>
+                                        </div>
+                                        <div class="radio">
+                                          <label class="radio"><input id="search_by_username" type="radio" name="search_by" value="username">{{ gettext('User') }}</label>
+                                        </div> 
+                                    </div>
+                                    
+                                    <div class="col-xs-6 dropdown-column">
+                                        <div class="column-title">{{ gettext('Show only') }}</div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="group">{{ gettext('Groups') }}</label>&nbsp;&nbsp;
+                                        </div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="computer">{{ gettext('Stations') }}</label>&nbsp;&nbsp;
+                                        </div>
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="user">{{ gettext('Users') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="printer">{{ gettext('Printers') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="storage">{{ gettext('Storages') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        <div class="checkbox">
+                                          <label class="checkbox"><input type="checkbox" class="filter_checkbox" name="filter_type" checked value="repository">{{ gettext('Repositories') }}</label>&nbsp;&nbsp;
+                                        </div> 
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </span>                          
+                        <button id="tree-search-btn" class="btn btn-primary dropdown-toggle" type="button"><span class="fa fa-search"></span></button>
+                        
                     </span>
                 </div>
             </div>
@@ -35,9 +81,10 @@
         </div>
 
         <div id="events-container"></div>
+        <div id="events-summary-container"></div>
     </div>
 
-    <div class="col-sm-9 col-sm-offset-3">
+    <div id="main-area">
         <div class="row">
             <div class="col-sm-9">
                 <div id="breadcrumb" class="navbar navbar-default bootstrap-admin-navbar-thin"></div>
@@ -174,9 +221,11 @@
 
     <script src="{{request.application_url}}/static/js/app.js"></script>
     <script src="{{request.application_url}}/static/js/app-utils.js"></script>
+    <script src="{{request.application_url}}/static/js/jsonform-utils.js"></script>
     <!-- Policies have to loaded before the rest because some models inherit
     from them -->
     <script src="{{request.application_url}}/static/js/policies.js"></script>
+    <script src="{{request.application_url}}/static/js/inheritance.js"></script>
 
     <script src="{{request.application_url}}/static/js/breadcrumb.js"></script>
     <script src="{{request.application_url}}/static/js/cache.js"></script>
@@ -202,6 +251,7 @@
     <script type="text/html" id="breadcrumb-template">{% include "bb-breadcrumb.html" %}</script>
     <script type="text/html" id="computer-template">{% include "bb-computer.html" %}</script>
     <script type="text/html" id="jobs-template">{% include "bb-jobs.html" %}</script>
+    <script type="text/html" id="jobs-summary-template">{% include "bb-jobs-summary.html" %}</script>
     <script type="text/html" id="groups-form-template">{% include "bb-groups-form.html" %}</script>
     <script type="text/html" id="groups-members-template">{% include "bb-groups-members.html" %}</script>
     <script type="text/html" id="groups-multi-widget-template">{% include "bb-groups-multi-widget.html" %}</script>
@@ -220,6 +270,7 @@
     <script type="text/html" id="tree-search-results-template">{% include "bb-tree-search.html" %}</script>
     <script type="text/html" id="tree-selection-template">{% include "bb-tree-selection.html" %}</script>
     <script type="text/html" id="user-template">{% include "bb-user.html" %}</script>
+    <script type="text/html" id="inheritance-list-template">{% include "bb-inheritance.html" %}</script>
 
     <script type="text/html" id="loader-template">
         <p style='font-size: 3em;'>
@@ -228,14 +279,125 @@
     </script>
 
     <script>
-        $(document).ready(function () {
+    
+        function preventDefaultAction(evt) {
+            evt.preventDefault();
+        }
+    
+        function removePx(value) {
+            if (! value)
+                return 0;
+        
+            return parseInt(value.replace(/[^-\d\.]/g, ''));
+        }
+    
+        function recalculateSidebarHeight() {
             // Sidebar heights
-            $('#sidebar').height($(window).height() - 131);
+            var baseHeight = 25;
+            var count = true;
+            $('#sidebar').parent().children().each( function () {
+                var elem = $(this);
+                if (elem.attr('id') == 'sidebar') {
+                    count = false;
+                }
+                
+                if (count) {
+                    var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+                    baseHeight += height;
+                }
+            });
+            $('#sidebar').height(Math.floor($(window).height() - baseHeight));      
+            $('#sidebar-right').css('line-height', Math.floor($(window).height() - baseHeight)+'px');      
+            
+            $('#main-area').height(Math.floor($(window).height() - baseHeight));      
+            
+            $('#main-area').width( Math.floor($( window ).width() - $('#sidebar').width() - 100) );
+        }
+        
+        function recalculateBodyPadding() {
+            var elem = $('.navbar');
+            var height = elem.height() 
+                        + removePx(elem.css('margin-bottom')) + removePx(elem.css('margin-top'))
+                        + removePx(elem.css('padding-bottom')) + removePx(elem.css('padding-top'));
+            $('body').css('padding-top', height);
+        
+        }
+    
+        $(document).ready(function () {
+            // Check minimum sidebar width
+            if ($('#sidebar').width() < 250) 
+                $('#sidebar').width( 250 );
+            
+            // Recalculate sidebar height
+            recalculateSidebarHeight();
+            setTimeout(recalculateBodyPadding, 50);           
+            setTimeout(recalculateSidebarHeight, 100);           
+            
             $(window).on('resize', function () {
                 // Recalculate sidebar height
-                $('#sidebar').height($(window).height() - 131);
+                recalculateSidebarHeight();
+                setTimeout(recalculateBodyPadding, 50);           
+                setTimeout(recalculateSidebarHeight, 100);
             });
 
+            // Search by form events
+            $('.dropdown-menu input, .dropdown-menu label, .dropdown-menu').click(function(e) {
+                e.stopPropagation();
+            });            
+            $('#search_by_nodename').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Unlock the filter
+                $('.filter_checkbox').unbind( "click", preventDefaultAction )
+            });
+
+            $('#search_by_ip').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Lock the filter
+                $('.filter_checkbox').click(preventDefaultAction);
+            });
+
+            $('#search_by_username').click(function (evt) {
+                // Reset the filter
+                $('.filter_checkbox').prop('checked', true);
+                // Lock the filter
+                $('.filter_checkbox').click(preventDefaultAction);
+            });
+            
+
+            $('.alert').on('close.bs.alert', function (e) {
+                setTimeout(recalculateSidebarHeight, 100);
+            });
+            
+            $('#sidebar-size-handler').mousedown( function () {
+                $('#sidebar-right').addClass('resizing');
+            });
+
+            $(document.body).mouseup( function () {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    $('#sidebar-right').removeClass('resizing');
+                }
+            });
+            
+            $(document.body).mousemove(function( event ) {
+                if ($('#sidebar-right').hasClass('resizing')) {
+                    var sbposition = $('#sidebar').position();
+                    
+                    var newSidebarWidth = event.pageX - sbposition.left - 17;
+                    
+                    if (newSidebarWidth >= 250) {
+                        $('#sidebar').width( newSidebarWidth );
+                        
+                        $('#main-area').width( $( window ).width() - $('#sidebar').width() - 100 );
+                    }
+                        
+                }
+            });
+            
+            
             var events = $("#events");
             $("#maximize").click(function (evt) {
                 evt.preventDefault();

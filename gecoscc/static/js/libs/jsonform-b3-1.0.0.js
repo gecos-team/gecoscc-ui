@@ -243,7 +243,7 @@ var inputFieldTemplate = function (type) {
             '<%= (node.schemaElement && node.schemaElement.maxLength ? " maxlength=\'" + node.schemaElement.maxLength + "\'" : "") %>' +
             '<%= (node.schemaElement && node.schemaElement.required && (node.schemaElement.type !== "boolean") ? " required=\'required\'" : "") %>' +
             '<%= (node.placeholder? "placeholder=" + \'"\' + escape(node.placeholder) + \'"\' : "")%>' +
-        ' />',
+        ' />', 
     'fieldtemplate': true,
     'inputfield': true
   }
@@ -453,6 +453,22 @@ jsonform.elementTypes = {
         '</label></div>',
     'fieldtemplate': true,
     'inputfield': true,
+    // INI: Boolean flag (the checkbox type)
+    // https://github.com/joshfire/jsonform/wiki#fields-checkbox
+    'onInsert': function (evt, node) {
+      if (node.formElement.toggleNext) {
+        var nextN = node.formElement.toggleNext === true ? 1 : node.formElement.toggleNext;
+        var toggleNextClass = 'jsonform-toggle-next jsonform-toggle-next-' + nextN;
+        var $next = nextN === 1 ? $(node.el).parent().next() : (nextN === 'all' ? $(node.el).parent().nextAll() : $(node.el).parent().nextAll().slice(0, nextN));
+        $next.addClass('jsonform-toggle-next-target');
+        $(node.el).addClass(toggleNextClass).find(':checkbox').on('change', function() {
+          var $this = $(this);
+          var checked = $this.is(':checked');
+          $(node.el).toggleClass('checked', checked);
+          $next.toggle(checked).toggleClass('jsonform-toggled-visible', checked);
+        }).change();
+      }
+    }, // END
     'getElement': function (el) {
       return $(el).parent().get(0);
     }
@@ -622,19 +638,19 @@ jsonform.elementTypes = {
     }
   },
   'select':{
-    'template':'<<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
+    'template':'<<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url) ? "input" : "select") %> name="<%= node.name %>" id="<%= id %>"' +
       'class="form-control <% if (fieldHtmlClass) { print(fieldHtmlClass); } %>"' +
       '<%= (node.disabled? " disabled" : "")%>' +
       '<%= (node.schemaElement && node.schemaElement.required ? " required=\'required\'" : "") %>' +
-      '> ' + '<% if (!(node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)) { %>' +
+      '> ' + '<% if (!((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)) { %>' +
       '<% _.each(node.options, function(key, val) { if(key instanceof Object) { if (value === key.value) { %>' +
         '<option selected value="<%= key.value %>"><%= key.title %></option> <% } else { %> <option value="<%= key.value %>"><%= key.title %></option> <% }} else { if (value === key) { %> <option selected value="<%= key %>"><%= key %></option> <% } else { %><option value="<%= key %>"><%= key %></option>'+
       '<% }}}); %> ' + '<% } %> ' +
-      '</<%= (node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url ? "input" : "select") %>>',
+      '</<%= (((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url) || node.schemaElement.autocomplete_url)? "input" : "select") %>>',
     'fieldtemplate': true,
     'inputfield': true,
     'onInsert': function (evt, node) {
-      var parent = node.parentNode.schemaElement,
+      var schemaElmnt = ((node.parentNode.schemaElement && node.parentNode.schemaElement.autocomplete_url)?node.parentNode.schemaElement:node.schemaElement),
           promise,
           pagesize = 30,
           more,
@@ -662,9 +678,9 @@ jsonform.elementTypes = {
           return slug === "package";
       };
 
-      if (!parent || _.isUndefined(parent) || _.isUndefined(parent.autocomplete_url)) { return; }
+      if (!schemaElmnt || _.isUndefined(schemaElmnt) || _.isUndefined(schemaElmnt.autocomplete_url)) { return; }
 
-      if (node.value) {
+      if (node.value && !schemaElmnt.autocomplete_url.startsWith('javascript:')) {
         $(node.el).addClass("hidden");
           if (isPackagesPolicy()){
             data = {name: node.value};
@@ -672,7 +688,7 @@ jsonform.elementTypes = {
             data = {oids: node.value};
           }
         promise = $.ajax({
-          url: parent.autocomplete_url,
+          url: schemaElmnt.autocomplete_url,
           dataType: 'json',
           data: data
         });
@@ -731,96 +747,119 @@ jsonform.elementTypes = {
         
         $(node.el).find("input").html("");
 
-        $(node.el).find("input").select2({
-          query: function(query) {
-              if (lastTerm.length < query.term.length && !more) {
-                  cachedData = _.filter(cachedData, function (d) {
-                      var re = new RegExp(query.term + ".*", 'i');
-                      return re.test(d.text);
-                  });
-                  cachedRequests[query.term] = _.clone(cachedData);
-                  if (isPackagesPolicy()) {
-                    addTerm(cachedData, query.term);
-                  }
-                  query.callback({results: cachedData});
-              } else if (cachedRequests[query.term]) {
-                  if (isPackagesPolicy()) {
-                    addTerm(cachedRequests[query.term], query.term);
-                  }
-                  query.callback({results: cachedRequests[query.term]});
-              } else {
-                  $.ajax({
-                      url: parent.autocomplete_url,
-                      dataType: 'json',
-                      id : function (node) {
-                        return node._id;
-                      },
-                      data:  {
-                        item_id: resourceId,
-                        ou_id: ouId,
-                        iname: query.term,
-                        page: query.page,
-                        pagesize: pagesize
-
-                      },
-                      type: 'GET',
-                      success: function(data) {
-                          if ((typeof(data.settings) !== 'undefined')) {
-                            nodes = []
-                            var values = data.settings[0].value.replace(/[\[\]"]/g, '').split(',');
-                            
-                            for (var i = 0; i < values.length; i++) {
-                              nodes[i] = {
-                                text: values[i],
-                                value: values[i],
-                                id: values[i]
-                              }
-                              node.schemaElement.enum.push(values[i]);
-                            }
-                            
-                            more = values.length >= pagesize;
-                          }
-                          else {
-                            var collection = data.software_profiles || data.nodes || data.packages
-                            nodes = collection.map(function (n) {
-                              n._id = n._id || n.name;
-                              node.schemaElement.enum.push(n._id);
-                              return {
-                                text: n.name,
-                                value: n._id,
-                                id: n._id
-                              }
-                            });
-                            more = collection.length >= pagesize;
-                          }
-
-                          if(data.page === 1) {
-                              cachedData = nodes;
-                          } else  {
-                              cachedData = _.union(cachedData, nodes);
-                          }
-
-                          query.callback({results: nodes, more: more});
-                      }
-                  });
+        if (schemaElmnt.autocomplete_url.startsWith('javascript:')) {
+            // Data loaded from a javascript function
+            var functionName = schemaElmnt.autocomplete_url.split(":")[1];
+            
+            $(node.el).find("input").select2({
+              query: function(query) {
+                  window[functionName](node, query);
+              },
+              initSelection : function (element, callback) {
+                if(!_.isUndefined(node.value)){
+                  $(node.el).find("input").last().attr('value', node.value);
+                  node.schemaElement.enum.push(node.value);
+                  var data = {id: node.value, value: node.value, text: gettext(node.value)};
+                  callback(data);
+                }
               }
-              lastTerm = query.term;
-          },
-          initSelection : function (element, callback) {
-            if(!_.isUndefined(resNode)){
-              $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
-              node.schemaElement.enum.push(resNode._id || resNode.name);
-              var data = {id: resNode._id || resNode.name, text: resNode.name};
-              callback(data);
-            }
-          }
-        }).on("change", function(e) {
-          if(e.val != lastTerm || !addedTerm){
-            $(node.el).find(".alert").hide();
-          } else {
-            $(node.el).find(".alert").show();
-          }
-        });
+            });
+        }
+        else {
+            // Data loaded from the server
+            $(node.el).find("input").select2({
+              query: function(query) {
+                  if (lastTerm.length < query.term.length && !more) {
+                      cachedData = _.filter(cachedData, function (d) {
+                          var re = new RegExp(query.term + ".*", 'i');
+                          return re.test(d.text);
+                      });
+                      cachedRequests[query.term] = _.clone(cachedData);
+                      if (isPackagesPolicy()) {
+                        addTerm(cachedData, query.term);
+                      }
+                      query.callback({results: cachedData});
+                  } else if (cachedRequests[query.term]) {
+                      if (isPackagesPolicy()) {
+                        addTerm(cachedRequests[query.term], query.term);
+                      }
+                      query.callback({results: cachedRequests[query.term]});
+                  } else {
+                      $.ajax({
+                          url: schemaElmnt.autocomplete_url,
+                          dataType: 'json',
+                          id : function (node) {
+                            return node._id;
+                          },
+                          data:  {
+                            item_id: resourceId,
+                            ou_id: ouId,
+                            iname: query.term,
+                            page: query.page,
+                            pagesize: pagesize
+
+                          },
+                          type: 'GET',
+                          success: function(data) {
+                              if ((typeof(data.settings) !== 'undefined')) {
+                                nodes = []
+                                var values = data.settings[0].value.replace(/[\[\]"]/g, '').split(',');
+                                
+                                for (var i = 0; i < values.length; i++) {
+                                  nodes[i] = {
+                                    text: values[i],
+                                    value: values[i],
+                                    id: values[i]
+                                  }
+                                  node.schemaElement.enum.push(values[i]);
+                                }
+                                
+                                more = values.length >= pagesize;
+                              }
+                              else {
+                                var collection = data.software_profiles || data.nodes || data.packages
+                                nodes = collection.map(function (n) {
+                                  n._id = n._id || n.name;
+                                  node.schemaElement.enum.push(n._id);
+                                  return {
+                                    text: n.name,
+                                    value: n._id,
+                                    id: n._id
+                                  }
+                                });
+                                more = collection.length >= pagesize;
+                              }
+
+                              if(data.page === 1) {
+                                  cachedData = nodes;
+                              } else  {
+                                  cachedData = _.union(cachedData, nodes);
+                              }
+
+                              query.callback({results: nodes, more: more});
+                          }
+                      });
+                  }
+                  lastTerm = query.term;
+              },
+              initSelection : function (element, callback) {
+                if(!_.isUndefined(resNode)){
+                  $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
+                  node.schemaElement.enum.push(resNode._id || resNode.name);
+                  var data = {id: resNode._id || resNode.name, text: resNode.name};
+                  callback(data);
+                }
+              }
+            }).on("change", function(e) {
+              if(e.val != lastTerm || !addedTerm){
+                $(node.el).find(".alert").hide();
+              } else {
+                $(node.el).find(".alert").show();
+              }
+            });
+        
+        }
+        
         $(node.el).removeClass("hidden");
       });
     }
@@ -994,7 +1033,7 @@ jsonform.elementTypes = {
           '</li>';
       }
       else {
-        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12" <% } else { %> "col-sm-offset-1 col-sm-11" <% } %>' +
+        return '<li class=<% if (_.isUndefined(node.title) || node.type !== "object") { %> "col-sm-12 separator" <% } else { %> "col-sm-offset-1 col-sm-11 separator" <% } %>' +
           'data-idx="<%= node.childPos %>">' +
           '<a href="#" class="pull-right btn btn-default btn-xs _jsonform-array-deleteidx"><span class="fa fa-minus" title="Delete item"></span></a>' +
           inner +
@@ -1006,7 +1045,7 @@ jsonform.elementTypes = {
       var boundaries = node.getArrayBoundaries();
       node.resetDeleteEvents();
 
-      var warning = (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
+      var warning = node["schemaElement"] && (node["schemaElement"]["title_" + App.language] || node.title) + " " + gettext("contains items that are outside your scope, please consult a global administrator if you need more information.");
       $(node.el).find(".alert-warning").html(warning);
       // Switch two nodes in an array
       var moveNodeTo = function (fromIdx, toIdx) {
@@ -1060,6 +1099,7 @@ jsonform.elementTypes = {
           }
         }
         node.insertArrayItem(idx, $('> ul', $nodeid).get(0));
+        JSONForm.initializeTabs($('form'));                                           
         if ((boundaries.minItems <= 0) ||
             ((boundaries.minItems > 0) &&
               (node.children.length > boundaries.minItems - 1))) {
@@ -1354,9 +1394,9 @@ jsonform.elementTypes = {
             '<% if (node.legend) { %><legend><%= node.legend %></legend><% } %>' +
             '<% if (node.formElement.key) { %><input type="hidden" id="<%= node.id %>" name="<%= node.name %>" value="<%= escape(value) %>" /><% } else { %><a id="<%= node.id %>"></a><% } %>' +
             '<div class="tabbable">' +
-                '<div class="control-group<%= node.formElement.hideMenu ? " hide" : "" %>">' +
-                    '<% if (node.title && !elt.notitle) { %><label class="control-label" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label><% } %>' +
-                    '<div class="controls"><%= tabs %></div>' +
+                '<div class="control-group<%= node.formElement.hideMenu ? " hide" : " control-group-action" %>">' +
+                    '<% if (node.title && !elt.notitle) { %><label class="col-sm-2 control-label control-label-action" for="<%= node.id %>"><%= node.getLocalizedAttr("title") %></label><% } %>' +
+                    '<div class="controls col-sm-9"><%= tabs %></div>' +
                 '</div>' +
                 '<div class="tab-content">' +
                     '<%= children %>' +
@@ -1391,6 +1431,7 @@ jsonform.elementTypes = {
       if (node.options) {
         children = _.map(node.options, function (option, idx) {
           var child = node.children[idx];
+          child.childPos = idx;
           if (option instanceof Object) {
             option = _.extend({ node: child }, option);
             option.title = option.title ||
@@ -1440,7 +1481,7 @@ jsonform.elementTypes = {
       data.value = activeChild.value;
 
       var elt = node.formElement;
-      var tabs = '<select class="nav"' +
+      var tabs = '<select class="nav select-action"' +
         (node.disabled ? ' disabled' : '') +
         '>';
       _.each(children, function (child, idx) {
@@ -2722,7 +2763,7 @@ formNode.prototype.render = function (el) {
  */
 formNode.prototype.getLocalizedAttr = function (attr, lan) {
   lan = lan || this.lan;
-  return this.schemaElement[attr + "_" + lan] || this[attr];
+  return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
 };
 
 
@@ -3352,6 +3393,17 @@ formTree.prototype.buildFromLayout = function (formElement, context) {
   var view = null;
   var key = null;
 
+  // INI: Boolean flag (the checkbox type)
+  // http://ulion.github.io/jsonform/playground/?example=fields-checkbox
+  if (formElement.key && this.formDesc.customFormItems) {
+    var formEl = this.formDesc.customFormItems[formElement.key];
+    if (formEl !== undefined) {
+      formEl.key = formElement.key;
+      formElement = formEl;
+    }
+  }
+  // END
+
   // The form element parameter directly comes from the initial
   // JSONForm object. We'll make a shallow copy of it and of its children
   // not to pollute the original object.
@@ -3949,6 +4001,7 @@ global.JSONForm.getFormValue = jsonform.getFormValue;
 global.JSONForm.fieldTemplate = jsonform.fieldTemplate;
 global.JSONForm.fieldTypes = jsonform.elementTypes;
 global.JSONForm.getInitialValue = getInitialValue;
+global.JSONForm.initializeTabs = initializeTabs;
 global.JSONForm.util.getObjKey = jsonform.util.getObjKey;
 global.JSONForm.util.setObjKey = jsonform.util.setObjKey;
 

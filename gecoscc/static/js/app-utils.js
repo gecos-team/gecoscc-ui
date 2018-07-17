@@ -80,6 +80,11 @@
             return this.save({}, { url: that.url() + "?token=" + App.instances.staging.token });
         },
 
+        refreshWithToken: function () {
+            var that = this;
+            return this.save({}, { url: that.url() + "?action=refresh_policies&token=" + App.instances.staging.token });
+        },
+
         save: function () {
             return App.instances.staging.add(this, { arguments: arguments });
         },
@@ -286,24 +291,6 @@
             this.model.set(prop, value, { silent: true });
         },
 
-        _showSavingProcess: function ($button, phase) {
-            var text;
-
-            if (phase === "progress") {
-                $button.attr("disabled", "disabled");
-                $button.html("<span class='fa fa-spin fa-spinner'></span> " +
-                             gettext("Staging") + "...");
-                return;
-            }
-
-            text = phase === "saved" ? gettext("Save") : gettext("Delete");
-            $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
-            setTimeout(function () {
-                $button.html(text);
-                $button.attr("disabled", false);
-            }, 2000);
-        },
-
         saveModel: function ($button, mapping) {
             var that = this,
                 promise = $.Deferred(),
@@ -322,14 +309,14 @@
                 App.alerts.close();
             }
 
-            this._showSavingProcess($button, "progress");
+            App.showSavingProcess($button, "progress");
             _.each(_.pairs(mapping), function (relation) {
                 that._setPropInModel(relation[0], relation[1]);
             });
 
             promise = this.model.saveWithToken();
             setTimeout(function () {
-                that._showSavingProcess($button, "saved");
+                App.showSavingProcess($button, "saved");
                 if (!isNew) {
                     App.instances.staging.toModify.push(that.model.get("id"));
                 }
@@ -359,10 +346,10 @@
                 $button = $(evt.target),
                 promise;
 
-            this._showSavingProcess($button, "progress");
+            App.showSavingProcess($button, "progress");
             promise = this.model.destroy({ url: that.model.url() + "?token=" + App.instances.staging.token });
             setTimeout(function () {
-                that._showSavingProcess($button, "success");
+                App.showSavingProcess($button, "success");
                 App.instances.tree.trigger("change");
             }, 1000);
 
@@ -506,6 +493,29 @@
             text: text
         });
         App.alerts.show(view);
+    };
+    
+    App.showSavingProcess = function ($button, phase) {
+        var text;
+
+        if (phase === "progress") {
+            $button.attr("disabled", "disabled");
+            $button.html("<span class='fa fa-spin fa-spinner'></span> " +
+                         gettext("Staging") + "...");
+            return;
+        }
+
+        text = gettext("Delete");
+        if (phase === "saved")
+            text = gettext("Save");
+        if (phase === "refreshed")
+            text = '<span class="fa fa-refresh"></span> &nbsp;'+gettext("Refresh policies");
+
+        $button.html("<span class='fa fa-check'></span> " + gettext("Done"));
+        setTimeout(function () {
+            $button.html(text);
+            $button.attr("disabled", false);
+        }, 2000);
     };
 
     ChangesAlertView = Backbone.Marionette.ItemView.extend({

@@ -17,6 +17,7 @@ import os
 import pymongo
 import sys
 import subprocess
+import jinja2
 
 from ConfigParser import ConfigParser
 
@@ -27,10 +28,9 @@ from pyramid.exceptions import ConfigurationError
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.db import MongoDB, get_db
-from gecoscc.models import get_root
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage
-from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory
+from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory, RootFactory
 from gecoscc.socks import socketio_service
 
 from urlparse import urlsplit
@@ -42,10 +42,21 @@ def read_setting_from_env(settings, key, default=None):
     else:
         return settings.get(key, default)
 
+def pregen(request, elements, kw):
+    kw.setdefault('rollback', '')
+    return elements, kw
+
+def include_file(name):
+    with open(name) as f:
+        return jinja2.Markup(f.read())
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
+    config.add_route('updates', '/updates/', factory=SuperUserFactory)
+    config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
     config.add_route('admins_superuser', '/admins/superuser/{username}/', factory=SuperUserFactory)
@@ -54,8 +65,7 @@ def route_config(config):
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
-    config.add_route('admin_upload','/admins/upload/{username}/', factory=SuperUserFactory)
-    config.add_route('admin_restore','/admins/restore/{name}/{version}/', factory=SuperUserFactory)
+    config.add_route('admin_maintenance','/admins/maintenance/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
@@ -125,26 +135,21 @@ def check_server_list(config):
         server_name, err = p.communicate()
 
     if not server_name:
-        raise ConfigurationError("The server_name option is required")
+        raise ConfigurationError("server_name option required in gecoscc.ini" )
 
-    server_ip = read_setting_from_env(settings, 'server_ip', None)
-    if not server_ip:
-        # Try to get the server IP from "ifconfig" command
-        p = subprocess.Popen('/sbin/ifconfig eth0 | grep "inet addr" | awk -F: \'{print $2}\' | awk \'{print $1}\'', 
-            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        server_ip, err = p.communicate()
-    
-    if not server_ip:
-        raise ConfigurationError("The server_ip option is required")
+    server_address = read_setting_from_env(settings, 'server_address', None)
+
+    if not server_address:
+        raise ConfigurationError("server_address option required in gecoscc.ini")
     
     db = config.registry.settings['mongodb'].get_database()
         
     # Check if this server is in the collection
     server = db.servers.find_one({'name': server_name.strip()})
     if server is None:
-        db.servers.insert({'name': server_name.strip(), 'address':server_ip.strip()})
+        db.servers.insert({'name': server_name.strip(), 'address':server_address.strip()})
     else:
-        server['address'] = server_ip.strip()
+        server['address'] = server_address.strip()
         db.servers.update({'name': server_name.strip()}, server, new=False)
         
     
@@ -166,6 +171,8 @@ def auth_config(config):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
+def env_override(value, key):
+    return os.getenv(key, value)
 
 def jinja2_config(config):
     settings = config.registry.settings
@@ -220,7 +227,7 @@ def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
     settings = dict(settings)
-    config = Configurator(root_factory=get_root, settings=settings)
+    config = Configurator(root_factory=RootFactory, settings=settings)
 
     # Set Unicode as default encoding
     reload(sys)
@@ -242,6 +249,10 @@ def main(global_config, **settings):
     config.include('pyramid_beaker')
     config.include('pyramid_celery')
     config.include('cornice')
+
+    jinja2_env = config.get_jinja2_environment()
+    jinja2_env.globals["include_file"] = include_file
+    jinja2_env.filters['env_override'] = env_override
 
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings

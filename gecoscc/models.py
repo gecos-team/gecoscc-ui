@@ -11,11 +11,14 @@
 #
 
 import re
-
+import zipfile
+import tempfile
+import urllib2
 import colander
 import deform
 import os
 import pyramid
+import datetime
 
 from bson import ObjectId
 from bson.objectid import InvalidId
@@ -24,10 +27,13 @@ from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
-from gecoscc.utils import get_items_ou_children
+from gecoscc.i18n import gettext                                
+from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
+from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
+UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
 
 
 class MemoryTmpStore(dict):
@@ -165,6 +171,7 @@ class AdminUserValidator(object):
         del value['repeat_password']
 
 
+        
 class Node(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     path = colander.SchemaNode(colander.String())
@@ -173,6 +180,12 @@ class Node(colander.MappingSchema):
                                default=False)
     source = colander.SchemaNode(colander.String())
     name = colander.SchemaNode(colander.String())
+    inheritance = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
+    policies = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                                   default={},
+                                   missing={})
 
 
 class Nodes(colander.SequenceSchema):
@@ -349,8 +362,32 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
+    nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Navigation tree page size:'),
+                                  validator=colander.Range(1, 200))
+    policies_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=8,
+                                  missing=8,
+                                  title=_('Policies list page size:'),
+                                  validator=colander.Range(1, 200))
+    jobs_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=30,
+                                  missing=30,
+                                  title=_('Actions list page size:'),
+                                  validator=colander.Range(1, 200))
+    group_nodes_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Group nodes list page size:'),
+                                  validator=colander.Range(1, 200))
 
+
+
+                                       
 # Only to makemessages
+_('There was a problem with your submission')
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
 
@@ -363,24 +400,287 @@ class AdminUserOUManage(colander.MappingSchema):
                                         title=_('Organizational Units available to register workstations'),
                                         widget=deferred_choices_widget)
 
-class CookbookUpload(colander.MappingSchema):
+# UPDATES: INI
+
+class UpdateBaseValidator(object):
+    ''' Base class from which the rest of classes inherit to validate an update
+    
+    Attributes:
+      filename (str):       name of uploaded zip file
+      decompress (str):     temporal directory where decompressing zip file
+    '''
+    filename = ''
+    decompress = ''
+    def __call__(self, node, value):
+        if value is not None:
+            self.decompress = value['decompress']
+            if 'fp' in value:
+                self.filename = os.path.basename(value['filename'])
+            elif 'url' in value:
+                self.filename = os.path.basename(value['url'])
+        else:
+            self.filename = ''
+            self.decompress = ''
+
+class UpdateNamingValidator(UpdateBaseValidator):
+    ''' Subclass for validating naming convention of an update
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid naming convention
+    '''
+    err_msg = _('The uploaded file is not followed naming convention')
+    pattern = '^update-(\w+)\.zip$'
+    def __call__(self, node, value):
+        super(UpdateNamingValidator, self).__call__(node, value)
+        if self.filename and not (re.match(self.pattern, self.filename)):
+            node.raise_invalid(self.err_msg)
+
+class UpdateSequenceValidator(UpdateBaseValidator):
+    ''' Subclass for validating numeric sequence of an update
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid numeric sequence
+    '''
+    err_msg = _('No valid update sequence. Must be: {$val}')
+    pattern = '^update-([0-9]{4})\.zip$'
+    def __call__(self, node, value):
+        super(UpdateSequenceValidator, self).__call__(node,value)
+        if self.filename:
+            m = re.match(self.pattern, self.filename)
+            request = pyramid.threadlocal.get_current_request()
+            from gecoscc.db import get_db
+            mongodb = get_db(request)
+            nextseq = getNextUpdateSeq(mongodb)
+            # Numeric update naming
+            if m is not None and m.group(1) != nextseq:
+                err_msg = _(self.err_msg, mapping={'val': nextseq})
+                node.raise_invalid(err_msg)
+            else:
+                if mongodb.updates.find({'name':self.filename}).count() > 0:
+                    node.raise_invalid(_('This name already exists'))
+
+class UpdateFileStructureValidator(UpdateBaseValidator):
+    ''' Subclass for validating zip file content
+    
+    This structure is defined by UPDATE_STRUCTURE variable in this file.
+    UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
+    
+    Attributes:
+      err_msg (str):    error message
+    '''
+    err_msg = _('No valid zip file structure')
+
+    def __call__(self, node, value):
+
+        super(UpdateFileStructureValidator, self).__call__(node,value)
+       
+        if os.path.isdir(self.decompress):
+            for archive in os.listdir(self.decompress):
+                # Adding slash if archive is a dir for comparison
+                if os.path.isdir(self.decompress + archive):
+                    archive += os.sep
+
+                if archive not in UPDATE_STRUCTURE:
+                    node.raise_invalid(gettext(self.err_msg))
+
+            for required in UPDATE_STRUCTURE:
+                if not os.path.exists(self.decompress + required):
+                    node.raise_invalid(gettext(self.err_msg))
+          
+
+class UpdateScriptRangeValidator(UpdateBaseValidator):
+    ''' Subclass for validating numeric range of scripts (00-99)
+    
+    Attributes:
+      err_msg (str):    error message
+      pattern (str):    regex for valid numeric range 
+    '''
+    pattern = '^[0-9][0-9]-.*'
+    err_msg = _('Any script out of range (00-99)')
+
+    def __call__(self, node, value):
+
+        super(UpdateScriptRangeValidator, self).__call__(node,value)
+
+        scriptdir = self.decompress + 'scripts'
+ 
+        if os.path.isdir(scriptdir):
+            for script in os.listdir(scriptdir):
+                if not (re.match(self.pattern, script)):
+                    node.raise_invalid(gettext(self.err_msg))
+        
+
+class UpdateControlFileValidator(UpdateBaseValidator):
+    ''' Subclass for verifying requisites of control file
+    
+    Attributes:
+      err_msg (str):    error message
+    '''
+    err_msg = 'Control file requirements not met'
+
+    def __call__(self, node, value):
+
+        from iscompatible import iscompatible, string_to_tuple
+        super(UpdateControlFileValidator, self).__call__(node,value)
+
+        request = pyramid.threadlocal.get_current_request()
+        controlfile = self.decompress + os.sep + 'control'
+
+        settings = get_current_registry().settings
+        api = get_chef_api(settings, request.user)
+        cookbook = get_cookbook(api, settings.get('chef.cookbook_name'))
+
+        if os.path.exists(controlfile):
+            gecoscc_require = cookbook_require = None
+            with open(controlfile,'r') as f:
+                for line in f:
+                    if line.startswith('gecoscc'):
+                        gecoscc_require = line
+                    elif line.startswith('cookbook'):
+                        cookbook_require = line
+                      
+            if gecoscc_require and not iscompatible(gecoscc_require, string_to_tuple(request.VERSION)):
+                node.raise_invalid(gettext(self.err_msg))
+  
+            if cookbook_require and not iscompatible(cookbook_require, string_to_tuple(cookbook['version'])):
+                node.raise_invalid(gettext(self.err_msg))
+         
+
+# Update preparer
+def unzip_preparer(value):
+    '''
+    From deform documentation: "The preparer of a schema node is called after deserialization but before validation."
+    The data is prepared by decompressing the zip file in a temporary directory. After that, validators are called.
+    '''
+    settings = get_current_registry().settings
+    if value is not colander.null:
+        try:
+            if 'fp' in value:
+                # local_file
+                with open(settings['updates.tmp'] + value['filename'], 'wb') as zipped:
+                    zipped.write(value['fp'].read())
+            else: 
+                # remote_file
+                f = urllib2.urlopen(value['url'])
+                with open(settings['updates.tmp'] + os.path.basename(value['url']), "wb") as zipped:
+                    zipped.write(f.read())
+
+            # Decompress zipfile into temporal dir
+            tmpdir = tempfile.mkdtemp()
+            zip_ref = zipfile.ZipFile(zipped.name,'r')
+            zip_ref.extractall(tmpdir)
+            zip_ref.close()
+
+            value['decompress'] = tmpdir + '/'
+
+            return value
+
+        except urllib2.HTTPError as e:
+            pass
+        except urllib2.URLError as e:
+            pass
+        except zipfile.BadZipfile as e:
+            pass
+        except OSError as e:
+            pass
+        except IOError as e:
+            pass
+
+class UrlFile(object):
+    ''' Custom type for URL string 
+    '''
+    def serialize(self, node, appstruct):
+        if not appstruct or appstruct is colander.null:
+            if isinstance(node.missing, colander._drop):
+                return colander.drop
+            return colander.null
+        if not isinstance(appstruct, basestring):
+            raise colander.Invalid(node, '{0} is not a url'.format(
+                appstruct))
+        return unicode(appstruct)
+
+    def deserialize(self, node, pstruct):
+        if not pstruct or pstruct is colander.null:
+            if isinstance(node.missing, colander._drop):
+                return colander.drop
+            return colander.null
+        try:
+            return dict({'url': pstruct,'decompress':''})
+        except TypeError:
+            raise colander.Invalid(node, '{0} is not a string'.format(
+                pstruct))
+
+
+
+class UpdateModel(colander.MappingSchema):
+    '''
+    Schema for representing an update in form 
+    '''
     local_file = colander.SchemaNode(deform.FileData(),
                                      widget=FileUploadWidget(filestore),
-                                     title=_('Cookbook ZIP'))
-    remote_file = colander.SchemaNode(colander.String(),
-                                      validator=colander.url,
-                                      missing=unicode(''),
+                                     preparer=unzip_preparer,
+                                     validator = colander.All(
+                                         UpdateNamingValidator(), 
+                                         UpdateSequenceValidator(),
+                                         UpdateFileStructureValidator(), 
+                                         UpdateControlFileValidator(),
+                                         UpdateScriptRangeValidator()),
+                                     missing=colander.null,
+                                     title=_('Update ZIP'))
+    remote_file = colander.SchemaNode(UrlFile(),
+                                      preparer=unzip_preparer,
+                                      validator = colander.All(
+                                          UpdateNamingValidator(), 
+                                          UpdateSequenceValidator(),
+                                          UpdateFileStructureValidator(), 
+                                          UpdateControlFileValidator()),
+                                      missing=colander.null,
                                       title=_('URL download'))
-@colander.deferred
-def deferred_restore_widget(node, kw):
-    choices = kw.get('restore_choices')
-    return SelectWithDisabledOptions(values=choices)
 
-class CookbookRestore(colander.MappingSchema):
-    restore_versions = colander.SchemaNode(colander.List(),
-                                           title=_('Restore previous version of cookbook'),
-                                           widget=deferred_restore_widget)
+class Update(colander.MappingSchema):
+    _id = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
 
+    path = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    name = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    timestamp = colander.DateTime()
+    rollback = colander.SchemaNode(colander.Integer(),
+                                default = 0,
+                                missing = 0)
+    state = colander.SchemaNode(colander.Integer(),
+                                default = 0,
+                                missing = 0)
+    timestamp_rollback = colander.DateTime()
+    rolluser = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    user = colander.SchemaNode(colander.String(),
+                                 default='',
+                                 missing='')
+
+    
+
+class Updates(colander.SequenceSchema):
+    updates = Update()
+# UPDATES: END
+
+class Maintenance(colander.MappingSchema):
+    maintenance_message = colander.SchemaNode(colander.String(),
+                                              validator=colander.Length(max=500),
+                                              widget=deform.widget.TextAreaWidget(rows=10, cols=80, maxlength=500, css_class='deform-widget-textarea-maintenance'),
+                                              title=_('Users will be warned with this message'),
+                                              default='',
+                                              missing='')
 class AdminUsers(colander.SequenceSchema):
     adminusers = AdminUser()
 
@@ -521,6 +821,7 @@ class Computer(Node):
                                                  default=False)
     gcc_link = colander.SchemaNode(RealBoolean(),
                                    default=True)
+    sudoers = StringList(missing=[], default=[])
 
 
 class Computers(colander.SequenceSchema):
@@ -702,6 +1003,9 @@ class Policy(colander.MappingSchema):
     _id = colander.SchemaNode(ObjectIdField())
     name = colander.SchemaNode(colander.String())
     slug = colander.SchemaNode(colander.String())
+    form = colander.SchemaNode(colander.Mapping(unknown='preserve'),
+                               default={},
+                               missing={})
     schema = colander.SchemaNode(colander.Mapping(unknown='preserve'),
                                  default={},
                                  missing={})
@@ -713,15 +1017,41 @@ class Policy(colander.MappingSchema):
                                             default=False)
     support_os = StringList(missing=[], default=[])
     is_mergeable = colander.SchemaNode(RealBoolean())
+    autoreverse = colander.SchemaNode(RealBoolean())
 
 
 class Policies(colander.SequenceSchema):
     policies = Policy()
 
+    
+class PackageVersion(colander.MappingSchema):
+    version = colander.SchemaNode(colander.String(), missing='', default='')
+    description = colander.SchemaNode(colander.String(), missing='', default='')
+    depends = colander.SchemaNode(colander.String(), missing='', default='')
+    provides = colander.SchemaNode(colander.String(), missing='', default='')
+    conflicts = colander.SchemaNode(colander.String(), missing='', default='')
+    replaces = colander.SchemaNode(colander.String(), missing='', default='')
 
+class PackageVersions(colander.SequenceSchema):
+    versions = PackageVersion()      
+    
+class PackageArchitecture(colander.MappingSchema):
+    architecture = colander.SchemaNode(colander.String(), missing='', default='')
+    versions = PackageVersions(missing=[], default=[])
+
+class PackageArchitectures(colander.SequenceSchema):
+    architectures = PackageArchitecture()    
+
+class PackageRepository(colander.MappingSchema):
+    repository = colander.SchemaNode(colander.String(), missing='', default='')
+    architectures = PackageArchitectures(missing=[], default=[])
+
+class PackageRepositories(colander.SequenceSchema):
+    repositories = PackageRepository()    
+    
 class Package(colander.MappingSchema):
-    name = colander.SchemaNode(colander.String())
-
+    name = colander.SchemaNode(colander.String(), missing='', default='')
+    repositories = PackageRepositories(missing=[], default=[])
 
 class Packages(colander.SequenceSchema):
     packages = Package()

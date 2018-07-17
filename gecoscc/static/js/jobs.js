@@ -51,6 +51,10 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
     Models.JobCollection = Backbone.Paginator.requestPager.extend({
         model: Models.JobModel,
         archived: false,
+        seeAll: false,
+        source: undefined,
+        workstation: undefined,
+        userfilter: undefined,
         parent: '',
         paginator_core: {
             type: "GET",
@@ -70,7 +74,7 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
         paginator_ui: {
             firstPage: 1,
             currentPage: 1,
-            perPage: 30,
+            perPage: jobs_pagesize,
             pagesInRange: 3,
             // 10 as a default in case your service doesn't return the total
             totalPages: 10
@@ -82,6 +86,10 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
             archived:  function () { return this.archived; },
             parentId: function() { return this.parentId; },
             total: function() { return this.total;},
+            seeAll: function() { return this.seeAll},
+            source: function() { return this.source},
+            workstation: function() { return this.workstation},
+            userfilter: function() { return this.userfilter},
         },
         parse: function (response) {
             this.totalPages = response.pages;
@@ -97,6 +105,15 @@ App.module("Job.Models", function (Models, App, Backbone, Marionette, $, _) {
             return obj;
         }
     });
+    Models.MyJobStatistics = Backbone.Model.extend({
+        url: function () {
+            return "/api/my-jobs-statistics/";
+        },
+        parse: function (obj) {
+            return obj;
+        }
+    });
+    
 });
 
 App.module("Job.Views", function (Views, App, Backbone, Marionette, $, _) {

@@ -22,9 +22,16 @@ from gecoscc.permissions import api_login_required
 def nodes_type_filter(request):
     type = request.GET.get('type')
     if type:
-        return {
-            'type': type,
-        }
+        if ',' in type:
+            types = type.split(',')
+            return {
+                'type': { '$in': types },
+            }
+
+        else:
+            return {
+                'type': type,
+            }
     return {}
 
 
@@ -52,6 +59,7 @@ class NodesResource(ResourcePaginatedReadOnly):
     """ Returns the nodes tree structure
 
     GET filters:
+        search_by: One of 'ip', 'nodename' or 'username'
         type (str): One of 'ou', 'user', 'printer', 'storage'
         path (str): The base path for the query (comma separated items)
         maxdepth (int): The max children levels to retrieve

@@ -15,15 +15,20 @@ import string
 import random
 import subprocess
 import json
+import requests
+import re
+from copy import deepcopy
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
+from chef.node import NodeAttributes
 from getpass import getpass
 from optparse import make_option
+from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
+from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername, trace_inheritance, order_groups_by_depth
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
 
@@ -62,12 +67,144 @@ class Command(BaseCommand):
             action='store',
             help='The pem file that contains the chef administrator private key'
         ),
+        make_option(
+            '-i', '--inheritance',
+            dest='inheritance',
+            action='store_true',
+            default=False,
+            help='Check inheritance field'
+        ),        
+        make_option(
+            '-c', '--clean-inheritance',
+            dest='clean_inheritance',
+            action='store_true',
+            default=False,
+            help='Clean inheritance field (must be used with -i)'
+        ),          
     ]
 
     required_options = (
         'chef_username',
         'chef_pem',
     )
+    
+    def get_url(self, url):
+        r = requests.get(url, verify=False, timeout=30)
+        if r.ok:
+            if hasattr(r,'text'):
+                return r.text
+            else:  
+                return r.content                
+            
+        return None     
+    
+    def get_chef_url(self, url):
+        url = url[url.index('://')+3:]
+        url = url[url.index('/'):]
+            
+        print "url=", url
+        data = None
+        try:
+            data = self.api[url]
+        except ChefServerNotFoundError:
+            pass              
+        
+        return data
+    
+    def get_default_data(self, dotted_keys):
+        # Get gecos_ws_mgmt cookbook version
+        data = None
+        try:
+            data = self.api['/organizations/default/cookbooks/gecos_ws_mgmt']
+        except ChefServerNotFoundError:
+            pass              
+        
+        if (data is None) or (not "gecos_ws_mgmt" in data) or (not "versions" in data["gecos_ws_mgmt"]):
+            logger.error('Can\'t get version for gecos_ws_mgmt cookbook!')
+            return None
+            
+        last_version_number = ''
+        last_version_url = ''
+        for ver in data["gecos_ws_mgmt"]["versions"]:
+            if last_version_number == '':
+                last_version_number = ver['version']
+                last_version_url = ver['url']
+            elif  LooseVersion(last_version_number) < LooseVersion(ver['version']):
+                last_version_number = ver['version']
+                last_version_url = ver['url']
+            
+        if last_version_number == '':
+            logger.error('Can\'t find last version number!')
+            return None
+            
+        logger.info("Cookbook version: %s"%(last_version_number))
+        data = self.get_chef_url(last_version_url)
+        if data is None:
+            logger.error('Can\'t get data for gecos_ws_mgmt cookbook!')
+            return None
+
+        if not "attributes" in data:
+            logger.error('gecos_ws_mgmt cookbook data doesn\'t contain attributes!')
+            return None
+
+        default_attr_url = ''
+        for attr in data["attributes"]:
+            if attr["name"] == "default.rb" and attr["path"] == "attributes/default.rb":
+                default_attr_url = attr["url"] 
+                
+        if default_attr_url == '':
+            logger.error('Can\'t find default attributes file!')
+            return None
+            
+        data = self.get_url(default_attr_url)
+        if data is None:
+            logger.error('Can\'t download default attributes file!')
+            return None
+        
+        # Convert to python
+        data = re.sub('\[:(?P<name>[a-zA-Z0-9_]+)\]', '["\g<name>"]', data)
+        data = data.replace('true', 'True').replace('false', 'False')
+        
+        # Create dictionaries
+        created = []
+        header = ''
+        for line in data.split('\n'):
+            # Line example: 
+            #   default["gecos_ws_mgmt"]["misc_mgmt"]["chef_conf_res"]["support_os"] = ["GECOS V3", "GECOS V2", "Gecos V2 Lite", "GECOS V3 Lite"]
+            if line.strip() != '':
+                asignation = line.split('=')
+                # Left example:
+                #   default["gecos_ws_mgmt"]["misc_mgmt"]["chef_conf_res"]["support_os"]
+                left = asignation[0].strip()
+                right = asignation[1].strip()
+                
+                # Save as dotted_key => value
+                dotted_key = left.replace('"', '').replace('default[', '').replace('][', '.').replace(']','')
+                dotted_keys[dotted_key] = eval(right)
+                
+                # Create empty dictionaries code
+                begining = 0
+                position = left.index('[', begining)
+                while position > 0:
+                    variable = left[0:position]
+                    begining = position + 1
+                    try:
+                        position = left.index('[', begining)
+                    except ValueError:
+                        # String not found
+                        position = -1
+                        
+                    if (not variable in created) and len(variable) != len(left):
+                        created.append(variable)
+                        header += variable+' = {}\n'
+                
+        data = header + data
+        
+        default = None
+        code = compile(data, '<string>', 'exec')
+        exec code
+            
+        return default
     
     
     def command(self):
@@ -82,6 +219,12 @@ class Command(BaseCommand):
         self.referenced_data_type['repository_can_view'] = 'repository'
         self.referenced_data_type['printer_can_view'] = 'printer'
         
+        # Get gecos_ws_mgmt cookbook default data structure
+        default_data_dotted_keys = {}
+        default_data = self.get_default_data(default_data_dotted_keys)
+        if default_data is None:
+            logger.error("Can't find default data!")
+            return
         
         # Get all the policies structures
         logger.info('Getting all the policies structures from database...')
@@ -104,12 +247,41 @@ class Command(BaseCommand):
             except Exception as err:
                 logger.error('Policy %s with slug %s can\'t be serialized: %s'%(policy['_id'], policy['slug'], str(err)))
                 
+        if self.options.clean_inheritance:
+            logger.info('Cleaning inheritance field...')
+            self.db.nodes.update({"inheritance": { '$exists': True }}, { '$unset': { "inheritance": {'$exist': True } }}, multi=True)
         
         logger.info('Checking tree...')
         # Look for the root of the nodes tree
         root_nodes = self.db.nodes.find({"path" : "root"})    
         for root in root_nodes:        
             self.check_node_and_subnodes(root)
+        
+        logger.info('Checking nodes that are outside the tree (missing OUs in the PATH)...')
+        # Check node path
+        nodes = self.db.nodes.find({})    
+        for node in nodes:
+            if not 'path' in node:
+                logger.error('Node with ID: %s has no "path" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'name' in node:
+                logger.error('Node with ID: %s has no "name" attribute!'%(str(node['_id'])))                
+                continue
+
+            if not 'type' in node:
+                logger.error('Node with ID: %s has no "type" attribute!'%(str(node['_id'])))                
+                continue
+
+                
+            for ou_id in node['path'].split(','):
+                if ou_id == 'root':
+                    continue
+                    
+                ou = self.db.nodes.find_one({ "_id" : ObjectId(ou_id) })    
+                if not ou:
+                    logger.error('Can\'t find OU %s that belongs to node path (node ID: %s NAME: %s)'%(str(ou_id), str(node['_id']), node['name']))                
+                    continue        
         
         logger.info('Checking chef node references...')
         # Check the references to Chef nodes
@@ -134,9 +306,9 @@ class Command(BaseCommand):
             for computer in computers:   
                 found = True
                 
+            computer_node = ChefNode(node_id, self.api)
             if not found:
                 pclabel = "(No OHAI-GECOS data in the node)"
-                computer_node = ChefNode(node_id, self.api)
                 try:
                     pclabel = "(pclabel = %s)"%( computer_node.attributes.get_dotted('ohai_gecos.pclabel') )
                 except KeyError:
@@ -144,8 +316,45 @@ class Command(BaseCommand):
                         
                 logger.error("No computer node for Chef ID: '%s' %s!"%(node_id, pclabel))
         
+            # Check default data for chef node
+            if not computer_node.default.to_dict():
+                logger.warning("For an unknown reason Chef node: %s has no default attributes. Fixing it!"%(node_id))
+                computer_node.default = default_data
+                computer_node.save()
+                
+            # Check "updated_by" field
+            atrributes = computer_node.normal.to_dict()
+            updated, updated_attributes = self.check_updated_by_field(node_id, None, atrributes)
+            if updated:
+                computer_node.normal = atrributes
+                computer_node.save()
+            
         
         logger.info('END ;)')
+        
+    def check_updated_by_field(self, node_id, key, attributes):
+        updated = False
+        if isinstance(attributes, dict):
+            for attribute in attributes:
+                if attribute == 'updated_by':
+                    if 'group' in attributes['updated_by']:
+                        # Sort groups
+                        sorted_groups = order_groups_by_depth(self.db, attributes['updated_by']['group'])
+                        if attributes['updated_by']['group'] != sorted_groups:
+                            logger.info("Sorting updated_by field for node {0} - {1}!".format(node_id, key)) 
+                            attributes['updated_by']['group'] = sorted_groups
+                            updated = True
+                else:
+                    if key is None:
+                        k = attribute
+                    else:
+                        k = key+'.'+attribute
+                        
+                    up, attributes[attribute] = self.check_updated_by_field(node_id, k, attributes[attribute])
+                    updated = (updated or up)
+        
+        return updated, attributes
+        
         
     def check_node_and_subnodes(self, node):
         '''
@@ -164,6 +373,9 @@ class Command(BaseCommand):
         Check the policies applied to a node
         '''        
         logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        
+        if self.options.inheritance:
+            inheritance_node = deepcopy(node)      
         
         # Check policies
         if 'policies' in node:
@@ -202,9 +414,20 @@ class Command(BaseCommand):
                     
                     # Check object
                     self.check_object_property(policydata['schema'], nodedata, None, is_emitter_policy, emitter_policy_slug)
+                    
+                    if self.options.inheritance:
+                        # Check inheritance field
+                        trace_inheritance(logger, self.db, 'change', inheritance_node, deepcopy(policydata))
                             
         else:
             logger.debug('No policies in this node.')
+        
+        if self.options.inheritance and ('inheritance' in inheritance_node) and (
+            (not 'inheritance' in node) or (inheritance_node['inheritance'] != node['inheritance'])):
+            
+            # Save inheritance field
+            logger.info('FIX: updating inheritance field!')
+            self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'inheritance': inheritance_node['inheritance']}})
         
         # Check referenced nodes
         if node['type'] == 'user':
@@ -247,7 +470,6 @@ class Command(BaseCommand):
             if len(difference) > 0:
                 logger.info('FIX: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
-
         
         
     def check_referenced_nodes(self, id_list, possible_types, property):

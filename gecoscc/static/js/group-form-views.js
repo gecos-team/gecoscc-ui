@@ -39,10 +39,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         tagName: "div",
         className: "col-sm-12",
         page: 0,
-        perPage: 10,
+        perPage: group_nodes_pagesize,
 
         ui: {
-            policies: "div#policies div.bootstrap-admin-panel-content"
+            policies: "div#policies div.bootstrap-admin-panel-content",
+            inheritance: "div#inheritance div.bootstrap-admin-panel-content"
         },
 
         events: {
@@ -54,6 +55,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         policiesList: undefined,
+        inheritanceList: undefined,
 
         goToPage: function (evt) {
             evt.preventDefault();
@@ -146,6 +148,11 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
         },
 
+        onShow: function() {
+            if (!_.isNull(App.instances.activeTab)) {
+                $('a[href="#' + App.instances.activeTab  + '"]').tab('show');
+            }
+        },
         onRender: function () {
             this.canMove();
 
@@ -178,6 +185,16 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
 
             this.renderPolicies();
+            
+            this.inheritanceList = new App.Inheritance.Views.InheritanceList({
+                el: this.ui.inheritance[0],
+                resource: this.model
+            });
+            this.inheritanceList.render();
+            
+            // Ensure the execution of onShow after onRender
+            this.onShow();
+            
         },
 
         save: function (evt) {
