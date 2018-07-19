@@ -105,6 +105,8 @@ SPROFILES_URL_TARGETS = ['ou', 'computer', 'group']
 MIMETYPES_POLICY = 'mimetypes_res'
 MIMETYPES_POLICY_URL = '/api/mimetypes/'
 
+MOBILE_BROADBAND_POLICY = 'mobile_broadband_res'
+MOBILE_BROADBAND_POLICY_URL = '/api/serviceproviders/?country_list=true'
 
 class Command(BaseCommand):
     description = """
@@ -202,6 +204,9 @@ class Command(BaseCommand):
             if key == MIMETYPES_POLICY:
                 self.set_mimetypes_url(value)
 
+            if key == MOBILE_BROADBAND_POLICY:
+                self.set_serviceproviders_url(value)
+
             support_os = value['properties']['support_os']['default']
 
             for ex_attr in EXCLUDE_GENERIC_ATTRS:
@@ -286,6 +291,11 @@ class Command(BaseCommand):
         value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL
         value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['items']['enum'] = []
 
+    def set_serviceproviders_url(self, value):
+        value['properties']['connections']['items']['properties']['country']['autocomplete_url'] = MOBILE_BROADBAND_POLICY_URL
+        value['properties']['connections']['items']['properties']['country']['enum'] = []
+        value['properties']['connections']['items']['properties']['provider']['autocomplete_url'] = 'javascript:calculateProviders'
+        value['properties']['connections']['items']['properties']['provider']['enum'] = []
         
     def create_software_profiles_policy(self, policies, languages):
         slug = 'package_profile_res'
