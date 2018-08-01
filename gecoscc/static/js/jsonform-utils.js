@@ -96,3 +96,39 @@ function calculateVersions(node, query) {
     });
     
 }
+
+function calculateProviders(node, query) {
+    var country = $(node.parentNode.children[0].el).find("input").last().val();
+    console.log('country is: ' + country + " query.term:" + query.term);
+    
+    $.ajax({
+        url: '/api/serviceproviders/',
+        dataType: 'json',
+        id : function (node) {
+            return node._id;
+        },
+        data:  {
+            name: country
+        },
+        type: 'GET',
+        success: function(data) {
+            if (jQuery.type(node.schemaElement.enum) === "undefined")
+                node.schemaElement.enum = [];
+            
+            var providers = [];
+          
+            for (var i = 0; i<data.serviceproviders.length; i++) {
+                var provider = {
+                    text: data.serviceproviders[i]["provider"],
+                    value: data.serviceproviders[i]["provider"],
+                    id: data.serviceproviders[i]["provider"]
+                };
+                providers.push(provider);
+                node.schemaElement.enum.push(provider);
+            }
+            
+            query.callback({results: providers, more: false});
+        }
+    });
+    
+}

@@ -817,7 +817,7 @@ jsonform.elementTypes = {
                                 more = values.length >= pagesize;
                               }
                               else {
-                                var collection = data.software_profiles || data.nodes || data.packages
+                                var collection = data.software_profiles || data.nodes || data.packages || data.serviceproviders
                                 nodes = collection.map(function (n) {
                                   n._id = n._id || n.name;
                                   node.schemaElement.enum.push(n._id);

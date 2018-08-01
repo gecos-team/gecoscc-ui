@@ -1074,3 +1074,10 @@ class PrinterModel(colander.MappingSchema):
 
 class PrinterModels(colander.SequenceSchema):
     printers = PrinterModel()
+
+class ServiceProvider(colander.MappingSchema):
+    name = colander.SchemaNode(colander.String(),missing='', default='')
+    provider = colander.SchemaNode(colander.String(),missing='', default='')
+
+class ServiceProviders(colander.SequenceSchema):
+    serviceproviders = ServiceProvider()
