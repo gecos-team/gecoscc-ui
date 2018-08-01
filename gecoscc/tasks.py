@@ -53,6 +53,7 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
                            recalculate_inheritance_for_node, get_filter_ous_from_path, recalculate_policies_for_computers)
 
+
 DELETED_POLICY_ACTION = 'deleted'
 SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 ORDER_BY_TYPE_ASC = ('ou','group','computer','user')
@@ -211,8 +212,10 @@ class ChefTask(Task):
         if obj == {}:
             return {}
         if rule_type == 'save':
-            if policy.get('is_emitter_policy', False):
-                obj = self.db.nodes.find_one({'node_chef_id': node.name})
+            self.log("info","tasks:::get_object_ui rule_type='save' is_emitter_policy=%s"%(policy.get('is_emitter_policy', False)))
+            #if policy.get('is_emitter_policy', False):
+            #    obj = self.db.nodes.find_one({'node_chef_id': node.name})
+            self.log("info","tasks:::get_object_ui obj['type']=%s"%(obj['type']))
             return obj
         elif rule_type == 'policies':
             policy_id = unicode(policy['_id'])
@@ -462,6 +465,9 @@ class ChefTask(Task):
         self.log("debug","tasks.py ::: has_changed_user_emitter_policy - objold_ui = {0}".format(objold_ui))
         if obj_ui == objold_ui:
             return False
+
+        if objold_ui is None or objold_ui=={}:
+            return True
 
         field_chef_value = node.attributes.get_dotted(field_chef)
         self.log("debug","tasks.py ::: has_changed_user_emitter_policy - priority_obj['name'] = {0}".format(priority_obj['name']))
@@ -987,8 +993,17 @@ class ChefTask(Task):
             curobj_ui_field = objold_ui_field = {}
 
             if priority_obj != obj:
-                priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
-                self.log("debug","tasks:::update_node_from_rules -> priority_obj_ui = {0}".format(priority_obj_ui))
+                if rule_type == 'save' and not is_mergeable:
+                    # We are saving an emitter type that is nor mergeable and 
+                    # priority_obj != obj, so we don't have to take any action
+                    continue 
+                    
+                if rule_type == 'policies':
+                    # Priority obj_ui only have meaning on non emitter types
+                    priority_obj_ui = self.get_object_ui(rule_type, priority_obj, node, policy)
+                    self.log("debug","tasks:::update_node_from_rules -> priority_obj_ui = {0}".format(priority_obj_ui))
+                
+                
             if priority_obj.get('_id', None) == obj.get('_id', None) or action == DELETED_POLICY_ACTION or is_mergeable:
                 if callable(field_ui):
                     if is_user_policy(field_chef):
@@ -1278,7 +1293,18 @@ class ChefTask(Task):
         return members_add + members_delete        
         
         
+    def has_changed_user_data(self, obj, objold):
+        if objold is None:
+            return True
         
+        if (obj['email'] != objold['email'] 
+            or  obj['first_name'] != objold['first_name']
+            or  obj['last_name'] != objold['last_name']):
+            
+            return True
+     
+        
+        return False
         
     def update_node(self, user, computer, obj, objold, node, action, parent_id, job_ids_by_computer, force_update):
         '''
@@ -1298,6 +1324,37 @@ class ChefTask(Task):
                 action = 'changed'
         
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
+            # Update object data
+            if obj['type'] == 'user':
+                username = get_username_chef_format(obj)
+                if self.has_changed_user_data(obj, objold):
+                    self.log('debug', 'task.py:: update_node - Updating user data: {0}'.format(obj['name']))
+                    # Update user data
+                    if not node.normal.has_dotted('gecos_info'):
+                        node.normal.set_dotted('gecos_info', {})
+
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
+                        
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(username), {})
+                        
+                    node.normal.set_dotted('gecos_info.users.%s.email'%(username), obj['email'])
+                    node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), obj['first_name'])
+                    node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), obj['last_name'])
+    
+                    updated = True
+                    
+                if ((action == 'deleted' or action == 'detached') 
+                    and node.normal.has_dotted('gecos_info')
+                    and node.normal.has_dotted('gecos_info.users.%s'%(username))):
+                    self.log('debug', 'task.py:: update_node - Deleting user data: {0}'.format(obj['name']))
+                    
+                    del node.normal['gecos_info']['users'][username]
+                    updated = True            
+                    
+            
+            # Update policies
             self.log('debug', 'task.py:: update_node - force_update: {0} is_updating_policies: {1}'.format(force_update, self.is_updating_policies(obj, objold)))
             if force_update or self.is_updating_policies(obj, objold):
                 rule_type = 'policies'
@@ -1460,8 +1517,13 @@ class ChefTask(Task):
                                     administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         are_new_jobs = False
+        
+        if computers is None or len(computers) == 0:
+            self.log("debug","No computers related with {0} {1}".format(obj['name'], obj['type']))
+            
         for computer in computers:
             try:
+                self.log("debug","object_action {0}".format(computer['name']))
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
@@ -1731,7 +1793,7 @@ class ChefTask(Task):
 
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
-        
+
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
         # 1 - Disassociate computer from its users
@@ -1753,6 +1815,12 @@ class ChefTask(Task):
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+
+            # Remove variables data
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Removing variables data')
+            if node.normal.has_dotted('gecos_info'):
+                del node.normal['gecos_info']
+ 
 
             for u in node.attributes.get_dotted(USERS_OHAI):
                 username = u['username']
@@ -1785,41 +1853,57 @@ class ChefTask(Task):
                 # Sudoers
                 if u['sudo']:
                     gcc_sudoers.add(username)
-                    self.log("debug", "tasks.py ::: computer_refresh_policies - gcc_sudoers: {0}".format(gcc_sudoers))                
-                
+                    self.log("debug", "tasks.py ::: computer_refresh_policies - gcc_sudoers: {0}".format(gcc_sudoers))
+                    
+                else:
+                    # Update node user data
+                    usrname = get_username_chef_format(usr)
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Add info to gecos_info.users.{0}'.format(usrname))
+                    if not node.normal.has_dotted('gecos_info'):
+                        node.normal.set_dotted('gecos_info', {})
+    
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
+                        
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(usrname)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(usrname), {})
+                        
+                    node.normal.set_dotted('gecos_info.users.%s.email'%(usrname), usr['email'])
+                    node.normal.set_dotted('gecos_info.users.%s.firstName'%(usrname), usr['first_name'])
+                    node.normal.set_dotted('gecos_info.users.%s.lastName'%(usrname), usr['last_name'])     
                 
             # Set sudoers information
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
             self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
             
-        # Clean inheritance information
-        self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
-
-        # Set processing jobs as finished
-        self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
-        processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
-        for job in processing_jobs:
-            macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
-            
-            self.db.jobs.update({'_id': job['_id']},
-                                {'$set': {'status': 'finished',
-                                          'last_update': datetime.datetime.utcnow()}})
-            
-            # Decrement number of children in parent
-            if macrojob and 'counter' in macrojob:
-                macrojob['counter'] -= 1
-                self.db.jobs.update({'_id': macrojob['_id']},                                                                
-                                    {'$set': {'counter': macrojob['counter'],
-                                              'message': self._("Pending: %d") % macrojob['counter'],
-                                              'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
-
+            # Clean inheritance information
+            self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
+    
+            # Set processing jobs as finished
+            self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
+            processing_jobs = self.db.jobs.find({"computerid": obj['_id'], 'status': 'processing'})
+            for job in processing_jobs:
+                macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 
-            # 3 - Clean policies information
-            ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list']
-            for attr in node.normal:
-                if not attr in ATTRIBUTES_WHITE_LIST:
-                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
-                    del node.normal[attr]
+                self.db.jobs.update({'_id': job['_id']},
+                                    {'$set': {'status': 'finished',
+                                              'last_update': datetime.datetime.utcnow()}})
+                
+                # Decrement number of children in parent
+                if macrojob and 'counter' in macrojob:
+                    macrojob['counter'] -= 1
+                    self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                                        {'$set': {'counter': macrojob['counter'],
+                                                  'message': self._("Pending: %d") % macrojob['counter'],
+                                                  'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
+    
+                    
+                # 3 - Clean policies information
+                ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list', 'gecos_info']
+                for attr in node.normal:
+                    if not attr in ATTRIBUTES_WHITE_LIST:
+                        self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
+                        del node.normal[attr]
         
             save_node_and_free(node)
             
@@ -2242,6 +2326,22 @@ def chef_status_sync(node_id, auth_user):
             else:
                 gcc_sudoers.add(add)
                 self.log("info", "tasks.py ::: chef_status_sync - gcc_sudoers: {0}".format(gcc_sudoers))
+                
+            # Update user data in chef node
+            username = get_username_chef_format(user)
+            if not node.normal.has_dotted('gecos_info'):
+                node.normal.set_dotted('gecos_info', {})
+
+            if not node.normal.has_dotted('gecos_info.users'):
+                node.normal.set_dotted('gecos_info.users', {})
+                
+            if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                node.normal.set_dotted('gecos_info.users.%s'%(username), {})
+                
+            node.normal.set_dotted('gecos_info.users.%s.email'%(username), user['email'])
+            node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), user['first_name'])
+            node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), user['last_name'])
+    
         # Removed users
         delusers = set.difference(gcc_node_usernames, chef_node_usernames)
         self.log("debug", "tasks.py ::: chef_status_sync - delusers = {0}".format(delusers))
@@ -2256,6 +2356,11 @@ def chef_status_sync(node_id, auth_user):
                 computers.remove(computer['_id'])
                 self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
                 invalidate_change(self.request, auth_user)
+            
+            username = get_username_chef_format(user)
+            if (node.normal.has_dotted('gecos_info')
+                and node.normal.has_dotted('gecos_info.users.%s'%(username))):
+                del node.normal['gecos_info']['users'][username]
 
     else: # Sudoers (only rol changed)
 

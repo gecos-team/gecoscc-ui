@@ -9,32 +9,22 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
-import sys
-import string
-import random
-import subprocess
 import json
 import requests
 import re
 from copy import deepcopy
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
+from chef.exceptions import ChefServerNotFoundError
 from chef import Node as ChefNode
-from chef.node import NodeAttributes
-from getpass import getpass
 from optparse import make_option
 from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
-from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername, trace_inheritance, order_groups_by_depth
+from gecoscc.utils import (_get_chef_api, toChefUsername, 
+                           trace_inheritance, order_groups_by_depth)
+from gecoscc.rules import get_username_chef_format
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
-
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 import logging
 logging.basicConfig(level=logging.INFO)
@@ -43,7 +33,8 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     description = """
        Check the policies data for all the workstations in the database. 
-       This script must be executed on major policies updates when the changes in the policies structure may
+       This script must be executed on major policies updates when the changes 
+       in the policies structure may
        cause problems if the Chef nodes aren't properly updated.
        
        So, the curse of action is:
@@ -81,6 +72,13 @@ class Command(BaseCommand):
             default=False,
             help='Clean inheritance field (must be used with -i)'
         ),          
+        make_option(
+            '--clean-variables',
+            dest='clean_variables',
+            action='store_true',
+            default=False,
+            help='Clean variables information from Chef nodes'
+        ),         
     ]
 
     required_options = (
@@ -251,6 +249,15 @@ class Command(BaseCommand):
         if self.options.clean_inheritance:
             logger.info('Cleaning inheritance field...')
             self.db.nodes.update({"inheritance": { '$exists': True }}, { '$unset': { "inheritance": {'$exist': True } }}, multi=True)
+            
+        if self.options.clean_variables:
+            logger.info('Cleaning variables data from Chef nodes')
+            for node_id in ChefNode.list():
+                node = ChefNode(node_id, self.api)
+                if node.normal.has_dotted('gecos_info'):
+                    del node.normal['gecos_info']
+                    node.save()                    
+            
         
         logger.info('Checking tree...')
         # Look for the root of the nodes tree
@@ -440,6 +447,9 @@ class Command(BaseCommand):
                 logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'computers': new_id_list}})
             
+            # Check user data
+            self.check_user_data(node)
+            
             # Check memberof
             new_id_list = self.check_referenced_nodes(node['memberof'], ['group'], 'memberof')
             difference = set(node['memberof']).difference(set(new_id_list))
@@ -473,6 +483,60 @@ class Command(BaseCommand):
                 logger.info('FIXED: remove %s references'%(difference))
                 self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'members': new_id_list}})
         
+    def check_user_data(self, user):
+        if user['type'] != 'user':
+            raise ValueError('user must be an user')
+        
+        if ((not 'email' in user or user['email']=='') and
+            (not 'first_name' in user or user['first_name']=='') and
+            (not 'last_name' in user or user['last_name']=='')):
+            
+            # Nothing to do
+            return
+        
+        
+        computers = self.db.nodes.find_one({ "_id" : ObjectId(user['_id']) })['computers']
+        for computer_id in computers:
+            computer = self.db.nodes.find_one({ "_id" : ObjectId(computer_id) })
+            if "node_chef_id" in computer:
+                # Check Chef node
+                node = ChefNode(computer['node_chef_id'], self.api)
+                logger.info("Computer: %s Chef ID: %s"%(computer['name'], computer['node_chef_id']))
+                if not node.exists:
+                    logger.error("No Chef node with ID %s!"%(computer['node_chef_id']))
+                else:
+                    if not node.normal.has_dotted('gecos_info'):
+                        node.normal.set_dotted('gecos_info', {})
+                        
+                    if not node.normal.has_dotted('gecos_info.users'):
+                        node.normal.set_dotted('gecos_info.users', {})
+                                                
+                    username = get_username_chef_format(user)
+                    if not node.normal.has_dotted('gecos_info.users.%s'%(username)):
+                        node.normal.set_dotted('gecos_info.users.%s'%(username), {})
+                        
+                    updated = False
+                    if (not node.normal.has_dotted('gecos_info.users.%s.email'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.email'%(username)) != user['email']):
+                        node.normal.set_dotted('gecos_info.users.%s.email'%(username), user['email'])
+                        updated = True
+                        
+                    if (not node.normal.has_dotted('gecos_info.users.%s.firstName'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.firstName'%(username)) != user['first_name']):
+                        node.normal.set_dotted('gecos_info.users.%s.firstName'%(username), user['first_name'])
+                        updated = True
+
+                    if (not node.normal.has_dotted('gecos_info.users.%s.lastName'%(username))
+                        or node.normal.get_dotted('gecos_info.users.%s.lastName'%(username)) != user['last_name']):
+                        node.normal.set_dotted('gecos_info.users.%s.lastName'%(username), user['last_name'])
+                        updated = True
+                        
+                    if updated:
+                        logger.info("Updating user %s data in computer: %s Chef ID: %s"%(user['name'], computer['name'], computer['node_chef_id']))
+                        node.save()         
+                
+            else:
+                logger.error("No Chef ID in '%s' computer!"%(computer['name']))
         
     def check_referenced_nodes(self, id_list, possible_types, property):
         '''
