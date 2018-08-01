@@ -44,7 +44,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, 
-                           NodeNotLinked, apply_policies_to_user,
+                           NodeNotLinked, apply_policies_to_user, apply_policies_to_computer, apply_policies_to_group, apply_policies_to_ou,
+                           apply_policies_to_printer, apply_policies_to_storage, apply_policies_to_repository,
                            remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
@@ -478,10 +479,19 @@ class ChefTask(Task):
             related_objects = obj_ui['object_related_list']
 
             for obj in related_objects:
+                # Find a new related object added for current obj
                 if not any(d['name'] == obj['name'] for d in field_chef_value_storage):
                     return True
-            return any(x in [j['name'] for j in field_chef_value_storage] for x in [y['name'] for y in objold_ui['object_related_list'] if y['name'] not in [z['name'] for z in obj_ui['object_related_list']]])
 
+            # Find related objects that has been removed in current policy
+            old_rel_objnames = [x['name'] for x in objold_ui.get('object_related_list',[])] # objold = {} when invokes apply_policies_to_%s (ou,group,user,computer)
+            cur_rel_objnames = [y['name'] for y in obj_ui.get('object_related_list',[])]
+            removed_objnames = [oldname for oldname in old_rel_objnames if oldname not in cur_rel_objnames]
+
+            # True if related objects which have been removed are in chef node. It's necessary apply merge algorithm,
+            # because they may not be there anymore.
+            return any(x in [j['name'] in field_chef_value_storage] for x in removed_objnames)
+            
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
             if related_objects['name'] == field_value['name']:
@@ -616,8 +626,14 @@ class ChefTask(Task):
             for updater_node in updater_nodes:
 
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
+                try:
+                    updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
+                except KeyError as e:
+                    # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
+                    # but this attribute was not updated correctly in chef. In this case, node_policy = {}
+                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    continue
 
-                updater_node_ui = updater_node['policies'].get(unicode(policy['_id']), {})
                 if callable(field_ui): # encrypt_password
                     innode = field_ui(updater_node_ui, obj=updater_node, node=node, field_chef=field_chef)
                     self.log("debug","tasks.py ::: update_ws_mergeable_policy - innode = {0}".format(innode))
@@ -627,13 +643,18 @@ class ChefTask(Task):
 
                 if mergeIdField and mergeActionField: # NEW MERGE
 
-                    # At node: Removing opposites actions
-                    nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
-                    self.log("debug","tasks.py ::: update_ws_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
+                    try:
+                        # At node: Removing opposites actions
+                        nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
+                        self.log("debug","tasks.py ::: update_ws_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
 
-                    # At hierarchy of nodes: Prioritizing the last action (closer to node)
-                    new_field_chef_value += nodupes_innode
-                    new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
+                        # At hierarchy of nodes: Prioritizing the last action (closer to node)
+                        new_field_chef_value += nodupes_innode
+                        new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
+                    except (AssertionError, TypeError) as e:
+                        # Do not merge. Invalid group_by_multiple_key args
+                        self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
+                        continue
 
                 else: # OLD MERGE
                     new_field_chef_value += innode
@@ -686,27 +707,39 @@ class ChefTask(Task):
             updater_nodes = self.order_items_by_priority(nodes_ids)
 
             for updater_node in updater_nodes:
-                node_policy = updater_node['policies'][unicode(policy['_id'])]
+                try:
+                    node_policy = updater_node['policies'][unicode(policy['_id'])]
+                except KeyError as e:
+                    # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
+                    # but this attribute was not updated correctly in chef. In this case, node_policy = {}
+                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    continue
+
                 for policy_field in node_policy.keys():
                     # Finding merge index fields
                     mergeIdField, mergeActionField = self.search_mergefields(field_chef,policy_field,policy)
                     
                     if mergeIdField and mergeActionField:
-                        innode = node_policy[policy_field]
-                        self.log("debug","tasks.py ::: update_user_mergeable_policy - innode = {0}".format(innode))
+                        try:
+                            innode = node_policy[policy_field]
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - innode = {0}".format(innode))
 
-                        # At node: Removing opposites actions
-                        nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
-                        self.log("debug","tasks.py ::: update_user_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
+                            # At node: Removing opposites actions
+                            nodupes_innode = self.group_by_multiple_keys(innode, mergeIdField, mergeActionField, True)
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - nodupes_innode = {0}".format(nodupes_innode))
 
-                        # At hierarchy of nodes: Prioritizing the last action (closer to node)
-                        if policy_field not in new_field_chef_value:
-                            # Initializing 
-                            new_field_chef_value[policy_field] = []
-                         
-                        # Accumulator
-                        new_field_chef_value[policy_field] += nodupes_innode
-                        new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
+                            # At hierarchy of nodes: Prioritizing the last action (closer to node)
+                            if policy_field not in new_field_chef_value:
+                                # Initializing 
+                                new_field_chef_value[policy_field] = []
+                           
+                            # Accumulator
+                            new_field_chef_value[policy_field] += nodupes_innode
+                            new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
+                        except (AssertionError, TypeError) as e:
+                            # Do not merge. Invalid group_by_multiple_key args
+                            self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
+                            continue
 
                     else:                    
                         if policy_field not in new_field_chef_value:
@@ -723,7 +756,8 @@ class ChefTask(Task):
 
             if obj_ui_field.get(username):
                 for policy_field in policy['schema']['properties'].keys():
-                    obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
+                    if policy_field in obj_ui_field.get(username) and policy_field in new_field_chef_value:
+                        obj_ui_field.get(username)[policy_field] = new_field_chef_value[policy_field]
             elif action == DELETED_POLICY_ACTION:  # update node
                 pass
             else:
@@ -798,6 +832,10 @@ class ChefTask(Task):
         '''
         from itertools import groupby
         from operator import itemgetter
+
+        # Checking input_data is a list of dictionaries
+        assert isinstance(input_data, list)
+        assert all(isinstance(x,dict) for x in input_data)
 
         self.log("debug","tasks.py ::: Starting group_by_multiple_key ...")
         self.log("debug","tasks.py ::: group_by_multiple_keys - input_data = {0}".format(input_data))
