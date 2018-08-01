@@ -37,6 +37,12 @@ from chef.node import NodeAttributes
 from pyramid.threadlocal import get_current_registry
 
 from collections import defaultdict
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
+
 DELETED_POLICY_ACTION = 'deleted'
 
 RESOURCES_RECEPTOR_TYPES = ('computer', 'ou', 'user', 'group')
@@ -698,7 +704,11 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
         object_created = object_created.delay
         object_changed = object_changed.delay
     children_path = ou['path'] + ',' + unicode(ou['_id'])
-    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}})
+    # From the pymongo documentation:
+    # Cursors in MongoDB can timeout on the server if they have been open for a long time without any operations being 
+    # performed on them. This can lead to an CursorNotFound exception being raised when attempting to iterate the cursor.
+    # OUs with a lot of depth levels
+    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}}, no_cursor_timeout=True)
 
     visibility_object_related(nodes_collection.database, ou)
 
@@ -710,6 +720,8 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
         child['path'] = children_path
         object_moved(auth_user, child['type'], child, child_old)
 
+    # Closes pymongo cursor
+    ou_children.close()
     object_created(auth_user, 'ou', ou)
 
 
@@ -2466,7 +2478,7 @@ def upload_cookbook(user=None,cookbook_path=None):
     return exitstatus
 
 
-def chefserver_backup(username=None, backupdir=None):
+def chefserver_backup(backupdir=None):
     ''' Backing up all Chef server data
     
     Args:
@@ -2482,21 +2494,16 @@ def chefserver_backup(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_backup.__name__)
-            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
-        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
         logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
 
-        assert username is not None or backupdir is not None, _('Missing required arguments')
+        assert backupdir is not None, _('Missing required arguments')
 
         if not os.path.exists(backupdir):
             os.mkdir(backupdir)
 
-        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
-        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
-
-        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2}'.format(settings['updates.chef_backup'], backupdir, settings.get('chef.url'))
         backup_output = subprocess.check_output(command, shell=True)
         logger.info(backup_output)
         logger.info("Chef Server backup ended.")
@@ -2512,7 +2519,7 @@ def chefserver_backup(username=None, backupdir=None):
 
     return exitstatus
 
-def chefserver_restore(username=None, backupdir=None):
+def chefserver_restore(backupdir=None):
     ''' Restoring Chef server data from a backup that was created by the chefserver_backup function
     
     Args:
@@ -2528,21 +2535,16 @@ def chefserver_restore(username=None, backupdir=None):
 
         if is_cli_request():
             has_cli_permission(os.environ['SCRIPT_CODE'], chefserver_restore.__name__)
-            username = os.environ['GECOS_USER']
             backupdir = os.environ['BACKUP_DIR']
 
-        logger.debug("utils.py ::: chefserver_backup - username = %s" % username)
         logger.debug("utils.py ::: chefserver_backup - backupdir = %s" % backupdir)
 
-        assert username is not None or backupdir is not None, _('Missing required arguments')
+        assert backupdir is not None, _('Missing required arguments')
 
         if not os.path.exists(backupdir):
             os.mkdir(backupdir)
 
-        admin_cert = os.sep.join([settings.get('firstboot_api.media'), username, 'chef_user.pem'])
-        logger.debug("utils.py ::: chefserver_backup - admin_cert = %s" % admin_cert)
-
-        command = '{0} {1} {2} {3} {4}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'), username, admin_cert)
+        command = '{0} {1} {2}'.format(settings['updates.chef_restore'], backupdir, settings.get('chef.url'))
         restore_output = subprocess.check_output(command, shell=True)
         logger.info(restore_output)
         logger.info("Chef Server restore ended.")

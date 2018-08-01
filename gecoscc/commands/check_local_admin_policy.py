@@ -107,7 +107,7 @@ class Command(BaseCommand):
                     validate(instance, schema)
                     break
                 except ValidationError as e: 
-                     logger.error('Validation error on instance = %s'%str(e.message))
+                     logger.warning('Validation error on instance = %s'%str(e.message))
                      # Sanitize instance
                      self.sanitize(e, instance)
                      sanitized = True
@@ -123,17 +123,16 @@ class Command(BaseCommand):
                 # Affected nodes
                 if node['type'] == 'ou':
                     result = list(self.db.nodes.find({'path': get_filter_nodes_belonging_ou(node['_id']),'type': 'computer'},{'_id':1}))
-                    [computers.add(str(n['_id'])) for n in result]
-                    logger.info('OU computers = %s'%str(computers))
+                    logger.info('OU computers = %s'%str(result))
                 elif node['type'] == 'group':
-                    result = self.db.nodes.find_one({'type': 'group', '_id': node['_id']},{'_id':0, 'members':1})
-                    [computers.add(str(n)) for n in result['members']]
-                    logger.info('GROUP computers = %s'%str(computers))
+                    result = list(self.db.nodes.find({'_id':{'$in':node['members']},'type':'computer'},{'_id':1}))
+                    logger.info('GROUP computers = %s'%str(result))
                 elif node['type'] == 'computer':
-                    computers.add(str(node['_id']))
-                    logger.info('COMPUTER computers = %s'%str(computers))
+                    result = [node]
+                    logger.info('COMPUTER computers = %s'%str(result))
 
-        logger.info('computers = %s'%str(computers))
+                [computers.add(str(n['_id'])) for n in result]
+
 
         # Removing unused local_admin_remove_list attribute in chef nodes
         for node_id in ChefNode.list():

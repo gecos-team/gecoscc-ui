@@ -134,19 +134,19 @@ class Command(BaseCommand):
                 self.db.nodes.update({'_id': node['_id']},{'$set':{field:instance}})
 
                 logger.info('Recalculating policies in the node.')
+
                 # Affected nodes
                 if node['type'] == 'ou':
-                    result = list(self.db.nodes.find({'path': get_filter_nodes_belonging_ou(node['_id']),'type': 'computer'},{'_id':1}))                    
-                    for i in result:
-                        computers.add(i['_id'])
+                    result = list(self.db.nodes.find({'path': get_filter_nodes_belonging_ou(node['_id']),'type': 'computer'},{'_id':1}))
+                    logger.info('OU computers = %s'%str(result))
                 elif node['type'] == 'group':
-                    result = self.db.nodes.find_one({'type': 'group', '_id': node['_id']},{'_id':0, 'members':1})
-                    for i in result['members']:
-                        computers.add(i)
+                    result = list(self.db.nodes.find({'_id':{'$in':node['members']},'type':'computer'},{'_id':1}))
+                    logger.info('GROUP computers = %s'%str(result))
                 elif node['type'] == 'computer':
-                    computers.add(node['_id'])
+                    result = [node]
+                    logger.info('COMPUTER computers = %s'%str(result))
 
-        logger.info('computers = %s'%str(computers))
+                [computers.add(str(n['_id'])) for n in result]
 
         for computer in computers:
             logger.info('Applying policies to COMPUTER. For more information, see "gecosccui-celery.log" file')
