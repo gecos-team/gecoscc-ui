@@ -40,8 +40,8 @@
                     </div>
                     <div class="modal-body"></div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Cancel') }}</button>
-                        <button type="button" class="btn btn-danger">{{ gettext('Yes, continue') }}</button>
+                        <button id="confirm-modal-no" type="button" class="btn btn-default" data-dismiss="modal">{{ gettext('Cancel') }}</button>
+                        <button id="confirm-modal-yes" type="button" class="btn btn-danger">{{ gettext('Yes, continue') }}</button>
                     </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
@@ -86,6 +86,21 @@
             </div>
         </div>
 
+        <div id="log_viewer" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                        </button>                        
+                        <h4 class="modal-title"></h4>
+                    </div>
+                    <div class="modal-body"></div>
+                </div>
+            </div>
+        </div>
+
+
         <footer>
             <span class="pull-right" data-toggle="tooltip" data-placement="top" title="{{ request.registry.settings.get('server_address', 'UNKNOWN') }}">{{ "HOSTNAME" | env_override('HOSTNAME') }}</span> 
             <a href="http://www.github.com/gecos-team/gecoscc-ui/tree/{{ request.VERSION }}" target="_blank">GECOS CC (v{{ request.VERSION }}) &copy; 2013</a></span>
@@ -105,6 +120,46 @@
         <script src="{{ request.application_url }}/static/js/libs/bootstrap-switch.min.js"></script>
 
         <script>
+        
+            function loadLogViewer(url, filename) {
+                $("#log_viewer .modal-title").html(filename);
+                $("#log_viewer .modal-body").html('<iframe width="100%" height="100%" frameborder="0" scrolling="yes" allowtransparency="false" src="'+url+'"></iframe>');
+            }        
+
+            function deleteLogCallback(url, confirmation) {
+                if (confirmation) {
+                    $.ajax({
+                        url: url,
+                        type: 'DELETE',
+                        success: function(result) {
+                            // Log deleted, refresh the view
+                            App.main.currentView.refresh();
+                        }
+                    });
+                }
+            }
+
+
+            function deleteLog(url, filename) {
+                $("#confirm-modal-yes").on("click", function(){
+                    deleteLogCallback(url, true);
+                    $("#confirm-modal").modal('hide');
+                });
+                $("#confirm-modal-no").on("click", function(){
+                    deleteLogCallback(url, false);
+                    $("#confirm-modal").modal('hide');
+                });
+                
+                $("#confirm-modal .modal-body").html(gettext("Delete")+": "+filename);
+                
+                $("#confirm-modal").modal('show');
+            
+            }        
+
+        
+        
+        
+        
             $(document).ready(function () {
                 var confirmModal = $("#confirm-modal").modal({ show: false });
                 window.GecosUtils = {

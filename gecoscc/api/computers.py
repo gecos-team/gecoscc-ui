@@ -22,7 +22,16 @@ from gecoscc.utils import get_chef_api, get_inheritance_tree_policies_list
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import to_deep_dict
+from gecoscc.utils import to_deep_dict, fromChefUsername
+
+from pyramid.threadlocal import get_current_request
+
+import locale
+import datetime
+import re
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 @resource(collection_path='/api/computers/',
@@ -46,6 +55,9 @@ class ComputerResource(TreeLeafResourcePaginated):
         
         if not result.get('node_chef_id', None):
             return result
+        
+        logger.info("/api/computers/: node_chef_id: %s" % (str(result.get('node_chef_id', None))))
+
         try:
             api = get_chef_api(self.request.registry.settings, self.request.user)
             computer_node = ChefNode(result['node_chef_id'], api)
@@ -83,6 +95,26 @@ class ComputerResource(TreeLeafResourcePaginated):
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
             
+            
+            # Get logs info
+            logs_data = node_collection.find_one({"type": "computer", "_id": ObjectId(nodeid)}, {"logs": True})
+            logs = {}
+            if logs_data is not None and 'logs' in logs_data:
+                logs_data = logs_data['logs']
+                
+                date_format = locale.nl_langinfo(locale.D_T_FMT)
+                date = datetime.datetime(*map(int, re.split('[^\d]', logs_data['date'])[:-1]))
+                localename = locale.normalize(get_current_request().locale_name+'.UTF-8')
+                logger.debug("/api/computers/: localename: %s" % (str(localename)))
+                locale.setlocale(locale.LC_TIME, localename)
+                logs['date'] = date.strftime(date_format)
+                logger.debug("/api/computers/: date: %s" % (str(logs['date'])))
+                
+                logs['files'] = {}
+                if logs_data:
+                    for filename in logs_data['files']:
+                        logs['files'][fromChefUsername(filename)] = ''
+            
             result.update({'ohai': ohai,
                            'users': users, # Users related with this computer
                            'users_inheritance': users_inheritance, # Users related with this computer that provides at least one user policy
@@ -96,6 +128,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'lsb': ohai.get('lsb', {}),
                            'kernel': ohai.get('kernel', {}),
                            'filesystem': ohai.get('filesystem', {}),
+                           'logs': logs
                            })
         except (urllib2.URLError, ChefError, ChefServerError):
             pass
