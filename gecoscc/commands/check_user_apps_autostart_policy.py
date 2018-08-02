@@ -18,10 +18,12 @@ from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 
 from optparse import make_option
+from copy import deepcopy
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import (_get_chef_api, toChefUsername, get_filter_nodes_belonging_ou, delete_dotted,
-                          apply_policies_to_ou, apply_policies_to_group, apply_policies_to_computer, apply_policies_to_user)
+from gecoscc.tasks import object_changed, object_created
+from gecoscc.utils import _get_chef_api, toChefUsername, get_filter_nodes_belonging_ou, delete_dotted
+
 from bson.objectid import ObjectId
 from jsonschema import validate
 from jsonschema.exceptions import ValidationError
@@ -75,6 +77,9 @@ class Command(BaseCommand):
         requests.packages.urllib3.disable_warnings()
 
         sanitized = False
+        ous = []
+        groups = []
+        users = []
         self.api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
                             self.options.chef_pem, False, self.settings.get('chef.version'))
@@ -133,20 +138,48 @@ class Command(BaseCommand):
 
                 logger.info('Recalculating policies in the node.')
                 # Affected nodes
-                if   node['type'] == 'ou': 
-                    logger.info('Applying policies to OU. For more information, see "gecosccui-celery.log" file')
-                    apply_policies_to_ou(self.db.nodes, node, self.auth_user, api=self.api, initialize=False, use_celery=True)
-                elif node['type'] == 'group':
-                    logger.info('Applying policies to GROUP. For more information, see "gecosccui-celery.log" file')
-                    apply_policies_to_group(self.db.nodes, node, self.auth_user, api=self.api, initialize=False, use_celery=True)
-                elif node['type'] == 'computer': 
-                    logger.info('Applying policies to COMPUTER. For more information, see "gecosccui-celery.log" file')
-                    apply_policies_to_computer(self.db.nodes, node, self.auth_user, api=self.api, initialize=False, use_celery=True)
+                if   node['type'] == 'ou':
+                    ous.append(node)                                    
+                elif node['type'] == 'group':                                             
+                    groups.append(node)
                 elif node['type'] == 'user':
-                    logger.info('Applying policies to USER. For more information, see "gecosccui-celery.log" file')
-                    apply_policies_to_user(self.db.nodes, node, self.auth_user, api=self.api, initialize=False, use_celery=True)
+                    users.append(node)
 
-       
+        # We only go through the highest level OUs. 
+        # Therefore, we eliminate intermediate OUs and 
+        # then do not recalculate the policies
+        # for the same node several times.
+        for ou in ous:
+            parents = [ObjectId(oid) for oid in ou['path'].split(',') if oid != 'root']
+            if any(o['_id'] in parents for o in ous):
+                ous.remove(ou)
+
+        # Users that are not under an OU or GROUP that have the migrated policy
+        for user in users:
+            parents = [ObjectId(oid) for oid in user['path'].split(',') if oid != 'root'] 
+            if any(o['_id'] in parents for o in ous):
+                users.remove(user)
+            elif any(user['_id'] in group['members'] for group in groups):
+                users.remove(user)
+
+        # Recalculating policies for OU
+        for ou in ous: 
+            old = deepcopy(ou)
+            del old["policies"][str(policyId)]
+            object_changed(self.auth_user, 'ou', ou, old)
+
+        # Recalculating policies for GROUP
+        for group in groups:
+            old = deepcopy(group)
+            del old["policies"][str(policyId)]
+            object_changed(self.auth_user, 'group', group, old)
+
+        # Recalculating policies for USER
+        for user in users:
+            old = deepcopy(user)
+            del old["policies"][str(policyId)]
+            object_changed(self.auth_user, 'user', user, old)
+
         # Removing unused desktops_to_remove attribute in chef nodes
         logger.info('\n')
         logger.info('Removing unused desktops_to_remove attribute in chef nodes ...')
@@ -154,7 +187,7 @@ class Command(BaseCommand):
             node = ChefNode(node_id, self.api)
             logger.info('Checking node: %s'%(node_id))
             field_chef = '%s.users' % policy['path']
-            users = node.attributes.get_dotted(field_chef)
+            users = node.attributes.get_dotted(field_chef) if node.attributes.has_dotted(field_chef) else []
             for user in users:
                 logger.debug("user = %s" % (user))
                 attr_delete_path = '%s.%s.desktops_to_remove' % (field_chef, user)

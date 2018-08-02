@@ -21,10 +21,12 @@ from chef import Node as ChefNode
 from chef import Search
 from getpass import getpass
 from optparse import make_option
+from copy import deepcopy
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
 from gecoscc.utils import _get_chef_api, create_chef_admin_user, toChefUsername, apply_policies_to_ou, apply_policies_to_group, apply_policies_to_computer
+from gecoscc.tasks import object_changed
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
 
@@ -78,6 +80,9 @@ class Command(BaseCommand):
         
 
         self.db = self.pyramid.db
+        ous = []
+        groups = []
+        computers = []
 
         # Get packages policy ID
         packages_policy = self.db.policies.find_one({"slug": "package_res"})
@@ -122,14 +127,54 @@ class Command(BaseCommand):
             self.db.nodes.update({'_id': node['_id']}, {'$set': {'policies': node['policies']}})
             logger.debug('Joined list: %s'%(str(node['policies'][str(packages_policy['_id'])]['package_list'])))
 
+            if   node['type'] == 'ou':
+                ous.append(node)                                    
+            elif node['type'] == 'group':                                             
+                groups.append(node)
+            elif node['type'] == 'computer':
+                computers.append(node)
 
         logger.info('%s nodes were updated!'%(len(updated_nodes)))
-        
+
+        # We only go through the highest level OUs. 
+        # Therefore, we eliminate intermediate OUs and 
+        # then do not recalculate the policies
+        # for the same node several times.
+        for ou in ous:
+            parents = [ObjectId(oid) for oid in ou['path'].split(',') if oid != 'root']
+            if any(o['_id'] in parents for o in ous):
+                ous.remove(ou)
+
+        # Users that are not under an OU or GROUP that have the migrated policy
+        for computer in computers:
+            parents = [ObjectId(oid) for oid in computer['path'].split(',') if oid != 'root'] 
+            if any(o['_id'] in parents for o in ous):
+                computers.remove(computer)
+            elif any(computer['_id'] in group['members'] for group in groups):
+                computers.remove(computer)
+
+        # Recalculating policies for OU
+        for ou in ous: 
+            old = deepcopy(ou)
+            del old["policies"][str(packages_policy['_id'])]
+            object_changed(self.auth_user, 'ou', ou, old)
+
+        # Recalculating policies for GROUP
+        for group in groups:
+            old = deepcopy(group)
+            del old["policies"][str(packages_policy['_id'])]
+            object_changed(self.auth_user, 'group', group, old)
+
+        # Recalculating policies for USER
+        for computer in computers:
+            old = deepcopy(computer)
+            del old["policies"][str(packages_policy['_id'])]
+            object_changed(self.auth_user, 'computer', computer, old)
+
         # Recalculate policies for Chef nodes
         for node_id in ChefNode.list():
             node = ChefNode(node_id, self.api)
             logger.info('Checking node: %s'%(node_id))
-            must_update = False
             if ("gecos_ws_mgmt" in node.attributes) and ("software_mgmt" in node.attributes["gecos_ws_mgmt"]) and ("package_res" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]):
                 if "pkgs_to_remove" in node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]:
                     logger.debug("Chef node %s contains a pkgs_to_remove value!"%(node_id))
@@ -150,20 +195,8 @@ class Command(BaseCommand):
                 for element in package_list:
                     if not 'action' in element:
                         logger.debug('Chef node: %s doesn\'t have an action value in package_res! (package_list:%s)'%(node_id, str(package_list))) 
-                        must_update = True
                         break
-            
-            if must_update:
-                # Look for mongodb node
-                mnode = self.db.nodes.find_one({"node_chef_id": node_id})
-                if mnode is None:
-                    logger.error('FATAL: Can\'t find node with Chef ID: %s'%(node_id))
-                    continue                
-                    
-                logger.info('Updating node: %s - %s'%(node_id, mnode['name']))
-                apply_policies_to_computer(self.db.nodes, mnode, self.auth_user, api=self.api, initialize=False, use_celery=False)           
-                
-        
+
         # Final check
         bad_nodes = Search('node', "pkgs_to_remove:*", rows=1000, start=0, api=self.api)
         for node in bad_nodes:
@@ -175,5 +208,3 @@ class Command(BaseCommand):
                 logger.warn('For an unknown reason a computer called %s wasn\'t updated!'%(gecos_node['name'])) 
                 
         logger.info('END ;)')
-        
-    
