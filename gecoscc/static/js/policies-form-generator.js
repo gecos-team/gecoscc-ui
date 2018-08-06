@@ -85,6 +85,21 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             options.slug = policyData.slug;
             options.customFormItems = data.schema['customFormItems'];
             $html.find("form").jsonForm(options);
+            
+            if ("diagnosis_mode" == policyData.slug) {
+                // Set modification date time on diagnosis_mode policy
+                var input = $html.find("form").find("input[name='modification_datetime']");
+                
+                var currentdate = new Date(); 
+                var datetime = + currentdate.getFullYear() + "-" + 
+                    (currentdate.getMonth()+1)  + "-" + 
+                    currentdate.getDate() + " " + 
+                    currentdate.getHours() + ":" + 
+                    currentdate.getMinutes() + ":" + 
+                    currentdate.getSeconds();
+                
+                input.val(datetime);
+            }
 
             this.$el.html($html);
             this.bindUIElements();
