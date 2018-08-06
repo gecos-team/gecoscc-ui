@@ -344,7 +344,7 @@
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Logs') }}</div>
                 </div>
                 
-                <% if (logs && logs.files && Object.keys(logs.files).length > 0) { %>
+                <% if (logs && logs.files && logs.files.length > 0) { %>
                 <div class="bootstrap-admin-panel-content">
                     <div class="row"><div class="col-sm-12"><strong>{{ gettext('Date') }}:</strong> <%= logs.date %></div></div>
                     <div class="row"><div class="col-sm-12"></div></div>
@@ -352,27 +352,31 @@
                         <table class="table table-bordered">
                         <tr>
                          <th>{{ gettext('File') }}</th>
+                         <th>{{ gettext('Size (in bytes)') }}</th>
                          <th></th>
                          <th></th>
                         </tr>
-                        <% Object.keys(logs.files).forEach(function (file, index) { %>
+                        <% logs.files.forEach(function (file, index) { %>
                             <tr>
-                               <td width="70%">
-                                <%= file %>
+                               <td width="40%">
+                                <%= file.filename %>
+                               </td>
+                               <td width="20%">
+                                <%= file.size %>
                                </td>
                                <td>
-                                  <a class="btn" style="white-space: nowrap;" href="/download/computer/logs/<%= id %>/<%= file %>"><span class="fa fa-download"></span>&nbsp;{{ gettext('Download') }}</a> 
+                                  <a class="btn" style="white-space: nowrap;" href="/download/computer/logs/<%= id %>/<%= file.filename %>"><span class="fa fa-download"></span>&nbsp;{{ gettext('Download') }}</a> 
                                </td>
                                <td>
                                   <a class="btn" style="white-space: nowrap;" 
                                     href="#"
                                     data-toggle="modal" data-target="#log_viewer" 
-                                    onclick="loadLogViewer('/computer/logs/<%= id %>/<%= file %>', '<%= file %>'); return false;">
+                                    onclick="loadLogViewer('/computer/logs/<%= id %>/<%= file.filename %>', '<%= file.filename %>'); return false;">
                                     <span class="fa fa-file-text-o"></span>&nbsp;{{ gettext('View') }}
                                   </a> 
                                </td>
                                <td>
-                                  <a class="btn" style="white-space: nowrap;" href="#" onclick="deleteLog('/delete/computer/logs/<%= id %>/<%= file %>', '<%= file %>'); return false;">
+                                  <a class="btn" style="white-space: nowrap;" href="#" onclick="deleteLog('/delete/computer/logs/<%= id %>/<%= file.filename %>', '<%= file.filename %>'); return false;">
                                     <span class="fa fa-trash"></span>&nbsp;{{ gettext('Delete') }}
                                   </a> 
                                </td>

@@ -22,7 +22,7 @@ from gecoscc.utils import get_chef_api, get_inheritance_tree_policies_list
 from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
-from gecoscc.utils import to_deep_dict, fromChefUsername
+from gecoscc.utils import to_deep_dict
 
 from pyramid.threadlocal import get_current_request
 
@@ -110,10 +110,10 @@ class ComputerResource(TreeLeafResourcePaginated):
                 logs['date'] = date.strftime(date_format)
                 logger.debug("/api/computers/: date: %s" % (str(logs['date'])))
                 
-                logs['files'] = {}
-                if logs_data:
-                    for filename in logs_data['files']:
-                        logs['files'][fromChefUsername(filename)] = ''
+                logs['files'] = logs_data['files']
+                for filedata in logs_data['files']:
+                    # Do not send file contents
+                    del filedata['content']
             
             result.update({'ohai': ohai,
                            'users': users, # Users related with this computer

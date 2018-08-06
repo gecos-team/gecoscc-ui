@@ -14,8 +14,6 @@ from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from pyramid.view import view_config
 from bson import ObjectId
 
-from gecoscc.utils import toChefUsername
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -77,12 +75,17 @@ def get_log_file(context, request):
         raise HTTPNotFound()
 
     data = ''    
-    fname = toChefUsername(filename)    
     if ('logs' in computer and 
         'files' in computer['logs'] and 
-        fname in computer['logs']['files']):
+        len(computer['logs']['files'])>0):
         
-        data = computer['logs']['files'][fname]
+        fdata = None
+        for filedata in computer['logs']['files']:
+            if filedata['filename'] == filename:
+                fdata = filedata
+                break
+        
+        data = fdata['content']
         
     else:
         logging.error('/computer/logs: log file not found: %s'%(filename))
@@ -114,15 +117,22 @@ def delete_log_file(context, request):
         logging.error('/computer/logs: computer not found with node_id=%s'%(node_id))
         raise HTTPNotFound()
 
-    fname = toChefUsername(filename)    
     if ('logs' in computer and 
         'files' in computer['logs'] and 
-        fname in computer['logs']['files']):
+        len(computer['logs']['files'])>0):
 
-        del computer['logs']['files'][fname]
-        if len(computer['logs']['files'].keys()) > 0:
+        fdata = None
+        for filedata in computer['logs']['files']:
+            if filedata['filename'] == filename:
+                fdata = filedata
+                break
+        
+        if fdata is not None:
+            computer['logs']['files'].remove(fdata)
+            
+        if len(computer['logs']['files']) > 0:
             # Remove only a log
-            request.db.nodes.update_one({'_id': ObjectId(node_id), 'type': 'computer'}, {'$unset': { "logs.files."+fname: "" }})
+            request.db.nodes.update_one({'_id': ObjectId(node_id), 'type': 'computer'}, {'$pull': { "logs.files":  { 'filename': filename }}})
         
         else:
             # Remove all log information

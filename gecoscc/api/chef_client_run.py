@@ -15,7 +15,7 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Computer, Computers
-from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it, toChefUsername
+from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it
 
 import json
 
@@ -119,9 +119,14 @@ class ChefClientRunResource(BaseAPI):
         # Remove dot from filenames
         computer['logs'] = {}
         computer['logs']['date'] = logs_data['date']
-        computer['logs']['files'] = {}
+        computer['logs']['files'] = []
         for filename in logs_data['files']:
-            computer['logs']['files'][toChefUsername(filename)] = logs_data['files'][filename]
+            filedata = {}
+            filedata['filename'] = filename
+            filedata['content'] = logs_data['files'][filename]
+            filedata['size'] = len(logs_data['files'][filename])
+            
+            computer['logs']['files'].append(filedata)
             
         # Save logs data
         self.collection.update({"node_chef_id": node_id, "type": "computer"}, computer)
