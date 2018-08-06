@@ -87,17 +87,14 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             $html.find("form").jsonForm(options);
             
             if ("diagnosis_mode" == policyData.slug) {
-                // Set modification date time on diagnosis_mode policy
-                var input = $html.find("form").find("input[name='modification_datetime']");
+                // Set expire date time on diagnosis_mode policy
+                var input = $html.find("form").find("input[name='expire_datetime']");
                 
-                var currentdate = new Date(); 
-                var datetime = + currentdate.getFullYear() + "-" + 
-                    (currentdate.getMonth()+1)  + "-" + 
-                    currentdate.getDate() + " " + 
-                    currentdate.getHours() + ":" + 
-                    currentdate.getMinutes() + ":" + 
-                    currentdate.getSeconds();
-                
+                var expiredate = new Date(); 
+                expiredate.setSeconds(expiredate.getSeconds() + 
+                    App.diagnosis_mode_timeout);
+
+                var datetime = expiredate.toGMTString();
                 input.val(datetime);
             }
 
@@ -160,9 +157,23 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             });
             $("#policy-tab a").tab("show");
 
+    
+            var extra_info = "";
+            if ("diagnosis_mode_res" == this.model.get('slug') && 
+                values.enable_diagnosis) {
+                
+                var expiredate =  new Date(values.expire_datetime);
+                var datetime = expiredate.toLocaleDateString(App.language) + 
+                    " "+ expiredate.toLocaleTimeString(App.language);
+                
+                extra_info = gettext(
+                    "The diagnosis mode will be active until: ") + datetime;
+            }
+
+
             App.showAlert(
                 "success",
-                gettext("Policy successfully saved.")
+                gettext("Policy successfully saved.") + extra_info
             );
         },
 
