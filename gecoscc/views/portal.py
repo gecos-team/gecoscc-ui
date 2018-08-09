@@ -42,7 +42,7 @@ def home(context, request):
         logger.warning('Please define a debug_mode_timeout in the gecoscc.ini file!')
         debug_mode_timeout = 24 # 24 hours
         
-    debug_mode_timeout = debug_mode_timeout * 60 * 60
+    debug_mode_timeout = int(debug_mode_timeout) * 60 * 60
     
     
     return {
