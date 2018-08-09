@@ -37,16 +37,16 @@ logger = logging.getLogger(__name__)
 @view_config(route_name='home', renderer='templates/base_tree.jinja2',
              permission='edit')
 def home(context, request):
-    diagnosis_mode_timeout = get_setting('diagnosis_mode_timeout', get_current_registry().settings, request.db)
-    if diagnosis_mode_timeout is None:
-        logger.warning('Please define a diagnosis_mode_timeout in the gecoscc.ini file!')
-        diagnosis_mode_timeout = 24 * 60 * 60 # 24 hours
+    debug_mode_timeout = get_setting('debug_mode_timeout', get_current_registry().settings, request.db)
+    if debug_mode_timeout is None:
+        logger.warning('Please define a debug_mode_timeout in the gecoscc.ini file!')
+        debug_mode_timeout = 24 * 60 * 60 # 24 hours
     
     
     return {
         'websockets_enabled': json.dumps(is_websockets_enabled()),
         'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db),
-        'diagnosis_mode_timeout': diagnosis_mode_timeout,
+        'debug_mode_timeout': debug_mode_timeout,
         'printer_type': PRINTER_TYPE,
         'printer_conn_type': PRINTER_CONN_TYPE,
         'printer_oppolicy_type': PRINTER_OPPOLICY_TYPE

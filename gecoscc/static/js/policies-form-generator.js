@@ -86,13 +86,13 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             options.customFormItems = data.schema['customFormItems'];
             $html.find("form").jsonForm(options);
             
-            if ("diagnosis_mode" == policyData.slug) {
-                // Set expire date time on diagnosis_mode policy
+            if ("debug_mode" == policyData.slug) {
+                // Set expire date time on debug_mode policy
                 var input = $html.find("form").find("input[name='expire_datetime']");
                 
                 var expiredate = new Date(); 
                 expiredate.setSeconds(expiredate.getSeconds() + 
-                    App.diagnosis_mode_timeout);
+                    App.debug_mode_timeout);
 
                 var datetime = expiredate.toGMTString();
                 input.val(datetime);
@@ -159,15 +159,15 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
 
     
             var extra_info = "";
-            if ("diagnosis_mode_res" == this.model.get('slug') && 
-                values.enable_diagnosis) {
+            if ("debug_mode_res" == this.model.get('slug') && 
+                values.enable_debug) {
                 
                 var expiredate =  new Date(values.expire_datetime);
                 var datetime = expiredate.toLocaleDateString(App.language) + 
                     " "+ expiredate.toLocaleTimeString(App.language);
                 
                 extra_info = gettext(
-                    "The diagnosis mode will be active until: ") + datetime;
+                    "The debug mode will be active until: ") + datetime;
             }
 
 
