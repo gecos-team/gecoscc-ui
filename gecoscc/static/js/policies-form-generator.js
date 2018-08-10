@@ -93,9 +93,19 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 var expiredate = new Date(); 
                 expiredate.setSeconds(expiredate.getSeconds() + 
                     App.debug_mode_timeout);
-
+                    
                 var datetime = expiredate.toGMTString();
                 input.val(datetime);
+                
+                // Hide real input field with the GMT date and time
+                input.css("display", "none");
+                
+                // Show the local date time
+                var local_datetime = expiredate.toLocaleDateString(App.language) + 
+                    " "+ expiredate.toLocaleTimeString(App.language);
+                input.after('<div style="padding-top: 7px;">'+local_datetime+'</div>');
+                                
+                
             }
 
             this.$el.html($html);
@@ -156,24 +166,10 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
                 trigger: true
             });
             $("#policy-tab a").tab("show");
-
     
-            var extra_info = "";
-            if ("debug_mode_res" == this.model.get('slug') && 
-                values.enable_debug) {
-                
-                var expiredate =  new Date(values.expire_datetime);
-                var datetime = expiredate.toLocaleDateString(App.language) + 
-                    " "+ expiredate.toLocaleTimeString(App.language);
-                
-                extra_info = gettext(
-                    "The debug mode will be active until: ") + datetime;
-            }
-
-
             App.showAlert(
                 "success",
-                gettext("Policy successfully saved.") + extra_info
+                gettext("Policy successfully saved.")
             );
         },
 
