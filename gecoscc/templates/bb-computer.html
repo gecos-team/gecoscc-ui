@@ -398,7 +398,7 @@
                          {{ gettext('After that, you will have to wait until the policy is executed (around 20 minutes).') }}
                         </p>
                         <p>
-                         {{ gettext('The debug mode could only be active for ') }} [TODO: TIMEOUT!]
+                         {{ gettext('The debug mode would be active for ') }} {{ (debug_mode_timeout/3600)|int  }} {{ gettext('hours.') }}
                         </p>
                         
                     </div>
