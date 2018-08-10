@@ -14,7 +14,7 @@ import re
 import six
 
 from gecoscc.models import AdminUser
-from babel.dates import format_datetime
+from babel.dates import format_datetime, LOCALTZ
 
 
 def admin_serialize(admin):
@@ -28,7 +28,7 @@ def datetime(value, format='medium'):
         format="EEEE d/MMM/y HH:mm"
     elif format == 'medium':
         format="dd/MM/y HH:mm"
-    return format_datetime(value, format)
+    return format_datetime(value, format, tzinfo=LOCALTZ)
 
 def _get_regex_flags(ignorecase=False):
     return re.I if ignorecase else 0
