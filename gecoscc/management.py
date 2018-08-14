@@ -15,7 +15,7 @@ import sys
 from os.path import dirname, join
 from optparse import OptionParser
 import textwrap
-from pyramid.paster import bootstrap
+from pyramid.paster import bootstrap, setup_logging
 
 
 COMMANDS_PATH = join(dirname(__file__), 'commands')
@@ -69,6 +69,7 @@ class BaseCommand(object):
 
         self.options, self.args = self.parser.parse_args(sys.argv[2:])
 
+        setup_logging(config_uri)
         self.env = bootstrap(config_uri)
         self.settings = self.env["registry"].settings
         self.pyramid = self.env["request"]
