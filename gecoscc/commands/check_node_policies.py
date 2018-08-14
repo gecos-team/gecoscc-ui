@@ -37,8 +37,7 @@ def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)    
+logger = logging.getLogger()    
     
 class Command(BaseCommand):
     description = """
