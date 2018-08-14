@@ -27,8 +27,7 @@ from bson.objectid import ObjectId
 from gecoscc.models import Policy
 
 import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)    
+logger = logging.getLogger()    
     
 class Command(BaseCommand):
     description = """

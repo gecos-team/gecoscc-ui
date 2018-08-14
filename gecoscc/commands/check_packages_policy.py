@@ -32,8 +32,7 @@ from gecoscc.models import Policy
 
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)    
+logger = logging.getLogger()    
     
 # Execute with: 
 # /opt/gecosccui-development/bin/pmanage /opt/gecosccui-development/gecoscc.ini check_packages_policy -a superuser -k /opt/gecoscc/media/users/superuser/chef_user.pem 2>&1 | grep -v InsecureRequestWarning | grep -v requests.packages.urllib3.connectionpool | tee /root/check_packages_policy.log
