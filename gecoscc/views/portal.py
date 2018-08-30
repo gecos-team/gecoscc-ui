@@ -11,7 +11,6 @@
 
 import logging
 import json
-import time
 
 from pyramid.security import remember, forget, authenticated_userid
 from pyramid.httpexceptions import HTTPFound
@@ -38,9 +37,18 @@ logger = logging.getLogger(__name__)
 @view_config(route_name='home', renderer='templates/base_tree.jinja2',
              permission='edit')
 def home(context, request):
+    debug_mode_timeout = get_setting('debug_mode_timeout', get_current_registry().settings, request.db)
+    if debug_mode_timeout is None:
+        logger.warning('Please define a debug_mode_timeout in the gecoscc.ini file!')
+        debug_mode_timeout = 24 # 24 hours
+        
+    debug_mode_timeout = int(debug_mode_timeout) * 60 * 60
+    
+    
     return {
         'websockets_enabled': json.dumps(is_websockets_enabled()),
         'update_error_interval': get_setting('update_error_interval', get_current_registry().settings, request.db),
+        'debug_mode_timeout': debug_mode_timeout,
         'printer_type': PRINTER_TYPE,
         'printer_conn_type': PRINTER_CONN_TYPE,
         'printer_oppolicy_type': PRINTER_OPPOLICY_TYPE
