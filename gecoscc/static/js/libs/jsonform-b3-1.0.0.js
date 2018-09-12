@@ -674,15 +674,16 @@ jsonform.elementTypes = {
           node.schemaElement.enum.push(term);
       };
 
-      var isPackagesPolicy = function () {
-          return slug === "package";
+      var isQSbyNamePolicy = function () {
+          // Policies that use the name as the query parameter and not an OID list
+          return slug === "package" || slug === "mobile_broadband";
       };
 
       if (!schemaElmnt || _.isUndefined(schemaElmnt) || _.isUndefined(schemaElmnt.autocomplete_url)) { return; }
 
       if (node.value && !schemaElmnt.autocomplete_url.startsWith('javascript:')) {
         $(node.el).addClass("hidden");
-          if (isPackagesPolicy()){
+          if (isQSbyNamePolicy()){
             data = {name: node.value};
           } else {
             data = {oids: node.value};
@@ -727,7 +728,7 @@ jsonform.elementTypes = {
           }
           else {          
             // Other cases
-            var collection = res.nodes || res.packages || res.software_profiles;
+            var collection = res.nodes || res.packages || res.software_profiles || res.serviceproviders;
             if(collection.length === 0) {
               node.schemaElement.enum.push(node.value);
               $(node.el).find("input").attr('value', node.value);
@@ -775,12 +776,12 @@ jsonform.elementTypes = {
                           return re.test(d.text);
                       });
                       cachedRequests[query.term] = _.clone(cachedData);
-                      if (isPackagesPolicy()) {
+                      if (isQSbyNamePolicy()) {
                         addTerm(cachedData, query.term);
                       }
                       query.callback({results: cachedData});
                   } else if (cachedRequests[query.term]) {
-                      if (isPackagesPolicy()) {
+                      if (isQSbyNamePolicy()) {
                         addTerm(cachedRequests[query.term], query.term);
                       }
                       query.callback({results: cachedRequests[query.term]});
