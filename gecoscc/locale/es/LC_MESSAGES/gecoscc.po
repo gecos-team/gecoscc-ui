@@ -1512,17 +1512,3 @@ msgstr "Identificador"
 #: gecoscc/views/reports.py:83
 msgid "Phone"
 msgstr "Teléfono"
-
-#: gecoscc/views/settings.py:170
-msgid "Software Profiles policy not found"
-msgstr "No se encuentra la política de Perfiles de Software"
-
-#: gecoscc/views/settings.py:195
-#, python-format
-msgid "Software Profile in use: %s"
-msgstr "Perfil de Software en uso: %s"
-
-#: gecoscc/views/settings.py:201
-msgid "Settings modified successfully"
-msgstr "Configuración modificada con éxito"
-

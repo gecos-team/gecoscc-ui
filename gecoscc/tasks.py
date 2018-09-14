@@ -55,7 +55,6 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
 
 
 DELETED_POLICY_ACTION = 'deleted'
-SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 ORDER_BY_TYPE_ASC = ('ou','group','computer','user')
 USERS_OHAI = 'ohai_gecos.users'
 
@@ -226,11 +225,7 @@ class ChefTask(Task):
                     object_related_id_list = obj[rule_type].get(policy_id,{}).get('object_related_list',[])
                 object_related_list = []
                 for object_related_id in object_related_id_list:
-                    if policy['slug'] == SOFTWARE_PROFILE_SLUG:
-                        object_related = self.db.software_profiles.find_one({'_id': ObjectId(object_related_id)})
-                        object_related['type'] = 'software_profile'
-                    else:
-                        object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
+                    object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
                     if not object_related:
                         continue
                     object_related_list.append(object_related)
@@ -275,13 +270,8 @@ class ChefTask(Task):
         related_objects = []
 
         for node_id in new_field_chef_value:
-            if obj_type == SOFTWARE_PROFILE_SLUG:
-                related_objs = self.db.software_profiles.find_one({'_id': ObjectId(node_id)})
-                related_objs.update({'type': 'software_profile'})
-                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
-            else:
-                related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
-                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
+            related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
+            obj_list = {'object_related_list': [related_objs], 'type': obj_type}
             related_objects += object_related_list(obj_list)
         self.log("debug","tasks.py:::get_related_objects -> related_objects = {0}".format(related_objects))
         return related_objects
@@ -418,7 +408,7 @@ class ChefTask(Task):
     def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
         Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
-        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        This policy is emitter, that is that the policy contains related objects (printers and repositories)
         '''
 
         if obj_ui == objold_ui:
@@ -429,12 +419,7 @@ class ChefTask(Task):
         if obj_ui.get('object_related_list', False):
             related_objs = obj_ui['object_related_list']
             for related_obj in related_objs:
-                if obj_ui['type'] == SOFTWARE_PROFILE_SLUG:
-                    for obj_field in related_obj['packages']:
-                        if obj_field not in field_chef_value:
-                            return True
-
-                elif obj_ui['type'] == 'repository':
+                if obj_ui['type'] == 'repository':
                     if not any(d['repo_name'] == related_obj['name'] for d in field_chef_value):
                         return True
 
@@ -772,7 +757,7 @@ class ChefTask(Task):
     def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path):
         '''
         Update node chef with a mergeable workstation emitter policy
-        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        This policy is emitter, that is that the policy contains related objects (printers and repositories)
         '''
         if self.has_changed_ws_emitter_policy(node, obj_ui, objold_ui, field_chef) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
@@ -1057,7 +1042,7 @@ class ChefTask(Task):
 
                     if obj_ui.get('type', None) == 'storage':
                         is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
-                    elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
+                    elif obj_ui.get('type', None) in ['printer', 'repository']:
                         is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path)
                     elif not is_user_policy(field_chef):
                         is_policy_updated = self.update_ws_mergeable_policy(node, action, field_chef, field_ui, policy, update_by_path, curobj_ui_field, objold_ui_field)

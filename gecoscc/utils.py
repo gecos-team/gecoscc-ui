@@ -482,7 +482,6 @@ def visibility_group(db, obj):
 
 
 def visibility_object_related(db, obj):
-    from gecoscc.tasks import SOFTWARE_PROFILE_SLUG
     policies = obj.get('policies', None)
     if not policies:
         return obj
@@ -496,12 +495,7 @@ def visibility_object_related(db, obj):
             object_related_list = obj['policies'][unicode(emitter_policy_id)].get('object_related_list', [])
             object_related_visible = []
             for object_related_id in object_related_list:
-                if emitter_policy['slug'] == SOFTWARE_PROFILE_SLUG:
-                    is_visible = db.software_profiles.find_one({
-                                                               '_id': ObjectId(object_related_id)
-                                                               })
-                else:
-                    is_visible = is_object_visible(db.nodes, object_related_id, ou_id, obj_id)
+                is_visible = is_object_visible(db.nodes, object_related_id, ou_id, obj_id)
                 if is_visible:
                     object_related_visible.append(object_related_id)
             if object_related_list != object_related_visible:

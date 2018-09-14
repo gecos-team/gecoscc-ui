@@ -1056,17 +1056,6 @@ class Package(colander.MappingSchema):
 class Packages(colander.SequenceSchema):
     packages = Package()
 
-
-class SoftwareProfile(colander.MappingSchema):
-    _id = colander.SchemaNode(ObjectIdField())
-    name = colander.SchemaNode(colander.String())
-    packages = StringList(missing=[], default=[])
-
-
-class SoftwareProfiles(colander.SequenceSchema):
-    software_profiles = SoftwareProfile()
-
-
 class PrinterModel(colander.MappingSchema):
     manufacturer = colander.SchemaNode(colander.String())
     model = colander.SchemaNode(colander.String())

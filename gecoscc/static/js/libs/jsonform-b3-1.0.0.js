@@ -671,7 +671,7 @@ jsonform.elementTypes = {
             value: term,
             id: term
           });
-          node.schemaElement.enum.push(term);
+          node.schemaElement['enum'].push(term);
       };
 
       var isQSbyNamePolicy = function () {
@@ -708,7 +708,7 @@ jsonform.elementTypes = {
             nodes = []
             var values = res.settings[0].value.replace(/[\[\]"]/g, '').split(',');
             if(values.length === 0) {
-              node.schemaElement.enum.push(node.value);
+              node.schemaElement['enum'].push(node.value);
               $(node.el).find("input").attr('value', node.value);
               if (!_.isUndefined(res.packages)) {
                 resNode = {name: node.value};
@@ -728,9 +728,9 @@ jsonform.elementTypes = {
           }
           else {          
             // Other cases
-            var collection = res.nodes || res.packages || res.software_profiles || res.serviceproviders;
+            var collection = res.nodes || res.packages || res.serviceproviders;
             if(collection.length === 0) {
-              node.schemaElement.enum.push(node.value);
+              node.schemaElement['enum'].push(node.value);
               $(node.el).find("input").attr('value', node.value);
               if (!_.isUndefined(res.packages)) {
                 resNode = {name: node.value};
@@ -759,7 +759,7 @@ jsonform.elementTypes = {
               initSelection : function (element, callback) {
                 if(!_.isUndefined(node.value)){
                   $(node.el).find("input").last().attr('value', node.value);
-                  node.schemaElement.enum.push(node.value);
+                  node.schemaElement['enum'].push(node.value);
                   var data = {id: node.value, value: node.value, text: gettext(node.value)};
                   callback(data);
                 }
@@ -812,16 +812,16 @@ jsonform.elementTypes = {
                                     value: values[i],
                                     id: values[i]
                                   }
-                                  node.schemaElement.enum.push(values[i]);
+                                  node.schemaElement['enum'].push(values[i]);
                                 }
                                 
                                 more = values.length >= pagesize;
                               }
                               else {
-                                var collection = data.software_profiles || data.nodes || data.packages || data.serviceproviders
+                                var collection = data.nodes || data.packages || data.serviceproviders
                                 nodes = collection.map(function (n) {
                                   n._id = n._id || n.name;
-                                  node.schemaElement.enum.push(n._id);
+                                  node.schemaElement['enum'].push(n._id);
                                   return {
                                     text: n.name,
                                     value: n._id,
@@ -846,7 +846,7 @@ jsonform.elementTypes = {
               initSelection : function (element, callback) {
                 if(!_.isUndefined(resNode)){
                   $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
-                  node.schemaElement.enum.push(resNode._id || resNode.name);
+                  node.schemaElement['enum'].push(resNode._id || resNode.name);
                   var data = {id: resNode._id || resNode.name, text: resNode.name};
                   callback(data);
                 }

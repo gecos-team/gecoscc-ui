@@ -157,10 +157,24 @@ class Command(BaseCommand):
         if data is None:
             logger.error('Can\'t download default attributes file!')
             return None
+
+        # Join splited lines        
+        previous_line = ''
+        new_data = ''
+        for line in data.split('\n'):
+            if line.strip() != '' and not line.strip().startswith('#'):
+                if line.startswith('  '):
+                    previous_line = str(previous_line) + str(line.strip())
+                else:
+                    new_data += previous_line + "\n"
+                    previous_line = line.strip()        
+        
+        data = new_data
         
         # Convert to python
         data = re.sub('\[:(?P<name>[a-zA-Z0-9_]+)\]', '["\g<name>"]', data)
         data = data.replace('true', 'True').replace('false', 'False')
+        data = data.replace('true', 'True').replace('.freeze', '')
         
         # Create dictionaries
         created = []
@@ -181,26 +195,29 @@ class Command(BaseCommand):
                 
                 # Create empty dictionaries code
                 begining = 0
-                position = left.index('[', begining)
-                while position > 0:
-                    variable = left[0:position]
-                    begining = position + 1
-                    try:
-                        position = left.index('[', begining)
-                    except ValueError:
-                        # String not found
-                        position = -1
-                        
-                    if (not variable in created) and len(variable) != len(left):
-                        created.append(variable)
-                        header += variable+' = {}\n'
+                position = 0
+                if '[' in left:
+                    position = left.index('[', begining)
+                    while position > 0:
+                        variable = left[0:position]
+                        begining = position + 1
+                        try:
+                            position = left.index('[', begining)
+                        except ValueError:
+                            # String not found
+                            position = -1
+                            
+                        if (not variable in created) and len(variable) != len(left):
+                            created.append(variable)
+                            header += variable+' = {}\n'
+                else:
+                    code = compile('%s = %s'%(left, right), '<string>', 'exec')
+                    exec code                    
                 
         data = header + data
-        
         default = None
         code = compile(data, '<string>', 'exec')
         exec code
-            
         return default
     
     
@@ -305,7 +322,7 @@ class Command(BaseCommand):
                 logger.error("No Chef ID in '%s' computer!"%(computer['name']))
 
                 
-        logger.info('Checking MongoDB computer references...')
+        logger.info('Checking MongoDB computer references and deprecated policies...')
         # Check the references to computer nodes
         for node_id in ChefNode.list():
             found = False
@@ -331,11 +348,17 @@ class Command(BaseCommand):
                 computer_node.save()
                 
             # Check "updated_by" field
-            atrributes = computer_node.normal.to_dict()
-            updated, updated_attributes = self.check_updated_by_field(node_id, None, atrributes)
+            attributes = computer_node.normal.to_dict()
+            updated, updated_attributes = self.check_updated_by_field(node_id, None, attributes)
             if updated:
-                computer_node.normal = atrributes
+                computer_node.normal = updated_attributes
                 computer_node.save()
+            
+            updated, updated_attributes = self.check_chef_node_policies(node_id, None, attributes)
+            if updated:
+                computer_node.normal = updated_attributes
+                computer_node.save()
+            
             
         
         logger.info('END ;)')
@@ -363,6 +386,23 @@ class Command(BaseCommand):
         
         return updated, attributes
         
+    def check_chef_node_policies(self, node_id, key, attributes):
+        updated = False
+        if 'gecos_ws_mgmt' in attributes:
+            to_delete = []
+            for group in attributes['gecos_ws_mgmt']:
+                for policy_slug in attributes['gecos_ws_mgmt'][group]:
+                    if policy_slug not in self.slug_check:
+                        logger.warn("Unknown policy slug %s found in node %s."%(policy_slug, node_id))
+                        logger.info("FIXED: Remove %s policy information from node %s."%(policy_slug, node_id))
+                        to_delete.append('%s.%s'%(group, policy_slug))
+                        
+            for policy in to_delete:
+                group, slug = policy.split('.')
+                del attributes['gecos_ws_mgmt'][group][slug]
+                updated = True
+        
+        return updated, attributes
         
     def check_node_and_subnodes(self, node):
         '''
@@ -387,11 +427,14 @@ class Command(BaseCommand):
         
         # Check policies
         if 'policies' in node:
+            to_remove = []
             # Check the policies data
             for policy in node['policies']:
                 logger.debug('Checking policy with ID: %s'%(policy))
                 if not str(policy) in self.policiesdata:
-                    logger.error("Can't find %s policy data en the database!"%(policy))
+                    logger.warn("Can't find %s policy data in the database! (probably deprecated)"%(policy))
+                    to_remove.append(str(policy))
+                    
                 else:
                     policydata = self.policiesdata[str(policy)]
                     nodedata = node['policies'][str(policy)]
@@ -426,6 +469,16 @@ class Command(BaseCommand):
                     if self.options.inheritance:
                         # Check inheritance field
                         trace_inheritance(logger, self.db, 'change', inheritance_node, deepcopy(policydata))
+
+            changed = False
+            for policy in to_remove:
+                logger.info("FIXED: Remove %s policy information"%(policy))
+                del node['policies'][str(policy)]
+                changed = True
+                
+            if changed:
+                self.db.nodes.update({'_id': ObjectId(node['_id'])},{'$set': {'policies': node['policies']}})
+
                             
         else:
             logger.debug('No policies in this node.')
@@ -611,21 +664,13 @@ class Command(BaseCommand):
                 
         if is_emitter:
             # Check if referenced node exists in database
-            if  emitter_policy_slug == 'package_profile_res':
-                ref_nodes = self.db.software_profiles.find({"_id" : ObjectId(nodedata)})    
-                found = False
-                for ref_nodes in ref_nodes:        
-                    found = True
-                    logger.debug('Referenced node %s for property %s is a %s'%(nodedata, property, 'package_profile'))
-            
-            else:
-                ref_nodes = self.db.nodes.find({"_id" : ObjectId(nodedata)})    
-                found = False
-                for ref_nodes in ref_nodes:        
-                    found = True
-                    logger.debug('Referenced node %s for property %s is a %s node'%(nodedata, property, ref_nodes["type"]))
-                    if ref_nodes["type"] != self.referenced_data_type[emitter_policy_slug]:
-                        logger.error('Bad data type in referenced node %s for property %s (%s != %s)'%(nodedata, property, ref_nodes["type"], self.referenced_data_type[emitter_policy_slug]))
+            ref_nodes = self.db.nodes.find({"_id" : ObjectId(nodedata)})    
+            found = False
+            for ref_nodes in ref_nodes:        
+                found = True
+                logger.debug('Referenced node %s for property %s is a %s node'%(nodedata, property, ref_nodes["type"]))
+                if ref_nodes["type"] != self.referenced_data_type[emitter_policy_slug]:
+                    logger.error('Bad data type in referenced node %s for property %s (%s != %s)'%(nodedata, property, ref_nodes["type"], self.referenced_data_type[emitter_policy_slug]))
                 
             if not found:
                 logger.error('Can\'t find referenced node %s for property %s'%(nodedata, property))
