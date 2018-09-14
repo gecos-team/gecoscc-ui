@@ -44,6 +44,9 @@ from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add
+from gecoscc.tasks import chef_status_sync
+from gecoscc.utils import get_chef_api
+from chef import Node
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -381,6 +384,13 @@ class BaseGecosTestCase(unittest.TestCase):
             if isinstance(comp_id, basestring):
                 data['members'][i] = ObjectId(comp_id)
 
+    def cleanErrorJobs(self):
+        '''
+        Clean all jobs.
+        '''
+        db = self.get_db()
+        db.jobs.remove()
+
     def assertNoErrorJobs(self):
         '''
         Useful method, check there are not any job with error (or even success)
@@ -453,6 +463,9 @@ class BaseGecosTestCase(unittest.TestCase):
 
         data, domain = self.create_domain('Domain 1', flag_new)
         data, ou = self.create_ou('OU 1')
+        # 2 - Create user in domain
+        username = 'usertest'
+        data, new_user = self.create_user(username, domain['name'])        
 
     @mock.patch('gecoscc.commands.import_policies.get_cookbook')
     def import_policies(self, get_cookbook_method):
@@ -645,13 +658,14 @@ class BaseGecosTestCase(unittest.TestCase):
                       'username': username})
         node.attributes.set_dotted(USERS_OHAI, users)
         node.save()
-        request = self.get_dummy_request()
-        data = {'gcc_username': gcc_superusername,
-                'node_id': node.name}
-        request.POST = data
-        chef_status_api = ChefStatusResource(request)
-        chef_status_response = chef_status_api.put()
-        self.assertEqual(chef_status_response['ok'], True)
+        
+        user = self.get_db().nodes.find_one({'name': username})
+        computer = self.get_db().nodes.find_one({'node_chef_id': chef_node_id})
+        computers = user.get('computers', [])
+        if computer['_id'] not in computers:
+            computers.append(computer['_id'])
+            self.get_db().nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+       
 
     def assign_group_to_node(self, node_name, api_class, group):
         '''
@@ -790,6 +804,7 @@ class BasicTests(BaseGecosTestCase):
         Test 2: Create, update and delete a printer
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=PrinterResource)
 
         # 1 - Create printer
@@ -820,6 +835,7 @@ class BasicTests(BaseGecosTestCase):
         Test 3: Create, update and delete a shared folder
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=StorageResource)
 
         # 1 - Create shared folder
@@ -849,6 +865,7 @@ class BasicTests(BaseGecosTestCase):
         Test 4: Create, update and delete a repository
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=RepositoryResource)
         # 1 - Create repository
         data, new_repository = self.create_repository('Repo')
@@ -878,6 +895,7 @@ class BasicTests(BaseGecosTestCase):
         Test 5: Create, update and delete an user
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=UserResource)
         # 1 - Create user
         data, new_user = self.create_user('testuser')
@@ -907,6 +925,7 @@ class BasicTests(BaseGecosTestCase):
         Test 6: Creation and delete a group
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=GroupResource)
         # 1 - Create group
         data, new_group = self.create_group('testgroup')
@@ -935,7 +954,8 @@ class BasicTests(BaseGecosTestCase):
         Test 7: Create, update and delete a computer
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
-
+        self.cleanErrorJobs()
+        
         # 1 - Register workstation
         self.register_computer()
 
@@ -967,6 +987,7 @@ class BasicTests(BaseGecosTestCase):
         Test 8: Create, update and delete a OU
         '''
         self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=OrganisationalUnitResource)
         # 1 - Create OU
         data, new_ou = self.create_ou('OU 2')
@@ -994,7 +1015,6 @@ class BasicTests(BaseGecosTestCase):
 
 class AdvancedTests(BaseGecosTestCase):
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1003,12 +1023,13 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_01_update_resources_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                      isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                      isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 1:
         1. Check the shared_folder policy works using users
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create storage
         db = self.get_db()
@@ -1073,7 +1094,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1082,12 +1102,13 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_02_update_resources_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                             isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                             isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 2:
         1. Check the printer policy works using workstation
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create printer
         db = self.get_db()
@@ -1169,6 +1190,7 @@ class AdvancedTests(BaseGecosTestCase):
         2. Check the policies pripority works using organisational unit
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
+        self.cleanErrorJobs()
 
         # 1 - Register workstation
         db = self.get_db()
@@ -1239,7 +1261,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
+
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1248,13 +1270,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_04_priority_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                          isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                          isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 4:
         1. Check the registration work station works
         2. Check the policies priority works using organisational unit and user
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # Register administrator
         admin_username = 'superuser'
@@ -1336,7 +1359,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
+
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1345,13 +1368,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_05_priority_workstation_ous_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                                isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                                isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 5:
         1. Check the registration work station works
         2. Check the policies priority works using organisational unit and groups
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1- Create a group
         data, new_group = self.create_group('testgroup')
@@ -1406,7 +1430,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
+
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1415,13 +1439,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_06_priority_workstation_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                            isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                            isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 6:
         1. Check the registration work station works
         2. Check the policies priority works using workstation and groups
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
@@ -1482,7 +1507,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1491,13 +1515,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_07_priority_workstation_groups_different_ou(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                                         isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                                         isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 7:
         1. Check the registration work station works
         2. Check the policies priority works using groups in differents OUs
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
@@ -1558,7 +1583,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1567,13 +1591,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_08_priority_user_ous_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                         isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                         isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 8:
         1. Check the registration work station works
         2. Check the policies priority works using groups and OUs
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('group_test')
@@ -1590,6 +1615,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 3, 4 - Register user in chef node and register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         # 5 - Assign group to user
@@ -1636,7 +1662,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1645,13 +1670,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_09_priority_user_groups_same_ou(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                             isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                             isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 9:
         1. Check the registration work station works
         2. Check the policies priority works using groups in the same OU
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
@@ -1670,6 +1696,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 4, 5 - Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         # 6 - Assign A group to user
@@ -1720,7 +1747,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1729,13 +1755,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_10_priority_user_groups_different_ou(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                                  isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                                  isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 10:
         1. Check the registration work station works
         2. Check the policies priority works using groups in differents OUs
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create A group
         data, new_group_a = self.create_group('group_A')
@@ -1754,6 +1781,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 4, 5 - Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         # 6 - Assign A group to user
@@ -1804,7 +1832,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1813,13 +1840,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_11_move_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                 isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 11:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Register workstation
         db = self.get_db()
@@ -1861,7 +1889,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1870,13 +1897,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_12_move_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                          isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                          isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 12:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Register workstation
         db = self.get_db()
@@ -1890,6 +1918,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 2, 3 - Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         # 4 - Add policy in OU
@@ -1930,7 +1959,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1939,13 +1967,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_13_group_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                 isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 13:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create group in OU
         data, new_group = self.create_group('group_test')
@@ -1962,6 +1991,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 2 - Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
 
         # 3 -Assign group to user
@@ -1984,7 +2014,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -1993,13 +2022,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_14_printer_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                   isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                   isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 14:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -2048,7 +2078,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2057,13 +2086,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_15_shared_folder_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                         isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                         isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 15:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -2086,6 +2116,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
@@ -2119,7 +2150,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2128,13 +2158,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_16_repository_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                      isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                      isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 16:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create a group in OU
         data, new_group = self.create_group('group_test')
@@ -2157,6 +2188,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Register user in chef node
         username = 'testuser'
+        self.create_user(username)  
         self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
@@ -2205,7 +2237,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2214,14 +2245,15 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_17_delete_ou_with_workstation_and_user_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                              gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                                              gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 17:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # Register administrator
         admin_username = 'superuser'
@@ -2265,7 +2297,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2274,14 +2305,15 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_18_delete_ou_with_user_and_workstation_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                              gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                                              gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 18:
         1. Check the registration work station works
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         TaskNodeClass.side_effect = NodeMock
         TaskClientClass.side_effect = ClientMock
@@ -2339,7 +2371,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2348,7 +2379,7 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_19_delete_ou_with_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass,
+                                     isinstance_method, gettext, create_chef_admin_user_method,
                                      TaskNodeClass, TaskClientClass):
         '''
         Test 19:
@@ -2356,7 +2387,8 @@ class AdvancedTests(BaseGecosTestCase):
         2. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('testgroup')
@@ -2408,7 +2440,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2417,13 +2448,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_20_delete_group_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                       gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                                       gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 20:
         1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('testgroup')
@@ -2476,7 +2508,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2485,13 +2516,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_21_delete_group_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext,
-                                          create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                          create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 21:
         1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('testgroup')
@@ -2552,7 +2584,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2561,13 +2592,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_22_delete_group_in_domain_with_politic(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                    gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                                    gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 22:
         1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
@@ -2628,7 +2660,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2637,13 +2668,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_23_delete_group_in_domain_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                                 gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                                                 gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 23:
         1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group
         data, new_group = self.create_group('testgroup', ou_name='Domain 1')
@@ -2699,7 +2731,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2708,12 +2739,13 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_24_delete_OU_without_group_inside(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext,
-                                               create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                               create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 24:
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - Create a group in domain
         data, new_group = self.create_group('test_group', ou_name='Domain 1')
@@ -2773,6 +2805,7 @@ class AdvancedTests(BaseGecosTestCase):
         1. Check the policies pripority works using organisational unit
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method)
+        self.cleanErrorJobs()
 
         # 1 - Register workstation
         db = self.get_db()
@@ -2806,7 +2839,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2815,13 +2847,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_26_priority_user_and_group(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                        isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                        isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 26:
         1. Check the registration work station works
         2. Check the policies priority works using organisational unit and user
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # Register administrator
         admin_username = 'superuser'
@@ -2882,7 +2915,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
+
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2891,12 +2924,13 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_28_repositories_are_mergeables(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                            isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                            isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 28:
         1. Check the repositories are mergeables
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create repository
         db = self.get_db()
@@ -2935,7 +2969,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -2944,13 +2977,14 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_29_cert_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                            gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                            gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 29:
         1. Check the policies priority works
         '''
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # Register administrator
         admin_username = 'superuser'
@@ -2995,7 +3029,6 @@ class AdvancedTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3004,10 +3037,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_30_recalc_command_cert_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                           gettext, create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass):
+                                           gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
 
         self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, ChefNodeStatusClass, TaskNodeClass, TaskClientClass)
+                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
 
         # 1 - 7
         self.test_29_cert_policy()
@@ -3035,7 +3069,6 @@ class AdvancedTests(BaseGecosTestCase):
 
 class MovementsTests(BaseGecosTestCase):
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3044,12 +3077,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_01_printers_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                   isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                   isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 01:
         1. Check the printers movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create printer
         data, new_printer = self.create_printer('Testprinter')
@@ -3114,7 +3148,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3123,12 +3156,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_02_shared_folder_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                        isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                        isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 02:
         1. Check the shared folder movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # Register admin
         admin_username = 'superuser'
@@ -3211,7 +3245,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3220,12 +3253,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_03_repository_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                     isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 03:
         1. Check the repository movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create printer
         data, new_repository = self.create_repository('Testrepo')
@@ -3281,7 +3315,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3290,12 +3323,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_04_groups_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                 isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 04:
         1. Check the groups movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1- Create a group
         data, new_group = self.create_group('testgroup')
@@ -3351,7 +3385,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3360,12 +3393,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_05_groups_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                        isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                        isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 05:
         1. Check the groups movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1- Create a group
         data, new_group = self.create_group('testgroup')
@@ -3407,7 +3441,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3416,12 +3449,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_06_OUs_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                              isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                              isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 06:
         1. Check the ous movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1- Create OU 2
         data, new_ou = self.create_ou('OU 2', 'OU 1')
@@ -3454,7 +3488,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3463,12 +3496,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_07_OUs_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                     isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                     isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 07:
         1. Check the ous movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
 
         # 1 - Create domain
         data = {'name': 'Flag',
@@ -3500,7 +3534,6 @@ class MovementsTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.api.chef_status.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
     @mock.patch('gecoscc.forms._')
     @mock.patch('gecoscc.utils.isinstance')
@@ -3509,12 +3542,13 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     def test_08_complete_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                isinstance_method, gettext, create_chef_admin_user_method, ChefNodeStatusClass):
+                                isinstance_method, gettext, create_chef_admin_user_method):
         '''
         Test 08:
         1. Check the ous movements work
         '''
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method, ChefNodeStatusClass)
+        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
         chef_node_id = CHEF_NODE_ID
 
         # 1 - Create OU 1

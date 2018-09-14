@@ -2036,6 +2036,10 @@ def calculate_initial_inheritance_for_node(logger, db, node):
                             previousOU['children'].append(item)
                         
                         previousOU = item
+            
+            if previousOU is None:
+                logger.error("utils.py ::: calculate_initial_inheritance_for_node - OUs not found for path %s" % str(node.get('path')))
+                return False
         
             if 'memberof' in node:
                 # Add the groups in order (depth and aphabetic)
