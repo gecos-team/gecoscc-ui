@@ -61,8 +61,6 @@ class Command(BaseCommand):
 
         cookbook = get_cookbook(api, cookbook_name)
 
-        res = None
-
         for f in cookbook['files']:
             if f['name'] == 'serviceproviders.xml': 
                 try:

@@ -291,6 +291,7 @@ class Command(BaseCommand):
                         # Also delete software_profiles collection
                         print "Drop software profiles collection!"
                         self.db.software_profiles.drop()
+                        self.db.settings.remove({'key' : 'software_profiles'})
                         
         if not found:
             print "There are no deprecated policies"

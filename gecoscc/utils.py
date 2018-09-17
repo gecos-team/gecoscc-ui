@@ -189,7 +189,7 @@ def oids_filter(request):
 
 
 def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
+    return ''.join(random.choice(chars) for _ in range(size))
 
 
 def get_chef_api(settings, user):
@@ -236,7 +236,7 @@ def create_chef_admin_user(api, settings, usrname, password=None, email='nobody@
         save_pem_for_username(settings, username, 'chef_client.pem', client_private_key)
 
 
-def delete_chef_admin_user(api, settings, usrname):
+def delete_chef_admin_user(api, usrname):
     username = toChefUsername(usrname)
     try:
         api.api_request('DELETE', '/users/%s/' % username)
@@ -320,7 +320,7 @@ def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
 
 def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attempts=1):
     is_busy = True
-    for attempt in range(attempts):
+    for _attempt in range(attempts):
         node, is_busy = _is_node_busy_and_reserve_it(node_id, api, controller_requestor)
         if not is_busy:
             break
@@ -555,7 +555,7 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
     return nodes_collection.find_one({'_id': obj_id})
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, _policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -579,7 +579,7 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, _policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -608,7 +608,7 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     object_created(auth_user, 'user', user, computers=computers)
 
 
-def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, _initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a emitter object is within the scope of the objects that is related and then update policies
     '''
@@ -652,7 +652,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
     object_created(auth_user, obj['type'], obj)
 
 
-def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initialize=False, use_celery=True, _policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''
@@ -686,7 +686,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
     object_created(auth_user, group['type'], group)
 
 
-def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_ou(nodes_collection, ou, auth_user, _api=None, _initialize=False, use_celery=True, _policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''
@@ -1186,7 +1186,7 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
         policy_id (string): Policy ID of the policy that is changed or deleted.
 
     Returns:
-        list: List with all the IDs of all nodes in an inheritance tree with that policy.
+        tree_node_list: List with all the IDs of all nodes in an inheritance tree with that policy.
 
     """
     # Parameter checking
@@ -1200,7 +1200,7 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
         raise ValueError('policy_id is not a string')       
     
     
-    list = []
+    tree_node_list = []
     
     # Chef if the policy id exists
     exists = False
@@ -1210,23 +1210,23 @@ def get_inheritance_tree_node_list(inheritanceTree, policy_id):
             break    
     
     if exists:
-        list.append(inheritanceTree['_id'])
+        tree_node_list.append(inheritanceTree['_id'])
         
     for child in inheritanceTree['children']:
-        list.extend(get_inheritance_tree_node_list(child, policy_id))
+        tree_node_list.extend(get_inheritance_tree_node_list(child, policy_id))
 
-    return list        
+    return tree_node_list        
 
 # ------------------------------------------------------------------------------------------------------
-def get_inheritance_tree_policies_list(inheritanceTree, list):
+def get_inheritance_tree_policies_list(inheritanceTree, policies_list):
     """Function that retuns a list with all the policies of all nodes in an inheritance Tree.
 
     Args:
         inheritanceTree (object): Tree of inheritance objects
-        list: List with policies found until this moment.
+        policies_list: List with policies found until this moment.
 
     Returns:
-        list: List with all the policies in an inheritance tree.
+        policies_list: List with all the policies in an inheritance tree.
 
     """
     # Parameter checking
@@ -1237,7 +1237,7 @@ def get_inheritance_tree_policies_list(inheritanceTree, list):
     if 'policies' in inheritanceTree:
         for policy_id in inheritanceTree['policies']:
             exist = False
-            for policy in list:
+            for policy in policies_list:
                 if policy['_id'] == policy_id:
                     exist = True
                     break
@@ -1245,13 +1245,13 @@ def get_inheritance_tree_policies_list(inheritanceTree, list):
             if not exist:
                 policy = deepcopy(inheritanceTree['policies'][policy_id])
                 policy['_id'] = policy_id
-                list.append(policy)
+                policies_list.append(policy)
     
     if 'children' in inheritanceTree:
         for child in inheritanceTree['children']:
-            get_inheritance_tree_policies_list(child, list)
+            get_inheritance_tree_policies_list(child, policies_list)
 
-    return list 
+    return policies_list 
     
     
 
@@ -1315,7 +1315,7 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
         inheritanceTree (object): Tree of inheritance objects
 
     Returns:
-        list: The return value. A list of nodes added to the inheritance tree.
+        nodes_added: The return value. A list of nodes added to the inheritance tree.
 
     """
     # Parameter checking
@@ -1331,7 +1331,6 @@ def move_in_inheritance(logger, db, obj, inheritanceTree):
     if inheritanceTree is None:
         raise ValueError('inheritanceTree is None')    
     
-    success = False
     nodes_added = []
             
     logger.debug("utils.py ::: move_in_inheritance - obj=%s" %(obj['name']))
@@ -2195,8 +2194,6 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
     if (not '_id' in node) or (not 'name' in node):
         raise ValueError('node is not a node')      
     
-    from gecoscc.tasks import DELETED_POLICY_ACTION
-    
     # Check if the policy is applicable to this object
     if not node['type'] in policy['targets']:
         return False
@@ -2447,8 +2444,6 @@ def upload_cookbook(user=None,cookbook_path=None):
         assert user is not None and cookbook_path is not None, _('Missing required arguments')
         assert os.path.isdir(cookbook_path), _('Directory %s can\'t be found.') % cookbook_path
 
-        api = get_chef_api(settings, user)
-
         admin_cert = os.sep.join([settings.get('firstboot_api.media'), user['username'], 'chef_user.pem'])
         logger.debug("upload_cookbook: admin_cert = %s" % admin_cert)
 
@@ -2575,7 +2570,6 @@ def import_policies(username=None, inifile=None):
             has_cli_permission(os.environ['SCRIPT_CODE'], import_policies.__name__)
             inifile = os.environ['CONFIG_URI']
             username = os.environ['GECOS_USER']
-            backupdir = os.environ['BACKUP_DIR']
 
         logger.debug("utils.py ::: import_policies - inifile = %s" % inifile)
         logger.debug("utils.py ::: import_policies - username = %s" % username)

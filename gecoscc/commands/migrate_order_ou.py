@@ -9,16 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import string
-import random
-
 from gecoscc.management import BaseCommand
 from gecoscc.models import OU_ORDER
-
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
-
 
 class Command(BaseCommand):
 

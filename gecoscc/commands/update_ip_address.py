@@ -17,17 +17,11 @@
 # by getting them from the OHAI information of every Chef node.
 #
 
-import string
-import random
-
 from chef import Node
 from optparse import make_option
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import _get_chef_api, toChefUsername
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 class Command(BaseCommand):
     description = """

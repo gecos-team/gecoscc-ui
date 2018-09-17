@@ -553,7 +553,7 @@ class ADImport(BaseAPI):
         # Order by size
         orderedBySize = {}
         er = re.compile(r'([^, ]+=(?:(?:\\,)|[^,])+)')
-        for index, mongoObject in mongoObjects.items():
+        for _index, mongoObject in mongoObjects.items():
             if mongoObject['adDistinguishedName'] == domain['adDistinguishedName']:  # Jump root domain
                 mongoObjectRoot = mongoObject
                 continue

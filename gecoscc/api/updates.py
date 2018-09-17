@@ -55,13 +55,13 @@ class UpdateResource(ResourcePaginatedReadOnly):
     def get_oid_filter(self, oid):
         return {self.key: oid}
 
-    def tail_f(self, file):
+    def tail_f(self, fileobj):
         while True:
-            where = file.tell()
-            line = file.readline()
+            where = fileobj.tell()
+            line = fileobj.readline()
             if not line:
-                file.seek(where)
-                lsof = subprocess.check_output(['lsof', file.name])
+                fileobj.seek(where)
+                lsof = subprocess.check_output(['lsof', fileobj.name])
                 if len(lsof.split("\n")) <= 3:
                     break
             else:

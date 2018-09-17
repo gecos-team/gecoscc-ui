@@ -590,33 +590,33 @@ class Command(BaseCommand):
             else:
                 logger.error("No Chef ID in '%s' computer!"%(computer['name']))
         
-    def check_referenced_nodes(self, id_list, possible_types, property):
+    def check_referenced_nodes(self, id_list, possible_types, property_name):
         '''
         Check if the nodes with ID in the id_list exists in the database
         and its types belong to the possible_types list
         '''           
         
         new_id_list = []
-        for id in id_list:
-            ref_nodes = self.db.nodes.find({ "_id" : id })    
+        for node_id in id_list:
+            ref_nodes = self.db.nodes.find({ "_id" : node_id })    
             found = False
             for ref_nodes in ref_nodes:        
                 found = True
-                logger.debug('Referenced node %s for property %s is a %s node'%(id, property, ref_nodes["type"]))
+                logger.debug('Referenced node %s for property %s is a %s node'%(node_id, property_name, ref_nodes["type"]))
                 if not (ref_nodes["type"] in possible_types):
-                    logger.error('Bad data type in referenced node %s for property %s (%s not in %s)'%(id, property, ref_nodes["type"], possible_types))
+                    logger.error('Bad data type in referenced node %s for property %s (%s not in %s)'%(node_id, property_name, ref_nodes["type"], possible_types))
                 
             if not found:
-                logger.error('Can\'t find referenced node %s for property %s'%(id, property))                
+                logger.error('Can\'t find referenced node %s for property %s'%(node_id, property_name))                
                 logger.warn('Possible cause: Unknown. Node references non-existent node in MongoDB.')                
                 continue
                 
-            new_id_list.append(id)
+            new_id_list.append(node_id)
         
         return new_id_list
         
         
-    def check_boolean_property(self, schema, nodedata, property):
+    def check_boolean_property(self, schema, nodedata, property_name):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -627,10 +627,10 @@ class Command(BaseCommand):
             raise ValueError('Schema doesn\'t represent a boolean!')
             
         if nodedata not in ['true', 'false', 'True', 'False', True, False]:
-            logger.error('Bad property value: %s (not a boolean) for property %s'%(nodedata, property))
+            logger.error('Bad property value: %s (not a boolean) for property %s'%(nodedata, property_name))
             
             
-    def check_number_property(self, schema, nodedata, property):
+    def check_number_property(self, schema, nodedata, property_name):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -641,10 +641,10 @@ class Command(BaseCommand):
             raise ValueError('Schema doesn\'t represent a number!')
             
         if not isinstance( nodedata, ( int, long ) ) and not nodedata.isdigit():
-            logger.error('Bad property value: %s (not a number) for property %s'%(nodedata, property))
+            logger.error('Bad property value: %s (not a number) for property %s'%(nodedata, property_name))
             
             
-    def check_string_property(self, schema, nodedata, property, is_emitter, emitter_policy_slug):
+    def check_string_property(self, schema, nodedata, property_name, is_emitter, emitter_policy_slug):
         if schema is None:
             raise ValueError('Schema is None!')
             
@@ -655,12 +655,12 @@ class Command(BaseCommand):
             raise ValueError('Schema doesn\'t represent a number!')
             
         if not isinstance(nodedata, (str, unicode)):
-            logger.error('Bad property value: %s (not a string) for property %s'%(nodedata, property))
+            logger.error('Bad property value: %s (not a string) for property %s'%(nodedata, property_name))
             return
             
         if 'enum' in schema:
             if ( len(schema['enum']) > 0 ) and  not (nodedata in schema['enum']):
-                logger.error('Bad property value: %s (not in enumeration %s) for property %s'%(nodedata, schema['enum'], property))
+                logger.error('Bad property value: %s (not in enumeration %s) for property %s'%(nodedata, schema['enum'], property_name))
                 
         if is_emitter:
             # Check if referenced node exists in database
@@ -668,12 +668,12 @@ class Command(BaseCommand):
             found = False
             for ref_nodes in ref_nodes:        
                 found = True
-                logger.debug('Referenced node %s for property %s is a %s node'%(nodedata, property, ref_nodes["type"]))
+                logger.debug('Referenced node %s for property %s is a %s node'%(nodedata, property_name, ref_nodes["type"]))
                 if ref_nodes["type"] != self.referenced_data_type[emitter_policy_slug]:
-                    logger.error('Bad data type in referenced node %s for property %s (%s != %s)'%(nodedata, property, ref_nodes["type"], self.referenced_data_type[emitter_policy_slug]))
+                    logger.error('Bad data type in referenced node %s for property %s (%s != %s)'%(nodedata, property_name, ref_nodes["type"], self.referenced_data_type[emitter_policy_slug]))
                 
             if not found:
-                logger.error('Can\'t find referenced node %s for property %s'%(nodedata, property))
+                logger.error('Can\'t find referenced node %s for property %s'%(nodedata, property_name))
             
     def check_object_property(self, schema, nodedata, propertyname, is_emitter, emitter_policy_slug):
         if schema is None:
@@ -687,54 +687,54 @@ class Command(BaseCommand):
             
         # Check required properties
         if 'required' in schema:
-            for property in schema['required']:
-                name = str(property)
+            for req_property in schema['required']:
+                name = str(req_property)
                 if propertyname is not None:
-                    name = "%s.%s"%(propertyname, property)
+                    name = "%s.%s"%(propertyname, req_property)
                 logger.debug('\tChecking required property: %s'%(name))
-                if str(property) in nodedata:
+                if str(req_property) in nodedata:
                     logger.debug('\tRequired property: %s exists in the node data.'%(name))
                 else:
                     logger.error('\tRequired property: %s doesn\'t exists in the node data!'%(name))
 
                     
         # Compare the policy schema and the node data
-        for property in schema['properties'].keys():
-            type = schema['properties'][str(property)]['type']
-            name = str(property)
+        for prop in schema['properties'].keys():
+            prop_type = schema['properties'][str(prop)]['type']
+            name = str(prop)
             if propertyname is not None:
-                name = "%s.%s"%(propertyname, property)
-            logger.debug('\tChecking property: %s (%s)'%(name, type))
-            if not str(property) in nodedata:
+                name = "%s.%s"%(propertyname, prop)
+            logger.debug('\tChecking property: %s (%s)'%(name, prop_type))
+            if not str(prop) in nodedata:
                 logger.debug('\tNon required property missing: %s'%(name))
                 continue;
             
-            if type == 'array':
-                self.check_array_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
+            if prop_type == 'array':
+                self.check_array_property(schema['properties'][str(prop)], nodedata[str(prop)], name, is_emitter, emitter_policy_slug)
                 
-            elif type == 'string':
-                self.check_string_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
+            elif prop_type == 'string':
+                self.check_string_property(schema['properties'][str(prop)], nodedata[str(prop)], name, is_emitter, emitter_policy_slug)
             
-            elif type == 'object':
-                self.check_object_property(schema['properties'][str(property)], nodedata[str(property)], name, is_emitter, emitter_policy_slug)
+            elif prop_type == 'object':
+                self.check_object_property(schema['properties'][str(prop)], nodedata[str(prop)], name, is_emitter, emitter_policy_slug)
         
-            elif (type == 'number') or (type == 'integer'):
-                self.check_number_property(schema['properties'][str(property)], nodedata[str(property)], name)
+            elif (prop_type == 'number') or (prop_type == 'integer'):
+                self.check_number_property(schema['properties'][str(prop)], nodedata[str(prop)], name)
 
-            elif type == 'boolean':
-                self.check_boolean_property(schema['properties'][str(property)], nodedata[str(property)], name)
+            elif prop_type == 'boolean':
+                self.check_boolean_property(schema['properties'][str(prop)], nodedata[str(prop)], name)
 
             else:
-                logger.error('Unknown property type found: %s'%(type))
+                logger.error('Unknown property type found: %s'%(prop_type))
             
         # Reverse check
         if isinstance(nodedata, dict):
-            for property in nodedata.keys():
-                name = str(property)
+            for prop in nodedata.keys():
+                name = str(prop)
                 if propertyname is not None:
-                    name = "%s.%s"%(propertyname, property)
+                    name = "%s.%s"%(propertyname, prop)
                     
-                if not str(property) in schema['properties'].keys():
+                if not str(prop) in schema['properties'].keys():
                     logger.warning('\tProperty in database that doesn\'t exist in schema anymore: %s'%(name))
         else:
             logger.error('\tProperty in database that isn\'t an object: %s'%(name))
@@ -761,26 +761,26 @@ class Command(BaseCommand):
                 logger.error('Bad property value: %s (under min items) for property %s'%(nodedata, propertyname))
                 return
 
-        type = schema['items']['type']
+        item_type = schema['items']['type']
         count = 0
         for value in nodedata:
             name = '%s[%s]'%(propertyname, count)
-            if type == 'array':
+            if item_type == 'array':
                 self.check_array_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
                 
-            elif type == 'string':
+            elif item_type == 'string':
                 self.check_string_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
             
-            elif type == 'object':
+            elif item_type == 'object':
                 self.check_object_property(schema['items'], value, name, is_emitter, emitter_policy_slug)
         
-            elif (type == 'number') or (type == 'integer'):
+            elif (item_type == 'number') or (item_type == 'integer'):
                 self.check_number_property(schema['items'], value, name)
 
-            elif type == 'boolean':
+            elif item_type == 'boolean':
                 self.check_boolean_property(schema['items'], value, name)
 
             else:
-                logger.error('Unknown property type found: %s'%(type))
+                logger.error('Unknown property type found: %s'%(item_type))
                 
             count += 1

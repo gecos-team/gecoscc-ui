@@ -73,8 +73,7 @@ def updates(context, request):
 
 
 @view_config(route_name='updates_log', permission='is_superuser')
-def updates_log(context, request):
-    import urllib
+def updates_log(_context, request):
     sequence = request.matchdict['sequence']
     rollback = request.matchdict['rollback']
     settings = get_current_registry().settings
@@ -191,7 +190,7 @@ def admin_delete(context, request):
         forget(request)
     settings = get_current_registry().settings
     api = get_chef_api(settings, request.user)
-    success_remove_chef = delete_chef_admin_user(api, settings, username)
+    success_remove_chef = delete_chef_admin_user(api, username)
     if not success_remove_chef:
         messages.created_msg(request, _('User deleted unsuccessfully from chef'), 'danger')
     request.userdb.delete_users({'username': username})
@@ -229,14 +228,12 @@ def updates_add(context, request):
 
 
 @view_config(route_name='updates_tail', permission='is_superuser', renderer='templates/admins/tail.jinja2')
-def updates_tail(context, request):
+def updates_tail(_context, request):
     logger.info("Tailing log file ...")
     sequence = request.matchdict.get('sequence') 
     rollback = request.matchdict.get('rollback', '')
     logger.debug('admins.py ::: updates_tail - sequence = %s' % sequence)
     logger.debug('admins.py ::: updates_tail - rollback = %s' % rollback)
-
-    settings = get_current_registry().settings
 
     if rollback == 'rollback' and request.db.updates.find_one({'_id': sequence}).get('rollback', 0) == 0:
         # Update mongo document
@@ -254,13 +251,13 @@ def updates_tail(context, request):
 
 
 @view_config(route_name='admin_maintenance', permission='is_superuser', renderer="templates/admins/maintenance.jinja2")
-def admin_maintenance(context, request):
+def admin_maintenance(_context, request):
 
     schemaMaintenance = Maintenance()
     form = MaintenanceForm(schema=schemaMaintenance,
                            request=request)
 
-    instance = data = {}
+    data = {}
     settings = get_current_registry().settings
     instance = request.db.settings.find_one({'key':'maintenance_message'})
     if '_submit' in request.POST:

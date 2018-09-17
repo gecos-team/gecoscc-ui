@@ -106,7 +106,7 @@ def storage_related_reverse(obj_emiter, obj, node, field_chef, **kwargs):
         inv_rules = dict(zip(EMITTER_OBJECT_RULES[obj_type].values(),
                              EMITTER_OBJECT_RULES[obj_type].keys()))
         field_pk = inv_rules['name']
-    for username, object_related in objects_related.items():
+    for _username, object_related in objects_related.items():
         for i, storage in enumerate(object_related.get('gtkbookmarks', [])):
             if new_object_related[field_pk] == storage[field_pk]:
                 object_related['gtkbookmarks'][i] = new_object_related

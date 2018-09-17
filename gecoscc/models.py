@@ -31,12 +31,12 @@ from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api,
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
-UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
+UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
 
 
 class MemoryTmpStore(dict):
 
-    def preview_url(self, name):
+    def preview_url(self, _name):
         return None
 
 filestore = MemoryTmpStore()
@@ -48,7 +48,7 @@ class MyModel(object):
 root = MyModel()
 
 
-def get_root(request):
+def get_root(_request):
     return root
 
 
@@ -332,7 +332,7 @@ class ChainedSelectWidget(SelectWidget):
 
 
 @colander.deferred
-def deferred_choices_widget(node, kw):
+def deferred_choices_widget(_node, kw):
     choices = kw.get('ou_choices')
     return ChainedSelectWidget(values=choices)
 
@@ -575,15 +575,15 @@ def unzip_preparer(value):
 
             return value
 
-        except urllib2.HTTPError as e:
+        except urllib2.HTTPError:
             pass
-        except urllib2.URLError as e:
+        except urllib2.URLError:
             pass
-        except zipfile.BadZipfile as e:
+        except zipfile.BadZipfile:
             pass
-        except OSError as e:
+        except OSError:
             pass
-        except IOError as e:
+        except IOError:
             pass
 
 class UrlFile(object):
@@ -932,8 +932,8 @@ class Repositories(colander.SequenceSchema):
     repositories = Repository()
 
 class Settings(colander.SequenceSchema):
-		settings = Setting()
-	
+    settings = Setting()
+
 
 JOB_STATUS = {
     # Calculating node changes

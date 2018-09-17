@@ -51,10 +51,10 @@ def create_setting(key):
 
 @view_config(route_name='settings', renderer='templates/settings.jinja2',
              permission='is_superuser')
-def settings(context, request):
-    settings = request.db.settings.find({'key':{'$nin': EXCLUDE_SETTINGS}}).sort([("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
+def settings(_context, request):
+    settings_data = request.db.settings.find({'key':{'$nin': EXCLUDE_SETTINGS}}).sort([("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
     result = []
-    if settings.count() == 0:
+    if settings_data.count() == 0:
         # If there aren't settings in the database then load the default values
         
         # firstboot_api.comments
@@ -81,7 +81,7 @@ def settings(context, request):
         
     else:
         includesMimeTypes = False
-        for setting in settings:
+        for setting in settings_data:
             if setting['key'] == "mimetypes":
                 includesMimeTypes = True
                 result.append(Setting().deserialize(setting))
@@ -89,15 +89,14 @@ def settings(context, request):
                 result.append(Setting().deserialize(setting))
     
         if not includesMimeTypes:
-          result.append(create_setting("mimetypes"))
+            result.append(create_setting("mimetypes"))
     #logger.debug('settings= %s'%(str(result)))
     return { "settings": result }
 
 
 @view_config(route_name='settings_save', permission='is_superuser')
-def settings_save(context, request):
+def settings_save(_context, request):
     data = request.POST.get('data')
-    settings = request.db.settings.find()
     response = Response()
     if data is not None:
         data = json.loads(data)

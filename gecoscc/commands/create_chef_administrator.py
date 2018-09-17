@@ -90,7 +90,7 @@ class Command(BaseCommand):
     def create_password(self, msg_input, msg_noinput):
         if not self.options.noinput:
             password = None
-            for n in range(3):
+            for _n in range(3):
                 print msg_input
                 password_1 = getpass("password [1]: ").strip()
                 password_2 = getpass("password [2]: ").strip()

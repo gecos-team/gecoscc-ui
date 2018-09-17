@@ -22,7 +22,7 @@ import re
 
 class BootStrapPage(paginate.Page):
 
-    def pager(self, format='$link_previous ~2~ $link_next', page_param='page', partial_param='partial',
+    def pager(self, link_format='$link_previous ~2~ $link_next', page_param='page', partial_param='partial',
               show_if_single_page=False, separator=' ', onclick=None,
               symbol_first='<<', symbol_last='>>',
               symbol_previous=u'«', symbol_next=u'»',
@@ -42,7 +42,7 @@ class BootStrapPage(paginate.Page):
             return ''
 
         # Replace ~...~ in token format by range of pages
-        result = re.sub(r'~(\d+)~', self._range, format)
+        result = re.sub(r'~(\d+)~', self._range, link_format)
 
         # Interpolate '%' variables
         result = Template(result).safe_substitute({

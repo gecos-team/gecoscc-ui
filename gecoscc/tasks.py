@@ -280,7 +280,7 @@ class ChefTask(Task):
         Get the nodes ids
         '''
         nodes_ids = []
-        for node_type, updated_by_id in nodes_updated_by:
+        for _node_type, updated_by_id in nodes_updated_by:
             if isinstance(updated_by_id, list):
                 nodes_ids += [ObjectId(node_id) for node_id in updated_by_id]
             else:
@@ -612,7 +612,7 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
                 try:
                     updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
-                except KeyError as e:
+                except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
                     self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
@@ -635,7 +635,7 @@ class ChefTask(Task):
                         # At hierarchy of nodes: Prioritizing the last action (closer to node)
                         new_field_chef_value += nodupes_innode
                         new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
-                    except (AssertionError, TypeError) as e:
+                    except (AssertionError, TypeError) as _e:
                         # Do not merge. Invalid group_by_multiple_key args
                         self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
                         continue
@@ -693,7 +693,7 @@ class ChefTask(Task):
             for updater_node in updater_nodes:
                 try:
                     node_policy = updater_node['policies'][unicode(policy['_id'])]
-                except KeyError as e:
+                except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
                     self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
@@ -720,7 +720,7 @@ class ChefTask(Task):
                             # Accumulator
                             new_field_chef_value[policy_field] += nodupes_innode
                             new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
-                        except (AssertionError, TypeError) as e:
+                        except (AssertionError, TypeError) as _e:
                             # Do not merge. Invalid group_by_multiple_key args
                             self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
                             continue
@@ -826,7 +826,7 @@ class ChefTask(Task):
 
         keygetter = itemgetter(*mergeIdField)
         result = []
-        for key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
+        for _key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
             group = list(grp)
             actions_list = [g[mergeActionField] for g in group]
             latest = {mergeActionField: actions_list}
@@ -1701,15 +1701,15 @@ class ChefTask(Task):
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
-        macrojob_id = macrojob_storage.create(obj=obj,
-                                    op='deleted',
-                                    computer=None,
-                                    status='finished',
-                                    policy={'name':name,'name_es':name_es},
-                                    childs=0,
-                                    counter=0,
-                                    message="Pending: 0",
-                                    administrator_username=user['username'])
+        macrojob_storage.create(obj=obj,
+                                op='deleted',
+                                computer=None,
+                                status='finished',
+                                policy={'name':name,'name_es':name_es},
+                                childs=0,
+                                counter=0,
+                                message="Pending: 0",
+                                administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         
         obj_id = unicode(obj['_id'])
@@ -2023,15 +2023,15 @@ class ChefTask(Task):
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
-        macrojob_id = macrojob_storage.create(obj=obj,
-                                    op='deleted',
-                                    computer=None,
-                                    status='finished',
-                                    policy={'name':name,'name_es':name_es},
-                                    childs=0,
-                                    counter=0,
-                                    message="Pending: 0",
-                                    administrator_username=user['username'])
+        macrojob_storage.create(obj=obj,
+                                op='deleted',
+                                computer=None,
+                                status='finished',
+                                policy={'name':name,'name_es':name_es},
+                                childs=0,
+                                counter=0,
+                                message="Pending: 0",
+                                administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         self.log_action('deleted', 'OU', obj)
 
@@ -2351,9 +2351,9 @@ def chef_status_sync(node_id, auth_user):
         # normal-to-sudo
         normal_to_sudo = set.difference(chef_sudoers, gcc_sudoers)
         self.log("debug", "tasks.py ::: chef_status_sync - normal to sudo = {0}".format(normal_to_sudo))
-        sudo = self.db.nodes.find({'name': {'$in': list(normal_to_sudo)}, 
-                                   'type': 'user',
-                                   'path': get_filter_in_domain(computer)})
+        self.db.nodes.find({'name': {'$in': list(normal_to_sudo)}, 
+                            'type': 'user',
+                            'path': get_filter_in_domain(computer)})
         #users_remove_policies += list(sudo)
         #self.db.nodes.update({'_id': {'$in': [d['_id'] for d in sudo]}},{'$set': { 'inheritance':[],'policies':{}}}, multi=True)
 

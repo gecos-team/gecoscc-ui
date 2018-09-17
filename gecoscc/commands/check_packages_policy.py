@@ -180,7 +180,6 @@ class Command(BaseCommand):
                     continue
                 
                 package_list = node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["package_list"]
-                bad_element = False
                 for element in package_list:
                     if not 'action' in element:
                         logger.debug('Chef node: %s doesn\'t have an action value in package_res! (package_list:%s)'%(node_id, str(package_list))) 
