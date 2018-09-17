@@ -342,6 +342,9 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Logs') }}</div>
+                    <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
+                        <span class="fa fa-refresh"></span>
+                    </button>
                 </div>
                 
                 <% if (logs && logs.files && logs.files.length > 0) { %>
