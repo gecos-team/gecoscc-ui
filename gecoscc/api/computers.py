@@ -33,6 +33,7 @@ import re
 import logging
 logger = logging.getLogger(__name__)
 
+DEBUG_MODE_ENABLE_ATTR_PATH = 'gecos_ws_mgmt.single_node.debug_mode_res.enable_debug'
 
 @resource(collection_path='/api/computers/',
           path='/api/computers/{oid}/',
@@ -95,6 +96,12 @@ class ComputerResource(TreeLeafResourcePaginated):
             cpu = ohai.get('cpu', {}).get('0', {})
             dmi = ohai.get('dmi', {})
             
+            # debug_mode flag for logs tab
+            debug_mode = False
+            try:
+                debug_mode = computer_node.attributes.get_dotted(DEBUG_MODE_ENABLE_ATTR_PATH)
+            except KeyError:
+                pass
             
             # Get logs info
             logs_data = node_collection.find_one({"type": "computer", "_id": ObjectId(nodeid)}, {"logs": True})
@@ -128,6 +135,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'lsb': ohai.get('lsb', {}),
                            'kernel': ohai.get('kernel', {}),
                            'filesystem': ohai.get('filesystem', {}),
+                           'debug_mode': debug_mode,
                            'logs': logs
                            })
         except (urllib2.URLError, ChefError, ChefServerError):

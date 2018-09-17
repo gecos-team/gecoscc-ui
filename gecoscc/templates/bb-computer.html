@@ -344,11 +344,12 @@
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Logs') }}</div>
                 </div>
                 
-                <% if (logs && logs.files && logs.files.length > 0) { %>
+                <% if (debug_mode) { %>
                 <div class="bootstrap-admin-panel-content">
                     <div class="row"><div class="col-sm-12"><strong>{{ gettext('Date') }}:</strong> <%= logs.date %></div></div>
                     <div class="row"><div class="col-sm-12"></div></div>
                     <div class="object_related_list">
+                        <% if (logs && logs.files && logs.files.length > 0) { %>
                         <table class="table table-bordered">
                         <tr>
                          <th>{{ gettext('File') }}</th>
@@ -385,12 +386,14 @@
                                     
                         <% }) %>
                         </table>
+                        <% } else { %>
+                            <div class="alert alert-warning">{{ gettext('There are no logs for this computer at this moment.') }}</div>
+                        <% } %>
                     </div>    
                     </div>
                 </div>
                 <% } else { %>
                 <div class="bootstrap-admin-panel-content">
-                    <div class="alert alert-warning">{{ gettext('There are no logs for this computer at this moment.') }}</div>
                     <div class="alert alert-info">
                         <h3>{{ gettext('Please enable the debug mode for this computer') }}</h3>
                         <p>
