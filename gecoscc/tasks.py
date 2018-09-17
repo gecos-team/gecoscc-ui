@@ -474,7 +474,7 @@ class ChefTask(Task):
 
             # True if related objects which have been removed are in chef node. It's necessary apply merge algorithm,
             # because they may not be there anymore.
-            return any(x in [j['name'] in field_chef_value_storage] for x in removed_objnames)
+            return any(x in [j['name'] for j in field_chef_value_storage] for x in removed_objnames)
             
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
@@ -1019,7 +1019,7 @@ class ChefTask(Task):
                     if not priority_obj and action == DELETED_POLICY_ACTION: # priority_obj = {}
                         self.log("debug","tasks.py ::: update_node_from_rules - not is_mergeable - DELETED_POLICY_ACTION")
                         try:
-                            obj_ui_field = delete_dotted(node.attributes, field_chef)
+                            delete_dotted(node.attributes, field_chef)
                             updated = True
                         except KeyError:
                             pass

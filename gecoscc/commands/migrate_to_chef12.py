@@ -10,8 +10,6 @@
 #
 
 import sys
-import string
-import random
 
 from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from optparse import make_option
@@ -19,9 +17,6 @@ from optparse import make_option
 from gecoscc.management import BaseCommand
 from gecoscc.utils import _get_chef_api, create_chef_admin_user, password_generator, toChefUsername
 
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 class Command(BaseCommand):
     description = """

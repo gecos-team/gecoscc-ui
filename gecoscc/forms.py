@@ -278,6 +278,7 @@ class UpdateForm(GecosForm):
         except errors.DuplicateKeyError as e:
             logger.error('Duplicate key error')
             self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+
 class MaintenanceForm(GecosForm):
     css_class = 'deform-maintenance'
 

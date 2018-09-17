@@ -129,8 +129,8 @@ class MongoDB(object):
         try:
             if collection:
                 command += ['--collection', '%s' % collection]
-                logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
                 dump_output = subprocess.check_output(command)
+                logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             else:
                 allcolls = self.get_database().collection_names()
                 includes = list(set(allcolls) - set(excludes))

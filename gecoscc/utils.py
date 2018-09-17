@@ -739,7 +739,7 @@ def update_data_group(nodes_collection, obj, policy, api, auth_user):
         if member['type'] == 'user':
             update_data_user(nodes_collection, member, policy, api, auth_user)
         elif member['type'] == 'computer':
-            update_data_computer(nodes_collection, member, policy, api)
+            update_data_computer(nodes_collection, member, policy, api, auth_user)
 
 
 def update_data_user(nodes_collection, obj, policy, api, auth_user):

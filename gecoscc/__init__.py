@@ -211,11 +211,12 @@ def locale_config(config):
         if locale == settings['pyramid.default_locale_name']:
             continue
         needs_patching = True
-        Policy.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
+        
+        getattr(Policy, '__all_schema_nodes__', []).append(colander.SchemaNode(colander.String(),
                                                                name='name_%s' % locale,
                                                                default='',
                                                                missing=''))
-        Job.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
+        getattr(Job, '__all_schema_nodes__', []).append(colander.SchemaNode(colander.String(),
                                                             name='policyname_%s' % locale,
                                                             default='',
                                                             missing=''))
