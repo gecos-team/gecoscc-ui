@@ -9,12 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
 import sys
-import string
-import subprocess
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 
 from optparse import make_option

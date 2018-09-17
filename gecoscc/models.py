@@ -18,7 +18,6 @@ import colander
 import deform
 import os
 import pyramid
-import datetime
 
 from bson import ObjectId
 from bson.objectid import InvalidId
@@ -29,7 +28,6 @@ from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
 from gecoscc.i18n import gettext                                
 from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
-from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1

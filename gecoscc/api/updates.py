@@ -22,8 +22,6 @@ from pyramid.httpexceptions import HTTPBadRequest
 
 import os
 import re
-import time
-import gettext
 import threading
 import subprocess
 import pymongo

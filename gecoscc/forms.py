@@ -12,15 +12,11 @@
 import os, errno, shutil
 import time
 import re
-import glob
 import colander
 import deform
 import logging
-import urllib2
 import zipfile
-import tempfile
 
-from bson import ObjectId
 from pymongo import errors
 
 from pkg_resources import resource_filename

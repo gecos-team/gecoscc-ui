@@ -13,8 +13,6 @@ import bcrypt
 from uuid import uuid4
 import pymongo
 
-from pyramid.security import authenticated_userid
-
 
 ## MongoDB User Document structure
 #  {

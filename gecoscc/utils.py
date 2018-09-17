@@ -20,15 +20,12 @@ import time
 import re
 import pkg_resources
 import logging
-import pymongo
-import traceback
 import subprocess
 
 from gettext import gettext as _
 from bson import ObjectId, json_util
 from copy import deepcopy, copy
 
-from urlparse import urlparse
 from chef import ChefAPI, Client
 from chef import Node as ChefNode
 from chef.exceptions import ChefError

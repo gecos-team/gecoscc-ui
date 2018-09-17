@@ -9,20 +9,11 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import json
 import requests
-import tempfile
-import tarfile
-import re
 import sys
 
 import xml.etree.ElementTree as ET
 from optparse import make_option
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import _get_chef_api, get_cookbook, toChefUsername

@@ -17,15 +17,10 @@
 # by getting them from the OHAI information of every Chef node.
 #
 
-import os
-import sys
 import string
 import random
-import subprocess
 
 from chef import Node
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
-from getpass import getpass
 from optparse import make_option
 
 from gecoscc.management import BaseCommand

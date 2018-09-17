@@ -12,7 +12,6 @@
 import json
 import requests
 import gzip
-import threading
 
 from BeautifulSoup import BeautifulSoup
 from optparse import make_option

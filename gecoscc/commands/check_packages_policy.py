@@ -9,26 +9,16 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
-import sys
-import string
-import random
-import subprocess
-import json
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 from chef import Search
-from getpass import getpass
 from optparse import make_option
 from copy import deepcopy
 
 from gecoscc.management import BaseCommand
-from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, toChefUsername, apply_policies_to_ou, apply_policies_to_group, apply_policies_to_computer
+from gecoscc.utils import _get_chef_api, toChefUsername
 from gecoscc.tasks import object_changed
 from bson.objectid import ObjectId
-from gecoscc.models import Policy
 
 
 import logging

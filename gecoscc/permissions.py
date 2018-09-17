@@ -19,7 +19,6 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
 
-import time
 import logging
 import socket
 

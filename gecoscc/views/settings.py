@@ -9,12 +9,10 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
 from gecoscc.i18n import gettext as _
 from gecoscc.models import Setting
-from gecoscc.command_util import get_setting
 from gecoscc import messages
 
 from pyramid.threadlocal import get_current_registry

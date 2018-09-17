@@ -29,7 +29,6 @@ from pyramid.httpexceptions import HTTPForbidden
 
 from api.chef_status import USERS_OHAI
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
-from gecoscc.api.chef_status import ChefStatusResource
 from gecoscc.api.computers import ComputerResource
 from gecoscc.api.groups import GroupResource
 from gecoscc.api.printers import PrinterResource
@@ -44,9 +43,6 @@ from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add
-from gecoscc.tasks import chef_status_sync
-from gecoscc.utils import get_chef_api
-from chef import Node
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class

@@ -9,9 +9,6 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import datetime
-import random
-
 from cornice.resource import resource
 
 from gecoscc.api import BaseAPI

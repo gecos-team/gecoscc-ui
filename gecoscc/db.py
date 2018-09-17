@@ -13,7 +13,6 @@
 import os
 import pymongo
 import subprocess
-from bson import BSON, decode_all
 from urlparse import urlparse
 
 

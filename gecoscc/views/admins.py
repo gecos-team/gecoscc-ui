@@ -13,13 +13,12 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
-from pyramid.response import FileResponse, Response
+from pyramid.response import FileResponse
 
 from deform import ValidationFailure
 
 from gecoscc import messages
-from gecoscc.eventsmanager import JobStorage
-from gecoscc.socks import invalidate_jobs, socktail, is_websockets_enabled
+from gecoscc.socks import is_websockets_enabled
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, MaintenanceForm, UpdateForm
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, UpdateModel
@@ -27,12 +26,9 @@ from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
 from gecoscc.tasks import script_runner
 
-from bson import ObjectId
-from glob import glob
 import os
 import time
 import pickle
-import subprocess
 import json
 import logging
 logger = logging.getLogger(__name__)
