@@ -9,11 +9,9 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import bcrypt
 from uuid import uuid4
+import bcrypt
 import pymongo
-
-from pyramid.security import authenticated_userid
 
 
 ## MongoDB User Document structure
@@ -31,14 +29,14 @@ def generate_apikey():
 
 
 def create_password(password):
-    hash = bcrypt.hashpw(password, bcrypt.gensalt())
-    return hash
+    hashval = bcrypt.hashpw(password, bcrypt.gensalt())
+    return hashval
 
 
 def validate_password(password_hash, password):
-    hash = bcrypt.hashpw(password,
+    hashval = bcrypt.hashpw(password,
                          password_hash)
-    return (hash == password_hash)
+    return (hashval == password_hash)
 
 
 class UserDoesNotExist(Exception):

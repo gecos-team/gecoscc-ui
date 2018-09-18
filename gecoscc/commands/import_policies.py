@@ -90,18 +90,6 @@ EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders
 PACKAGE_POLICY = 'package_res'
 PACKAGE_POLICY_URL = '/api/packages/'
 
-SPROFILES_SLUG = 'software_profile'
-SPROFILES_PATH = 'gecos_ws_mgmt.software_mgmt.package_profile_res'
-SPROFILES_NAME = 'Software Profiles'
-SPROFILES_LOCALIZED_NAME_LOCALIZED = {
-    'es': 'Perfiles de Software disponibles'
-}
-SPROFILES_LOCALIZED = {
-    'es': 'Perfiles de Software'
-}
-SPROFILES_URL = '/api/software_profiles/'
-SPROFILES_URL_TARGETS = ['ou', 'computer', 'group']
-
 MIMETYPES_POLICY = 'mimetypes_res'
 MIMETYPES_POLICY_URL = '/api/mimetypes/'
 
@@ -144,6 +132,13 @@ class Command(BaseCommand):
             action='store',
             help='The pem file that contains the chef administrator private key'
         ),
+        make_option(
+            '-d', '--delete',
+            dest='delete',
+            action='store_true',
+            default=[],
+            help='Delete non imported (probably deprecated) policies'
+        ),        
     ]
 
     required_options = (
@@ -256,8 +251,6 @@ class Command(BaseCommand):
 
             self.treatment_policy(policy)
 
-        self.create_software_profiles_policy(policies, languages)
-
         if not self.options.ignore_emitter_policies:
             for emiter in RESOURCES_EMITTERS_TYPES:
                 slug = emiter_police_slug(emiter)
@@ -280,6 +273,29 @@ class Command(BaseCommand):
                 for lan in languages:
                     policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
                 self.treatment_policy(policy)
+                
+        # Check non imported policies
+        print "Check non imported policies..."
+        dbpolicies = self.db.policies.find({})
+        found = False
+        for policy in dbpolicies:
+            if (policy['slug'] not in policies and 
+                not policy['slug'].endswith('_can_view')):
+                print "Policy '%s' wasn't imported. Probably is deprecated." % (policy['slug'])
+                found = True
+                if self.options.delete:
+                    # Delete deprecated policy
+                    self.db.policies.remove({'slug': policy['slug']})
+                    print "Policy '%s' deleted!" % (policy['slug'])
+                    if policy['slug'] == 'package_profile_res':
+                        # Also delete software_profiles collection
+                        print "Drop software profiles collection!"
+                        self.db.software_profiles.drop()
+                        self.db.settings.remove({'key' : 'software_profiles'})
+                        
+        if not found:
+            print "There are no deprecated policies"
+        
 
     def set_packages_url(self, value):
         value['properties']['package_list']['items']['properties']['name']['autocomplete_url'] = PACKAGE_POLICY_URL
@@ -297,26 +313,3 @@ class Command(BaseCommand):
         value['properties']['connections']['items']['properties']['provider']['autocomplete_url'] = 'javascript:calculateProviders'
         value['properties']['connections']['items']['properties']['provider']['enum'] = []
         
-    def create_software_profiles_policy(self, policies, languages):
-        slug = 'package_profile_res'
-        schema = deepcopy(SCHEMA_EMITTER)
-        schema['properties']['object_related_list']['title'] = '%s list' % 'Software Profiles'
-        for lan in languages:
-            schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % SPROFILES_LOCALIZED[lan]
-        schema['properties']['object_related_list']['autocomplete_url'] = SPROFILES_URL
-        policy = {
-            'name': SPROFILES_NAME,
-            'slug': slug,
-            'path': SPROFILES_PATH,
-            'targets': SPROFILES_URL_TARGETS,
-            'is_emitter_policy': True,
-            'schema': schema,
-            'support_os': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[2]]['properties']['support_os']['default'],
-            'is_mergeable': True,
-            'autoreverse': policies[POLICY_EMITTER_PATH['printer_can_view'].split('.')[-2]].get('autoreverse', False)
-        }
-        for lan in languages:
-            policy['name_' + lan] = SPROFILES_LOCALIZED_NAME_LOCALIZED[lan]
-        self.treatment_policy(policy)
-
-			

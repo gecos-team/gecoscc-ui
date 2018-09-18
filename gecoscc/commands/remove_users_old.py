@@ -9,13 +9,9 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
 import sys
-import string
-import subprocess
 
 from chef import Node as ChefNode
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from optparse import make_option
 from copy import deepcopy
 
@@ -26,7 +22,7 @@ from gecoscc.utils import (_get_chef_api,
                            toChefUsername,
                            delete_dotted,
                            update_computers_of_user,
-                           apply_policies_to_user, apply_policies_to_computer, remove_policies_of_computer,
+                           apply_policies_to_user, remove_policies_of_computer,
                            get_filter_in_domain)
 
 import logging

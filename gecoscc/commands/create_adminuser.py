@@ -13,15 +13,11 @@
 import sys
 from optparse import make_option
 from getpass import getpass
-import string
-import random
 
 from gecoscc.management import BaseCommand
 from gecoscc.userdb import UserAlreadyExists
+from gecoscc.utils import password_generator
 
-
-def password_generator(size=8, chars=string.ascii_lowercase + string.digits):
-    return ''.join(random.choice(chars) for x in range(size))
 
 
 class Command(BaseCommand):
@@ -71,7 +67,7 @@ class Command(BaseCommand):
     def command(self):
         if not self.options.noinput:
             password = None
-            for n in range(3):
+            for _n in range(3):
                 print "Insert the new password, the spaces will be stripped"
                 password_1 = getpass("password [1]: ").strip()
                 password_2 = getpass("password [2]: ").strip()

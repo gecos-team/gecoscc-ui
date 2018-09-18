@@ -27,7 +27,7 @@ def i18n_catalog(context, request):
     plural = None
     catalog = {}
     catalog_js = 'gecoscc_js'
-    locale_path = os.path.join(os.sep.join(gecoscc.__file__.split(os.sep)[:-1]), 'locale')
+    locale_path = os.path.join(os.sep.join(str(gecoscc.__file__).split(os.sep)[:-1]), 'locale')
     if not gettext_module.find(catalog_js, locale_path, [current_language]):
         settings = get_current_registry().settings
         locale_language = settings['pyramid.default_locale_name']

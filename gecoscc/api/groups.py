@@ -10,8 +10,6 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-from pyramid.httpexceptions import HTTPBadRequest
-
 from cornice.resource import resource
 
 from gecoscc.api import TreeLeafResourcePaginated

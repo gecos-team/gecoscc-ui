@@ -33,29 +33,29 @@ class MimestypesResource(ResourcePaginatedReadOnly):
     collection_name = "settings"
     
     def set_name_filter(self, query, key_name='name'):
-      pass
+        pass
       
     def get_objects_filter(self):
-      return []
+        return []
 
       
     def collection_get(self):
-      if 'oids' in self.request.GET:
-        oid = self.request.GET['oids'].strip()
-        node = {
-          "settings": [ 
-            { 
-              "_id": "NOT USED",
-              "type": "Mimetypes", 
-              "value": oid,
-              "key": "mimetypes"
+        if 'oids' in self.request.GET:
+            oid = self.request.GET['oids'].strip()
+            node = {
+              "settings": [ 
+                { 
+                  "_id": "NOT USED",
+                  "type": "Mimetypes", 
+                  "value": oid,
+                  "key": "mimetypes"
+                }
+              ],
+               "pages": 1, 
+               "pagesize": 30, 
+               "page": 1
             }
-          ],
-           "pages": 1, 
-           "pagesize": 30, 
-           "page": 1
-        }
-        return node
-      else:
-        return super(MimestypesResource, self).collection_get()
+            return node
+        else:
+            return super(MimestypesResource, self).collection_get()
     

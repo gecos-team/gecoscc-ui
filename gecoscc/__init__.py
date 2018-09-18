@@ -10,8 +10,6 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-
-import colander
 import json
 import os
 import pymongo
@@ -34,15 +32,17 @@ from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, Supe
 from gecoscc.socks import socketio_service
 
 from urlparse import urlsplit
+import colander
+
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
     if env_variable in os.environ:
         return os.environ[env_variable]
-    else:
-        return settings.get(key, default)
 
-def pregen(request, elements, kw):
+    return settings.get(key, default)
+
+def pregen(_request, elements, kw):
     kw.setdefault('rollback', '')
     return elements, kw
 
@@ -66,17 +66,21 @@ def route_config(config):
     config.add_route('admins_edit', '/admins/edit/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admins_set_variables', '/admins/variables/{username}/', factory=SuperUserOrMyProfileFactory)
     config.add_route('admin_delete', '/admins/delete/', factory=SuperUserOrMyProfileFactory)
-    config.add_route('admin_maintenance','/admins/maintenance/', factory=SuperUserFactory)
+    config.add_route('admin_maintenance', '/admins/maintenance/', factory=SuperUserFactory)
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
     config.add_route('reports', '/reports/', factory=SuperUserFactory)
     config.add_route('report_file', '/report/{report_type}/', factory=SuperUserFactory)
+    config.add_route('computer_logs', '/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
+    config.add_route('download_computer_logs', '/download/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
+    config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')
     config.add_route('forbidden-view', '/error403/')
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
+    config.add_renderer('txt', 'gecoscc.views.computer_logs.TXTRenderer')
     
     config.add_route('statistics', '/admins/statistics/', factory=SuperUserFactory)
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
@@ -134,10 +138,10 @@ def check_server_list(config):
     if not server_name:
         # Try to get the server name from "hostname" command
         p = subprocess.Popen('hostname', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        server_name, err = p.communicate()
+        server_name, _ = p.communicate()
 
     if not server_name:
-        raise ConfigurationError("server_name option required in gecoscc.ini" )
+        raise ConfigurationError("server_name option required in gecoscc.ini")
 
     server_address = read_setting_from_env(settings, 'server_address', None)
 
@@ -207,14 +211,15 @@ def locale_config(config):
         if locale == settings['pyramid.default_locale_name']:
             continue
         needs_patching = True
-        Policy.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
-                                                               name='name_%s' % locale,
-                                                               default='',
-                                                               missing=''))
-        Job.__all_schema_nodes__.append(colander.SchemaNode(colander.String(),
-                                                            name='policyname_%s' % locale,
-                                                            default='',
-                                                            missing=''))
+        
+        getattr(Policy, '__all_schema_nodes__', []).append(colander.SchemaNode(colander.String(),
+                                                                               name='name_%s' % locale,
+                                                                               default='',
+                                                                               missing=''))
+        getattr(Job, '__all_schema_nodes__', []).append(colander.SchemaNode(colander.String(),
+                                                                            name='policyname_%s' % locale,
+                                                                            default='',
+                                                                            missing=''))
     if needs_patching:
         Policies.policies = Policy(name='policies')
         Policies.__class_schema_nodes__ = [Policies.policies]

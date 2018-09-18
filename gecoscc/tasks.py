@@ -44,8 +44,7 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
                            save_node_and_free, NodeBusyException, 
-                           NodeNotLinked, apply_policies_to_user, apply_policies_to_computer, apply_policies_to_group, apply_policies_to_ou,
-                           apply_policies_to_printer, apply_policies_to_storage, apply_policies_to_repository,
+                           NodeNotLinked, apply_policies_to_user,
                            remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
@@ -55,7 +54,6 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
 
 
 DELETED_POLICY_ACTION = 'deleted'
-SOFTWARE_PROFILE_SLUG = 'package_profile_res'
 ORDER_BY_TYPE_ASC = ('ou','group','computer','user')
 USERS_OHAI = 'ohai_gecos.users'
 
@@ -226,11 +224,7 @@ class ChefTask(Task):
                     object_related_id_list = obj[rule_type].get(policy_id,{}).get('object_related_list',[])
                 object_related_list = []
                 for object_related_id in object_related_id_list:
-                    if policy['slug'] == SOFTWARE_PROFILE_SLUG:
-                        object_related = self.db.software_profiles.find_one({'_id': ObjectId(object_related_id)})
-                        object_related['type'] = 'software_profile'
-                    else:
-                        object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
+                    object_related = self.db.nodes.find_one({'_id': ObjectId(object_related_id)})
                     if not object_related:
                         continue
                     object_related_list.append(object_related)
@@ -275,13 +269,8 @@ class ChefTask(Task):
         related_objects = []
 
         for node_id in new_field_chef_value:
-            if obj_type == SOFTWARE_PROFILE_SLUG:
-                related_objs = self.db.software_profiles.find_one({'_id': ObjectId(node_id)})
-                related_objs.update({'type': 'software_profile'})
-                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
-            else:
-                related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
-                obj_list = {'object_related_list': [related_objs], 'type': obj_type}
+            related_objs = self.db.nodes.find_one({'_id': ObjectId(node_id)})
+            obj_list = {'object_related_list': [related_objs], 'type': obj_type}
             related_objects += object_related_list(obj_list)
         self.log("debug","tasks.py:::get_related_objects -> related_objects = {0}".format(related_objects))
         return related_objects
@@ -291,7 +280,7 @@ class ChefTask(Task):
         Get the nodes ids
         '''
         nodes_ids = []
-        for node_type, updated_by_id in nodes_updated_by:
+        for _node_type, updated_by_id in nodes_updated_by:
             if isinstance(updated_by_id, list):
                 nodes_ids += [ObjectId(node_id) for node_id in updated_by_id]
             else:
@@ -418,7 +407,7 @@ class ChefTask(Task):
     def has_changed_ws_emitter_policy(self, node, obj_ui, objold_ui, field_chef):
         '''
         Checks if the workstation emitter policy has changed or is equal to the policy stored in the node chef.
-        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        This policy is emitter, that is that the policy contains related objects (printers and repositories)
         '''
 
         if obj_ui == objold_ui:
@@ -429,12 +418,7 @@ class ChefTask(Task):
         if obj_ui.get('object_related_list', False):
             related_objs = obj_ui['object_related_list']
             for related_obj in related_objs:
-                if obj_ui['type'] == SOFTWARE_PROFILE_SLUG:
-                    for obj_field in related_obj['packages']:
-                        if obj_field not in field_chef_value:
-                            return True
-
-                elif obj_ui['type'] == 'repository':
+                if obj_ui['type'] == 'repository':
                     if not any(d['repo_name'] == related_obj['name'] for d in field_chef_value):
                         return True
 
@@ -490,7 +474,7 @@ class ChefTask(Task):
 
             # True if related objects which have been removed are in chef node. It's necessary apply merge algorithm,
             # because they may not be there anymore.
-            return any(x in [j['name'] in field_chef_value_storage] for x in removed_objnames)
+            return any(x in [j['name'] for j in field_chef_value_storage] for x in removed_objnames)
             
         related_objects = obj_ui
         for field_value in field_chef_value_storage:
@@ -628,7 +612,7 @@ class ChefTask(Task):
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
                 try:
                     updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
-                except KeyError as e:
+                except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
                     self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
@@ -651,7 +635,7 @@ class ChefTask(Task):
                         # At hierarchy of nodes: Prioritizing the last action (closer to node)
                         new_field_chef_value += nodupes_innode
                         new_field_chef_value  = self.group_by_multiple_keys(new_field_chef_value, mergeIdField, mergeActionField, False)
-                    except (AssertionError, TypeError) as e:
+                    except (AssertionError, TypeError) as _e:
                         # Do not merge. Invalid group_by_multiple_key args
                         self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
                         continue
@@ -709,7 +693,7 @@ class ChefTask(Task):
             for updater_node in updater_nodes:
                 try:
                     node_policy = updater_node['policies'][unicode(policy['_id'])]
-                except KeyError as e:
+                except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
                     self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
@@ -736,7 +720,7 @@ class ChefTask(Task):
                             # Accumulator
                             new_field_chef_value[policy_field] += nodupes_innode
                             new_field_chef_value[policy_field]  = self.group_by_multiple_keys(new_field_chef_value[policy_field], mergeIdField, mergeActionField, False)
-                        except (AssertionError, TypeError) as e:
+                        except (AssertionError, TypeError) as _e:
                             # Do not merge. Invalid group_by_multiple_key args
                             self.log("debug","tasks.py ::: update_user_mergeable_policy - Invalid group_by_multiple_key args")
                             continue
@@ -772,7 +756,7 @@ class ChefTask(Task):
     def update_ws_emitter_policy(self, node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path):
         '''
         Update node chef with a mergeable workstation emitter policy
-        This policy is emitter, that is that the policy contains related objects (software profiles, printers and repositories)
+        This policy is emitter, that is that the policy contains related objects (printers and repositories)
         '''
         if self.has_changed_ws_emitter_policy(node, obj_ui, objold_ui, field_chef) or action == DELETED_POLICY_ACTION:
             node_updated_by = node.attributes.get_dotted(update_by_path).items()
@@ -842,7 +826,7 @@ class ChefTask(Task):
 
         keygetter = itemgetter(*mergeIdField)
         result = []
-        for key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
+        for _key, grp in groupby(sorted(input_data, key = keygetter), keygetter):
             group = list(grp)
             actions_list = [g[mergeActionField] for g in group]
             latest = {mergeActionField: actions_list}
@@ -1035,7 +1019,7 @@ class ChefTask(Task):
                     if not priority_obj and action == DELETED_POLICY_ACTION: # priority_obj = {}
                         self.log("debug","tasks.py ::: update_node_from_rules - not is_mergeable - DELETED_POLICY_ACTION")
                         try:
-                            obj_ui_field = delete_dotted(node.attributes, field_chef)
+                            delete_dotted(node.attributes, field_chef)
                             updated = True
                         except KeyError:
                             pass
@@ -1057,7 +1041,7 @@ class ChefTask(Task):
 
                     if obj_ui.get('type', None) == 'storage':
                         is_policy_updated = self.update_user_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, priority_obj, priority_obj_ui, field_ui, update_by_path)
-                    elif obj_ui.get('type', None) in ['printer', 'repository', SOFTWARE_PROFILE_SLUG]:
+                    elif obj_ui.get('type', None) in ['printer', 'repository']:
                         is_policy_updated = self.update_ws_emitter_policy(node, action, policy, obj_ui_field, field_chef, obj_ui, objold_ui, update_by_path)
                     elif not is_user_policy(field_chef):
                         is_policy_updated = self.update_ws_mergeable_policy(node, action, field_chef, field_ui, policy, update_by_path, curobj_ui_field, objold_ui_field)
@@ -1717,15 +1701,15 @@ class ChefTask(Task):
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
-        macrojob_id = macrojob_storage.create(obj=obj,
-                                    op='deleted',
-                                    computer=None,
-                                    status='finished',
-                                    policy={'name':name,'name_es':name_es},
-                                    childs=0,
-                                    counter=0,
-                                    message="Pending: 0",
-                                    administrator_username=user['username'])
+        macrojob_storage.create(obj=obj,
+                                op='deleted',
+                                computer=None,
+                                status='finished',
+                                policy={'name':name,'name_es':name_es},
+                                childs=0,
+                                counter=0,
+                                message="Pending: 0",
+                                administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         
         obj_id = unicode(obj['_id'])
@@ -2039,15 +2023,15 @@ class ChefTask(Task):
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
-        macrojob_id = macrojob_storage.create(obj=obj,
-                                    op='deleted',
-                                    computer=None,
-                                    status='finished',
-                                    policy={'name':name,'name_es':name_es},
-                                    childs=0,
-                                    counter=0,
-                                    message="Pending: 0",
-                                    administrator_username=user['username'])
+        macrojob_storage.create(obj=obj,
+                                op='deleted',
+                                computer=None,
+                                status='finished',
+                                policy={'name':name,'name_es':name_es},
+                                childs=0,
+                                counter=0,
+                                message="Pending: 0",
+                                administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         self.log_action('deleted', 'OU', obj)
 
@@ -2367,9 +2351,9 @@ def chef_status_sync(node_id, auth_user):
         # normal-to-sudo
         normal_to_sudo = set.difference(chef_sudoers, gcc_sudoers)
         self.log("debug", "tasks.py ::: chef_status_sync - normal to sudo = {0}".format(normal_to_sudo))
-        sudo = self.db.nodes.find({'name': {'$in': list(normal_to_sudo)}, 
-                                   'type': 'user',
-                                   'path': get_filter_in_domain(computer)})
+        self.db.nodes.find({'name': {'$in': list(normal_to_sudo)}, 
+                            'type': 'user',
+                            'path': get_filter_in_domain(computer)})
         #users_remove_policies += list(sudo)
         #self.db.nodes.update({'_id': {'$in': [d['_id'] for d in sudo]}},{'$set': { 'inheritance':[],'policies':{}}}, multi=True)
 

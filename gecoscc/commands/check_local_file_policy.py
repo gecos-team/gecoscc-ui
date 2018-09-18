@@ -9,12 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
 import sys
-import string
-import subprocess
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 
 from optparse import make_option
@@ -117,11 +113,11 @@ class Command(BaseCommand):
                     validate(instance, schema)
                     break
                 except ValidationError as e:
-                     logger.warn('Validation error on instance: instance = %s'%str(instance))
-                     logger.warn('Validation error on instance: message error = %s'%str(e.message))
-                     # Sanitize instance
-                     self.sanitize(e, instance)
-                     sanitized = True
+                    logger.warn('Validation error on instance: instance = %s'%str(instance))
+                    logger.warn('Validation error on instance: message error = %s'%str(e.message))
+                    # Sanitize instance
+                    self.sanitize(e, instance)
+                    sanitized = True
 
             if sanitized:
                 # Setting false sanitized for next iteration
@@ -225,9 +221,9 @@ class Command(BaseCommand):
         # error.path = deque([u'users_list', 1])
 
         if "u'localfiles' is a required property" in error.message:
-             instance['localfiles'] = []
+            instance['localfiles'] = []
         elif "u'action' is a required property" in error.message:
-             pass
+            pass
         elif "Additional properties are not allowed (u'copy_files', u'delete_files' were unexpected)" in error.message:
         
             for copyfile in instance['copy_files']:
