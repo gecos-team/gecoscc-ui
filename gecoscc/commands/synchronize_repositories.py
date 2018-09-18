@@ -12,15 +12,14 @@
 import json
 import requests
 import gzip
-import threading
 
 from BeautifulSoup import BeautifulSoup
 from optparse import make_option
 
 try:
-   from cStringIO import StringIO
+    from cStringIO import StringIO
 except ImportError:
-   from StringIO import StringIO
+    from StringIO import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import Package
@@ -131,7 +130,7 @@ class Command(BaseCommand):
                                     newPackage = {'name': package['name'], 'repositories': [ newRepository ]}
                                     
                                     # Check with collander
-                                    new_package = package_model.serialize(newPackage)
+                                    package_model.serialize(newPackage)
 
                                     self.db.packages.insert(newPackage)
                                     num_packages += 1

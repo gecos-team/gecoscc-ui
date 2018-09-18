@@ -32,7 +32,6 @@ class AutomaticUpdates(GPOConversor):
         }]
 
         # Get value from GPO
-        autoUpdate = False
         day = '*'
         hour = '*'
         minute = '*'
@@ -43,8 +42,6 @@ class AutomaticUpdates(GPOConversor):
                 for dropDownList in node['DropDownList']:
                     if 'Name' not in dropDownList:
                         continue
-                    if dropDownList['Name'] is 'Configurar actualización automática:' and dropDownList['State'] is 'Enabled':
-                        autoUpdate = True if dropDownList['Value']['Name'] is '4 - Descargar automáticamente y programar la instalación' else False
                     if dropDownList['Name'] is 'Día de instalación programado: ' and dropDownList['State'] is 'Enabled':
                         day = dropDownList['Value']['Name'][0:1]
                         if day is '0':

@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import logging
+import socket
 from bson import ObjectId
 
 from pyramid.httpexceptions import HTTPForbidden
@@ -18,10 +20,6 @@ from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
 
 from gecoscc.userdb import UserDoesNotExist
 from gecoscc.utils import is_domain, get_domain, is_local_user, MASTER_DEFAULT, RESOURCES_EMITTERS_TYPES
-
-import time
-import logging
-import socket
 
 logger = logging.getLogger(__name__)
 
@@ -112,7 +110,7 @@ def master_policy_no_updated_or_403(request, collection_nodes, obj):
             mongo_obj = {}
         mongo_policies = mongo_obj.get('policies', {})
         policies = obj.get('policies', {})
-        for policy_id, value in master_policies.items():
+        for policy_id, _value in master_policies.items():
             if mongo_policies.get(policy_id, None) != policies.get(policy_id, None):
                 raise HTTPForbidden()
 

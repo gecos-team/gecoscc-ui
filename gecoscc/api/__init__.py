@@ -273,8 +273,6 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                         ro_collection = self.request.db.nodes
                     elif policyobj['slug'] == 'local_users_res':
                         ro_collection = None
-                    elif policyobj['slug'] == 'package_profile_res':
-                        ro_collection = self.request.db.software_profiles
                     else:
                         logger.warning("Unrecognized slug: %s" % (str(policyobj['slug'])))
 

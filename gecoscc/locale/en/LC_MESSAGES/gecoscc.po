@@ -1505,17 +1505,3 @@ msgstr ""
 #: gecoscc/views/reports.py:83
 msgid "Phone"
 msgstr ""
-
-#: gecoscc/views/settings.py:170
-msgid "Software Profiles policy not found"
-msgstr ""
-
-#: gecoscc/views/settings.py:195
-#, python-format
-msgid "Software Profile in use: %s"
-msgstr ""
-
-#: gecoscc/views/settings.py:201
-msgid "Settings modified successfully"
-msgstr ""
-

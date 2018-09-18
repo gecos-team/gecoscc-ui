@@ -12,15 +12,11 @@
 import os, errno, shutil
 import time
 import re
-import glob
 import colander
 import deform
 import logging
-import urllib2
 import zipfile
-import tempfile
 
-from bson import ObjectId
 from pymongo import errors
 
 from pkg_resources import resource_filename
@@ -213,7 +209,7 @@ class AdminUserVariablesForm(GecosForm):
 
     def save(self, variables):
         if variables['auth_type'] != 'LDAP' and variables.get('specific_conf', False):
-            for i, fileout in enumerate(self.schema.get_config_files('w', self.username)):
+            for _i, fileout in enumerate(self.schema.get_config_files('w', self.username)):
                 fileout_name = fileout.name.split(os.sep)[-1]
                 file_field = variables['auth_ad_spec'][fileout_name.replace('.', '_')]
                 if not file_field:
@@ -272,7 +268,6 @@ class UpdateForm(GecosForm):
             link = '<a href="' +  self.request.route_url('updates_tail',sequence=sequence) + '">' + _("here") + '</a>'
             self.created_msg(_("Update log. %s") % link)
         except OSError as e:
-                error = True
                 if e.errno == errno.EACCES:
                     self.created_msg(_('Permission denied: %s') % updatesdir, 'danger')
                 else:
@@ -282,6 +277,7 @@ class UpdateForm(GecosForm):
         except errors.DuplicateKeyError as e:
             logger.error('Duplicate key error')
             self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+
 class MaintenanceForm(GecosForm):
     css_class = 'deform-maintenance'
 

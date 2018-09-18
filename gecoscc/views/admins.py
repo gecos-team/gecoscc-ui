@@ -13,13 +13,12 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
 from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
-from pyramid.response import FileResponse, Response
+from pyramid.response import FileResponse
 
 from deform import ValidationFailure
 
 from gecoscc import messages
-from gecoscc.eventsmanager import JobStorage
-from gecoscc.socks import invalidate_jobs, socktail, is_websockets_enabled
+from gecoscc.socks import is_websockets_enabled
 from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, MaintenanceForm, UpdateForm
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, UpdateModel
@@ -27,12 +26,9 @@ from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
 from gecoscc.tasks import script_runner
 
-from bson import ObjectId
-from glob import glob
 import os
 import time
 import pickle
-import subprocess
 import json
 import logging
 logger = logging.getLogger(__name__)
@@ -77,8 +73,7 @@ def updates(context, request):
 
 
 @view_config(route_name='updates_log', permission='is_superuser')
-def updates_log(context, request):
-    import urllib
+def updates_log(_context, request):
     sequence = request.matchdict['sequence']
     rollback = request.matchdict['rollback']
     settings = get_current_registry().settings
@@ -195,7 +190,7 @@ def admin_delete(context, request):
         forget(request)
     settings = get_current_registry().settings
     api = get_chef_api(settings, request.user)
-    success_remove_chef = delete_chef_admin_user(api, settings, username)
+    success_remove_chef = delete_chef_admin_user(api, username)
     if not success_remove_chef:
         messages.created_msg(request, _('User deleted unsuccessfully from chef'), 'danger')
     request.userdb.delete_users({'username': username})
@@ -233,14 +228,12 @@ def updates_add(context, request):
 
 
 @view_config(route_name='updates_tail', permission='is_superuser', renderer='templates/admins/tail.jinja2')
-def updates_tail(context, request):
+def updates_tail(_context, request):
     logger.info("Tailing log file ...")
     sequence = request.matchdict.get('sequence') 
     rollback = request.matchdict.get('rollback', '')
     logger.debug('admins.py ::: updates_tail - sequence = %s' % sequence)
     logger.debug('admins.py ::: updates_tail - rollback = %s' % rollback)
-
-    settings = get_current_registry().settings
 
     if rollback == 'rollback' and request.db.updates.find_one({'_id': sequence}).get('rollback', 0) == 0:
         # Update mongo document
@@ -258,13 +251,13 @@ def updates_tail(context, request):
 
 
 @view_config(route_name='admin_maintenance', permission='is_superuser', renderer="templates/admins/maintenance.jinja2")
-def admin_maintenance(context, request):
+def admin_maintenance(_context, request):
 
     schemaMaintenance = Maintenance()
     form = MaintenanceForm(schema=schemaMaintenance,
                            request=request)
 
-    instance = data = {}
+    data = {}
     settings = get_current_registry().settings
     instance = request.db.settings.find_one({'key':'maintenance_message'})
     if '_submit' in request.POST:

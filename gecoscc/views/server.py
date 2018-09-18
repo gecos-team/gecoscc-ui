@@ -24,7 +24,6 @@ import ssl
 from pyramid.view import view_config
 from pyramid.threadlocal import get_current_registry
 
-from gecoscc.i18n import gettext as _
 from gecoscc.utils import getURLComponents, get_chef_api
 
 from xmlrpclib import ServerProxy, ProtocolError

@@ -74,7 +74,7 @@ def invalidate_jobs(request, user=None):
         'action': 'jobs',
     }))
 
-def maintenance_mode(request, msg):
+def maintenance_mode(_request, msg):
     if not is_websockets_enabled():
         return
 
@@ -133,7 +133,7 @@ class GecosWSGIHandler(GunicornWSGIHandler):
     def get_environ(self):
         env = super(GecosWSGIHandler, self).get_environ()
         headers = dict(self._headers())
-        if ('HTTP_X_FORWARDED_PROTO' in headers and headers['HTTP_X_FORWARDED_PROTO'] == 'https' ):
+        if ('HTTP_X_FORWARDED_PROTO' in headers and headers['HTTP_X_FORWARDED_PROTO'] == 'https'):
             env['wsgi.url_scheme'] = 'https'
         return env
 
@@ -179,7 +179,7 @@ class TailNamespace(BaseNamespace):
         except redis.ConnectionError:
             self.emit('logdata', {'redis':'error'})
 
-    def on_sendlog(self, *args, **kwargs):
+    def on_sendlog(self, *_args, **_kwargs):
         self.spawn(self.listener)
 
 class GecosNamespace(BaseNamespace):
@@ -203,13 +203,13 @@ class GecosNamespace(BaseNamespace):
         except redis.ConnectionError:
             self.emit(CHANNEL_WEBSOCKET, {'redis':'error'})
 
-    def on_subscribe(self, *args, **kwargs):
+    def on_subscribe(self, *_args, **_kwargs):
         self.spawn(self.listener)
 
 
 def socketio_service(request):
     socketio_manage(request.environ, {
-                    '': GecosNamespace,
-                    '/tail': TailNamespace
-                    }, request=request)
+        '': GecosNamespace,
+        '/tail': TailNamespace
+    }, request=request)
     return Response('no-data')
