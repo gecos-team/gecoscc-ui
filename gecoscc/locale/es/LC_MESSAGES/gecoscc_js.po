@@ -174,7 +174,7 @@ msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
 #: gecoscc/static/js/computer.js:138
 msgid "This workstation has incomplete Ohai information."
-msgstr "El Ohai de esta estación de trabajo está incompleto."
+msgstr "La información recuperada de este puesto está incompleta."
 
 #: gecoscc/static/js/computer.js:146 gecoscc/static/js/computer.js:154
 #: gecoscc/static/js/computer.js:164 gecoscc/static/js/computer.js:174
