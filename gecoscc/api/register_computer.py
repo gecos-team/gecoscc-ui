@@ -52,12 +52,15 @@ class RegisterComputerResource(BaseAPI):
         computer_id = register_node(api, node_id, ou, self.collection)
         if not computer_id:
             return {'ok': False,
+                    'reason': 'inexistent-node-id',
                     'message': 'Node does not exist (in chef)'}
         elif computer_id == 'duplicated':
             return {'ok': False,
+                    'reason': computer_id,
                     'message': 'There is another node with this name (in gcc)'}
         elif computer_id == 'duplicated-node-id':
             return {'ok': False,
+                    'reason': computer_id,
                     'message': 'There is another node with this node chef id (in gcc)'}
 
         computer = self.collection.find_one({'_id': computer_id})
