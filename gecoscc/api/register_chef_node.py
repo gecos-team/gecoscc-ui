@@ -98,7 +98,7 @@ class RegisterChefNode(object):
         if not chef_client.exists:
             return {'ok': False, 'message': 'This client does not exists'}
 
-        chef_client = ChefClient.rekey(api)
+        chef_client.rekey(api)
 
         return {'ok': True, 'message': "Chef node's client has been update",
                 'client_private_key': chef_client.private_key}
