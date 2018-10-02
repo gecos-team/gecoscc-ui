@@ -555,7 +555,7 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
     return nodes_collection.find_one({'_id': obj_id})
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, _policies_collection=None):
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -579,7 +579,7 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, _policies_collection=None):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     if use_celery:
         object_created = object_created.delay
@@ -652,7 +652,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
     object_created(auth_user, obj['type'], obj)
 
 
-def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initialize=False, use_celery=True, _policies_collection=None):
+def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''
@@ -686,7 +686,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initi
     object_created(auth_user, group['type'], group)
 
 
-def apply_policies_to_ou(nodes_collection, ou, auth_user, _api=None, _initialize=False, use_celery=True, _policies_collection=None):
+def apply_policies_to_ou(nodes_collection, ou, auth_user, _api=None, _initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''

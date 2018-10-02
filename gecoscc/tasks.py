@@ -39,12 +39,17 @@ from gecoscc.models import User
 from gecoscc.eventsmanager import JobStorage
 from gecoscc.rules import get_rules, is_user_policy, get_username_chef_format, object_related_list
 from gecoscc.socks import invalidate_jobs, update_tree, invalidate_change, add_computer_to_user
+
+# Ignore unused import warning on "apply_policies_to_*" functions because 
+# "object_moved" function calls them
+
 from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_filter_nodes_belonging_ou, get_filter_in_domain,
                            emiter_police_slug, get_computer_of_user,
                            delete_dotted, to_deep_dict, reserve_node_or_raise,
-                           save_node_and_free, NodeBusyException, 
-                           NodeNotLinked, apply_policies_to_user,
+                           save_node_and_free, NodeBusyException, NodeNotLinked,
+                           apply_policies_to_user, apply_policies_to_computer, apply_policies_to_group, apply_policies_to_ou,
+                           apply_policies_to_printer, apply_policies_to_storage, apply_policies_to_repository,
                            remove_policies_of_computer, recursive_defaultdict, setpath, dict_merge, nested_lookup,
                            RESOURCES_RECEPTOR_TYPES, RESOURCES_EMITTERS_TYPES, POLICY_EMITTER_SUBFIX,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
@@ -1694,6 +1699,7 @@ class ChefTask(Task):
         try:
             func = globals()['apply_policies_to_%s' % objnew['type']]
         except KeyError:
+            self.log('error', "object_moved - 'apply_policies_to_%s' not implemented!"%(objnew['type']))
             raise NotImplementedError
         func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
@@ -2125,7 +2131,7 @@ def object_refresh_policies(user, objtype, obj, computers=None):
             self.report_unknown_error(e, user, obj, 'refresh_policies')
             invalidate_jobs(self.request, user)
     else:
-        self.log('error', 'The method {0}_created does not exist'.format(
+        self.log('error', 'The method {0}_refresh_policies does not exist'.format(
             objtype))
 
 @task(base=ChefTask)
@@ -2154,7 +2160,7 @@ def object_moved(user, objtype, objnew, objold):
             self.report_unknown_error(e, user, objnew, 'moved')
             invalidate_jobs(self.request, user)
     else:
-        self.log('error', 'The method {0}_changed does not exist'.format(
+        self.log('error', 'The method {0}_moved does not exist'.format(
             objtype))
 
 
