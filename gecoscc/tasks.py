@@ -2131,7 +2131,7 @@ def object_refresh_policies(user, objtype, obj, computers=None):
             self.report_unknown_error(e, user, obj, 'refresh_policies')
             invalidate_jobs(self.request, user)
     else:
-        self.log('error', 'The method {0}_created does not exist'.format(
+        self.log('error', 'The method {0}_refresh_policies does not exist'.format(
             objtype))
 
 @task(base=ChefTask)
@@ -2160,7 +2160,7 @@ def object_moved(user, objtype, objnew, objold):
             self.report_unknown_error(e, user, objnew, 'moved')
             invalidate_jobs(self.request, user)
     else:
-        self.log('error', 'The method {0}_changed does not exist'.format(
+        self.log('error', 'The method {0}_moved does not exist'.format(
             objtype))
 
 
