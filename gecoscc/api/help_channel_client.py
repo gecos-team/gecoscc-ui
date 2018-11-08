@@ -144,8 +144,8 @@ class HelpChannelClientLogin():
                     'action': 'request',
                     'computer_node_id': node_id,
                     'computer_node_path': gcc_node['path'],
-                    'user_node_id': str(gcc_node['_id']),
-                    'user_node_path': gcc_node['path'],
+                    'user_node_id': str(gcc_user['_id']),
+                    'user_node_path': gcc_user['path'],
                     'adminuser_id': False,
                     'adminuser_ou_managed': False,
                     'adminuser_is_superuser': False,
@@ -192,7 +192,7 @@ class HelpChannelClientFetch():
                     'message': 'Bad connection code'}        
             
 
-        logger.debug('/help-channel-client/login token=%s'%(token)) 
+        logger.debug('/help-channel-client/fetch token=%s'%(token)) 
 
         has_tech = False
         tech_name = ''
@@ -210,3 +210,89 @@ class HelpChannelClientFetch():
         return {'ok': True, 'has_tech': has_tech, 'tech_name': tech_name}
     
 
+
+@resource(collection_path='/help-channel-client/',
+          path='/help-channel-client/accept',
+          description='Help Channel client accept technician')
+class HelpChannelClientAccept():
+
+    def __init__(self, request):
+        self.request = request
+
+    def get(self):
+        logger.debug('/help-channel-client/accept START') 
+        
+        # Check the parameters
+        token = self.request.GET.get('connection_code')
+        if not token:
+            logger.error('/help-channel-client/accept - No token') 
+            return {'ok': False,
+                    'message': 'Please set a connection code'}
+
+
+        hc_data = self.request.db.helpchannel.find_one({'token': token})
+        if not hc_data:
+            logger.error('/help-channel-client/accept - Bad token') 
+            return {'ok': False,
+                    'message': 'Bad connection code'}        
+            
+
+        logger.debug('/help-channel-client/accept token=%s'%(token)) 
+
+        self.request.db.helpchannel.update({
+            '_id': hc_data['_id']
+        }, {
+            '$set': {
+                'action': 'accepted'
+            }
+        }, multi=True)
+            
+            
+        return {'ok': True}
+
+
+@resource(collection_path='/help-channel-client/',
+          path='/help-channel-client/finish',
+          description='Help Channel client end connection')
+class HelpChannelClientFinish():
+
+    def __init__(self, request):
+        self.request = request
+
+    def get(self):
+        logger.debug('/help-channel-client/finish START') 
+        
+        # Check the parameters
+        finisher = self.request.GET.get('finisher')
+        if not finisher:
+            logger.error('/help-channel-client/finish - No finisher') 
+            return {'ok': False,
+                    'message': 'Please set a connection finisher'}        
+        
+        token = self.request.GET.get('connection_code')
+        if not token:
+            logger.error('/help-channel-client/finish - No token') 
+            return {'ok': False,
+                    'message': 'Please set a connection code'}
+
+
+        hc_data = self.request.db.helpchannel.find_one({'token': token})
+        if not hc_data:
+            logger.error('/help-channel-client/finish - Bad token') 
+            return {'ok': False,
+                    'message': 'Bad connection code'}        
+            
+
+        logger.debug('/help-channel-client/finish token=%s'%(token)) 
+        logger.debug('/help-channel-client/finish finisher=%s'%(finisher)) 
+
+        self.request.db.helpchannel.update({
+            '_id': hc_data['_id']
+        }, {
+            '$set': {
+                'action': 'finished ' + finisher
+            }
+        }, multi=True)
+            
+            
+        return {'ok': True}

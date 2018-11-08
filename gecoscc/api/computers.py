@@ -12,7 +12,9 @@
 
 import urllib2
 
+from pyramid.httpexceptions import HTTPForbidden, HTTPFound
 from bson import ObjectId
+import pymongo
 from cornice.resource import resource
 from chef import Node as ChefNode
 from chef import ChefError
@@ -122,6 +124,60 @@ class ComputerResource(TreeLeafResourcePaginated):
                     # Do not send file contents
                     del filedata['content']
             
+            # Get Help Channel info
+            help_channel_enabled = True
+            helpchannel_data = self.request.db.helpchannel.find(
+                {"computer_node_id" : result['node_chef_id']}).sort(
+                    [("last_modified", pymongo.DESCENDING)]).limit(6)
+            helpchannel = {}
+            helpchannel['current'] = None
+            helpchannel['last'] = []
+            if helpchannel_data is not None:
+                c = 0
+                for hcdata in helpchannel_data:
+                    # Format date
+                    date_format = locale.nl_langinfo(locale.D_T_FMT)
+                    logger.info("last_modified: {0}".format( hcdata['last_modified']))
+                    last_mod = re.split('[^\d]', str(hcdata['last_modified']))
+                    logger.info("last_mod: {0}".format(last_mod))
+
+                    date = datetime.datetime(*map(int, last_mod[:-2]))
+                    localename = locale.normalize(get_current_request().locale_name+'.UTF-8')
+                    logger.debug("/api/computers/: localename: %s" % (str(localename)))
+                    locale.setlocale(locale.LC_TIME, localename)
+                    hcdata['last_modified'] = date.strftime(date_format)
+                    
+                    if hcdata['user_node_id']:
+                        # Format user
+                        user_data = node_collection.find_one({"type": "user", "_id": ObjectId(hcdata['user_node_id'])})
+                        if user_data:
+                            hcdata['user'] = user_data['name']
+                        else:
+                            logger.error("User not found: {0}".format(hcdata['user_node_id']))
+                    else:
+                        hcdata['user'] = ''
+                    
+                    if hcdata['adminuser_id']:
+                        # Format user
+                        user_data = self.request.db.adminusers.find_one({"type": "user", "_id": ObjectId(hcdata['adminuser_id'])})
+                        if user_data:
+                            hcdata['admin'] = user_data['username']
+                        else:
+                            logger.error("Admin user not found: {0}".format(hcdata['adminuser_id']))
+                    else:
+                        hcdata['admin'] = ''
+                        
+                        
+                    hcdata['_id'] = str(hcdata['_id'])                
+                    
+                    if (c==0 and hcdata['action']=='accepted'):
+                        helpchannel['current'] = hcdata
+                    else:
+                        helpchannel['last'].append(hcdata)
+                    
+                    c = c + 1
+           
+            
             result.update({'ohai': ohai,
                            'users': users, # Users related with this computer
                            'users_inheritance': users_inheritance, # Users related with this computer that provides at least one user policy
@@ -136,7 +192,9 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'kernel': ohai.get('kernel', {}),
                            'filesystem': ohai.get('filesystem', {}),
                            'debug_mode': debug_mode,
-                           'logs': logs
+                           'logs': logs,
+                           'helpchannel': helpchannel,
+                           'help_channel_enabled': help_channel_enabled
                            })
         except (urllib2.URLError, ChefError, ChefServerError):
             pass
@@ -152,3 +210,48 @@ class ComputerResource(TreeLeafResourcePaginated):
         else:
             # Save object
             return super(ComputerResource, self).put()
+        
+        
+        
+@resource(collection_path='/api/computers/',
+          path='/api/computers/support/{oid}/',
+          description='Computers resource',
+          validators=(api_login_required,))
+class ComputerSupportResource(TreeLeafResourcePaginated):
+
+    schema_collection = Computers
+    schema_detail = Computer
+    objtype = 'computer'
+
+    mongo_filter = {
+        'type': objtype,
+    }
+    collection_name = 'nodes'
+
+    def get(self):
+        result = super(ComputerSupportResource, self).get()
+        if not result.get('node_chef_id', None):
+            return result
+
+        
+        helpchannel_data = self.request.db.helpchannel.find(
+            {"computer_node_id" : result['node_chef_id']}).sort(
+                [("last_modified", pymongo.DESCENDING)]).limit(1)        
+
+        if helpchannel_data is None or helpchannel_data.count() <= 0:
+            logger.error("/api/computers/support/: There is no support request for this computer!")
+            raise HTTPForbidden()
+
+        hcdata = helpchannel_data.next()
+        
+        if hcdata is None or hcdata['action'] != 'accepted':
+            logger.error("/api/computers/support/: There is no support request for this computer!")
+            raise HTTPForbidden()
+        
+        else:
+            # Redirect to suppor NoVNC page
+            url = hcdata['helpchannel_server'].replace('wss://', 'https://')
+            url = url.replace('/wsServer', '/')
+            url = url + '?repeaterID=ID:' + hcdata['token']
+            raise HTTPFound(location=url)
+            
