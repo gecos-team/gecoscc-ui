@@ -296,3 +296,35 @@ class HelpChannelClientFinish():
             
             
         return {'ok': True}
+
+
+
+@resource(collection_path='/help-channel-client/',
+          path='/help-channel-client/check',
+          description='Help Channel client - check a token')
+class HelpChannelClientCheck():
+
+    def __init__(self, request):
+        self.request = request
+
+    def get(self):
+        logger.debug('/help-channel-client/check START') 
+        
+        # Check the parameters
+        token = self.request.GET.get('connection_code')
+        if not token:
+            logger.error('/help-channel-client/check - No token') 
+            return {'ok': False,
+                    'message': 'Please set a connection code'}
+
+
+        hc_data = self.request.db.helpchannel.find_one({'token': token})
+        if not hc_data or not hc_data['action'] == 'accepted':
+            logger.error('/help-channel-client/check - Bad token') 
+            return {'ok': False,
+                    'message': 'Bad connection code'}        
+            
+
+        logger.debug('/help-channel-client/check token=%s'%(token)) 
+            
+        return {'ok': True}
