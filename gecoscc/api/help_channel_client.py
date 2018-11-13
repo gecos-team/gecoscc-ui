@@ -13,6 +13,8 @@ import urllib2
 import datetime
 import os
 import string
+import re
+import socket
 from random import randint, choice
 from cornice.resource import resource
 from gecoscc.utils import get_chef_api
@@ -324,7 +326,48 @@ class HelpChannelClientCheck():
             return {'ok': False,
                     'message': 'Bad connection code'}        
             
+        logger.debug('/help-channel-client/check token=%s'%(token))
+        
+        # Help Channel Server authentication by IP address
 
-        logger.debug('/help-channel-client/check token=%s'%(token)) 
+        # Get the remote address
+        remote_addr = self.request.remote_addr
+        header = 'remote_addr'
+        if 'X-Real-IP' in self.request.headers:
+            remote_addr = self.request.headers['X-Real-IP']
+            header = 'X-Real-IP'
+        if 'X-Forwarded-For' in self.request.headers:
+            remote_addr = self.request.headers['X-Forwarded-For']
+            header = 'X-Forwarded-For'
+        
+        logger.debug('/help-channel-client/check token: remote_addr=%s header=%s (%s)'%(remote_addr, header, str(self.request.headers.items())))        
+        
+        ip_address = re.compile('^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$')
+        
+        hc_server = hc_data['helpchannel_server']
+        if hc_server.startswith('wss://'):
+            hc_server = hc_server[len('wss://'):]
+            
+        if '/' in hc_server:
+            hc_server = hc_server[0:hc_server.find('/')]
+            
+        if ':' in hc_server:
+            hc_server = hc_server[0:hc_server.find(':')]
+
+        
+        logger.debug('/help-channel-client/check hc_server:%s'%(hc_server))
+        if not ip_address.match(hc_server):
+            hc_server = socket.gethostbyname(hc_server)
+            
+        if not ip_address.match(remote_addr):
+            remote_addr = socket.gethostbyname(remote_addr)
+        
+        logger.debug('/help-channel-client/check - (%s == %s ) ???'%(hc_server, remote_addr))
+        if hc_server != remote_addr:
+            logger.error('/help-channel-client/check - Bad help channel server (%s != %s )'%(hc_server, remote_addr))
+            # Must return 'Bad connection code' message or a possible attacker could
+            # know that the connection code is correct
+            return {'ok': False,
+                    'message': 'Bad connection code'}   
             
         return {'ok': True}
