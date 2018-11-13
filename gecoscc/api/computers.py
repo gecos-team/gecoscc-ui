@@ -159,7 +159,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                     
                     if hcdata['adminuser_id']:
                         # Format user
-                        user_data = self.request.db.adminusers.find_one({"type": "user", "_id": ObjectId(hcdata['adminuser_id'])})
+                        user_data = self.request.db.adminusers.find_one({"_id": ObjectId(hcdata['adminuser_id'])})
                         if user_data:
                             hcdata['admin'] = user_data['username']
                         else:
@@ -249,6 +249,30 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
             raise HTTPForbidden()
         
         else:
+            # Set this user as the technician that gives support
+            admin = self.request.user
+            logger.debug("user = {0}".format(self.request.user))
+            
+            ou_managed = False
+            if 'ou_managed' in admin:
+                ou_managed = admin['ou_managed']
+                
+            is_superuser = False
+            if 'is_superuser' in admin:
+                is_superuser = admin['is_superuser']
+            
+            
+            self.request.db.helpchannel.update({
+                '_id': hcdata['_id']
+            }, {
+                '$set': {
+                    'action': 'giving support',
+                    'adminuser_id': str(admin['_id']),
+                    'adminuser_ou_managed': ou_managed,
+                    'adminuser_is_superuser': is_superuser                    
+                }
+            }, multi=True)            
+            
             # Redirect to suppor NoVNC page
             url = hcdata['helpchannel_server'].replace('wss://', 'https://')
             url = url.replace('/wsServer', '/')

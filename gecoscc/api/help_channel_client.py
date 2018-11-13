@@ -321,7 +321,8 @@ class HelpChannelClientCheck():
 
 
         hc_data = self.request.db.helpchannel.find_one({'token': token})
-        if not hc_data or not hc_data['action'] == 'accepted':
+        if not hc_data or not (hc_data['action'] == 'accepted' 
+                               or hc_data['action'] == 'giving support'):
             logger.error('/help-channel-client/check - Bad token') 
             return {'ok': False,
                     'message': 'Bad connection code'}        
