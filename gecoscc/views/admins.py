@@ -163,7 +163,7 @@ def admins_set_variables(context, request):
 
     # Ous managed by admin (user)
     if not user.get('is_superuser'):
-        admin_ous = map(ObjectId, admin_ous['ou_managed'], user['ou_managed'])
+        admin_ous = map(ObjectId, user['ou_managed'])
         ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id':{'$in': admin_ous}})]
     else: # Superuser
         ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type':'ou'})]
