@@ -34,6 +34,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from chef.exceptions import ChefServerError, ChefServerNotFoundError
+from bson import ObjectId
 
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='is_superuser')
@@ -158,7 +159,18 @@ def admin_edit(context, request):
              permission='is_superuser_or_my_profile')
 def admins_set_variables(context, request):
     username = request.matchdict['username']
-    schema = AdminUserVariables()
+    user = request.db.adminusers.find_one({'username':username})
+
+    # Ous managed by admin (user)
+    if not user.get('is_superuser'):
+        admin_ous = map(ObjectId, user['ou_managed'])
+        ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id':{'$in': admin_ous}})]
+    else: # Superuser
+        ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type':'ou'})]
+
+    ou_managed = [('', 'Select an Organisational Unit')] + ou_managed
+
+    schema = AdminUserVariables().bind(ou_choices=ou_managed)
     form = AdminUserVariablesForm(schema=schema,
                                   collection=request.db['adminusers'],
                                   username=username,
