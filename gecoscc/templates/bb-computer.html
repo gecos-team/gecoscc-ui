@@ -5,6 +5,8 @@
         <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
         <li id="inheritance-tab"><a href="#inheritance" data-toggle="tab">{{ gettext('Inheritance') }}</a></li>
         <li id="logs-tab"><a href="#logs" data-toggle="tab">{{ gettext('Logs') }}</a></li>
+        <li id="helpchannel-tab"><a href="#helpchannel" data-toggle="tab">{{ gettext('Help Channel') }}</a></li>
+        
     </ul>
 
     <div class="tab-content" id="computers">
@@ -414,6 +416,82 @@
 
             </div>
         </div>        
+        
+        
+        <div class="tab-pane fade in" id="helpchannel">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="text-muted bootstrap-admin-box-title">{{ gettext('Logs') }}</div>
+                    <button class="btn btn-default btn-xs pull-right refresh" title="{{ gettext('Reload') }}">
+                        <span class="fa fa-refresh"></span>
+                    </button>
+                </div>
+                
+                <% if (help_channel_enabled) { %>
+                <div class="bootstrap-admin-panel-content">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <% if (helpchannel && helpchannel.current && helpchannel.current.user) { %>
+                            {{ gettext('User that requested support: ') }} <strong><%= helpchannel.current.user %></strong>
+                            <button class="btn btn-default btn-xs pull-right support" title="{{ gettext('Support') }}">
+                                <span class="fa fa-play"></span> {{ gettext('Support') }}
+                            </button>                            
+                            
+                            <% } else { %>
+                            {{ gettext('No user needs support for this computer at this moment.') }}
+                            <% } %>
+                        </div>
+                    </div>
+                    <div><br /><br /></div>
+                    <div class="row"><div class="col-sm-12"></div></div>
+                    <div class="object_related_list">
+                        <% if (helpchannel && helpchannel.last && helpchannel.last.length > 0) { %>
+                        <table class="table table-bordered">
+                        <tr>
+                         <th>{{ gettext('Date') }}</th>
+                         <th>{{ gettext('User') }}</th>
+                         <th>{{ gettext('Technician') }}</th>
+                         <th>{{ gettext('Status') }}</th>
+                        </tr>
+                        <% helpchannel.last.forEach(function (hcdata, index) { %>
+                            <tr>
+                               <td width="40%">
+                                <%= hcdata.last_modified %>
+                               </td>
+                               <td width="20%">
+                                <%= hcdata.user %>
+                               </td>
+                               <td width="20%">
+                                <%= hcdata.admin %>
+                               </td>
+                               <td width="20%">
+                                <%= hcdata.action %>
+                               </td>
+                            </tr>
+                                    
+                        <% }) %>
+                        </table>
+                        <% } else { %>
+                            <div class="alert alert-warning">{{ gettext('There is no help channel data for this computer at this moment.') }}</div>
+                        <% } %>
+                    </div>    
+                    </div>
+                </div>
+                <% } else { %>
+                <div class="bootstrap-admin-panel-content">
+                    <div class="alert alert-info">
+                        <h3>{{ gettext('Help Channel not enabled for this computer') }}</h3>
+                        <p>
+                         {{ gettext('You can enable the Help Channel for this computer by configuring the Help Channel.') }}
+                         {{ gettext('After that, you will have to wait until the computer configuration data is uploaded (around 20 minutes).') }}
+                        </p>
+                    </div>
+                    
+                </div>
+                <% } %>
+
+            </div>
+        </div>         
         
         
     </div>
