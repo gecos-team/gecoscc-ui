@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2018-04-09 16:38+0200\n"
+"POT-Creation-Date: 2018-11-19 16:50+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -156,58 +156,58 @@ msgstr "Política"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/static/js/computer.js:121
+#: gecoscc/static/js/computer.js:122
 msgid "No data has been received from this workstation."
 msgstr "No se han recibido datos de esta estación de trabajo."
 
-#: gecoscc/static/js/computer.js:122
+#: gecoscc/static/js/computer.js:123
 msgid "Check connection with Chef server."
 msgstr "Comprueba la conexión con el servidor Chef."
 
-#: gecoscc/static/js/computer.js:130
+#: gecoscc/static/js/computer.js:131
 msgid "This workstation is not linked."
 msgstr "Esta estación de trabajo no está enlazada:"
 
-#: gecoscc/static/js/computer.js:131
+#: gecoscc/static/js/computer.js:132
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr "Es posible que este nodo haya sido importado de AD o LDAP"
 
-#: gecoscc/static/js/computer.js:138
+#: gecoscc/static/js/computer.js:139
 msgid "This workstation has incomplete Ohai information."
 msgstr "La información recuperada de este puesto está incompleta."
 
-#: gecoscc/static/js/computer.js:146 gecoscc/static/js/computer.js:154
-#: gecoscc/static/js/computer.js:164 gecoscc/static/js/computer.js:174
+#: gecoscc/static/js/computer.js:147 gecoscc/static/js/computer.js:155
+#: gecoscc/static/js/computer.js:165 gecoscc/static/js/computer.js:175
 msgid "This workstation is not working properly:"
 msgstr "Esta estación de trabajo no funciona correctamente:"
 
-#: gecoscc/static/js/computer.js:147
+#: gecoscc/static/js/computer.js:148
 msgid "There were errors while saving this node in Chef"
 msgstr "Se produjeron errores mientras se guardaba este nodo en Chef"
 
-#: gecoscc/static/js/computer.js:155
+#: gecoscc/static/js/computer.js:156
 msgid "Network problems connecting to the Control Center."
 msgstr "Problemas de red al conectar con el Centro de Control."
 
-#: gecoscc/static/js/computer.js:165
+#: gecoscc/static/js/computer.js:166
 msgid "Last synchronization had problems during its execution."
 msgstr "La última sincronización tuvo problemas durante su ejecución."
 
-#: gecoscc/static/js/computer.js:175
+#: gecoscc/static/js/computer.js:176
 msgid "Synchronization is not being executed on time."
 msgstr ""
 "La sincronización no se está ejecutando en el intervalo de tiempo "
 "definido."
 
-#: gecoscc/static/js/computer.js:216
+#: gecoscc/static/js/computer.js:217
 msgid "Days"
 msgstr "Días"
 
-#: gecoscc/static/js/computer.js:216
+#: gecoscc/static/js/computer.js:217
 msgid "Hours"
 msgstr "Horas"
 
-#: gecoscc/static/js/computer.js:216
+#: gecoscc/static/js/computer.js:217
 msgid "Minutes"
 msgstr "Minutos"
 
@@ -230,11 +230,11 @@ msgstr "Actual"
 msgid "Only the super admin can delete this object"
 msgstr "Solo el super administrador puede eliminar este objeto"
 
-#: gecoscc/static/js/policies-form-generator.js:102
+#: gecoscc/static/js/policies-form-generator.js:125
 msgid "This is an auto-reverting policy."
 msgstr "Esta política es autoreversible"
 
-#: gecoscc/static/js/policies-form-generator.js:103
+#: gecoscc/static/js/policies-form-generator.js:126
 msgid ""
 "Any configuration element removed from the form will be inmediatly "
 "removed from the corresponding workstations."
@@ -242,11 +242,11 @@ msgstr ""
 "Cualquier elemento de configuración que retire será inmediatamente "
 "retirado de los puestos afectados."
 
-#: gecoscc/static/js/policies-form-generator.js:149
+#: gecoscc/static/js/policies-form-generator.js:172
 msgid "Policy successfully saved."
 msgstr "Política guardada satisfactoriamente"
 
-#: gecoscc/static/js/policies-form-generator.js:174
+#: gecoscc/static/js/policies-form-generator.js:197
 msgid "Policy successfully deleted."
 msgstr "Política borrada satisfactoriamente"
 
@@ -296,12 +296,12 @@ msgstr "No se puede eliminar un usuario vinculado a un puesto de trabajo."
 msgid "Delete first locally on the computer"
 msgstr "Borrar primero localmente en el puesto de trabajo."
 
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:684
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:701
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid "Package not found in server repositories"
 msgstr ""
 
-#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1032
+#: gecoscc/static/js/libs/jsonform-b3-1.0.0.js:1049
 #: gecoscc/static/js/libs/jsonform-b3-1.0.0.min.js:1
 msgid ""
 "contains items that are outside your scope, please consult a global "
