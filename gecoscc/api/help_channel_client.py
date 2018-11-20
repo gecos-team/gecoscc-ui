@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #
 # Copyright 2018, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -28,12 +30,6 @@ from bson import ObjectId
 import logging
 logger = logging.getLogger(__name__)
 
-known_message = 'En un lugar de la Mancha, de cuyo nombre no quiero acordarme,'\
-    ' no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, '\
-    'adarga antigua, rocín flaco y galgo corredor.'
-
-
-
 
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/login',
@@ -45,6 +41,11 @@ class HelpChannelClientLogin():
 
     def post(self):
         logger.debug('/help-channel-client/login START') 
+
+        # Default known message
+        known_message = 'En un lugar de la Mancha, de cuyo nombre no quiero'\
+            ' acordarme, no ha mucho tiempo que vivía un hidalgo de los de'\
+            ' lanza en astillero, adarga antigua, rocín flaco y galgo corredor.'
         
         # Check the parameters
         node_id = self.request.POST.get('node_id')
@@ -119,6 +120,10 @@ class HelpChannelClientLogin():
             client_certificate = chef_client.certificate
             public_key = RSA.importKey(client_certificate)
             decrypted = public_key.encrypt(secret.decode('hex'), 0)[0]
+            
+            known_message_setting = self.request.registry.settings.get('helpchannel.known_message')
+            if known_message_setting is not None:
+                known_message = known_message_setting
             
             if decrypted != known_message:
                 logger.error('/help-channel-client/login - Bad secret') 
