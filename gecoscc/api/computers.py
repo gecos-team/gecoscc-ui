@@ -25,6 +25,7 @@ from gecoscc.api import TreeLeafResourcePaginated
 from gecoscc.models import Computer, Computers
 from gecoscc.permissions import api_login_required
 from gecoscc.utils import to_deep_dict
+from gecoscc.i18n import gettext as _
 
 from pyramid.threadlocal import get_current_request
 
@@ -166,6 +167,21 @@ class ComputerResource(TreeLeafResourcePaginated):
                             logger.error("Admin user not found: {0}".format(hcdata['adminuser_id']))
                     else:
                         hcdata['admin'] = ''
+                        
+                    # Translate status info
+                    hcdata['status'] = _('Unknown status')
+                    if hcdata['action'] == 'request':
+                        hcdata['status'] = _('User is requesting support')
+                    elif hcdata['action'] == 'accepted':
+                        hcdata['status'] = _('User is requesting support')
+                    elif hcdata['action'] == 'finished user':
+                        hcdata['status'] = _('Terminated by user')
+                    elif hcdata['action'] == 'finished tech':
+                        hcdata['status'] = _('Terminated by technician')
+                    elif hcdata['action'] == 'finished error':
+                        hcdata['status'] = _('Terminated because of a communication error')
+                    elif hcdata['action'] == 'giving support':
+                        hcdata['status'] = _('The technician is giving support to the user')
                         
                         
                     hcdata['_id'] = str(hcdata['_id'])                

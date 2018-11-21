@@ -5,7 +5,7 @@
         <li id="policy-tab"><a href="#policies" data-toggle="tab">{{ gettext('Policies') }}</a></li>
         <li id="inheritance-tab"><a href="#inheritance" data-toggle="tab">{{ gettext('Inheritance') }}</a></li>
         <li id="logs-tab"><a href="#logs" data-toggle="tab">{{ gettext('Logs') }}</a></li>
-        <li id="helpchannel-tab"><a href="#helpchannel" data-toggle="tab">{{ gettext('Help Channel') }}</a></li>
+        <li id="helpchannel-tab"><a href="#helpchannel" data-toggle="tab">{{ gettext('Remote Control') }}</a></li>
         
     </ul>
 
@@ -438,7 +438,7 @@
                             </button>                            
                             
                             <% } else { %>
-                            {{ gettext('No user needs support for this computer at this moment.') }}
+                            {{ gettext('Nobody in this workstation is asking for support') }}
                             <% } %>
                         </div>
                     </div>
@@ -450,7 +450,7 @@
                         <tr>
                          <th>{{ gettext('Date') }}</th>
                          <th>{{ gettext('User') }}</th>
-                         <th>{{ gettext('Technician') }}</th>
+                         <th>{{ gettext('Assisted by') }}</th>
                          <th>{{ gettext('Status') }}</th>
                         </tr>
                         <% helpchannel.last.forEach(function (hcdata, index) { %>
@@ -465,7 +465,7 @@
                                 <%= hcdata.admin %>
                                </td>
                                <td width="20%">
-                                <%= hcdata.action %>
+                                <%= hcdata.status %>
                                </td>
                             </tr>
                                     
