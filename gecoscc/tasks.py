@@ -55,7 +55,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            get_policy_emiter_id, get_object_related_list, update_computers_of_user, trace_inheritance,
                            order_groups_by_depth, order_ou_by_depth, move_in_inheritance_and_recalculate_policies,
                            recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
-                           recalculate_inheritance_for_node, get_filter_ous_from_path, recalculate_policies_for_computers)
+                           recalculate_inheritance_for_node, get_filter_ous_from_path, recalculate_policies_for_computers,
+                           add_path_attrs_node, setPathAttrsNodeException)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -1698,9 +1699,18 @@ class ChefTask(Task):
         api = get_chef_api(self.app.conf, user)
         try:
             func = globals()['apply_policies_to_%s' % objnew['type']]
+
+            # Updates path to Chef node after copying & pasting (computer)
+            if objnew['type'] == 'computer':
+                add_path_attrs_node(api, objnew['node_chef_id'], objnew['path'], self.db.nodes)
+
         except KeyError:
             self.log('error', "object_moved - 'apply_policies_to_%s' not implemented!"%(objnew['type']))
             raise NotImplementedError
+        except setPathAttrsNodeException:
+            self.log('error', "object_moved - Exception adding path_ids, path_names to chef node")
+            raise setPathAttrsNodeException
+
         func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)
 
     def object_emiter_deleted(self, user, obj, computers=None):

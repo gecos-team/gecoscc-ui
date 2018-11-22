@@ -59,6 +59,9 @@ class RegisterComputerResource(BaseAPI):
         elif computer_id == 'duplicated-node-id':
             return {'ok': False,
                     'message': 'There is another node with this node chef id (in gcc)'}
+        elif computer_id == 'path-err':
+            return {'ok': False,
+                    'message': 'Unable to add path_ids, path_names in chef node'}            
 
         computer = self.collection.find_one({'_id': computer_id})
         apply_policies_to_computer(self.collection, computer, self.request.user)
