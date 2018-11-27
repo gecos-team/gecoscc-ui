@@ -263,7 +263,8 @@ def main(global_config, **settings):
 
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings
-        event['help_manual_url'] = current_settings['help_manual_url']
+        event['help_base_url'] = current_settings['help_base_url']
+        event['help_policy_url'] = current_settings['help_policy_url']
 
     config.add_subscriber(add_renderer_globals, 'pyramid.events.BeforeRender')
 

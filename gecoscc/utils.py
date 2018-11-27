@@ -172,7 +172,7 @@ def get_items_ou_children(ou_id, collection_nodes, objtype=None, filters=None, n
         filters['path'] = 'no-root'
     ous = collection_nodes.find(filters).sort('name')
     return [{'_id': unicode(ou['_id']),
-             'name': ou['name']} for ou in ous]
+        'name': ou['name'], 'path': ou['path']} for ou in ous]
 
 
 def emiter_police_slug(emiter_type):

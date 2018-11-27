@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2018-11-21 17:27+0100\n"
+"POT-Creation-Date: 2018-11-27 13:59+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -245,115 +245,119 @@ msgstr ""
 msgid "PAM conf"
 msgstr ""
 
-#: gecoscc/models.py:732
+#: gecoscc/models.py:766
 msgid "URI ntp"
 msgstr ""
 
-#: gecoscc/models.py:734
+#: gecoscc/models.py:768
 msgid "Auth type"
 msgstr "Tipo de autenticación"
 
-#: gecoscc/models.py:738
+#: gecoscc/models.py:772
 msgid "Specific conf"
 msgstr "Configuración específica"
 
-#: gecoscc/models.py:740
+#: gecoscc/models.py:774
 msgid "Auth LDAP"
 msgstr "Autenticación LDAP"
 
-#: gecoscc/models.py:741 gecoscc/models.py:742
+#: gecoscc/models.py:775 gecoscc/models.py:776
 msgid "Auth Active directory"
 msgstr "Autenticación Active directory"
 
-#: gecoscc/models.py:785 gecoscc/templates/bb-computer.html:76
+#: gecoscc/models.py:777
+msgid "Gem Repositories"
+msgstr "Repositorios de gemas"
+
+#: gecoscc/models.py:823 gecoscc/templates/bb-computer.html:76
 msgid "Desktop"
 msgstr "Sobremesa"
 
-#: gecoscc/models.py:786 gecoscc/templates/bb-computer.html:77
+#: gecoscc/models.py:824 gecoscc/templates/bb-computer.html:77
 msgid "Laptop"
 msgstr "Portátil"
 
-#: gecoscc/models.py:787 gecoscc/templates/bb-computer.html:78
+#: gecoscc/models.py:825 gecoscc/templates/bb-computer.html:78
 msgid "Netbook"
 msgstr ""
 
-#: gecoscc/models.py:788 gecoscc/templates/bb-computer.html:79
+#: gecoscc/models.py:826 gecoscc/templates/bb-computer.html:79
 msgid "Tablet"
 msgstr "Tableta"
 
-#: gecoscc/models.py:830
+#: gecoscc/models.py:868
 msgid "Laser"
 msgstr "Láser"
 
-#: gecoscc/models.py:831
+#: gecoscc/models.py:869
 msgid "Ink"
 msgstr "Tinta"
 
-#: gecoscc/models.py:832
+#: gecoscc/models.py:870
 msgid "Dot matrix"
 msgstr "Matricial"
 
-#: gecoscc/models.py:836
+#: gecoscc/models.py:874
 msgid "Network"
 msgstr "En red"
 
-#: gecoscc/models.py:837
+#: gecoscc/models.py:875
 msgid "Local"
 msgstr "Local"
 
-#: gecoscc/models.py:841
+#: gecoscc/models.py:879
 msgid "Default"
 msgstr ""
 
-#: gecoscc/models.py:842
+#: gecoscc/models.py:880
 msgid "Authenticated"
 msgstr ""
 
-#: gecoscc/models.py:843
+#: gecoscc/models.py:881
 msgid "Kerberos-AD"
 msgstr ""
 
-#: gecoscc/models.py:891
+#: gecoscc/models.py:929
 msgid "FTP"
 msgstr ""
 
-#: gecoscc/models.py:892
+#: gecoscc/models.py:930
 msgid "SSHFS"
 msgstr ""
 
-#: gecoscc/models.py:893
+#: gecoscc/models.py:931
 msgid "NFS"
 msgstr ""
 
-#: gecoscc/models.py:894
+#: gecoscc/models.py:932
 msgid "SAMBA v3"
 msgstr ""
 
-#: gecoscc/models.py:895
+#: gecoscc/models.py:933
 msgid "SAMBA v4"
 msgstr ""
 
-#: gecoscc/models.py:899
+#: gecoscc/models.py:937
 msgid "System mounts (fstab)"
 msgstr "En el arranque del sistema (fstab)"
 
-#: gecoscc/models.py:900
+#: gecoscc/models.py:938
 msgid "User space mounts (gvfs)"
 msgstr "En espacio de usuario (gvfs)"
 
-#: gecoscc/models.py:940
+#: gecoscc/models.py:978
 msgid "Processing"
 msgstr "Procesando"
 
-#: gecoscc/models.py:943
+#: gecoscc/models.py:981
 msgid "Applying changes"
 msgstr "Aplicando cambios"
 
-#: gecoscc/models.py:946
+#: gecoscc/models.py:984
 msgid "Changes applied"
 msgstr "Cambios aplicados"
 
-#: gecoscc/models.py:949 gecoscc/models.py:952
+#: gecoscc/models.py:987 gecoscc/models.py:990
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
@@ -471,7 +475,15 @@ msgstr "Añadir nueva UO raíz"
 msgid "Home"
 msgstr "Inicio"
 
-#: gecoscc/templates/base_navbar.jinja2:23
+#: gecoscc/templates/base_navbar.jinja2:22 gecoscc/templates/bb-policy.html:11
+msgid "Help"
+msgstr "Ayuda"
+
+#: gecoscc/templates/base_navbar.jinja2:26
+msgid "Administration"
+msgstr "Administración"
+
+#: gecoscc/templates/base_navbar.jinja2:29
 #: gecoscc/templates/bb-groups-form.html:23
 #: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
 #: gecoscc/templates/admins/edit.jinja2:16
@@ -485,46 +497,28 @@ msgstr "Inicio"
 msgid "Administrators"
 msgstr "Administradores"
 
-#: gecoscc/templates/base_navbar.jinja2:26
+#: gecoscc/templates/base_navbar.jinja2:32
 #: gecoscc/templates/settings.jinja2:122 gecoscc/templates/settings.jinja2:125
 msgid "Settings"
 msgstr "Configuración"
 
-#: gecoscc/templates/base_navbar.jinja2:28
+#: gecoscc/templates/base_navbar.jinja2:34
 #: gecoscc/templates/bb-computer.html:454 gecoscc/templates/bb-jobs.html:82
 #: gecoscc/templates/server/connections.jinja2:26
 msgid "Status"
 msgstr "Estado"
 
-#: gecoscc/templates/base_navbar.jinja2:31 gecoscc/templates/reports.jinja2:10
+#: gecoscc/templates/base_navbar.jinja2:37 gecoscc/templates/reports.jinja2:10
 msgid "Reports"
 msgstr "Informes"
 
-#: gecoscc/templates/base_navbar.jinja2:35 gecoscc/templates/bb-policy.html:11
-msgid "Help"
-msgstr "Ayuda"
-
-#: gecoscc/templates/base_navbar.jinja2:40
-msgid "User options"
-msgstr "Opciones de usuario"
-
-#: gecoscc/templates/base_navbar.jinja2:43
-msgid "Edit profile"
-msgstr "Editar perfil"
-
-#: gecoscc/templates/base_navbar.jinja2:48
-#: gecoscc/templates/admins/edit.jinja2:27
-#: gecoscc/templates/admins/variables.jinja2:15
-msgid "Set variables"
-msgstr "Establecer variables"
-
-#: gecoscc/templates/base_navbar.jinja2:54
+#: gecoscc/templates/base_navbar.jinja2:41
 #: gecoscc/templates/admins/statistics.jinja2:8
 #: gecoscc/templates/admins/statistics.jinja2:11
 msgid "Statistics"
-msgstr ""
+msgstr "Estadísticas"
 
-#: gecoscc/templates/base_navbar.jinja2:59
+#: gecoscc/templates/base_navbar.jinja2:46
 #: gecoscc/templates/admins/tail.jinja2:11
 #: gecoscc/templates/admins/tail.jinja2:15
 #: gecoscc/templates/admins/updates.jinja2:8
@@ -534,13 +528,23 @@ msgstr ""
 msgid "Updates"
 msgstr "Actualizaciones"
 
-#: gecoscc/templates/base_navbar.jinja2:64
+#: gecoscc/templates/base_navbar.jinja2:51
 #: gecoscc/templates/admins/maintenance.jinja2:8
 #: gecoscc/templates/admins/maintenance.jinja2:12
 msgid "Maintenance Mode"
 msgstr "Modo Mantenimiento"
 
-#: gecoscc/templates/base_navbar.jinja2:71
+#: gecoscc/templates/base_navbar.jinja2:62
+msgid "Edit profile"
+msgstr "Editar perfil"
+
+#: gecoscc/templates/base_navbar.jinja2:67
+#: gecoscc/templates/admins/edit.jinja2:27
+#: gecoscc/templates/admins/variables.jinja2:15
+msgid "Set variables"
+msgstr "Establecer variables"
+
+#: gecoscc/templates/base_navbar.jinja2:73
 msgid "Log out"
 msgstr "Salir"
 
@@ -919,15 +923,17 @@ msgstr "Por favor, habilite el modo depuración para este puesto"
 msgid ""
 "You can enable the debug mode for this computer by adding Debug mode "
 "policy."
-msgstr "Puede habilitar el modo depuración para este puesto añadiendo la "
-"política de modo de depuración."
+msgstr ""
+"Puede habilitar el modo depuración para este puesto añadiendo la política"
+" de modo de depuración."
 
 #: gecoscc/templates/bb-computer.html:406
 msgid ""
 "After that, you will have to wait until the policy is executed (around 20"
 " minutes)."
 msgstr ""
-"Tras esto deberá esperar hasta que la política se ejecute (unos 20 minutos)."
+"Tras esto deberá esperar hasta que la política se ejecute (unos 20 "
+"minutos)."
 
 #: gecoscc/templates/bb-computer.html:409
 msgid "The debug mode would be active for "
@@ -967,16 +973,16 @@ msgid ""
 "You can enable the Help Channel for this computer by configuring the Help"
 " Channel."
 msgstr ""
-"Puede habilitar el Help Channel para este puesto configurando el Help Channel"
-
+"Puede habilitar el Help Channel para este puesto configurando el Help "
+"Channel"
 
 #: gecoscc/templates/bb-computer.html:486
 msgid ""
 "After that, you will have to wait until the computer configuration data "
 "is uploaded (around 20 minutes)."
 msgstr ""
-"Tras esto deberá esperar hasta que los datos de configuración del puesto sean"
-" cargados (unos 20 minutos)."
+"Tras esto deberá esperar hasta que los datos de configuración del puesto "
+"sean cargados (unos 20 minutos)."
 
 #: gecoscc/templates/bb-groups-form.html:12
 #: gecoscc/templates/bb-new-element.html:34
@@ -1173,7 +1179,7 @@ msgstr "Ningún SO soportado"
 
 #: gecoscc/templates/bb-policies-list.html:7
 msgid "Support OS"
-msgstr "SSOO soportados"
+msgstr "S.O. soportados"
 
 #: gecoscc/templates/bb-policies-list.html:8
 msgid "Actions"
@@ -1639,11 +1645,11 @@ msgstr "Cookbooks"
 msgid "Version"
 msgstr "Versión"
 
-#: gecoscc/views/admins.py:195
+#: gecoscc/views/admins.py:207
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:197
+#: gecoscc/views/admins.py:209
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
@@ -1666,4 +1672,5 @@ msgstr "Teléfono"
 #: gecoscc/views/settings.py:125
 msgid "Settings modified successfully"
 msgstr "Configuraciones modificadas con éxito"
+
 
