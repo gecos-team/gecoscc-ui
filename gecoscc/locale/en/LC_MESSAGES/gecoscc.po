@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.2\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2018-11-19 16:50+0100\n"
+"POT-Creation-Date: 2018-11-27 13:59+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: en <LL@li.org>\n"
@@ -388,6 +388,30 @@ msgstr ""
 msgid "Directory %s can't be found."
 msgstr ""
 
+#: gecoscc/api/computers.py:172
+msgid "Unknown status"
+msgstr ""
+
+#: gecoscc/api/computers.py:174 gecoscc/api/computers.py:176
+msgid "User is requesting support"
+msgstr ""
+
+#: gecoscc/api/computers.py:178
+msgid "Terminated by user"
+msgstr ""
+
+#: gecoscc/api/computers.py:180
+msgid "Terminated by technician"
+msgstr ""
+
+#: gecoscc/api/computers.py:182
+msgid "Terminated because of a communication error"
+msgstr ""
+
+#: gecoscc/api/computers.py:184
+msgid "The technician is giving support to the user"
+msgstr ""
+
 #: gecoscc/api/register_computer.py:91
 msgid "detached"
 msgstr ""
@@ -458,13 +482,7 @@ msgstr ""
 msgid "Administration"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:28
-#, fuzzy
-#| msgid "Warnings Actions"
-msgid "Admin options"
-msgstr "Warnings"
-
-#: gecoscc/templates/base_navbar.jinja2:30
+#: gecoscc/templates/base_navbar.jinja2:29
 #: gecoscc/templates/bb-groups-form.html:23
 #: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
 #: gecoscc/templates/admins/edit.jinja2:16
@@ -478,28 +496,28 @@ msgstr "Warnings"
 msgid "Administrators"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:33
+#: gecoscc/templates/base_navbar.jinja2:32
 #: gecoscc/templates/settings.jinja2:122 gecoscc/templates/settings.jinja2:125
 msgid "Settings"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:35
+#: gecoscc/templates/base_navbar.jinja2:34
 #: gecoscc/templates/bb-computer.html:454 gecoscc/templates/bb-jobs.html:82
 #: gecoscc/templates/server/connections.jinja2:26
 msgid "Status"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:38 gecoscc/templates/reports.jinja2:10
+#: gecoscc/templates/base_navbar.jinja2:37 gecoscc/templates/reports.jinja2:10
 msgid "Reports"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:42
+#: gecoscc/templates/base_navbar.jinja2:41
 #: gecoscc/templates/admins/statistics.jinja2:8
 #: gecoscc/templates/admins/statistics.jinja2:11
 msgid "Statistics"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:47
+#: gecoscc/templates/base_navbar.jinja2:46
 #: gecoscc/templates/admins/tail.jinja2:11
 #: gecoscc/templates/admins/tail.jinja2:15
 #: gecoscc/templates/admins/updates.jinja2:8
@@ -509,27 +527,23 @@ msgstr ""
 msgid "Updates"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:52
+#: gecoscc/templates/base_navbar.jinja2:51
 #: gecoscc/templates/admins/maintenance.jinja2:8
 #: gecoscc/templates/admins/maintenance.jinja2:12
 msgid "Maintenance Mode"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:61
-msgid "User options"
-msgstr ""
-
-#: gecoscc/templates/base_navbar.jinja2:64
+#: gecoscc/templates/base_navbar.jinja2:62
 msgid "Edit profile"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:69
+#: gecoscc/templates/base_navbar.jinja2:67
 #: gecoscc/templates/admins/edit.jinja2:27
 #: gecoscc/templates/admins/variables.jinja2:15
 msgid "Set variables"
 msgstr ""
 
-#: gecoscc/templates/base_navbar.jinja2:75
+#: gecoscc/templates/base_navbar.jinja2:73
 msgid "Log out"
 msgstr ""
 
@@ -671,7 +685,7 @@ msgid "Logs"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:8
-msgid "Help Channel"
+msgid "Remote Control"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:16 gecoscc/templates/bb-jobs.html:28
@@ -930,11 +944,11 @@ msgid "Support"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:441
-msgid "No user needs support for this computer at this moment."
+msgid "Nobody in this workstation is asking for support"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:453
-msgid "Technician"
+msgid "Assisted by"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:475
@@ -1643,4 +1657,7 @@ msgstr ""
 #: gecoscc/views/settings.py:125
 msgid "Settings modified successfully"
 msgstr ""
+
+#~ msgid "User options"
+#~ msgstr ""
 
