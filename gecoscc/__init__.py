@@ -80,6 +80,7 @@ def route_config(config):
     config.add_route('logout', 'logout/')
     config.add_route('forbidden-view', '/error403/')
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
+    config.add_renderer('pdf', 'gecoscc.views.reports.PDFRenderer')
     config.add_renderer('txt', 'gecoscc.views.computer_logs.TXTRenderer')
     
     config.add_route('statistics', '/admins/statistics/', factory=SuperUserFactory)

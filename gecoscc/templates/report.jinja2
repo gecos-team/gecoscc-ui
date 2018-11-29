@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+            
+            @frame header_frame {           /* Static Frame */
+                -pdf-frame-content: header_content;
+                left: 50pt; width: 742pt; top: 50pt; height: 40pt;
+            }
+            @frame content_frame {          /* Content Frame */
+                left: 50pt; width: 742pt; top: 90pt; height: 435;
+            }
+            @frame footer_frame {           /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 50pt; width: 742pt; top: 525pt; height: 20pt;
+            }             
+        }
+        
+        #header_content {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        table {
+            border: 1px solid black;
+        }
+        
+        th, td {
+            border: 1px solid black;
+            padding: 2px;
+        }        
+    </style>  
+  
+  </head>
+
+  <body>
+    <!-- Content for Static Frame 'header_frame' -->
+    <div id="header_content">{{report_title}}</div>
+
+    {% if report_type == 'pdf' %}
+    <!-- Content for Static Frame 'footer_frame' -->
+    <div id="footer_content">{{page}} <pdf:pagenumber> {{of}} <pdf:pagecount></div>
+    {% endif %}
+  
+    <table cellspacing="0">
+      <tr>
+      {% for header in headers %}
+       <th width="{{ widths[loop.index0] }}%" style="background-color: #CCCCCC;">{{header}}</th>
+      {% endfor %}
+      </tr>
+    
+    {% for row in rows %}
+      <tr>
+      {% if (loop.index0 % 2) == 0 %}
+        {% for col in row %}
+          <td width="{{ widths[loop.index0] }}%">{{col}}</td>
+        {% endfor %}
+      {% else %}
+        {% for col in row %}
+          <td width="{{ widths[loop.index0] }}%" style="background-color: #CCCCCC;">{{col}}</td>
+        {% endfor %}
+      {% endif %}
+      </tr>
+    {% endfor %}
+    
+    </table>
+  </body>
+<html>

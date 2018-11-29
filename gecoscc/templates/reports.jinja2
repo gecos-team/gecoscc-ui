@@ -12,10 +12,42 @@
     <div class="row">
         <div class="col-sm-12">
             <ul class="list-group">
-                <li class="list-group-item">{{ gettext('Users') }} <a href="{{ request.route_url('report_file', report_type='user') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
-                <li class="list-group-item">{{ gettext('Workstations') }} <a href="{{ request.route_url('report_file', report_type='computer') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
+                <li class="list-group-item">{{ gettext('Users') }}
+                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=csv" 
+                    class="btn btn-default pull-right btn-export"
+                    type="text/csv" download>{{ gettext('Export to CSV') }}</a>
+                  
+                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=pdf" 
+                    class="btn btn-default pull-right btn-export" 
+                    style="margin-right: 10px;" 
+                    type="application/pdf" download>{{ gettext('Export to PDF') }}</a>
+
+                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=html" 
+                    class="btn btn-default pull-right btn-export" 
+                    style="margin-right: 10px;" 
+                    type="text/html" target="_blank">{{ gettext('View as HTML') }}</a>
+
+                 </li>
+                <li class="list-group-item">{{ gettext('Workstations') }}
+                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=csv" 
+                    class="btn btn-default pull-right btn-export"  
+                    type="text/csv" download>{{ gettext('Export to CSV') }}</a>
+                    
+                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=pdf" 
+                    class="btn btn-default pull-right btn-export"  
+                    style="margin-right: 10px;" 
+                    type="application/pdf" download>{{ gettext('Export to PDF') }}</a>
+                    
+                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=html" 
+                    class="btn btn-default pull-right btn-export"  
+                    style="margin-right: 10px;" 
+                    type="text/html" target="_blank">{{ gettext('View as HTML') }}</a>
+                    
+                </li>
             </ul>
         </div>
     </div>
+    
+    
 </div>
 {% endblock %}
