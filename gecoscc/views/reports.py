@@ -97,7 +97,20 @@ class PDFRenderer(object):
 @view_config(route_name='reports', renderer='templates/reports.jinja2',
              permission='edit')
 def reports(context, request):
-    return {}
+    ous = []
+    
+    # Get current user data
+    is_superuser = request.user.get('is_superuser', False) 
+    
+    if not is_superuser:
+        # Get managed ous
+        ou_managed = request.user.get('ou_managed', [])
+        for ou_id in  ou_managed:
+            ou = request.db.nodes.find_one({'type': 'ou', '_id': ObjectId(ou_id) })
+            if ou is not None:
+                ous.append({'id': ou_id, 'name': ou['name']})
+    
+    return {'ou_managed': ous, 'is_superuser': is_superuser}    
 
 
 def treatment_string_to_csv(item, key):

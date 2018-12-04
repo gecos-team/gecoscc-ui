@@ -27,6 +27,24 @@ function generateReport(type, format) {
     <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form">
         <input type="hidden" name="type" id="report_type" value="" />
         <input type="hidden" name="format" id="report_format" value="" />
+      {% if not is_superuser %}
+        {% if ou_managed|length == 1 %}
+            <input type="hidden" name="ou_id" id="ou_id" value="{{ou_managed[0].id}}" />
+        {% else %}
+        <div class="row list-group-top">
+            <div class="col-sm-6">
+                <label for="ou_id" class="select-label">{{ gettext('Please select the Organizational Unit') }}</label>
+            </div>
+            <div class="col-sm-6">
+                <select name="ou_id" id="ou_id">
+                  {% for ou in ou_managed %}
+                   <option value="{{ou.id}}">{{ou.name}}</option>
+                  {% endfor %}                
+                </select>
+            </div>
+        </div>    
+        {% endif %}
+      {% endif %}
     
         <div class="row">
             <div class="col-sm-12">

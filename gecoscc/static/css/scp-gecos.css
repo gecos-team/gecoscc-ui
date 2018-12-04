@@ -926,3 +926,16 @@ legend {
     width: 100%;
     height: calc(100% - 50px);
 }
+
+.list-group-top {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    margin-bottom: 15px;
+    margin-right: 15px;
+    margin-left: 15px;
+}
+
+.select-label {
+  margin-top: 8px;
+}

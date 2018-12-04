@@ -70,8 +70,8 @@ def route_config(config):
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
-    config.add_route('reports', '/reports/', factory=SuperUserFactory)
-    config.add_route('report_file', '/report', factory=SuperUserFactory)
+    config.add_route('reports', '/reports/', factory=LoggedFactory)
+    config.add_route('report_file', '/report', factory=LoggedFactory)
     config.add_route('computer_logs', '/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('download_computer_logs', '/download/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
