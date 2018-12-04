@@ -5,48 +5,65 @@
 
 
 {% block inner_content %}
+
+ <script type="text/javascript">
+//<![CDATA[
+
+function generateReport(type, format) {
+    $("#report_type").val(type);
+    $("#report_format").val(format);
+    $("#report_form").submit();
+}
+
+
+//]]>
+</script>
+
+
 <div class="container">
     <div class="row"><div class="col-sm-12">
         <h1>{{ gettext('Reports') }}</h1>
     </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <ul class="list-group">
-                <li class="list-group-item">{{ gettext('Users') }}
-                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=csv" 
-                    class="btn btn-default pull-right btn-export"
-                    type="text/csv" download>{{ gettext('Export to CSV') }}</a>
-                  
-                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=pdf" 
-                    class="btn btn-default pull-right btn-export" 
-                    style="margin-right: 10px;" 
-                    type="application/pdf" download>{{ gettext('Export to PDF') }}</a>
+    <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form">
+        <input type="hidden" name="type" id="report_type" value="" />
+        <input type="hidden" name="format" id="report_format" value="" />
+    
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="list-group">
+                    <li class="list-group-item">{{ gettext('Users') }}
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
 
-                  <a href="{{ request.route_url('report_file', report_type='user') }}?format=html" 
-                    class="btn btn-default pull-right btn-export" 
-                    style="margin-right: 10px;" 
-                    type="text/html" target="_blank">{{ gettext('View as HTML') }}</a>
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
 
-                 </li>
-                <li class="list-group-item">{{ gettext('Workstations') }}
-                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=csv" 
-                    class="btn btn-default pull-right btn-export"  
-                    type="text/csv" download>{{ gettext('Export to CSV') }}</a>
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
+
+                     </li>
+                    <li class="list-group-item">{{ gettext('Workstations') }}
                     
-                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=pdf" 
-                    class="btn btn-default pull-right btn-export"  
-                    style="margin-right: 10px;" 
-                    type="application/pdf" download>{{ gettext('Export to PDF') }}</a>
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
                     
-                  <a href="{{ request.route_url('report_file', report_type='computer') }}?format=html" 
-                    class="btn btn-default pull-right btn-export"  
-                    style="margin-right: 10px;" 
-                    type="text/html" target="_blank">{{ gettext('View as HTML') }}</a>
-                    
-                </li>
-            </ul>
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
+    </form>
     
     
 </div>
