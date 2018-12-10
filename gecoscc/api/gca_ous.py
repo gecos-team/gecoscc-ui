@@ -48,7 +48,7 @@ class GCAOuResource(BaseAPI):
             ou_ids_availables = [ObjectId(ou_id) for ou_id in ou_ids_availables]
             filters['_id'] = {'$in': ou_ids_availables}
             ous_query = self.request.db.nodes.find(filters)
-            ous = [(unicode(ou['_id']), ou['name']) for ou in ous_query]
+            ous = [(unicode(ou['_id']), ou['name'], ou['path']) for ou in ous_query]
             del filters['_id']
             for ou_ids_available in ou_ids_availables:
                 ou_availables_children = get_items_ou_children(ou_ids_available,
@@ -57,8 +57,8 @@ class GCAOuResource(BaseAPI):
                                                                filters=filters,
                                                                next_level=False)
                 if ou_availables_children:
-                    ous += [(ou_children['_id'], ou_children['name']) for ou_children in ou_availables_children]
+                    ous += [(ou_children['_id'], ou_children['name'], ou_children['path']) for ou_children in ou_availables_children]
             ous = list(set(ous))
         elif user.get('is_superuser'):
-            ous = [(unicode(ou['_id']), ou['name']) for ou in self.request.db.nodes.find(filters)]
+            ous = [(unicode(ou['_id']), ou['name'], ou['path']) for ou in self.request.db.nodes.find(filters)]
         return {'ous': ous}

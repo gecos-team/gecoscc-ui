@@ -67,12 +67,6 @@ admin.pem file is the pem of the chef administrator, you should get it from the 
 
     pmanage config-templates/development.ini synchronize_repositories
 
-5. Create software profiles
-
-::
-
-    pmanage config-templates/development.ini create_software_profiles
-
 
 Run server
 ==========  

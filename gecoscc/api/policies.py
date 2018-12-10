@@ -12,7 +12,7 @@
 
 from cornice.resource import resource
 
-from pyramid.threadlocal import get_current_request, get_current_registry
+from pyramid.threadlocal import get_current_request
 
 from gecoscc.api import ResourcePaginatedReadOnly
 from gecoscc.i18n import is_default_language

@@ -10,7 +10,6 @@
 #
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import is_domain
 
 
 class Command(BaseCommand):

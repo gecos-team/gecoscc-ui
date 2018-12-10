@@ -33,14 +33,14 @@ class PackagesResource(ResourcePaginatedReadOnly):
     order_field = 'name'
 
     def collection_get(self):
-      if 'package_name' in self.request.GET:
-        package_name = self.request.GET['package_name'].strip()
-        package = self.collection.find_one({'name': package_name})
-        if package is None:
-            package = ''
+        if 'package_name' in self.request.GET:
+            package_name = self.request.GET['package_name'].strip()
+            package = self.collection.find_one({'name': package_name})
+            if package is None:
+                package = ''
+            else:
+                package = self.schema_detail().serialize(package)
+            
+            return package
         else:
-            package = self.schema_detail().serialize(package)
-        
-        return package
-      else:
-        return super(PackagesResource, self).collection_get()    
+            return super(PackagesResource, self).collection_get()

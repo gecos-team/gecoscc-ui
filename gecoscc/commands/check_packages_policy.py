@@ -9,31 +9,20 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
-import sys
-import string
-import random
-import subprocess
-import json
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 from chef import Search
-from getpass import getpass
 from optparse import make_option
 from copy import deepcopy
 
 from gecoscc.management import BaseCommand
-from gecoscc.userdb import UserAlreadyExists
-from gecoscc.utils import _get_chef_api, create_chef_admin_user, toChefUsername, apply_policies_to_ou, apply_policies_to_group, apply_policies_to_computer
+from gecoscc.utils import _get_chef_api, toChefUsername
 from gecoscc.tasks import object_changed
 from bson.objectid import ObjectId
-from gecoscc.models import Policy
 
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)    
+logger = logging.getLogger()    
     
 # Execute with: 
 # /opt/gecosccui-development/bin/pmanage /opt/gecosccui-development/gecoscc.ini check_packages_policy -a superuser -k /opt/gecoscc/media/users/superuser/chef_user.pem 2>&1 | grep -v InsecureRequestWarning | grep -v requests.packages.urllib3.connectionpool | tee /root/check_packages_policy.log
@@ -191,7 +180,6 @@ class Command(BaseCommand):
                     continue
                 
                 package_list = node.attributes["gecos_ws_mgmt"]["software_mgmt"]["package_res"]["package_list"]
-                bad_element = False
                 for element in package_list:
                     if not 'action' in element:
                         logger.debug('Chef node: %s doesn\'t have an action value in package_res! (package_list:%s)'%(node_id, str(package_list))) 

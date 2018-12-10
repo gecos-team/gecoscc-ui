@@ -36,7 +36,6 @@ from gecoscc.models import (OU_ORDER, OrganisationalUnit, Group, User,
 from gecoscc.permissions import http_basic_login_required, can_access_to_this_path
 from gecoscc.utils import (get_chef_api, reserve_node_or_raise,
                            save_node_and_free, is_domain, is_visible_group,
-                           apply_policies_to_computer, apply_policies_to_user,
                            get_filter_this_domain,
                            MASTER_DEFAULT)
 logger = logging.getLogger(__name__)
@@ -554,7 +553,7 @@ class ADImport(BaseAPI):
         # Order by size
         orderedBySize = {}
         er = re.compile(r'([^, ]+=(?:(?:\\,)|[^,])+)')
-        for index, mongoObject in mongoObjects.items():
+        for _index, mongoObject in mongoObjects.items():
             if mongoObject['adDistinguishedName'] == domain['adDistinguishedName']:  # Jump root domain
                 mongoObjectRoot = mongoObject
                 continue

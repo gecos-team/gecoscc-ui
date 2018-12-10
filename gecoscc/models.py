@@ -18,7 +18,6 @@ import colander
 import deform
 import os
 import pyramid
-import datetime
 
 from bson import ObjectId
 from bson.objectid import InvalidId
@@ -29,16 +28,15 @@ from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
 from gecoscc.i18n import gettext                                
 from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
-from gecoscc.permissions import RootFactory
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
-UPDATE_STRUCTURE = ['control','cookbook/','scripts/']
+UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
 
 
 class MemoryTmpStore(dict):
 
-    def preview_url(self, name):
+    def preview_url(self, _name):
         return None
 
 filestore = MemoryTmpStore()
@@ -50,7 +48,7 @@ class MyModel(object):
 root = MyModel()
 
 
-def get_root(request):
+def get_root(_request):
     return root
 
 
@@ -334,7 +332,7 @@ class ChainedSelectWidget(SelectWidget):
 
 
 @colander.deferred
-def deferred_choices_widget(node, kw):
+def deferred_choices_widget(_node, kw):
     choices = kw.get('ou_choices')
     return ChainedSelectWidget(values=choices)
 
@@ -577,15 +575,15 @@ def unzip_preparer(value):
 
             return value
 
-        except urllib2.HTTPError as e:
+        except urllib2.HTTPError:
             pass
-        except urllib2.URLError as e:
+        except urllib2.URLError:
             pass
-        except zipfile.BadZipfile as e:
+        except zipfile.BadZipfile:
             pass
-        except OSError as e:
+        except OSError:
             pass
-        except IOError as e:
+        except IOError:
             pass
 
 class UrlFile(object):
@@ -728,6 +726,40 @@ AUTH_TYPE_CHOICES = (('LDAP', 'LDAP'),
                      ('AD', 'Active Directory'))
 
 
+@colander.deferred
+def deferred_ou_widget(_node, kw):
+    ou_managed = kw.get('ou_choices')
+    return deform.widget.SelectWidget(values=ou_managed)
+
+@colander.deferred
+def deferred_default_gem_source(_node, kw):
+    settings = get_current_registry().settings
+    return settings.get('firstboot_api.gem_repo',[])
+
+class UniqueDomainValidator(object):
+    err_msg = 'Duplicated domain'
+
+    def __call__(self, node, value):
+        ous = [d['ou'] for d in value]
+        if len(ous) > len(set(ous)):
+            node.raise_invalid(self.err_msg)
+
+
+class GemSources(colander.SequenceSchema):
+    sources = colander.SchemaNode(colander.String(),
+                                 default=deferred_default_gem_source,
+                                 validator=URLExtend())
+
+
+class GemRepository(colander.MappingSchema):
+    ou = colander.SchemaNode(colander.String(),
+                                 widget=deferred_ou_widget)
+    gem_sources = GemSources(widget=deform.widget.SequenceWidget(max_len=4, min_len=1))
+
+class GemRepositories(colander.SequenceSchema):
+    repos = GemRepository()
+
+
 class AdminUserVariables(colander.MappingSchema):
     uri_ntp = colander.SchemaNode(colander.String(),
                                   default='URI_NTP_SERVER.EX',
@@ -742,6 +774,10 @@ class AdminUserVariables(colander.MappingSchema):
     auth_ldap = AuthLDAPVariable(title=_('Auth LDAP'))
     auth_ad = ActiveDirectoryVariableNoSpecific(title=_('Auth Active directory'))
     auth_ad_spec = ActiveDirectoryVariableSpecific(title=_('Auth Active directory'))
+    gem_repos = GemRepositories(title=_('Gem Repositories'),
+                                missing=[],
+                                default=[],
+                                validator=UniqueDomainValidator())
 
     def get_config_files(self, mode, username):
         return self.get_files(mode, username, ['sssd.conf', 'krb5.conf', 'smb.conf', 'pam.conf'])
@@ -934,8 +970,8 @@ class Repositories(colander.SequenceSchema):
     repositories = Repository()
 
 class Settings(colander.SequenceSchema):
-		settings = Setting()
-	
+    settings = Setting()
+
 
 JOB_STATUS = {
     # Calculating node changes
@@ -1056,17 +1092,6 @@ class Package(colander.MappingSchema):
 class Packages(colander.SequenceSchema):
     packages = Package()
 
-
-class SoftwareProfile(colander.MappingSchema):
-    _id = colander.SchemaNode(ObjectIdField())
-    name = colander.SchemaNode(colander.String())
-    packages = StringList(missing=[], default=[])
-
-
-class SoftwareProfiles(colander.SequenceSchema):
-    software_profiles = SoftwareProfile()
-
-
 class PrinterModel(colander.MappingSchema):
     manufacturer = colander.SchemaNode(colander.String())
     model = colander.SchemaNode(colander.String())
@@ -1074,3 +1099,10 @@ class PrinterModel(colander.MappingSchema):
 
 class PrinterModels(colander.SequenceSchema):
     printers = PrinterModel()
+
+class ServiceProvider(colander.MappingSchema):
+    name = colander.SchemaNode(colander.String(),missing='', default='')
+    provider = colander.SchemaNode(colander.String(),missing='', default='')
+
+class ServiceProviders(colander.SequenceSchema):
+    serviceproviders = ServiceProvider()

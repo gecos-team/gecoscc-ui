@@ -9,20 +9,16 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import os
 import sys
-import string
-import subprocess
 
-from chef.exceptions import ChefServerNotFoundError, ChefServerError
 from chef import Node as ChefNode
 
 from optparse import make_option
 from copy import deepcopy
 
 from gecoscc.management import BaseCommand
-from gecoscc.tasks import object_changed, object_created
-from gecoscc.utils import _get_chef_api, toChefUsername, get_filter_nodes_belonging_ou, delete_dotted
+from gecoscc.tasks import object_changed
+from gecoscc.utils import _get_chef_api, toChefUsername, delete_dotted
 
 from bson.objectid import ObjectId
 from jsonschema import validate
@@ -31,8 +27,7 @@ from jsonschema.exceptions import ValidationError
 import requests.packages.urllib3
 
 import logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
     
 class Command(BaseCommand):
     description = """
@@ -122,10 +117,10 @@ class Command(BaseCommand):
                     validate(instance, schema)
                     break
                 except ValidationError as e: 
-                     logger.warn('Validation error on instance = %s'%str(e.message))
-                     # Sanitize instance
-                     self.sanitize(e, instance)
-                     sanitized = True
+                    logger.warn('Validation error on instance = %s'%str(e.message))
+                    # Sanitize instance
+                    self.sanitize(e, instance)
+                    sanitized = True
 
             if sanitized:
                 # Setting false sanitized for next iteration

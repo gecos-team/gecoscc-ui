@@ -67,6 +67,7 @@ class AdminUserResource(BaseAPI):
                 'organization': get_setting('firstboot_api.organization_name', settings, self.request.db),
                 'notes': get_setting('firstboot_api.comments', settings, self.request.db),
                 'gem_repo': get_setting('firstboot_api.gem_repo', settings, self.request.db),
+                'gem_repos_by_admin': variables.get('gem_repos',[]),
                 'uri_ntp': variables.get('uri_ntp', ''),
                 'auth': auth,
                 'chef': chef,

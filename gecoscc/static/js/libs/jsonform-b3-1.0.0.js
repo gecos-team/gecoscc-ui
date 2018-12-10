@@ -671,18 +671,19 @@ jsonform.elementTypes = {
             value: term,
             id: term
           });
-          node.schemaElement.enum.push(term);
+          node.schemaElement['enum'].push(term);
       };
 
-      var isPackagesPolicy = function () {
-          return slug === "package";
+      var isQSbyNamePolicy = function () {
+          // Policies that use the name as the query parameter and not an OID list
+          return slug === "package" || slug === "mobile_broadband";
       };
 
       if (!schemaElmnt || _.isUndefined(schemaElmnt) || _.isUndefined(schemaElmnt.autocomplete_url)) { return; }
 
       if (node.value && !schemaElmnt.autocomplete_url.startsWith('javascript:')) {
         $(node.el).addClass("hidden");
-          if (isPackagesPolicy()){
+          if (isQSbyNamePolicy()){
             data = {name: node.value};
           } else {
             data = {oids: node.value};
@@ -707,7 +708,7 @@ jsonform.elementTypes = {
             nodes = []
             var values = res.settings[0].value.replace(/[\[\]"]/g, '').split(',');
             if(values.length === 0) {
-              node.schemaElement.enum.push(node.value);
+              node.schemaElement['enum'].push(node.value);
               $(node.el).find("input").attr('value', node.value);
               if (!_.isUndefined(res.packages)) {
                 resNode = {name: node.value};
@@ -727,9 +728,9 @@ jsonform.elementTypes = {
           }
           else {          
             // Other cases
-            var collection = res.nodes || res.packages || res.software_profiles;
+            var collection = res.nodes || res.packages || res.serviceproviders;
             if(collection.length === 0) {
-              node.schemaElement.enum.push(node.value);
+              node.schemaElement['enum'].push(node.value);
               $(node.el).find("input").attr('value', node.value);
               if (!_.isUndefined(res.packages)) {
                 resNode = {name: node.value};
@@ -758,7 +759,7 @@ jsonform.elementTypes = {
               initSelection : function (element, callback) {
                 if(!_.isUndefined(node.value)){
                   $(node.el).find("input").last().attr('value', node.value);
-                  node.schemaElement.enum.push(node.value);
+                  node.schemaElement['enum'].push(node.value);
                   var data = {id: node.value, value: node.value, text: gettext(node.value)};
                   callback(data);
                 }
@@ -775,12 +776,12 @@ jsonform.elementTypes = {
                           return re.test(d.text);
                       });
                       cachedRequests[query.term] = _.clone(cachedData);
-                      if (isPackagesPolicy()) {
+                      if (isQSbyNamePolicy()) {
                         addTerm(cachedData, query.term);
                       }
                       query.callback({results: cachedData});
                   } else if (cachedRequests[query.term]) {
-                      if (isPackagesPolicy()) {
+                      if (isQSbyNamePolicy()) {
                         addTerm(cachedRequests[query.term], query.term);
                       }
                       query.callback({results: cachedRequests[query.term]});
@@ -811,16 +812,16 @@ jsonform.elementTypes = {
                                     value: values[i],
                                     id: values[i]
                                   }
-                                  node.schemaElement.enum.push(values[i]);
+                                  node.schemaElement['enum'].push(values[i]);
                                 }
                                 
                                 more = values.length >= pagesize;
                               }
                               else {
-                                var collection = data.software_profiles || data.nodes || data.packages
+                                var collection = data.nodes || data.packages || data.serviceproviders
                                 nodes = collection.map(function (n) {
                                   n._id = n._id || n.name;
-                                  node.schemaElement.enum.push(n._id);
+                                  node.schemaElement['enum'].push(n._id);
                                   return {
                                     text: n.name,
                                     value: n._id,
@@ -845,7 +846,7 @@ jsonform.elementTypes = {
               initSelection : function (element, callback) {
                 if(!_.isUndefined(resNode)){
                   $(node.el).find("input").last().attr('value', resNode._id || resNode.name);
-                  node.schemaElement.enum.push(resNode._id || resNode.name);
+                  node.schemaElement['enum'].push(resNode._id || resNode.name);
                   var data = {id: resNode._id || resNode.name, text: resNode.name};
                   callback(data);
                 }

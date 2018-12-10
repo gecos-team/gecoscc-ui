@@ -9,8 +9,6 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import json
-
 from cornice.resource import resource
 
 from gecoscc.api import BaseAPI

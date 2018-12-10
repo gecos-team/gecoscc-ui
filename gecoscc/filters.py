@@ -20,15 +20,15 @@ from babel.dates import format_datetime, LOCALTZ
 def admin_serialize(admin):
     return json.dumps(AdminUser().serialize(admin));
 
-def datetime(value, format='medium'):
+def datetime(value, date_format='medium'):
     '''
     Custom filter for formatting date in jinja2 template
     '''
-    if format == 'full':
-        format="EEEE d/MMM/y HH:mm"
-    elif format == 'medium':
-        format="dd/MM/y HH:mm"
-    return format_datetime(value, format, tzinfo=LOCALTZ)
+    if date_format == 'full':
+        date_format="EEEE d/MMM/y HH:mm"
+    elif date_format == 'medium':
+        date_format="dd/MM/y HH:mm"
+    return format_datetime(value, date_format, tzinfo=LOCALTZ)
 
 def _get_regex_flags(ignorecase=False):
     return re.I if ignorecase else 0

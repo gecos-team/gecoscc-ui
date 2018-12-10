@@ -75,7 +75,8 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
             "click #delete": "deleteModel",
             "click #cut": "cutModel",
             "change input": "validate",
-            "click button.refresh": "refresh"
+            "click button.refresh": "refresh",
+            "click button.support": "support",
         },
 
         onBeforeRender: function () {
@@ -802,6 +803,12 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });
             });
         },
+        
+        
+        support: function (evt) {
+            // Open support Window for this computer 
+            window.open('/api/computers/support/'+this.model.get('id')+'/', 'support');
+        },        
 
         saveForm: function (evt) {
             evt.preventDefault();

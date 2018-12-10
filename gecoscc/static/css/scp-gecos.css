@@ -907,3 +907,22 @@ legend {
    text-align: center;
    margin-top: 15px; 
 }
+
+#log_viewer .modal-dialog {
+    width: 80%;
+    height: 90vh;
+}
+
+#log_viewer .modal-header .close {
+    float: right;
+}
+
+
+#log_viewer .modal-content {
+    height: 100%;
+}
+
+#log_viewer .modal-body {
+    width: 100%;
+    height: calc(100% - 50px);
+}
