@@ -118,3 +118,10 @@ def treatment_string_to_csv(item, key):
     return item.get(key, none).encode('utf-8') or none
 
 
+def treatment_string_to_pdf(item, key, length):
+    pdfstr = treatment_string_to_csv(item, key)
+    if len(pdfstr) > length:
+        pdfstr = pdfstr[0:length] + '...'
+        
+    return pdfstr 
+

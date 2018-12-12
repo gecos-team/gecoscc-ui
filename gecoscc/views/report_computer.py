@@ -11,7 +11,7 @@
 
 import logging
 
-from gecoscc.views.reports import treatment_string_to_csv
+from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
@@ -90,12 +90,20 @@ def report_computer(context, request, file_ext):
     else:
         raise HTTPBadRequest()
 
-    rows = [(item['_id'],
-             treatment_string_to_csv(item, 'name'),
-             treatment_string_to_csv(item, 'family'),
-             treatment_string_to_csv(item, 'registry'),
-             treatment_string_to_csv(item, 'serial'),
-             treatment_string_to_csv(item, 'node_chef_id')) for item in query]
+    if file_ext == 'pdf':
+        rows = [(item['_id'],
+                 treatment_string_to_pdf(item, 'name', 15),
+                 treatment_string_to_pdf(item, 'family', 15),
+                 treatment_string_to_pdf(item, 'registry', 15),
+                 treatment_string_to_pdf(item, 'serial', 25),
+                 treatment_string_to_csv(item, 'node_chef_id')) for item in query]
+    else:
+        rows = [(item['_id'],
+                 treatment_string_to_csv(item, 'name'),
+                 treatment_string_to_csv(item, 'family'),
+                 treatment_string_to_csv(item, 'registry'),
+                 treatment_string_to_csv(item, 'serial'),
+                 treatment_string_to_csv(item, 'node_chef_id')) for item in query]
     
     header = (_(u'Id').encode('utf-8'),
               _(u'Name').encode('utf-8'),
