@@ -58,7 +58,7 @@ def is_path_right(request, path, ou_type='ou_managed'):
         ou_type = [ou_type]
 
     for t in ou_type:
-        ou_managed_ids += request.user.get(t)
+        ou_managed_ids += request.user.get(t, [])
 
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
@@ -130,7 +130,6 @@ def nodes_path_filter(request, ou_type='ou_managed'):
     maxdepth = int(params.get('maxdepth', 0))
     path = request.GET.get('path', None)
     range_depth = '0,{0}'.format(maxdepth)
-    ou_managed_ids = request.user.get(ou_type, [])
     ou_managed_ids = []
     for t in ou_type:
         ou_managed_ids += request.user.get(t, [])

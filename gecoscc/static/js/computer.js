@@ -609,7 +609,6 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 this.$el.find('#' + this.activeTab.id + ' a[href="' + this.activeTab.firstElementChild.getAttribute('href') + '"]').tab('show');
             }
             this.$el.find('[data-toggle="tooltip"]').tooltip();
-            this.checkErrors();
 
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');

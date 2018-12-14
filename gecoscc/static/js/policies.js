@@ -316,24 +316,29 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             var ou_readonly = [],
             ou_managed = [];
 
-            var read = null, managed = [];
             var path = this.resource.get('path') + ',' + this.resource.get('id');
             path = path.split(',');
+            path.reverse();
 
             if (_.has(window.GecosUtils.gecosUser, 'ou_readonly')) {
                 ou_readonly = window.GecosUtils.gecosUser['ou_readonly'];
                 ou_managed = window.GecosUtils.gecosUser['ou_managed'];
 
-                read = _.find(ou_readonly, function (ou) {
-                    return _.contains(path, ou);
-                });
-
-                managed = _.find(ou_managed, function (ou) {
-                    return _.contains(path, ou);
-                });
+                var permission = null;
+                var node = null;
+                for(var i=0; i < path.length; i++) {
+                  node = path[i];
+                  if (_.contains(ou_readonly, node)) {
+                    permission = 'read';
+                    break;
+                  } else if (_.contains(ou_managed, node)) {
+                    permission = 'manage';
+                    break;
+                  }
+                }
 
                 //console.log("permission: " + permission)
-                if (!_.isUndefined(read) && _.isUndefined(managed)) {
+                if (permission == 'read') {
 
                     // groups-form-view id submit changes
                     var $add = this.$el.find("#add-policy");
