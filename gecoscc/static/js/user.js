@@ -128,6 +128,9 @@ App.module("User.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+
+            this.check_permissions();
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#username").attr('disabled', 'disabled');
             }

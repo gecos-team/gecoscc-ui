@@ -32,7 +32,10 @@ from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
 UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
-
+PERMISSIONS = (('READONLY', 'read'),
+               ('MANAGE', 'manage'),
+               ('LINK', 'link'),
+               ('REMOTE', 'remote'))
 
 class MemoryTmpStore(dict):
 
@@ -330,6 +333,12 @@ class ChainedSelectWidget(SelectWidget):
             html += self.get_select(mongodb, ['root'], field_iter, **kw)
         return html
 
+    def deserialize(self, field, pstruct):
+        cstruct = []
+        if pstruct is colander.null:
+            return pstruct
+        cstruct.append(pstruct)
+        return cstruct
 
 @colander.deferred
 def deferred_choices_widget(_node, kw):
@@ -360,43 +369,39 @@ class AdminUser(BaseUser):
                                     colander.Email(),
                                     Unique('adminusers',
                                            'There is a user with this email: ${val}')))
-    nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
-                                  default=10,
-                                  missing=10,
-                                  title=_('Navigation tree page size:'),
-                                  validator=colander.Range(1, 200))
-    policies_pagesize = colander.SchemaNode(colander.Integer(),
-                                  default=8,
-                                  missing=8,
-                                  title=_('Policies list page size:'),
-                                  validator=colander.Range(1, 200))
-    jobs_pagesize = colander.SchemaNode(colander.Integer(),
-                                  default=30,
-                                  missing=30,
-                                  title=_('Actions list page size:'),
-                                  validator=colander.Range(1, 200))
-    group_nodes_pagesize = colander.SchemaNode(colander.Integer(),
-                                  default=10,
-                                  missing=10,
-                                  title=_('Group nodes list page size:'),
-                                  validator=colander.Range(1, 200))
 
 
 
-                                       
+
 # Only to makemessages
 _('There was a problem with your submission')
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
 
+class AdminUserOUPerm(colander.MappingSchema):
+    ou_selected = colander.SchemaNode(colander.List(),
+                                      title=_('Select an Organization Unit'),
+                                      widget=deferred_choices_widget)
 
-class AdminUserOUManage(colander.MappingSchema):
-    ou_managed = colander.SchemaNode(colander.List(),
-                                     title=_('This user can manage workstations under these Organizational Units'),
-                                     widget=deferred_choices_widget)
-    ou_availables = colander.SchemaNode(colander.List(),
-                                        title=_('Organizational Units available to register workstations'),
-                                        widget=deferred_choices_widget)
+
+    permission = colander.SchemaNode(colander.Set(),
+                                     title=_('Permissions'),
+                                     widget=deform.widget.CheckboxChoiceWidget(
+                                         values=PERMISSIONS, inline=True))
+
+
+class AdminUserOUPerms(colander.SequenceSchema):
+    permissions = AdminUserOUPerm(
+        title='Dropdown',
+        widget=deform.widget.MappingWidget(
+        template='mapping_accordion',
+        item_template="mapping_item_two_columns"))
+
+
+class Permissions(colander.MappingSchema):
+    perms = AdminUserOUPerms(
+        title='Permissions List'
+    )
 
 # UPDATES: INI
 
@@ -761,6 +766,26 @@ class GemRepositories(colander.SequenceSchema):
 
 
 class AdminUserVariables(colander.MappingSchema):
+    nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Navigation tree page size:'),
+                                  validator=colander.Range(1, 200))
+    policies_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=8,
+                                  missing=8,
+                                  title=_('Policies list page size:'),
+                                  validator=colander.Range(1, 200))
+    jobs_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=30,
+                                  missing=30,
+                                  title=_('Actions list page size:'),
+                                  validator=colander.Range(1, 200))
+    group_nodes_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title=_('Group nodes list page size:'),
+                                  validator=colander.Range(1, 200))
     uri_ntp = colander.SchemaNode(colander.String(),
                                   default='URI_NTP_SERVER.EX',
                                   title=_('URI ntp'))

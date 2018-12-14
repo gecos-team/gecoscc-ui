@@ -89,9 +89,7 @@ class GecosTwoColumnsForm(GecosForm):
 class BaseAdminUserForm(GecosTwoColumnsForm):
 
     sorted_fields = ('username', 'email', 'password',
-                     'repeat_password', 'first_name', 'last_name',
-                     'nav_tree_pagesize', 'policies_pagesize', 'jobs_pagesize', 'group_nodes_pagesize',
-                     'ou_managed', 'ou_availables',)
+                     'repeat_password', 'first_name', 'last_name')
 
     def __init__(self, schema, collection, username, request, *args, **kwargs):
         self.collection = collection
@@ -100,10 +98,6 @@ class BaseAdminUserForm(GecosTwoColumnsForm):
         super(BaseAdminUserForm, self).__init__(schema, *args, **kwargs)
         schema.children[self.sorted_fields.index('username')].ignore_unique = self.ignore_unique
         schema.children[self.sorted_fields.index('email')].ignore_unique = self.ignore_unique
-        schema.children[self.sorted_fields.index('nav_tree_pagesize')].ignore_unique = self.ignore_unique
-        schema.children[self.sorted_fields.index('policies_pagesize')].ignore_unique = self.ignore_unique
-        schema.children[self.sorted_fields.index('jobs_pagesize')].ignore_unique = self.ignore_unique
-        schema.children[self.sorted_fields.index('group_nodes_pagesize')].ignore_unique = self.ignore_unique
 
 
 class AdminUserAddForm(BaseAdminUserForm):
@@ -155,32 +149,30 @@ class AdminUserEditForm(BaseAdminUserForm):
             self.request.session['auth.userid'] = admin_user['username']
         self.created_msg(_('User edited successfully'))
 
+class PermissionsForm(GecosForm):
 
-class AdminUserOUManageForm(GecosTwoColumnsForm):
+    def save(self, permissions):
+        logger.info("SAVE - permissions = {}".format(permissions))
+        ou_managed = [d['ou_selected'][0] for d in permissions if 'MANAGE' in d['permission']]
+        ou_availables = [d['ou_selected'][0] for d in permissions if 'LINK' in d['permission']]
+        ou_remote = [d['ou_selected'][0] for d in permissions if 'REMOTE' in d['permission']]
+        ou_readonly = [d['ou_selected'][0] for d in permissions if 'READONLY' in d['permission']]
 
-    ou_managed_count = colander.SchemaNode(colander.Integer(),
-                                           title='',
-                                           name='ou_managed_count',
-                                           widget=deform.widget.HiddenWidget(),
-                                           default=1)
-    ou_availables_count = colander.SchemaNode(colander.Integer(),
-                                              title='',
-                                              name='ou_availables_count',
-                                              widget=deform.widget.HiddenWidget(),
-                                              default=1)
+        logger.info("SAVE - ou_managed = {}".format(ou_managed))
+        logger.info("SAVE - ou_availables = {}".format(ou_availables))
+        logger.info("SAVE - ou_remote = {}".format(ou_remote))
+        logger.info("SAVE - ou_readonly = {}".format(ou_readonly))
 
-    def __init__(self, schema, collection, username, request, *args, **kwargs):
-        schema.get('ou_managed').title += '<p><a href="#ou-managed" class="add-another">%s</a></p>' % _('Add another')
-        schema.get('ou_availables').title += '<p><a href="#ou-availables" class="add-another">%s</a></p>' % _('Add another')
-        schema.children.append(self.ou_managed_count)
-        schema.children.append(self.ou_availables_count)
-        super(AdminUserOUManageForm, self).__init__(schema, collection=collection,
-                                                    username=username, request=request,
-                                                    *args, **kwargs)
-
-    def save(self, ous_managed):
-        self.collection.update({'username': self.username},
-                               {'$set': ous_managed})
+        self.collection.update(
+            {'username': self.username},
+            {'$set': {
+                'ou_managed': ou_managed,
+                'ou_availables': ou_availables,
+                'ou_remote': ou_remote,
+                'ou_readonly': ou_readonly
+                }
+            }
+        )
         self.created_msg(_('User edited successfully'))
 
 

@@ -311,6 +311,59 @@ App.module("Policies.Views", function (Views, App, Backbone, Marionette, $, _) {
             
             App.showSavingProcess($(evt.target), "refreshed");
         },
+
+        check_permissions: function() {
+            var ou_readonly = [],
+            ou_managed = [];
+
+            var read = null, managed = [];
+            var path = this.resource.get('path') + ',' + this.resource.get('id');
+            path = path.split(',');
+
+            if (_.has(window.GecosUtils.gecosUser, 'ou_readonly')) {
+                ou_readonly = window.GecosUtils.gecosUser['ou_readonly'];
+                ou_managed = window.GecosUtils.gecosUser['ou_managed'];
+
+                read = _.find(ou_readonly, function (ou) {
+                    return _.contains(path, ou);
+                });
+
+                managed = _.find(ou_managed, function (ou) {
+                    return _.contains(path, ou);
+                });
+
+                //console.log("permission: " + permission)
+                if (!_.isUndefined(read) && _.isUndefined(managed)) {
+
+                    // groups-form-view id submit changes
+                    var $add = this.$el.find("#add-policy");
+                    var $refresh = this.$el.find("#refresh-policies");
+                    var $edit = this.$el.find("button span.fa-edit").parent();
+                    var $delete = this.$el.find("button.btn-danger span.fa-times").parent();
+
+                    $add.removeClass('btn-primary');
+                    $add.addClass('btn-group disabled');
+                    $add.removeAttr('id');
+                    $add.unbind('click');
+                    $add.css('margin-right','5px');
+
+                    $refresh.removeClass('btn-primary');
+                    $refresh.addClass('btn-group disabled');
+                    $refresh.removeAttr('id');
+                    $refresh.unbind('click');
+                    $refresh.css('margin-right','5px');
+
+                    $edit.attr('disabled','disabled');
+                    $edit.addClass('btn-group disabled');
+                    $delete.attr('disabled','disabled');
+                    $delete.addClass('btn-group disabled');
+                }
+            }
+        },
+
+        onRender: function() {
+            this.check_permissions();
+        },
         
         serializeData: function () {
             return {items: this.collection.toJSON(),

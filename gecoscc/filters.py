@@ -18,7 +18,13 @@ from babel.dates import format_datetime, LOCALTZ
 
 
 def admin_serialize(admin):
-    return json.dumps(AdminUser().serialize(admin));
+    serialized = AdminUser().serialize(admin)
+    serialized.update({
+        'ou_readonly': admin.get('ou_readonly', []),
+        'ou_managed': admin.get('ou_managed', []),
+        'ou_remote': admin.get('ou_remote', [])
+    })
+    return json.dumps(serialized)
 
 def datetime(value, date_format='medium'):
     '''

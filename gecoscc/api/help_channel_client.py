@@ -19,6 +19,7 @@ import re
 import socket
 from random import randint, choice
 from cornice.resource import resource
+from gecoscc.permissions import can_access_to_this_path
 from gecoscc.utils import get_chef_api
 from chef import ChefError
 from chef.exceptions import ChefServerError
@@ -26,6 +27,7 @@ from chef import Client as ChefClient
 from chef import Node as ChefNode
 from Crypto.PublicKey import RSA
 from bson import ObjectId
+from pyramid.httpexceptions import HTTPForbidden
 
 import logging
 logger = logging.getLogger(__name__)
@@ -94,14 +96,19 @@ class HelpChannelClientLogin():
         if not gcc_node:
             logger.error('/help-channel-client/login - Node not found') 
             return {'ok': False,
-                    'message': 'Node not found in database'}   
+                    'message': 'Node not found in database'}
+
+        try:
+            can_access_to_this_path(self.request, self.request.db.nodes, gcc_node, ou_type='ou_remote')  # Read-only OUs
+        except HTTPForbidden:
+            can_access_to_this_path(self.request, self.request.db.nodes, gcc_node)  # By default, managed OUs
 
         gcc_user = self.request.db.nodes.find_one(
             {'type': 'user', 'name': username})
         if not gcc_user:
             logger.error('/help-channel-client/login - User not found') 
             return {'ok': False,
-                    'message': 'User not found in database'}   
+                    'message': 'User not found in database'}
 
         try:
             # Check the secret message

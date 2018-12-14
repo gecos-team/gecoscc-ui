@@ -601,6 +601,9 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
         
         onRender: function () {
+
+            this.check_permissions();
+
             if(!_.isUndefined(this.activeTab)) {
                 this.activeTab = this.activeTab;
                 this.$el.find('#' + this.activeTab.id + ' a[href="' + this.activeTab.firstElementChild.getAttribute('href') + '"]').tab('show');

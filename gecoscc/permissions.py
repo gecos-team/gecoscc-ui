@@ -50,9 +50,16 @@ def http_basic_login_required(request):
 
 
 def is_path_right(request, path, ou_type='ou_managed'):
+    ou_managed_ids = []
     if path is None:
         path = ''
-    ou_managed_ids = request.user.get(ou_type, [])
+
+    if isinstance(ou_type, str):
+        ou_type = [ou_type]
+
+    for t in ou_type:
+        ou_managed_ids += request.user.get(t)
+
     for ou_managed_id in ou_managed_ids:
         if ou_managed_id in path:
             return True
@@ -116,11 +123,17 @@ def master_policy_no_updated_or_403(request, collection_nodes, obj):
 
 
 def nodes_path_filter(request, ou_type='ou_managed'):
+    if isinstance(ou_type, str):
+        ou_type =[ou_type]
+
     params = request.GET
     maxdepth = int(params.get('maxdepth', 0))
     path = request.GET.get('path', None)
     range_depth = '0,{0}'.format(maxdepth)
     ou_managed_ids = request.user.get(ou_type, [])
+    ou_managed_ids = []
+    for t in ou_type:
+        ou_managed_ids += request.user.get(t, [])
     if not request.user.get('is_superuser') or ou_managed_ids:
         if path == 'root':
             return {
@@ -137,7 +150,7 @@ def nodes_path_filter(request, ou_type='ou_managed'):
                 }
             ]
             return {'$or': filters}
-        elif not is_path_right(request, path):
+        elif not is_path_right(request, path, ou_type):
             raise HTTPForbidden()
     elif request.user.get('is_superuser') and path is None:
         return {}
