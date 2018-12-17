@@ -106,18 +106,23 @@ def admins_ou_manage(context, request):
                            collection=request.db['adminusers'],
                            username=username,
                            request=request)
-    data = {}
+    controls = {}
     instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-       controls = request.POST.items()
-       # Removing blanks OUs (not filling up by user)
-       data = [tup for tup in controls if not (tup[0] == 'ou_selected' and tup[1] == '')]
+        controls = request.POST.items()
+        # Removing blanks OUs (not filling up by user)
+        data = [tup for tup in controls if not (tup[0] == 'ou_selected' and tup[1] == '')]
+        logger.debug("admins_ou_manage ::: data = {}".format(data))
 
-       deserialized = form.validate(data)
-       form.save(deserialized['perms'])
-       return HTTPFound(location=get_url_redirect(request))
+        try:
+            deserialized = form.validate(data)
+            form.save(deserialized['perms'])
+            return HTTPFound(location=get_url_redirect(request))
+        except ValidationFailure as e:
+            logger.error("admins_ou_manage ::: ValidationFailure = {}".format(e))
+            form = e
 
-    if instance and not data:
+    if instance and not controls:
         # instance = {'perms': [
         #     {'permission': [u'READONLY', u'LINK'], 'ou_selected': [u'562f7adee488e3664c6264e5']},
         #     {'permission': [u'REMOTE'], 'ou_selected': [u'5821789be488e34fcd2cf61c']},
@@ -150,9 +155,12 @@ def admins_ou_manage(context, request):
 
         form_render = form.render(instance)
     else:
-       form_render = form.render()
-    return {'ou_manage_form': form_render,
-           'username': username}
+        form_render = form.render()
+
+    return {
+        'ou_manage_form': form_render,
+        'username': username
+    }
 
 
 @view_config(route_name='admins_add', renderer='templates/admins/add.jinja2',

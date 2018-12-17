@@ -152,24 +152,37 @@ class AdminUserEditForm(BaseAdminUserForm):
 class PermissionsForm(GecosForm):
 
     def save(self, permissions):
-        logger.info("SAVE - permissions = {}".format(permissions))
-        ou_managed = [d['ou_selected'][0] for d in permissions if 'MANAGE' in d['permission']]
-        ou_availables = [d['ou_selected'][0] for d in permissions if 'LINK' in d['permission']]
-        ou_remote = [d['ou_selected'][0] for d in permissions if 'REMOTE' in d['permission']]
-        ou_readonly = [d['ou_selected'][0] for d in permissions if 'READONLY' in d['permission']]
+        ''' Saving permissions '''
 
-        logger.info("SAVE - ou_managed = {}".format(ou_managed))
-        logger.info("SAVE - ou_availables = {}".format(ou_availables))
-        logger.info("SAVE - ou_remote = {}".format(ou_remote))
-        logger.info("SAVE - ou_readonly = {}".format(ou_readonly))
+        (ou_managed, ou_availables, ou_remote, ou_readonly) = (set(), set(), set(), set())
+
+        for p in permissions:
+
+            ou_selected = p['ou_selected'][0]
+
+            if 'MANAGE' in p['permission']:
+                ou_managed.add(ou_selected)
+            if 'LINK' in p['permission']:
+                ou_availables.add(ou_selected)
+            if 'READONLY' in p['permission']:
+                ou_readonly.add(ou_selected)
+            if 'REMOTE' in p['permission']:
+                ou_remote.add(ou_selected)
+                if 'MANAGE' not in p['permission']:
+                    ou_readonly.add(ou_selected)
+
+        logger.debug("PermissionsForm ::: save - ou_managed = {}".format(ou_managed))
+        logger.debug("PermissionsForm ::: save - ou_availables = {}".format(ou_availables))
+        logger.debug("PermissionsForm ::: save - ou_remote = {}".format(ou_remote))
+        logger.debug("PermissionsForm ::: save - ou_readonly = {}".format(ou_readonly))
 
         self.collection.update(
             {'username': self.username},
             {'$set': {
-                'ou_managed': ou_managed,
-                'ou_availables': ou_availables,
-                'ou_remote': ou_remote,
-                'ou_readonly': ou_readonly
+                'ou_managed': list(ou_managed),
+                'ou_availables': list(ou_availables),
+                'ou_remote': list(ou_remote),
+                'ou_readonly': list(ou_readonly)
                 }
             }
         )

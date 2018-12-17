@@ -378,6 +378,14 @@ _('There was a problem with your submission')
 _('There is a user with this email: ${val}')
 _('There is a user with this username: ${val}')
 
+class PermissionValidator(object):
+    err_msg = _('Incompatible permisssions')
+
+    def __call__(self, node, value):
+        if 'MANAGE' in value and 'READONLY' in value:
+            node.raise_invalid(self.err_msg)
+
+
 class AdminUserOUPerm(colander.MappingSchema):
     ou_selected = colander.SchemaNode(colander.List(),
                                       title=_('Select an Organization Unit'),
@@ -386,6 +394,7 @@ class AdminUserOUPerm(colander.MappingSchema):
 
     permission = colander.SchemaNode(colander.Set(),
                                      title=_('Permissions'),
+                                     validator=PermissionValidator(),
                                      widget=deform.widget.CheckboxChoiceWidget(
                                          values=PERMISSIONS, inline=True))
 
