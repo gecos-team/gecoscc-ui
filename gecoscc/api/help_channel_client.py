@@ -98,10 +98,7 @@ class HelpChannelClientLogin():
             return {'ok': False,
                     'message': 'Node not found in database'}
 
-        try:
-            can_access_to_this_path(self.request, self.request.db.nodes, gcc_node, ou_type='ou_remote')  # Read-only OUs
-        except HTTPForbidden:
-            can_access_to_this_path(self.request, self.request.db.nodes, gcc_node)  # By default, managed OUs
+        can_access_to_this_path(self.request, self.request.db.nodes, gcc_node, ou_type='ou_remote')  # Remote OUs
 
         gcc_user = self.request.db.nodes.find_one(
             {'type': 'user', 'name': username})
