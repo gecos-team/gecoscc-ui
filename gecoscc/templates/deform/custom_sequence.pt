@@ -56,7 +56,7 @@
          class="btn deformSeqAdd"
          id="${field.oid}-seqAdd"
          onclick="javascript: return deform.appendSequenceItem(this);">
-	     <i class="glyphicon glyphicon-plus"> Add </i>
+	     <i class="glyphicon glyphicon-plus"></i>
       </a>
 
       <script type="text/javascript">

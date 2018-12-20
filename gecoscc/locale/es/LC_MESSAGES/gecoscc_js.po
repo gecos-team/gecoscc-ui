@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.2.1\n"
 "Report-Msgid-Bugs-To: gecos@guadalinex.org\n"
-"POT-Creation-Date: 2018-11-19 16:50+0100\n"
+"POT-Creation-Date: 2018-12-20 16:00+0100\n"
 "PO-Revision-Date: 2014-03-07 13:25+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -41,11 +41,15 @@ msgstr "Respuesta del servidor: "
 msgid "This node has been deleted by another administrator."
 msgstr "Este nodo ha sido borrado por otro administrador."
 
-#: gecoscc/static/js/app-utils.js:178
+#: gecoscc/static/js/app-utils.js:220
+msgid "You have read only access"
+msgstr "Tienes permiso de sólo lectura"
+
+#: gecoscc/static/js/app-utils.js:264
 msgid "Object changed."
 msgstr "Objeto cambiado."
 
-#: gecoscc/static/js/app-utils.js:179
+#: gecoscc/static/js/app-utils.js:265
 msgid ""
 "Someone has changed this object while you were working on it, please "
 "reload before applying any changes."
@@ -53,44 +57,44 @@ msgstr ""
 "Alguien ha modificado este objeto mientras estabas trabajando en él, por "
 "favor recarga antes de aplicar tus cambios."
 
-#: gecoscc/static/js/app-utils.js:189
+#: gecoscc/static/js/app-utils.js:275
 msgid "Object deleted."
 msgstr "Objeto borrado"
 
-#: gecoscc/static/js/app-utils.js:190
+#: gecoscc/static/js/app-utils.js:276
 msgid "Someone has deleted this object while you were working on it"
 msgstr "Alguien ha borrado este objeto mientras estabas trabajando en él"
 
-#: gecoscc/static/js/app-utils.js:302
+#: gecoscc/static/js/app-utils.js:388
 msgid "Invalid data."
 msgstr "Datos inválidos."
 
-#: gecoscc/static/js/app-utils.js:303
+#: gecoscc/static/js/app-utils.js:389
 msgid "Please, fix the errors in the fields below and try again."
 msgstr "Por favor, corrija los errores mostrados abajo y pruebe de nuevo."
 
-#: gecoscc/static/js/app-utils.js:409 gecoscc/static/js/ou.js:85
+#: gecoscc/static/js/app-utils.js:495 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
 msgstr "Solo el super administrador puede cortar este objeto"
 
-#: gecoscc/static/js/app-utils.js:504
+#: gecoscc/static/js/app-utils.js:590
 msgid "Staging"
 msgstr "Almacenando temporalmente"
 
-#: gecoscc/static/js/app-utils.js:508
+#: gecoscc/static/js/app-utils.js:594
 #: gecoscc/static/js/tree-views-renderer.js:82
 msgid "Delete"
 msgstr "Borrar"
 
-#: gecoscc/static/js/app-utils.js:510
+#: gecoscc/static/js/app-utils.js:596
 msgid "Save"
 msgstr "Guardar"
 
-#: gecoscc/static/js/app-utils.js:512
+#: gecoscc/static/js/app-utils.js:598
 msgid "Refresh policies"
 msgstr "Recalcular políticas"
 
-#: gecoscc/static/js/app-utils.js:514
+#: gecoscc/static/js/app-utils.js:600
 msgid "Done"
 msgstr "Completado"
 

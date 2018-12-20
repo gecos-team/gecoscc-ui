@@ -411,7 +411,7 @@ class AdminUserOUPerms(colander.SequenceSchema):
 
 class Permissions(colander.MappingSchema):
     perms = AdminUserOUPerms(
-        title='Permissions List',
+        title=_('Permission List'),
         widget=deform.widget.SequenceWidget(template='custom_sequence')
     )
 
