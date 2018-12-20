@@ -15,7 +15,7 @@
           href="#collapse-${field.oid}"
           tal:attributes="aria-expanded python:open and 'true' or None"
           aria-controls="collapse-${field.oid}">
-          ${title}
+          <i id="#arrow-${field.oid}" tal:condition="collapse_body_class=='in'" class='glyphicon glyphicon-arrow-up'></i>
       </a>
     </div>
 
@@ -44,5 +44,22 @@
       </div>
     </div>
   </div>
+  <script type="text/javascript">
+    deform.addCallback(
+     'collapse-${field.oid}',
+     function(oid) {
+       oid_node = $('#' + oid)
+       $(document).on('click', '[data-toggle="collapse"]', function(event) {
+           event.preventDefault();
+           if ($(event.target).hasClass('glyphicon-arrow-down')) {
+             $(event.target).removeClass('glyphicon-arrow-down');
+             $(event.target).addClass('glyphicon-arrow-up');
+           } else {
+             $(event.target).removeClass('glyphicon-arrow-up');
+             $(event.target).addClass('glyphicon-arrow-down');
+           }
+       });
+     });
+   </script>
 
 </tal:def>

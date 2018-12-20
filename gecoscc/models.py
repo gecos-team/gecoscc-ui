@@ -32,10 +32,10 @@ from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
 UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
-PERMISSIONS = (('READONLY', 'read'),
-               ('MANAGE', 'manage'),
-               ('LINK', 'link'),
-               ('REMOTE', 'remote'))
+PERMISSIONS = (('READONLY', _('read')),
+               ('MANAGE', _('manage')),
+               ('LINK', _('link')),
+               ('REMOTE', _('remote')))
 
 class MemoryTmpStore(dict):
 
@@ -394,14 +394,16 @@ class AdminUserOUPerm(colander.MappingSchema):
 
     permission = colander.SchemaNode(colander.Set(),
                                      title=_('Permissions'),
-                                     validator=PermissionValidator(),
+                                     validator=colander.All(
+                                         colander.Length(min=1),
+                                         PermissionValidator()),
                                      widget=deform.widget.CheckboxChoiceWidget(
                                          values=PERMISSIONS, inline=True))
 
 
 class AdminUserOUPerms(colander.SequenceSchema):
     permissions = AdminUserOUPerm(
-        title='Dropdown',
+        title=_('Collapse/Expand'),
         widget=deform.widget.MappingWidget(
         template='mapping_accordion',
         item_template="mapping_item_two_columns"))
@@ -409,7 +411,8 @@ class AdminUserOUPerms(colander.SequenceSchema):
 
 class Permissions(colander.MappingSchema):
     perms = AdminUserOUPerms(
-        title='Permissions List'
+        title='Permissions List',
+        widget=deform.widget.SequenceWidget(template='custom_sequence')
     )
 
 # UPDATES: INI

@@ -52,8 +52,15 @@
                     if (that.is(":checked")) {
                         read.prop("checked", false);
                         read.prop("disabled", true);
+                        // Label
+                        read.parent().css({
+                            "text-decoration":"line-through"
+                        });
                     } else {
                         read.prop("disabled", false);
+                        read.parent().css({
+                            "text-decoration":"none"
+                        });
                     }
                 });
 
@@ -63,8 +70,14 @@
                     if (that.is(":checked")) {
                         read.prop("checked", false);
                         read.prop("disabled", true);
+                        read.parent().css({
+                            "text-decoration":"line-through"
+                        });
                     } else {
                         read.prop("disabled", false);
+                        read.parent().css({
+                            "text-decoration":"none"
+                        });
                     }
                 });
             });
