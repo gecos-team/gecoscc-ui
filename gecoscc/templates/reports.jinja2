@@ -78,6 +78,21 @@ function generateReport(type, format) {
                         >{{ gettext('View as HTML') }}</button>
                     
                     </li>
+                    <li class="list-group-item">{{ gettext('Printers and related computers') }}
+                    
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
+                    
+                    </li>
                 </ul>
             </div>
         </div>

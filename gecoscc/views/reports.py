@@ -45,7 +45,7 @@ class CSVRenderer(object):
                 response.content_type = 'text/csv'
 
         fout = StringIO()
-        writer = csv.writer(fout, delimiter=',', quotechar=',', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(fout, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         writer.writerow(value.get('headers', []))
         writer.writerows(value.get('rows', []))
         return fout.getvalue()
@@ -113,10 +113,34 @@ def reports(context, request):
     return {'ou_managed': ous, 'is_superuser': is_superuser}    
 
 
+def get_complete_path(db, path):
+    '''
+    Calculate the path with names instead of IDs.
+
+    
+    Args:
+        db (mongodb)  : MongoDB reference.
+        path (string) : Path of the node.
+
+    Returns:
+        compete_path (string) : Path width names instead of IDs
+    '''
+    
+    complete_path = ''
+    
+    for element in path.split(','):
+        if element == 'root':
+            complete_path = 'root'
+        else:
+            node = db.nodes.find_one({'_id': ObjectId(element)})
+            complete_path += ', ' + node['name']
+    
+         
+    return complete_path
+
 def treatment_string_to_csv(item, key):
     none = '--'
     return item.get(key, none).encode('utf-8') or none
-
 
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)

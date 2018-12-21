@@ -53,7 +53,9 @@
     <table cellspacing="0">
       <tr>
       {% for header in headers %}
-       <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+        {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+         <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+        {% endif %}
       {% endfor %}
       </tr>
     
@@ -65,7 +67,9 @@
         <table cellspacing="0">
           <tr>
           {% for header in headers %}
-           <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+            {% if widths[loop.index0] > 0 %}
+             <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+            {% endif %}
           {% endfor %}
           </tr>
       {% endif %}
@@ -73,11 +77,15 @@
       <tr>
       {% if (loop.index0 % 2) == 0 %}
         {% for col in row %}
-          <td>{{col}}</td>
+            {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+             <td>{{col}}</td>
+            {% endif %}
         {% endfor %}
       {% else %}
         {% for col in row %}
-          <td style="background-color: #CCCCCC;">{{col}}</td>
+            {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+             <td style="background-color: #CCCCCC;">{{col}}</td>
+            {% endif %}
         {% endfor %}
       {% endif %}
       </tr>
