@@ -819,10 +819,10 @@ def save_pem_for_username(settings, username, pem_name, pem_text):
 def get_cookbook(api, cookbook_name):
     return api['/cookbooks/%s/_latest/' % cookbook_name]
 
-class setPathAttrsNodeException(Exception):
+class setPathAttrsToNodeException(Exception):
     pass
 
-def add_path_attrs_node(api, node_id, strpath, collection):
+def add_path_attrs_to_node(api, node_id, strpath, collection):
     ''' Setting up path_ids, path_names attributes to Chef node '''
 
     logger.debug("utils ::: add_path_chef_node - node_id = {}".format(node_id))
@@ -841,7 +841,7 @@ def add_path_attrs_node(api, node_id, strpath, collection):
         node.save()
     except (TypeError, KeyError, ChefError) as e:
         logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
-        raise setPathAttrsNodeException
+        raise setPathAttrsToNodeException
 
 def register_node(api, node_id, ou, collection_nodes):
     from gecoscc.models import Computer
@@ -857,7 +857,7 @@ def register_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
@@ -875,7 +875,7 @@ def register_node(api, node_id, ou, collection_nodes):
             else:
                 ret = 'duplicated'
 
-        except setPathAttrsNodeException:
+        except setPathAttrsToNodeException:
             ret = 'path-err'
 
     return ret
@@ -894,7 +894,7 @@ def update_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
@@ -905,7 +905,7 @@ def update_node(api, node_id, ou, collection_nodes):
             del computer['_id']
             ret = collection_nodes.update({'node_chef_id': node_id}, computer)
 
-        except setPathAttrsNodeException:
+        except setPathAttrsToNodeException:
             logger.error('utils.py ::: update_node - Exception adding path_ids, path_names to chef node')
 
     return ret
