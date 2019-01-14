@@ -819,51 +819,96 @@ def save_pem_for_username(settings, username, pem_name, pem_text):
 def get_cookbook(api, cookbook_name):
     return api['/cookbooks/%s/_latest/' % cookbook_name]
 
+class setPathAttrsToNodeException(Exception):
+    pass
+
+def add_path_attrs_to_node(api, node_id, strpath, collection):
+    ''' Setting up path_ids, path_names attributes to Chef node '''
+
+    logger.debug("utils ::: add_path_chef_node - node_id = {}".format(node_id))
+    logger.debug("utils ::: add_path_chef_node - strpath = {}".format(strpath))
+
+    nodeids = map(ObjectId, strpath.split(',')[1:])
+    logger.debug("utils ::: add_path_chef_node - nodeids = {}".format(nodeids))
+
+    pathnames = 'root,' + ','.join([n['name'] for n in collection.find({'_id': {'$in': nodeids}})])
+    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(pathnames))
+
+    try:
+        node = ChefNode(node_id, api)
+        node.attributes.set_dotted('path_ids', strpath)
+        node.attributes.set_dotted('path_names', pathnames)
+        node.save()
+    except (TypeError, KeyError, ChefError) as e:
+        logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
+        raise setPathAttrsToNodeException
 
 def register_node(api, node_id, ou, collection_nodes):
     from gecoscc.models import Computer
-    node = ChefNode(node_id, api)
-    if not node.attributes.to_dict():
-        return False
-    try:
-        computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
-    except KeyError:
-        computer_name = node_id
-    comp_model = Computer()
-    computer = comp_model.serialize({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
-                                     'name': computer_name,
-                                     'type': 'computer',
-                                     'source': ou.get('source', SOURCE_DEFAULT),
-                                     'node_chef_id': node_id})
-    del computer['_id']
-    if check_unique_node_name_by_type_at_domain(collection_nodes, computer):
-        if collection_nodes.find_one({'node_chef_id': node_id}):
-            return 'duplicated-node-id'
-        node_id = collection_nodes.insert(computer)
-        return node_id
-    return 'duplicated'
 
+    ret = False
+    node = ChefNode(node_id, api)
+
+    if node.attributes.to_dict():
+        try:
+            computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
+        except KeyError:
+            computer_name = node_id
+
+        try:
+            nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
+            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+
+            comp_model = Computer()
+            computer = comp_model.serialize({'path': nodepath,
+                                             'name': computer_name,
+                                             'type': 'computer',
+                                             'source': ou.get('source', SOURCE_DEFAULT),
+                                             'node_chef_id': node_id})
+            del computer['_id']
+            if check_unique_node_name_by_type_at_domain(collection_nodes, computer):
+                if collection_nodes.find_one({'node_chef_id': node_id}):
+                    ret = 'duplicated-node-id'
+                else:
+                    node_id = collection_nodes.insert(computer)
+                    ret = node_id
+            else:
+                ret = 'duplicated'
+
+        except setPathAttrsToNodeException:
+            ret = 'path-err'
+
+    return ret
 
 def update_node(api, node_id, ou, collection_nodes):
     from gecoscc.models import Computer
-    node = ChefNode(node_id, api)
-    if not node.attributes.to_dict():
-        return False
-    try:
-        computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
-    except KeyError:
-        computer_name = node_id
-    comp_model = Computer()
-    computer = comp_model.serialize({'path': '%s,%s' % (ou['path'], unicode(ou['_id'])),
-                                     'name': computer_name,
-                                     'type': 'computer',
-                                     'source': ou.get('source', SOURCE_DEFAULT),
-                                     'node_chef_id': node_id})
-    del computer['_id']
-    node_id = collection_nodes.update({'node_chef_id': node_id},
-                                      computer)
-    return node_id
 
+    ret = False
+    node = ChefNode(node_id, api)
+
+    if node.attributes.to_dict():
+        try:
+            computer_name = node.attributes.get_dotted('ohai_gecos.pclabel')
+        except KeyError:
+            computer_name = node_id
+
+        try:
+            nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
+            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+
+            comp_model = Computer()
+            computer = comp_model.serialize({'path': nodepath,
+                                             'name': computer_name,
+                                             'type': 'computer',
+                                             'source': ou.get('source', SOURCE_DEFAULT),
+                                             'node_chef_id': node_id})
+            del computer['_id']
+            ret = collection_nodes.update({'node_chef_id': node_id}, computer)
+
+        except setPathAttrsToNodeException:
+            logger.error('utils.py ::: update_node - Exception adding path_ids, path_names to chef node')
+
+    return ret
 
 def register_or_updated_node(api, node_id, ou, collection_nodes):
     mongo_node = collection_nodes.find({'node_chef_id': node_id})
