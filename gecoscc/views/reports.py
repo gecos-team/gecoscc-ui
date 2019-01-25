@@ -173,9 +173,6 @@ def treatment_string_to_csv(item, key):
     logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
     return item.get(key, none).decode('utf-8') or none
 
- 
-    return sanitize_str
-
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)
     if len(pdfstr) > length:
