@@ -128,19 +128,50 @@ def get_complete_path(db, path):
     
     complete_path = ''
     
-    for element in path.split(','):
+    lpath = path.split(',')
+    for idx, element in enumerate(lpath):
         if element == 'root':
-            complete_path = 'root'
+            continue
         else:
             node = db.nodes.find_one({'_id': ObjectId(element)})
-            complete_path += ', ' + node['name']
-    
+            if node is None:
+               complete_path = 'Error path'
+               break
+
+            if idx == len(lpath)-1:
+                complete_path += node['name'] 
+            else:
+                complete_path += node['name'] + ', '
          
     return complete_path
 
+def get_html_node_link(node):
+    '''
+    Getting html tag link to node
+
+    Args:
+       node : MongoDB record
+    	
+    Returns:
+       link : html tag link to node
+    '''
+
+    link = None
+    path = node['path'].split(',')
+    node_id = str(node['_id'])
+
+    if len(path) > 1:
+        parent_id = node['path'].split(',')[-1]
+        href = '/#ou/{0}/{1}/{2}'.format(parent_id, node['type'], node_id)
+        link = '<a href="{0}" onclick="return goto_parent_window(this);">{1}</a>'.format(href, node['name'])
+  
+    return link
+
 def treatment_string_to_csv(item, key):
-    none = '--'
-    return item.get(key, none).encode('utf-8') or none
+    none = u'--'
+    logger.info("reports:::treatment_string_to_csv - item = {}".format(item))
+    logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
+    return item.get(key, none).decode('utf-8') or none
 
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)

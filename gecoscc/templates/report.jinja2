@@ -18,9 +18,11 @@
                 left: 50pt; width: 742pt; top: 525pt; height: 20pt;
             }           
         }
-        
-        
-        
+
+        html * {
+            font-size: 11pt;
+            font-family: Arial !important;
+        }
         
         #header_content {
             font-size: 14pt;
@@ -38,6 +40,13 @@
             overflow: hidden;
         }        
     </style>  
+    <script>
+    function goto_parent_window(elm) {
+      var url = elm.getAttribute('href');
+      window.opener.location = url;
+      return false;
+    }
+    </script>
   
   </head>
 
@@ -54,13 +63,13 @@
       <tr>
       {% for header in headers %}
         {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
-         <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+         <th style="background-color: #CCCCCC; width: {{ widths[loop.index0] }}%;">{{header}}</th>
         {% endif %}
       {% endfor %}
       </tr>
     
     {% for row in rows %}
-      {% if (loop.index0 % 24) == 0 and loop.index0 > 0 and report_type == 'pdf' %}
+      {% if (loop.index0 % 20) == 0 and loop.index0 > 0 and report_type == 'pdf' %}
         </table>
         <pdf:nextpage />
         
@@ -68,7 +77,7 @@
           <tr>
           {% for header in headers %}
             {% if widths[loop.index0] > 0 %}
-             <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+             <th style="background-color: #CCCCCC; width: {{ widths[loop.index0] }}%;">{{header}}</th>
             {% endif %}
           {% endfor %}
           </tr>
@@ -78,13 +87,13 @@
       {% if (loop.index0 % 2) == 0 %}
         {% for col in row %}
             {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
-             <td>{{col}}</td>
+             <td>{{col|safe}}</td>
             {% endif %}
         {% endfor %}
       {% else %}
         {% for col in row %}
             {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
-             <td style="background-color: #CCCCCC;">{{col}}</td>
+             <td style="background-color: #CCCCCC;">{{col|safe}}</td>
             {% endif %}
         {% endfor %}
       {% endif %}
