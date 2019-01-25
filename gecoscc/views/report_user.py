@@ -101,8 +101,8 @@ def report_user(context, request, file_ext):
                 treatment_string_to_pdf(item, 'address', 20),
                 str(item['_id'])) for item in query]
     else:
-        rows = [(treatment_string_to_csv(item, 'name'),
-                treatment_string_to_csv(item, 'first_name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+                treatment_string_to_csv(item, 'first_name'),
                 treatment_string_to_csv(item, 'last_name'),
                 treatment_string_to_csv(item, 'email'),
                 treatment_string_to_csv(item, 'phone'),

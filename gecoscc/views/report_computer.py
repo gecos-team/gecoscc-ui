@@ -95,7 +95,7 @@ def report_computer(context, request, file_ext):
                  treatment_string_to_pdf(item, 'family', 10),
                  treatment_string_to_pdf(item, 'registry', 10),
                  treatment_string_to_pdf(item, 'serial', 15),
-                 treatment_string_to_pdf(item, 'node_chef_id', 15),
+                 treatment_string_to_pdf(item, 'node_chef_id', 30),
                  item['_id']) for item in query]
     else:
         rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
@@ -113,7 +113,7 @@ def report_computer(context, request, file_ext):
               _(u'Id').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (20, 10, 10, 15, 15, 15, 15)
+    widths = (20, 15, 15, 15, 20, 15)
     title =  _(u'Computers report')
         
         

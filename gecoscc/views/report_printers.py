@@ -100,10 +100,10 @@ def report_printers(context, request, file_ext):
             row = []
             # No path in PDF because it's too long
             row.append('--')
-            row.append(treatment_string_to_pdf(item, 'name', 25))
+            row.append(treatment_string_to_pdf(item, 'name', 20))
             row.append(treatment_string_to_pdf(item, 'manufacturer', 15))
             row.append(treatment_string_to_pdf(item, 'model', 15))
-            row.append(treatment_string_to_pdf(item, 'serial', 25))
+            row.append(treatment_string_to_pdf(item, 'serial', 15))
             row.append(treatment_string_to_pdf(item, 'registry', 15))
             row.append(item['_id'])
             
@@ -189,7 +189,7 @@ def report_printers(context, request, file_ext):
               _(u'Path').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (0, 15, 10, 10, 10, 15, 15, 15, 0)
+    widths = (15, 10, 5, 10, 10, 5, 15, 15, 15)
     title =  _(u'Printers and related computers report')
         
         
