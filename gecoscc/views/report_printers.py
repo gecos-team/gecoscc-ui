@@ -11,7 +11,7 @@
 
 import logging
 
-from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path
+from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
 from gecoscc.tasks import ChefTask
 
@@ -98,14 +98,14 @@ def report_printers(context, request, file_ext):
     if file_ext == 'pdf':
         for item in query:
             row = []
-            row.append(item['_id'])
             # No path in PDF because it's too long
             row.append('--')
-            row.append(treatment_string_to_pdf(item, 'name', 15))
+            row.append(treatment_string_to_pdf(item, 'name', 25))
             row.append(treatment_string_to_pdf(item, 'manufacturer', 15))
             row.append(treatment_string_to_pdf(item, 'model', 15))
             row.append(treatment_string_to_pdf(item, 'serial', 25))
             row.append(treatment_string_to_pdf(item, 'registry', 15))
+            row.append(item['_id'])
             
             # Get all nodes related with this printer
             nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
@@ -139,14 +139,14 @@ def report_printers(context, request, file_ext):
     else:
         for item in query:
             row = []
-            row.append(item['_id'])
             item['complete_path'] = get_complete_path(request.db, item['path'])
             row.append(treatment_string_to_csv(item, 'complete_path'))
-            row.append(treatment_string_to_csv(item, 'name'))
+            row.append(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item))
             row.append(treatment_string_to_csv(item, 'manufacturer'))
             row.append(treatment_string_to_csv(item, 'model'))
             row.append(treatment_string_to_csv(item, 'serial'))
             row.append(treatment_string_to_csv(item, 'registry'))
+            row.append(item['_id'])
             
             # Get all nodes related with this printer
             nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
@@ -172,24 +172,24 @@ def report_printers(context, request, file_ext):
             else:
                 for computer in computers:
                     computer_row = list(row)
-                    computer_row.append(treatment_string_to_csv(computer, 'name'))
+                    computer_row.append(treatment_string_to_csv(computer, 'name') if file_ext == 'csv' else get_html_node_link(computer))
                     computer['complete_path'] = get_complete_path(request.db, item['path'])
                     computer_row.append(treatment_string_to_csv(computer, 'complete_path'))
                     rows.append(computer_row)        
         
     
-    header = (_(u'Id').encode('utf-8'),
-              _(u'Path').encode('utf-8'),
+    header = (_(u'Path').encode('utf-8'),
               _(u'Name').encode('utf-8'),
               _(u'Manufacturer').encode('utf-8'),
               _(u'Model').encode('utf-8'),
               _(u'Serial number').encode('utf-8'),
               _(u'Registry number').encode('utf-8'),
+              _(u'Id').encode('utf-8'), 
               _(u'Computer').encode('utf-8'),
               _(u'Path').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (15, 0, 10, 10, 10, 15, 15, 15, 0)
+    widths = (0, 15, 10, 10, 10, 15, 15, 15, 0)
     title =  _(u'Printers and related computers report')
         
         

@@ -12,7 +12,7 @@
 import logging
 
 from gecoscc.views.reports import treatment_string_to_csv
-from gecoscc.views.reports import treatment_string_to_pdf
+from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
@@ -93,34 +93,32 @@ def report_user(context, request, file_ext):
     rows = []
     
     if file_ext == 'pdf':
-        rows = [(item['_id'],
-                treatment_string_to_pdf(item, 'name', 15),
+        rows = [(treatment_string_to_pdf(item, 'name', 15),
                 treatment_string_to_pdf(item, 'first_name', 15),
                 treatment_string_to_pdf(item, 'last_name', 15),
-                treatment_string_to_pdf(item, 'email', 35),
-                treatment_string_to_pdf(item, 'phone', 15),
-                treatment_string_to_pdf(item, 'address', 35)) for item in query]
+                treatment_string_to_pdf(item, 'email', 15),
+                treatment_string_to_pdf(item, 'phone', 10),
+                treatment_string_to_pdf(item, 'address', 20),
+                str(item['_id'])) for item in query]
     else:
-        rows = [(item['_id'],
-                treatment_string_to_csv(item, 'name'),
-                treatment_string_to_csv(item, 'first_name'),
+        rows = [(treatment_string_to_csv(item, 'name'),
+                treatment_string_to_csv(item, 'first_name') if file_ext == 'csv' else get_html_node_link(item),
                 treatment_string_to_csv(item, 'last_name'),
                 treatment_string_to_csv(item, 'email'),
                 treatment_string_to_csv(item, 'phone'),
-                treatment_string_to_csv(item, 'address')) for item in query]
-        
-                
+                treatment_string_to_csv(item, 'address'),
+                str(item['_id'])) for item in query]
     
-    header = (_(u'Id').encode('utf-8'),
-              _(u'Username').encode('utf-8'),
+    header = (_(u'Username').encode('utf-8'),
               _(u'First name').encode('utf-8'),
               _(u'Last name').encode('utf-8'),
               _(u'Email').encode('utf-8'),
               _(u'Phone').encode('utf-8'),
-              _(u'Address').encode('utf-8'))
+              _(u'Address').encode('utf-8'),
+              _(u'Id').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (20, 10, 10, 10, 20, 10, 20)
+    widths = (15, 15, 15, 15, 10, 20, 15)
     title =  _(u'Users report')
         
         
