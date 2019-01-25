@@ -70,8 +70,8 @@ def route_config(config):
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
-    config.add_route('reports', '/reports/', factory=SuperUserFactory)
-    config.add_route('report_file', '/report/{report_type}/', factory=SuperUserFactory)
+    config.add_route('reports', '/reports/', factory=LoggedFactory)
+    config.add_route('report_file', '/report', factory=LoggedFactory)
     config.add_route('computer_logs', '/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('download_computer_logs', '/download/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
@@ -80,6 +80,7 @@ def route_config(config):
     config.add_route('logout', 'logout/')
     config.add_route('forbidden-view', '/error403/')
     config.add_renderer('csv', 'gecoscc.views.reports.CSVRenderer')
+    config.add_renderer('pdf', 'gecoscc.views.reports.PDFRenderer')
     config.add_renderer('txt', 'gecoscc.views.computer_logs.TXTRenderer')
     
     config.add_route('statistics', '/admins/statistics/', factory=SuperUserFactory)

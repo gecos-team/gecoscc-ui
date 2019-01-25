@@ -21,10 +21,10 @@
                     <li>
                         <a href="{{ help_base_url }}" target="_blank">{{ gettext('Help') }}</a>
                     </li>
-                    {% if request.user.get('is_superuser') %}
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">{{ gettext('Administration') }} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
+                            {% if request.user.get('is_superuser') %}
                             <li>
                                 <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
                             </li>
@@ -33,6 +33,7 @@
                             <li class="{% block nav_bar_status %}{% endblock %}">
                                 <a href="{{ request.route_url('server_status') }}">{{ gettext('Status') }}</a>
                             </li>
+                            {% endif %}
                             <li>
                                 <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
                             </li>
@@ -41,6 +42,7 @@
                                     <span class="fa fa-area-chart"></span> {{ gettext('Statistics') }}
                                 </a>
                             </li>
+                            {% if request.user.get('is_superuser') %}
                             <li>
                                 <a href="{{ request.route_url('updates') }}">
                                     <span class="fa fa-spinner"></span> {{ gettext('Updates') }}
@@ -51,9 +53,9 @@
                                     <span class="fa fa-wrench"></span> {{ gettext('Maintenance Mode') }}
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </li>
-                    {% endif %}
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">{{ request.user['username'] }} <b class="caret"></b></a>
                         <ul class="dropdown-menu">

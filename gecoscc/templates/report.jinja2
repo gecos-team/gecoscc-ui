@@ -1,0 +1,97 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+            
+            @frame header_frame { 
+                -pdf-frame-content: header_content;
+                left: 50pt; width: 742pt; top: 50pt; height: 40pt;
+            }
+            @frame content_frame {
+                left: 50pt; width: 742pt; top: 90pt; height: 435;
+            }
+            @frame footer_frame {         
+                -pdf-frame-content: footer_content;
+                left: 50pt; width: 742pt; top: 525pt; height: 20pt;
+            }           
+        }
+        
+        
+        
+        
+        #header_content {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        table {
+            border: 1px solid black;
+        }
+        
+        th, td {
+            border: 1px solid black;
+            padding: 2px;
+            overflow: hidden;
+        }        
+    </style>  
+  
+  </head>
+
+  <body>
+    <!-- Content for Static Frame 'header_frame' -->
+    <div id="header_content">{{report_title}}</div>
+
+    {% if report_type == 'pdf' %}
+    <!-- Content for Static Frame 'footer_frame' -->
+    <div id="footer_content">{{page}} <pdf:pagenumber> {{of}} <pdf:pagecount>.</div>
+    {% endif %}
+  
+    <table cellspacing="0">
+      <tr>
+      {% for header in headers %}
+        {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+         <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+        {% endif %}
+      {% endfor %}
+      </tr>
+    
+    {% for row in rows %}
+      {% if (loop.index0 % 24) == 0 and loop.index0 > 0 and report_type == 'pdf' %}
+        </table>
+        <pdf:nextpage />
+        
+        <table cellspacing="0">
+          <tr>
+          {% for header in headers %}
+            {% if widths[loop.index0] > 0 %}
+             <th style="background-color: #CCCCCC; width: {{ ((1042 * widths[loop.index0])/100)|round|int }}pt;">{{header}}</th>
+            {% endif %}
+          {% endfor %}
+          </tr>
+      {% endif %}
+      
+      <tr>
+      {% if (loop.index0 % 2) == 0 %}
+        {% for col in row %}
+            {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+             <td>{{col}}</td>
+            {% endif %}
+        {% endfor %}
+      {% else %}
+        {% for col in row %}
+            {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
+             <td style="background-color: #CCCCCC;">{{col}}</td>
+            {% endif %}
+        {% endfor %}
+      {% endif %}
+      </tr>
+    {% endfor %}
+    
+    </table>
+    
+  </body>
+<html>

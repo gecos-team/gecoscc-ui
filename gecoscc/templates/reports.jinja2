@@ -5,17 +5,99 @@
 
 
 {% block inner_content %}
+
+ <script type="text/javascript">
+//<![CDATA[
+
+function generateReport(type, format) {
+    $("#report_type").val(type);
+    $("#report_format").val(format);
+    $("#report_form").submit();
+}
+
+
+//]]>
+</script>
+
+
 <div class="container">
     <div class="row"><div class="col-sm-12">
         <h1>{{ gettext('Reports') }}</h1>
     </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <ul class="list-group">
-                <li class="list-group-item">{{ gettext('Users') }} <a href="{{ request.route_url('report_file', report_type='user') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
-                <li class="list-group-item">{{ gettext('Workstations') }} <a href="{{ request.route_url('report_file', report_type='computer') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
-            </ul>
+    <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form">
+        <input type="hidden" name="type" id="report_type" value="" />
+        <input type="hidden" name="format" id="report_format" value="" />
+      {% if not is_superuser %}
+        {% if ou_managed|length == 1 %}
+            <input type="hidden" name="ou_id" id="ou_id" value="{{ou_managed[0].id}}" />
+        {% else %}
+        <div class="row list-group-top">
+            <div class="col-sm-6">
+                <label for="ou_id" class="select-label">{{ gettext('Please select the Organizational Unit') }}</label>
+            </div>
+            <div class="col-sm-6">
+                <select name="ou_id" id="ou_id">
+                  {% for ou in ou_managed %}
+                   <option value="{{ou.id}}">{{ou.name}}</option>
+                  {% endfor %}                
+                </select>
+            </div>
+        </div>    
+        {% endif %}
+      {% endif %}
+    
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="list-group">
+                    <li class="list-group-item">{{ gettext('Users') }}
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
+
+                     </li>
+                    <li class="list-group-item">{{ gettext('Workstations') }}
+                    
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
+                    
+                    </li>
+                    <li class="list-group-item">{{ gettext('Printers and related computers') }}
+                    
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'csv')"
+                        >{{ gettext('Export to CSV') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'pdf')"
+                        >{{ gettext('Export to PDF') }}</button>
+
+                      <button type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'html')"
+                        >{{ gettext('View as HTML') }}</button>
+                    
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
+    </form>
+    
+    
 </div>
 {% endblock %}

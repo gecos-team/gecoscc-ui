@@ -9,6 +9,11 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import logging
+from xhtml2pdf import pisa
+from pyramid_jinja2 import IJinja2Environment
+from pyramid.threadlocal import get_current_registry
+from bson import ObjectId
 import csv
 
 try:
@@ -17,10 +22,9 @@ except ImportError:
     from StringIO import StringIO
 
 
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
-from gecoscc.i18n import gettext as _
+logger = logging.getLogger(__name__)
 
 
 class CSVRenderer(object):
@@ -41,59 +45,107 @@ class CSVRenderer(object):
                 response.content_type = 'text/csv'
 
         fout = StringIO()
-        writer = csv.writer(fout, delimiter=',', quotechar=',', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(value.get('header', []))
+        writer = csv.writer(fout, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(value.get('headers', []))
         writer.writerows(value.get('rows', []))
         return fout.getvalue()
+
+
+
+
+# Para XML:
+# https://pypi.org/project/PyramidXmlRenderer/
+
+# Pruebo a generar un PDF
+
+class PDFRenderer(object):
+
+    def __init__(self, info):
+        pass
+
+    def __call__(self, value, system):
+        """ Returns a PDF file """
+
+        request = system.get('request')
+        if request is not None:
+            response = request.response
+            ct = response.content_type
+            if ct == response.default_content_type:
+                response.content_type = 'application/pdf'
+
+
+        jinja2_env = get_current_registry().queryUtility(IJinja2Environment)
+        jinja2_template = jinja2_env.get_template('report.jinja2')
+        html = jinja2_template.render(headers=value.get('headers', []),
+                                      rows = value.get('rows', []),
+                                      widths = value.get('widths', []),
+                                      report_title = value.get('report_title', ''),
+                                      page = value.get('page', ''),
+                                      of = value.get('of', ''),
+                                      report_type = value.get('report_type', ''))
+
+        #logger.info("HTML=%s"%(html))
+        
+        fout = StringIO()
+        pisa.CreatePDF(html, dest=fout)          
+
+        return fout.getvalue()
+        
+
 
 
 @view_config(route_name='reports', renderer='templates/reports.jinja2',
              permission='edit')
 def reports(context, request):
-    return {}
+    ous = []
+    
+    # Get current user data
+    is_superuser = request.user.get('is_superuser', False) 
+    
+    if not is_superuser:
+        # Get managed ous
+        ou_managed = request.user.get('ou_managed', [])
+        for ou_id in  ou_managed:
+            ou = request.db.nodes.find_one({'type': 'ou', '_id': ObjectId(ou_id) })
+            if ou is not None:
+                ous.append({'id': ou_id, 'name': ou['name']})
+    
+    return {'ou_managed': ous, 'is_superuser': is_superuser}    
 
+
+def get_complete_path(db, path):
+    '''
+    Calculate the path with names instead of IDs.
+
+    
+    Args:
+        db (mongodb)  : MongoDB reference.
+        path (string) : Path of the node.
+
+    Returns:
+        compete_path (string) : Path width names instead of IDs
+    '''
+    
+    complete_path = ''
+    
+    for element in path.split(','):
+        if element == 'root':
+            complete_path = 'root'
+        else:
+            node = db.nodes.find_one({'_id': ObjectId(element)})
+            complete_path += ', ' + node['name']
+    
+         
+    return complete_path
 
 def treatment_string_to_csv(item, key):
     none = '--'
     return item.get(key, none).encode('utf-8') or none
 
+def treatment_string_to_pdf(item, key, length):
+    pdfstr = treatment_string_to_csv(item, key)
+    if len(pdfstr) > length:
+        pdfstr = pdfstr[0:length] + '...'
+        
+    return pdfstr 
 
-@view_config(route_name='report_file', renderer='csv',
-             permission='edit')
-def report_file(context, request):
-    report_type = request.matchdict.get('report_type')
-    filename = 'report_%s.csv' % report_type
-    request.response.content_disposition = 'attachment;filename=' + filename
-    if report_type not in ('user', 'computer'):
-        raise HTTPBadRequest()
-    query = request.db.nodes.find({'type': report_type})
-    if report_type == 'user':
-        rows = [(item['_id'],
-                 treatment_string_to_csv(item, 'name'),
-                 treatment_string_to_csv(item, 'first_name'),
-                 treatment_string_to_csv(item, 'last_name'),
-                 treatment_string_to_csv(item, 'email'),
-                 treatment_string_to_csv(item, 'phone'),
-                 treatment_string_to_csv(item, 'address')) for item in query]
-        header = (_(u'Id').encode('utf-8'),
-                  _(u'Username').encode('utf-8'),
-                  _(u'First name').encode('utf-8'),
-                  _(u'Last name').encode('utf-8'),
-                  _(u'Email').encode('utf-8'),
-                  _(u'Phone').encode('utf-8'),
-                  _(u'Address').encode('utf-8'))
-    elif report_type == 'computer':
-        rows = [(item['_id'],
-                 treatment_string_to_csv(item, 'name'),
-                 treatment_string_to_csv(item, 'family'),
-                 treatment_string_to_csv(item, 'registry'),
-                 treatment_string_to_csv(item, 'serial'),
-                 treatment_string_to_csv(item, 'node_chef_id')) for item in query]
-        header = (_(u'Id').encode('utf-8'),
-                  _(u'Name').encode('utf-8'),
-                  _(u'Type').encode('utf-8'),
-                  _(u'Registry number').encode('utf-8'),
-                  _(u'Serial number').encode('utf-8'),
-                  _(u'Node chef id').encode('utf-8'))
-    return {'header': header,
-            'rows': rows}
