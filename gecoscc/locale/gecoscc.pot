@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.4.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-01-28 10:07+0100\n"
+"POT-Creation-Date: 2019-01-28 12:43+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -104,19 +104,22 @@ msgstr ""
 
 #: gecoscc/models.py:244 gecoscc/templates/bb-user.html:41
 #: gecoscc/templates/admins/list.jinja2:33
-#: gecoscc/templates/admins/maintenance.jinja2:22 gecoscc/views/report_user.py:113
+#: gecoscc/templates/admins/maintenance.jinja2:22
+#: gecoscc/views/report_no-computer_users.py:115 gecoscc/views/report_user.py:113
 msgid "First name"
 msgstr ""
 
 #: gecoscc/models.py:248 gecoscc/templates/bb-user.html:45
 #: gecoscc/templates/admins/list.jinja2:34
-#: gecoscc/templates/admins/maintenance.jinja2:23 gecoscc/views/report_user.py:114
+#: gecoscc/templates/admins/maintenance.jinja2:23
+#: gecoscc/views/report_no-computer_users.py:116 gecoscc/views/report_user.py:114
 msgid "Last name"
 msgstr ""
 
 #: gecoscc/models.py:343 gecoscc/templates/bb-user.html:37
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
-#: gecoscc/templates/admins/maintenance.jinja2:20 gecoscc/views/report_user.py:112
+#: gecoscc/templates/admins/maintenance.jinja2:20
+#: gecoscc/views/report_no-computer_users.py:114 gecoscc/views/report_user.py:112
 msgid "Username"
 msgstr ""
 
@@ -129,7 +132,7 @@ msgid "Repeat the password"
 msgstr ""
 
 #: gecoscc/models.py:358 gecoscc/templates/bb-user.html:51
-#: gecoscc/views/report_user.py:115
+#: gecoscc/views/report_no-computer_users.py:117 gecoscc/views/report_user.py:115
 msgid "Email"
 msgstr ""
 
@@ -1327,7 +1330,8 @@ msgstr ""
 msgid "john.doe"
 msgstr ""
 
-#: gecoscc/templates/bb-user.html:55 gecoscc/views/report_user.py:117
+#: gecoscc/templates/bb-user.html:55 gecoscc/views/report_no-computer_users.py:119
+#: gecoscc/views/report_user.py:117
 msgid "Address"
 msgstr ""
 
@@ -1368,7 +1372,12 @@ msgid "Storages and related users"
 msgstr ""
 
 #: gecoscc/templates/reports.jinja2:111
+#: gecoscc/views/report_no-user_computers.py:135
 msgid "No-user computers"
+msgstr ""
+
+#: gecoscc/templates/reports.jinja2:126
+msgid "No-computer users"
 msgstr ""
 
 #: gecoscc/templates/settings.jinja2:68
@@ -1625,6 +1634,7 @@ msgid "Welcome ${username}"
 msgstr ""
 
 #: gecoscc/views/report_computer.py:113
+#: gecoscc/views/report_no-computer_users.py:120
 #: gecoscc/views/report_no-user_computers.py:131
 #: gecoscc/views/report_printers.py:187 gecoscc/views/report_storages.py:179
 #: gecoscc/views/report_user.py:118
@@ -1632,11 +1642,11 @@ msgid "Id"
 msgstr ""
 
 #: gecoscc/views/report_computer.py:117
-#: gecoscc/views/report_no-user_computers.py:135
 msgid "Computers report"
 msgstr ""
 
 #: gecoscc/views/report_computer.py:124
+#: gecoscc/views/report_no-computer_users.py:131
 #: gecoscc/views/report_no-user_computers.py:143
 #: gecoscc/views/report_printers.py:200 gecoscc/views/report_storages.py:192
 #: gecoscc/views/report_user.py:129
@@ -1644,10 +1654,19 @@ msgid "Page"
 msgstr ""
 
 #: gecoscc/views/report_computer.py:125
+#: gecoscc/views/report_no-computer_users.py:132
 #: gecoscc/views/report_no-user_computers.py:144
 #: gecoscc/views/report_printers.py:201 gecoscc/views/report_storages.py:193
 #: gecoscc/views/report_user.py:130
 msgid "of"
+msgstr ""
+
+#: gecoscc/views/report_no-computer_users.py:118 gecoscc/views/report_user.py:116
+msgid "Phone"
+msgstr ""
+
+#: gecoscc/views/report_no-computer_users.py:124
+msgid "No-computer users report"
 msgstr ""
 
 #: gecoscc/views/report_printers.py:181 gecoscc/views/report_printers.py:189
@@ -1669,10 +1688,6 @@ msgstr ""
 
 #: gecoscc/views/report_storages.py:185
 msgid "Storages and related users report"
-msgstr ""
-
-#: gecoscc/views/report_user.py:116
-msgid "Phone"
 msgstr ""
 
 #: gecoscc/views/report_user.py:122
