@@ -132,7 +132,7 @@ def report_no_user_computers(context, request, file_ext):
     
     # Column widths in percentage
     widths = (15, 10, 10, 10, 15, 15, 25)
-    title =  _(u'Computers report')
+    title =  _(u'No-user computers')
 
         
         
