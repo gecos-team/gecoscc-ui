@@ -108,6 +108,21 @@ function generateReport(type, format) {
                         ><i class="fa fa-globe"></i></button>
                     
                     </li>
+                    <li class="list-group-item">{{ gettext('No-user computers') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
                 </ul>
             </div>
         </div>
