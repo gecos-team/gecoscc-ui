@@ -18,6 +18,7 @@ from gecoscc.models import Computer, Computers
 from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it
 
 import json
+import time
 
 import logging
 logger = logging.getLogger(__name__)
@@ -52,6 +53,9 @@ class ChefClientRunResource(BaseAPI):
                     'message': 'The admin user %s does not exists' % username}
         
         logger.info("/chef-client/run/: Reserve chef node %s" % (str(node_id)))
+
+        # Saving last agent run time 
+        self.request.db.nodes.update({'node_chef_id': node_id},{'$set': {'last_agent_run_time': int(time.time())}})
         
         # Reserve the node
         settings = get_current_registry().settings

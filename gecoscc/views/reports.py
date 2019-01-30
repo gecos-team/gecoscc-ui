@@ -15,6 +15,8 @@ from pyramid_jinja2 import IJinja2Environment
 from pyramid.threadlocal import get_current_registry
 from bson import ObjectId
 import csv
+import os
+import gecoscc
 
 try:
     from cStringIO import StringIO
@@ -50,6 +52,28 @@ class CSVRenderer(object):
         writer.writerows(value.get('rows', []))
         return fout.getvalue()
 
+
+def link_callback(uri, rel):
+    """
+    Convert HTML URIs to absolute system paths so xhtml2pdf can access those
+    resources
+    """
+    # use short variable names
+    sRoot = os.path.dirname(gecoscc.__file__)
+    iUrl = '/static/images/'
+
+    # convert URIs to absolute system paths
+    if uri.startswith(iUrl):
+        path = os.path.join(sRoot, uri.strip("/"))
+    else:
+        return uri  # handle absolute uri (ie: http://some.tld/foo.png)
+
+    # make sure that file exists
+    if not os.path.isfile(path):
+            raise Exception(
+                'image URI must start with %s' % (iUrl)
+            )
+    return path
 
 
 
@@ -87,7 +111,7 @@ class PDFRenderer(object):
         #logger.info("HTML=%s"%(html))
         
         fout = StringIO()
-        pisa.CreatePDF(html, dest=fout)          
+        pisa.CreatePDF(html, dest=fout, link_callback=link_callback)          
 
         return fout.getvalue()
         
