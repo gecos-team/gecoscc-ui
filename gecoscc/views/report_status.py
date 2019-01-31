@@ -119,29 +119,29 @@ def report_status(context, request, file_ext):
         logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
 
         if last_agent_run_time + delay_margin >= current_time:
-            item['status'] = '<img src="/static/images/checkmark.jpg"/>' if file_ext != 'csv' else 'OK'
+            item['status'] = '<div><img src="/static/images/checkmark.jpg"/></div>' if file_ext != 'csv' else 'OK'
 
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
-            item['status'] = '<img src="/static/images/xmark.jpg"/>' if file_ext != 'csv' else 'ERROR'
+            item['status'] = '<div><img src="/static/images/xmark.jpg"/></div>' if file_ext != 'csv' else 'ERROR'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
-            item['status'] = '<img src="/static/images/alertmark.jpg"/>' if file_ext != 'csv' else 'WARN'
+            item['status'] = '<div><img src="/static/images/alertmark.jpg"/></div>' if file_ext != 'csv' else 'WARN'
         
 
         if file_ext == 'pdf':
-            row.append(treatment_string_to_pdf(item, 'name', 15))
-            row.append(treatment_string_to_pdf(item, 'family', 15))
-            row.append(treatment_string_to_pdf(item, 'node_chef_id', 32))
+            row.append(treatment_string_to_pdf(item, 'name', 20))
+            row.append(treatment_string_to_pdf(item, 'family', 10))
+            row.append(treatment_string_to_pdf(item, 'node_chef_id', 25))
             row.append(item['_id'])
             if last_agent_run_time != 0:
                 row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row.append('--')
-            row.append(treatment_string_to_pdf(item, 'status',50))
+            row.append(treatment_string_to_pdf(item, 'status', 45))
         else:
             if file_ext == 'csv':
                 row.append(treatment_string_to_csv(item, 'name'))
@@ -167,7 +167,7 @@ def report_status(context, request, file_ext):
               _(u'Status').encode('utf-8'))
 
     # Column widths in percentage
-    widths = (20, 15, 25, 15, 20, 5)
+    widths = (15, 10, 35, 15, 20, 5)
     title =  _(u'Computer status report')
         
         
