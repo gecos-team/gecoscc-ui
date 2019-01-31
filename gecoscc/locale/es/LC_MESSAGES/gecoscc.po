@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2019-01-30 13:51+0100\n"
+"POT-Creation-Date: 2019-01-31 10:54+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -100,7 +100,7 @@ msgstr "Valor"
 #: gecoscc/templates/bb-computer.html:184 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/report_computer.py:109
 #: gecoscc/views/report_no-user_computers.py:127
-#: gecoscc/views/report_status.py:152
+#: gecoscc/views/report_status.py:163
 msgid "Type"
 msgstr "Tipo"
 
@@ -514,7 +514,7 @@ msgstr "Configuración"
 #: gecoscc/templates/base_navbar.jinja2:34
 #: gecoscc/templates/bb-computer.html:453 gecoscc/templates/bb-jobs.html:82
 #: gecoscc/templates/server/connections.jinja2:26
-#: gecoscc/views/report_status.py:157
+#: gecoscc/views/report_status.py:167
 msgid "Status"
 msgstr "Estado"
 
@@ -577,7 +577,7 @@ msgstr "Buscar por"
 #: gecoscc/templates/server/status.jinja2:113
 #: gecoscc/views/report_computer.py:108
 #: gecoscc/views/report_no-user_computers.py:126
-#: gecoscc/views/report_printers.py:182 gecoscc/views/report_status.py:151
+#: gecoscc/views/report_printers.py:182 gecoscc/views/report_status.py:162
 #: gecoscc/views/report_storages.py:177
 msgid "Name"
 msgstr "Nombre"
@@ -788,14 +788,14 @@ msgstr "Portátil de Juan"
 #: gecoscc/templates/bb-computer.html:87 gecoscc/templates/bb-printer.html:63
 #: gecoscc/views/report_computer.py:110
 #: gecoscc/views/report_no-user_computers.py:128
-#: gecoscc/views/report_printers.py:186 gecoscc/views/report_status.py:153
+#: gecoscc/views/report_printers.py:186
 msgid "Registry number"
 msgstr "Número de registro"
 
 #: gecoscc/templates/bb-computer.html:93 gecoscc/templates/bb-printer.html:57
 #: gecoscc/views/report_computer.py:111
 #: gecoscc/views/report_no-user_computers.py:129
-#: gecoscc/views/report_printers.py:185 gecoscc/views/report_status.py:154
+#: gecoscc/views/report_printers.py:185
 msgid "Serial number"
 msgstr "Número de serie"
 
@@ -834,7 +834,7 @@ msgstr "Características de la estación de trabajo (Ohai)"
 
 #: gecoscc/templates/bb-computer.html:149 gecoscc/views/report_computer.py:112
 #: gecoscc/views/report_no-user_computers.py:130
-#: gecoscc/views/report_status.py:155
+#: gecoscc/views/report_status.py:164
 msgid "Node chef id"
 msgstr "Id del nodo chef"
 
@@ -1708,7 +1708,7 @@ msgstr "Bienvenido ${username}"
 #: gecoscc/views/report_computer.py:113
 #: gecoscc/views/report_no-computer_users.py:120
 #: gecoscc/views/report_no-user_computers.py:131
-#: gecoscc/views/report_printers.py:187 gecoscc/views/report_status.py:156
+#: gecoscc/views/report_printers.py:187 gecoscc/views/report_status.py:165
 #: gecoscc/views/report_storages.py:179 gecoscc/views/report_user.py:118
 msgid "Id"
 msgstr "Identificador"
@@ -1720,7 +1720,7 @@ msgstr "Informe de puestos"
 #: gecoscc/views/report_computer.py:124
 #: gecoscc/views/report_no-computer_users.py:131
 #: gecoscc/views/report_no-user_computers.py:143
-#: gecoscc/views/report_printers.py:200 gecoscc/views/report_status.py:168
+#: gecoscc/views/report_printers.py:200 gecoscc/views/report_status.py:178
 #: gecoscc/views/report_storages.py:192 gecoscc/views/report_user.py:129
 msgid "Page"
 msgstr ""
@@ -1728,7 +1728,7 @@ msgstr ""
 #: gecoscc/views/report_computer.py:125
 #: gecoscc/views/report_no-computer_users.py:132
 #: gecoscc/views/report_no-user_computers.py:144
-#: gecoscc/views/report_printers.py:201 gecoscc/views/report_status.py:169
+#: gecoscc/views/report_printers.py:201 gecoscc/views/report_status.py:179
 #: gecoscc/views/report_storages.py:193 gecoscc/views/report_user.py:130
 msgid "of"
 msgstr ""
@@ -1755,7 +1755,11 @@ msgstr "puesto"
 msgid "Printers and related computers report"
 msgstr "Informe impresoras y puestos"
 
-#: gecoscc/views/report_status.py:161
+#: gecoscc/views/report_status.py:166
+msgid "Agent last runtime"
+msgstr "Última ejecución del agente"
+
+#: gecoscc/views/report_status.py:171
 msgid "Computer status report"
 msgstr "Informe de estado de puestos"
 

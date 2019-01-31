@@ -11,7 +11,7 @@
 
 import logging
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from gecoscc.views.reports import treatment_string_to_csv
 from gecoscc.views.reports import treatment_string_to_pdf
@@ -88,10 +88,10 @@ def report_status(context, request, file_ext):
     # Get user data
     query = None
     if is_superuser:
-        query = request.db.nodes.find({'type': 'computer'})
+        query = request.db.nodes.find({'type': 'computer'}).sort('last_agent_run_time', -1)
     elif ou is not None:
         query = request.db.nodes.find(
-            {'type': 'computer','path': get_filter_nodes_belonging_ou(ou)})
+            {'type': 'computer','path': get_filter_nodes_belonging_ou(ou)}).sort('last_agent_run_time', -1)
     else:
         raise HTTPBadRequest()
   
@@ -104,23 +104,30 @@ def report_status(context, request, file_ext):
     update_error_interval = timedelta(hours=int(get_current_registry().settings.get('update_error_interval', 24))).seconds
     logger.debug("report_status: update_error_interval = {}".format(update_error_interval))
     
+    # gecos-agent runs every 60 minutes (cron resource: minutes 30)
+    # See https://github.com/gecos-team/gecos-workstation-management-cookbook/blob/master/recipes/default.rb (line: 57)
+    # 10-min max delay margin of chef-client concurrent executions
+    # See https://github.com/gecos-team/gecosws-agent/blob/trusty/scripts/gecos-chef-client-wrapper (line: 30)
+    # 15-min delay margin of network or chef-client execution
+    # 60 + 10 + 15 = 85
+    delay_margin = timedelta(minutes=85).seconds
+
     for item in query:
         row = []
 
         last_agent_run_time = int(item.get('last_agent_run_time',0))
         logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
 
-        # gecos-agent runs every 30 minutes 
-        # See https://github.com/gecos-team/gecos-workstation-management-cookbook/blob/master/recipes/default.rb 
-        # cron resource.
-        if last_agent_run_time + timedelta(minutes=45).seconds >= current_time:
+        if last_agent_run_time + delay_margin >= current_time:
             item['status'] = '<img src="/static/images/checkmark.jpg"/>' if file_ext != 'csv' else 'OK'
+
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
             item['status'] = '<img src="/static/images/xmark.jpg"/>' if file_ext != 'csv' else 'ERROR'
-        # 45 minutes <= last_agent_run_time <= update_error_interval (hours)
+
+        # delay_margin < last_agent_run_time < update_error_interval
         else:
             item['status'] = '<img src="/static/images/alertmark.jpg"/>' if file_ext != 'csv' else 'WARN'
         
@@ -128,10 +135,12 @@ def report_status(context, request, file_ext):
         if file_ext == 'pdf':
             row.append(treatment_string_to_pdf(item, 'name', 15))
             row.append(treatment_string_to_pdf(item, 'family', 15))
-            row.append(treatment_string_to_pdf(item, 'registry', 15))
-            row.append(treatment_string_to_pdf(item, 'serial', 25))
-            row.append(treatment_string_to_pdf(item, 'node_chef_id', 25))
+            row.append(treatment_string_to_pdf(item, 'node_chef_id', 32))
             row.append(item['_id'])
+            if last_agent_run_time != 0:
+                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+            else:
+                row.append('--')
             row.append(treatment_string_to_pdf(item, 'status',50))
         else:
             if file_ext == 'csv':
@@ -139,10 +148,12 @@ def report_status(context, request, file_ext):
             else:
                 row.append(get_html_node_link(item))
             row.append(treatment_string_to_csv(item, 'family'))
-            row.append(treatment_string_to_csv(item, 'registry'))
-            row.append(treatment_string_to_csv(item, 'serial'))
             row.append(treatment_string_to_csv(item, 'node_chef_id'))
             row.append(item['_id'])
+            if last_agent_run_time != 0:
+                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+            else:
+                row.append('--')
             row.append(treatment_string_to_csv(item, 'status'))
 
         rows.append(row)
@@ -150,14 +161,13 @@ def report_status(context, request, file_ext):
                 
     header = (_(u'Name').encode('utf-8'),
               _(u'Type').encode('utf-8'),
-              _(u'Registry number').encode('utf-8'),
-              _(u'Serial number').encode('utf-8'),
               _(u'Node chef id').encode('utf-8'),
               _(u'Id').encode('utf-8'),
+              _(u'Agent last runtime').encode('utf-8'),
               _(u'Status').encode('utf-8'))
 
     # Column widths in percentage
-    widths = (15, 15, 15, 15, 15, 15, 5)
+    widths = (20, 15, 25, 15, 20, 5)
     title =  _(u'Computer status report')
         
         
