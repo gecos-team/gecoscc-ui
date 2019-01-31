@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.4.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-01-30 13:51+0100\n"
+"POT-Creation-Date: 2019-01-31 10:54+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -98,7 +98,7 @@ msgstr ""
 #: gecoscc/models.py:237 gecoscc/templates/bb-computer.html:74
 #: gecoscc/templates/bb-computer.html:184 gecoscc/templates/bb-printer.html:33
 #: gecoscc/views/report_computer.py:109
-#: gecoscc/views/report_no-user_computers.py:127 gecoscc/views/report_status.py:152
+#: gecoscc/views/report_no-user_computers.py:127 gecoscc/views/report_status.py:163
 msgid "Type"
 msgstr ""
 
@@ -504,7 +504,7 @@ msgstr ""
 
 #: gecoscc/templates/base_navbar.jinja2:34 gecoscc/templates/bb-computer.html:453
 #: gecoscc/templates/bb-jobs.html:82 gecoscc/templates/server/connections.jinja2:26
-#: gecoscc/views/report_status.py:157
+#: gecoscc/views/report_status.py:167
 msgid "Status"
 msgstr ""
 
@@ -562,7 +562,7 @@ msgstr ""
 #: gecoscc/templates/server/status.jinja2:67
 #: gecoscc/templates/server/status.jinja2:113 gecoscc/views/report_computer.py:108
 #: gecoscc/views/report_no-user_computers.py:126
-#: gecoscc/views/report_printers.py:182 gecoscc/views/report_status.py:151
+#: gecoscc/views/report_printers.py:182 gecoscc/views/report_status.py:162
 #: gecoscc/views/report_storages.py:177
 msgid "Name"
 msgstr ""
@@ -756,14 +756,14 @@ msgstr ""
 #: gecoscc/templates/bb-computer.html:87 gecoscc/templates/bb-printer.html:63
 #: gecoscc/views/report_computer.py:110
 #: gecoscc/views/report_no-user_computers.py:128
-#: gecoscc/views/report_printers.py:186 gecoscc/views/report_status.py:153
+#: gecoscc/views/report_printers.py:186
 msgid "Registry number"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:93 gecoscc/templates/bb-printer.html:57
 #: gecoscc/views/report_computer.py:111
 #: gecoscc/views/report_no-user_computers.py:129
-#: gecoscc/views/report_printers.py:185 gecoscc/views/report_status.py:154
+#: gecoscc/views/report_printers.py:185
 msgid "Serial number"
 msgstr ""
 
@@ -799,7 +799,7 @@ msgid "Workstation specifications (Ohai)"
 msgstr ""
 
 #: gecoscc/templates/bb-computer.html:149 gecoscc/views/report_computer.py:112
-#: gecoscc/views/report_no-user_computers.py:130 gecoscc/views/report_status.py:155
+#: gecoscc/views/report_no-user_computers.py:130 gecoscc/views/report_status.py:164
 msgid "Node chef id"
 msgstr ""
 
@@ -1642,7 +1642,7 @@ msgstr ""
 #: gecoscc/views/report_computer.py:113
 #: gecoscc/views/report_no-computer_users.py:120
 #: gecoscc/views/report_no-user_computers.py:131
-#: gecoscc/views/report_printers.py:187 gecoscc/views/report_status.py:156
+#: gecoscc/views/report_printers.py:187 gecoscc/views/report_status.py:165
 #: gecoscc/views/report_storages.py:179 gecoscc/views/report_user.py:118
 msgid "Id"
 msgstr ""
@@ -1654,7 +1654,7 @@ msgstr ""
 #: gecoscc/views/report_computer.py:124
 #: gecoscc/views/report_no-computer_users.py:131
 #: gecoscc/views/report_no-user_computers.py:143
-#: gecoscc/views/report_printers.py:200 gecoscc/views/report_status.py:168
+#: gecoscc/views/report_printers.py:200 gecoscc/views/report_status.py:178
 #: gecoscc/views/report_storages.py:192 gecoscc/views/report_user.py:129
 msgid "Page"
 msgstr ""
@@ -1662,7 +1662,7 @@ msgstr ""
 #: gecoscc/views/report_computer.py:125
 #: gecoscc/views/report_no-computer_users.py:132
 #: gecoscc/views/report_no-user_computers.py:144
-#: gecoscc/views/report_printers.py:201 gecoscc/views/report_status.py:169
+#: gecoscc/views/report_printers.py:201 gecoscc/views/report_status.py:179
 #: gecoscc/views/report_storages.py:193 gecoscc/views/report_user.py:130
 msgid "of"
 msgstr ""
@@ -1688,7 +1688,11 @@ msgstr ""
 msgid "Printers and related computers report"
 msgstr ""
 
-#: gecoscc/views/report_status.py:161
+#: gecoscc/views/report_status.py:166
+msgid "Agent last runtime"
+msgstr ""
+
+#: gecoscc/views/report_status.py:171
 msgid "Computer status report"
 msgstr ""
 
