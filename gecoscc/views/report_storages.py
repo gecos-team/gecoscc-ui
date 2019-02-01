@@ -181,7 +181,7 @@ def report_storages(context, request, file_ext):
               _(u'Path').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (20, 15, 20, 15, 10, 20)
+    widths = (0, 20, 50, 15, 15, 0)
     title =  _(u'Storages and related users report')
         
         

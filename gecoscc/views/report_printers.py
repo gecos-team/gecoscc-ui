@@ -189,7 +189,7 @@ def report_printers(context, request, file_ext):
               _(u'Path').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (15, 10, 5, 10, 10, 5, 15, 15, 15)
+    widths = (0, 20, 10, 10, 10, 10, 20, 20, 0)
     title =  _(u'Printers and related computers report')
         
         
