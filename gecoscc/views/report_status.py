@@ -119,17 +119,20 @@ def report_status(context, request, file_ext):
         logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
 
         if last_agent_run_time + delay_margin >= current_time:
-            item['status'] = '<div><img src="/static/images/checkmark.jpg"/></div>' if file_ext != 'csv' else 'OK'
+            item['status'] = '<div class="centered"><img src="/static/images/checkmark.jpg"/></div>' if file_ext != 'csv'
+                else 'OK'
 
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
-            item['status'] = '<div><img src="/static/images/xmark.jpg"/></div>' if file_ext != 'csv' else 'ERROR'
+            item['status'] = '<div class="centered"><img src="/static/images/xmark.jpg"/></div>' if file_ext != 'csv'
+                else 'ERROR'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
-            item['status'] = '<div><img src="/static/images/alertmark.jpg"/></div>' if file_ext != 'csv' else 'WARN'
+            item['status'] = '<div class="centered"><img src="/static/images/alertmark.jpg"/></div>' if file_ext != 'csv'
+                else 'WARN'
         
 
         if file_ext == 'pdf':
@@ -141,7 +144,7 @@ def report_status(context, request, file_ext):
                 row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row.append('--')
-            row.append(treatment_string_to_pdf(item, 'status', 45))
+            row.append(treatment_string_to_pdf(item, 'status', 80))
         else:
             if file_ext == 'csv':
                 row.append(treatment_string_to_csv(item, 'name'))
