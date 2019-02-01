@@ -153,6 +153,23 @@ function generateReport(type, format) {
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
+                    {% if is_superuser %}
+                    <li class="list-group-item">{{ gettext('Permissions') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
