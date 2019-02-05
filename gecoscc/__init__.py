@@ -83,7 +83,7 @@ def route_config(config):
     config.add_renderer('pdf', 'gecoscc.views.reports.PDFRenderer')
     config.add_renderer('txt', 'gecoscc.views.computer_logs.TXTRenderer')
     
-    config.add_route('statistics', '/admins/statistics/', factory=SuperUserFactory)
+    config.add_route('statistics', '/admins/statistics/', factory=LoggedFactory)
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
     config.add_route('internal_server_status', '/internal/server/status', factory=InternalAccessFactory)
     config.add_route('server_connections', '/server/connections', factory=SuperUserFactory)

@@ -23,7 +23,7 @@ from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariable
 from gecoscc.i18n import gettext as _
 from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, UpdateModel
 from gecoscc.pagination import create_pagination_mongo_collection
-from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq
+from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq, get_filter_nodes_belonging_ou
 from gecoscc.tasks import script_runner
 
 import os
@@ -324,20 +324,76 @@ def admin_maintenance(_context, request):
 
 
 
-@view_config(route_name='statistics', permission='is_superuser', renderer="templates/admins/statistics.jinja2")
+@view_config(route_name='statistics', permission='edit', renderer="templates/admins/statistics.jinja2")
 def statistics(context, request):
 
-    object_counters=request.db.nodes.aggregate([ {"$group" : {"_id":"$type", "count":{"$sum":1}}}  ])
+    object_counters = []
+    policy_counters = []
+    ous = []
+    settings = get_current_registry().settings
+    policyname = "name_{}".format(settings['pyramid.default_locale_name'])
 
-    policy_counters=[]
+    is_superuser = request.user.get('is_superuser', False)
+    ou_id = request.GET.get('ou_id', None)
+    logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
 
-    for pol in request.db.policies.find().sort("name"):
-        c=request.db.nodes.find({"policies."+str(pol['_id']): { '$exists': True} } ).count()
-        policy_counters.append([pol['name'],c])
-         
+    if is_superuser:
+        # Objects
+        object_counters = request.db.nodes.aggregate([
+            {"$group" : { "_id" : "$type", "count":{"$sum":1}}} 
+        ]).get("result", [])
+
+        logger.debug("admins.py ::: statistics - object_counters = {}".format(object_counters))
+
+        # Policies
+        for pol in request.db.policies.find().sort("name"):
+            c = request.db.nodes.find({"policies."+str(pol['_id']): {'$exists': True}}).count()
+            try:
+                policy_counters.append([pol[policyname],c])
+            except KeyError:
+                policy_counters.append([pol['name'],c])
+                 
+
+    else:
+        # Get managed ous for admin
+        ou_managed = request.user.get('ou_managed', [])
+        ous = list(request.db.nodes.find(
+            {"type": "ou", "_id": { "$in": map(ObjectId, ou_managed) }},
+            {"_id" : 1, "name" : 1}
+        ).sort("name", 1))
+        logger.debug("admins.py ::: statistics - ous = {}".format(ous))
+
+        # Defaults
+        if not ou_id:
+            ou_id = str(ous[0]['_id']) 
+ 
+        # Objects
+        object_counters = request.db.nodes.aggregate([
+            {"$match" : { "path": get_filter_nodes_belonging_ou(ou_id)}},
+            {"$group" : { "_id" : "$type", "count": {"$sum":1}}}
+        ]).get("result", [])
+
+        logger.debug("admins.py ::: statistics - object_counters = {}".format(object_counters))
+
+        # Policies
+        for pol in request.db.policies.find().sort("name"):
+            c = request.db.nodes.find({
+                "$or": [{"path": get_filter_nodes_belonging_ou(ou_id)}, {"_id":ObjectId(ou_id)}],
+                "policies." + str(pol['_id']): {'$exists': True}
+            }).count()
+            try:
+                policy_counters.append([pol[policyname],c])
+            except KeyError:
+                policy_counters.append([pol['name'],c])
+
+        logger.debug("admins.py ::: statistics - policy_counters = {}".format(policy_counters))
+
     return {
        'policy_counters': policy_counters,
        'object_counters': object_counters,
+       'ou_managed': ous,
+       'ou_selected': ou_id,
+       'is_superuser': is_superuser
     }
 
 
