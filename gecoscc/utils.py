@@ -2656,7 +2656,7 @@ def auditlog(request, action=None):
             except: # POST login
                 username = request.POST.get('username')
             logger.debug("utils.py ::: auditlog - username = {}".format(username))
-            ipaddr = request.headers.get('X-Forwarded-For', request.remote_addr))
+            ipaddr = request.headers.get('X-Forwarded-For', request.remote_addr)
             logger.debug("utils.py ::: auditlog - ipaddr = {}".format(ipaddr))
             agent = request.user_agent
             logger.debug("utils.py ::: auditlog - agent = {}".format(agent))
