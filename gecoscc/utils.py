@@ -21,6 +21,7 @@ import re
 import pkg_resources
 import logging
 import subprocess
+import traceback
 
 from gettext import gettext as _
 from bson import ObjectId, json_util
@@ -58,6 +59,7 @@ SCRIPTCODES = {
     'mongodb_restore':'99',
     'chefserver_restore':'99'}
     
+AUDIT_ACTIONS = [ 'login','logout','expire' ]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -2632,4 +2634,44 @@ def import_policies(username=None, inifile=None):
 
     except AssertionError, msg:
         logger.warning(msg)
+
+def auditlog(request, action=None):
+    ''' Tracking user temporal information 
+    
+    Args:
+        request(object): Pyramid request 
+        action(str):     user action (login,logout,expire, ...)
+        
+    '''
+    logger.debug("utils.py ::: auditlog - request = {}".format(request))
+    logger.debug("utils.py ::: auditlog - action = {}".format(action))
+    if not action or action not in AUDIT_ACTIONS:
+        logger.error("utils.py ::: auditlog - unrecognized action = {}".format(action))
+    else:
+
+        try:
+            logger.debug("utils.py ::: auditlog - request.user = {}".format(request.user))
+            try:
+                username = request.user['username']
+            except: # POST login
+                username = request.POST.get('username')
+            logger.debug("utils.py ::: auditlog - username = {}".format(username))
+            ipaddr = request.headers.get('X-Forwarded-For', request.remote_addr))
+            logger.debug("utils.py ::: auditlog - ipaddr = {}".format(ipaddr))
+            agent = request.user_agent
+            logger.debug("utils.py ::: auditlog - agent = {}".format(agent))
+
+            request.db.auditlog.insert({
+                'username': username, 
+                'action': action,
+                'ipaddr': ipaddr, 
+                'user-agent': agent, 
+                'timestamp': int(time.time())
+            })
+
+        except (KeyError, Exception):
+             logger.error(traceback.format_exc())
+
+
+
 

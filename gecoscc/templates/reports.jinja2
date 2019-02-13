@@ -169,6 +169,21 @@ function generateReport(type, format) {
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
+                    <li class="list-group-item">{{ gettext('Audit log') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
                     {% endif %}
                 </ul>
             </div>

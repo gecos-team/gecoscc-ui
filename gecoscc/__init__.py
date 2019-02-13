@@ -27,9 +27,11 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.db import MongoDB, get_db
 from gecoscc.userdb import get_userdb, get_groups, get_user
-from gecoscc.eventsmanager import get_jobstorage
+from gecoscc.eventsmanager import get_jobstorage, ExpiredSessionEvent
 from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory, RootFactory
 from gecoscc.socks import socketio_service
+from gecoscc.utils import auditlog
+from gecoscc.session import session_factory_from_settings
 
 from urlparse import urlsplit
 import colander
@@ -247,6 +249,9 @@ def main(global_config, **settings):
     celery_config(config)
     locale_config(config)
     
+    session_factory = session_factory_from_settings(settings)
+    config.set_session_factory(session_factory)
+
     check_server_list(config)
 
     config.add_translation_dirs('gecoscc:locale/')
@@ -254,7 +259,6 @@ def main(global_config, **settings):
     jinja2_config(config)
 
     config.include('pyramid_jinja2')
-    config.include('pyramid_beaker')
     config.include('pyramid_celery')
     config.include('cornice')
 
@@ -267,6 +271,9 @@ def main(global_config, **settings):
         event['help_base_url'] = current_settings['help_base_url']
         event['help_policy_url'] = current_settings['help_policy_url']
 
+    def expire_session(event):
+        auditlog(event.request, 'expire')
+
     config.add_subscriber(add_renderer_globals, 'pyramid.events.BeforeRender')
 
     config.add_subscriber('gecoscc.i18n.setAcceptedLanguagesLocale',
@@ -277,6 +284,8 @@ def main(global_config, **settings):
 
     config.add_subscriber('gecoscc.context_processors.set_version',
                           'pyramid.events.NewRequest')
+
+    config.add_subscriber(expire_session, 'gecoscc.eventsmanager.ExpiredSessionEvent')
 
     route_config(config)
     sockjs_config(config, global_config)
