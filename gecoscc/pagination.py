@@ -112,7 +112,14 @@ def create_pagination_mongo_collection(request, collection, items_per_page=10):
     def page_url(page):
         if page is None:
             return '#'
-        return '%s?page=%s' % (request.path, page)
+        if request.query_string:
+            try:
+                indexOf = request.query_string.index('&page')
+            except ValueError:
+                indexOf = len(request.query_string)
+            return '%s?%s&page=%s' % (request.path, request.query_string[:indexOf], page)
+        else:
+            return '%s?page=%s' % (request.path, page)
     current_page = int(request.GET.get('page', 1))
     page = BootStrapPage(range(collection.count()),
                          current_page,

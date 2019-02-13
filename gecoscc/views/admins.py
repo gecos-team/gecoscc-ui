@@ -29,6 +29,7 @@ from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, 
 from gecoscc.tasks import script_runner
 
 import os
+import pymongo
 import time
 import pickle
 import json
@@ -54,13 +55,34 @@ def admins(context, request):
 @view_config(route_name='updates', renderer='templates/admins/updates.jinja2',
              permission='is_superuser')
 def updates(context, request):
-    filters = None
+    filters = {}
     q = request.GET.get('q', None)
     if q:
         filters = {'name': {'$regex': '.*%s.*' % q,
                             '$options': '-i'}}
 
-    updates = request.db.updates.find(filters).sort('_id',-1)
+    # Order
+    order = request.GET.get('order', None)
+    if order:
+        if order == "desc":
+            ordering = pymongo.DESCENDING
+        elif order == "asc":
+            ordering = pymongo.ASCENDING
+    logger.debug("admins.py ::: updates - order = {}".format(order))
+
+    # Orderby
+    sorting = ('_id', -1) # default
+    s = request.GET.get('orderby', None)
+    if s:
+        if s == '_id':
+            sorting = ('_id', ordering)
+        elif s == 'name':
+            sorting = ('name', ordering)
+        elif s == 'log':
+            sorting = ('timestamp', ordering)
+
+    logger.debug("admins.py ::: updates - sorting = {}".format(sorting))
+    updates = request.db.updates.find(filters).sort([sorting])
     
     # "format" filter in jinja2 only admits "%s", not "{0}"
     settings = get_current_registry().settings
