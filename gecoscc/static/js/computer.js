@@ -602,12 +602,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
         
         onRender: function () {
+
+            this.check_permissions();
+
             if(!_.isUndefined(this.activeTab)) {
                 this.activeTab = this.activeTab;
                 this.$el.find('#' + this.activeTab.id + ' a[href="' + this.activeTab.firstElementChild.getAttribute('href') + '"]').tab('show');
             }
             this.$el.find('[data-toggle="tooltip"]').tooltip();
-            this.checkErrors();
 
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');

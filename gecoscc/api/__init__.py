@@ -18,7 +18,7 @@ from copy import deepcopy
 
 from cornice.schemas import CorniceSchema
 from pymongo.errors import DuplicateKeyError
-from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
+from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPForbidden
 from webob.multidict import MultiDict
 
 from gecoscc.models import Node
@@ -157,7 +157,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
                 query.append(oid_filters)
 
         if issubclass(self.schema_detail, Node):
-            path_filter = nodes_path_filter(self.request)
+            path_filter = nodes_path_filter(self.request, ['ou_managed','ou_readonly'])
             if path_filter:
                 query.append(path_filter)
 
@@ -170,8 +170,6 @@ class ResourcePaginatedReadOnly(BaseAPI):
         return objects
 
     def get_oid_filter(self, oid):
-        if issubclass(self.schema_detail, Node):
-            can_access_to_this_path(self.request, self.collection, oid)
         return {self.key: ObjectId(oid)}
 
     def collection_get(self):
@@ -216,6 +214,11 @@ class ResourcePaginatedReadOnly(BaseAPI):
 
     def get(self):
         oid = self.request.matchdict['oid']
+        if issubclass(self.schema_detail, Node):
+            try:
+                can_access_to_this_path(self.request, self.collection, oid, ou_type='ou_readonly')
+            except HTTPForbidden:
+                can_access_to_this_path(self.request, self.collection, oid)
         collection_filter = self.get_oid_filter(oid)
         collection_filter.update(self.get_object_filter())
         collection_filter.update(self.mongo_filter)
@@ -223,7 +226,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
         if not node:
             raise HTTPNotFound()
         node = self.parse_item(node)
-        
+
         if node.get('type', None) in RESOURCES_EMITTERS_TYPES:
             node['is_assigned'] = self.is_assigned(node)
             return node
@@ -362,7 +365,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                                  ' the url')
 
         if issubclass(self.schema_detail, Node):
-            can_access_to_this_path(self.request, self.collection, obj)
+            can_access_to_this_path(self.request, self.collection, oid)
             is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 
@@ -417,7 +420,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                                  ' the url')
 
         if issubclass(self.schema_detail, Node):
-            can_access_to_this_path(self.request, self.collection, obj)
+            can_access_to_this_path(self.request, self.collection, oid)
             is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 
@@ -441,7 +444,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         if issubclass(self.schema_detail, Node):
             obj = self.collection.find_one({'_id': ObjectId(oid)})
-            can_access_to_this_path(self.request, self.collection, obj)
+            can_access_to_this_path(self.request, self.collection, oid)
             is_gecos_master_or_403(self.request, self.collection, obj, self.schema_detail)
             master_policy_no_updated_or_403(self.request, self.collection, obj)
 

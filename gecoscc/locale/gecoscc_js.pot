@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.4.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-02-01 12:26+0100\n"
+"POT-Creation-Date: 2019-02-13 10:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,53 +42,57 @@ msgstr ""
 msgid "This node has been deleted by another administrator."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:178
+#: gecoscc/static/js/app-utils.js:220
+msgid "You have read only access"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:264
 msgid "Object changed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:179
+#: gecoscc/static/js/app-utils.js:265
 msgid ""
 "Someone has changed this object while you were working on it, please reload "
 "before applying any changes."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:189
+#: gecoscc/static/js/app-utils.js:275
 msgid "Object deleted."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:190
+#: gecoscc/static/js/app-utils.js:276
 msgid "Someone has deleted this object while you were working on it"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:302
+#: gecoscc/static/js/app-utils.js:388
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:303
+#: gecoscc/static/js/app-utils.js:389
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:409 gecoscc/static/js/ou.js:85
+#: gecoscc/static/js/app-utils.js:495 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:504
+#: gecoscc/static/js/app-utils.js:590
 msgid "Staging"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:508 gecoscc/static/js/tree-views-renderer.js:82
+#: gecoscc/static/js/app-utils.js:594 gecoscc/static/js/tree-views-renderer.js:82
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:510
+#: gecoscc/static/js/app-utils.js:596
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:512
+#: gecoscc/static/js/app-utils.js:598
 msgid "Refresh policies"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:514
+#: gecoscc/static/js/app-utils.js:600
 msgid "Done"
 msgstr ""
 
