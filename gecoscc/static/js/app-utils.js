@@ -160,7 +160,93 @@
         //
         // resourceType: "user",
 
+        check_permissions: function() {
+
+            var ou_readonly = [],
+             ou_remote = [],
+             ou_managed = [];
+
+            var path = this.model.get('path') + ',' + this.model.get('id');
+            path = path.split(',');
+            path.reverse();
+
+            // Read-only OUs
+            if (_.has(window.GecosUtils.gecosUser, 'ou_readonly')) {
+                ou_readonly = window.GecosUtils.gecosUser['ou_readonly'];
+                ou_managed = window.GecosUtils.gecosUser['ou_managed'];
+
+                var permission = null;
+                var node = null;
+                for(var i=0; i < path.length; i++) {
+                  node = path[i];
+                  if (_.contains(ou_readonly, node)) {
+                    permission = 'read';
+                    break;
+                  } else if (_.contains(ou_managed, node)) {
+                    permission = 'manage';
+                    break;
+                  }
+                }
+
+                if (permission == 'read') {
+                    // groups-form-view id submit changes
+                    this.model.set("isEditable",false);
+
+                    var $submit = this.$el.find("#save");
+                    if($submit && !$submit.length) {
+                        $submit = this.$el.find("#submit");
+                    }
+                    var $cut = this.$el.find("#cut");
+                    var $delete = this.$el.find("#delete");
+
+                    $submit.removeClass('btn-primary');
+                    $submit.addClass('btn-group disabled');
+                    $submit.removeAttr('id');
+                    $submit.unbind('click');
+                    $submit.css('margin-right','5px');
+
+                    $cut.removeClass('btn-warning');
+                    $cut.addClass('btn-group disabled');
+                    $cut.removeAttr('id');
+                    $cut.unbind('click');
+                    $cut.css('margin-right','5px');
+
+                    $delete.removeClass('btn-danger');
+                    $delete.addClass('btn-group disabled');
+                    $delete.removeAttr('id');
+                    $delete.unbind('click');
+                    $delete.css('margin-right','5px');
+
+                    App.showAlert('error', gettext('You have read only access'));
+                }
+            }
+
+            // Remote OUs
+            var helpchannel = this.$el.find("#helpchannel");
+            if (! helpchannel.hasClass('admin')) { // If not superuser
+                if (_.has(window.GecosUtils.gecosUser, 'ou_remote')) {
+                    ou_remote = window.GecosUtils.gecosUser['ou_remote'];
+                    //console.log("ou_readonly: " + ou_readonly);
+                    var remote = _.find(ou_remote, function (ou) {
+                        return _.contains(path, ou);
+                    });
+
+                    //console.log("permission: " + permission)
+                    if (_.isUndefined(remote)) {
+                        this.$el.find("#helpchannel-tab").hide();
+                        this.$el.find("#helpchannel").hide();
+                    }
+                } else {
+                    this.$el.find("#helpchannel-tab").hide();
+                    this.$el.find("#helpchannel").hide();
+                }
+            }
+        },
+
         onRender: function () {
+
+            this.check_permissions();
+
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
             }

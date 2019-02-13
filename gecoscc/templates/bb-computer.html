@@ -417,7 +417,7 @@
         </div>        
         
         
-        <div class="tab-pane fade in" id="helpchannel">
+        <div class="tab-pane fade in {% if request.user.get('is_superuser', False) %}admin{% endif %}" id="helpchannel">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <div class="text-muted bootstrap-admin-box-title">{{ gettext('Logs') }}</div>

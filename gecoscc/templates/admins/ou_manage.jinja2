@@ -25,21 +25,6 @@
     <script type="text/javascript">
         (function($){
             $(document).ready(function () {
-                $(".add-another").click(function () {
-                    var selectToInsert = $(this).parents("div.form-group").find("select:first").clone();
-                    selectToInsert.find("option:selected").removeAttr("selected");
-                    var col = $(this).parents("div.form-group").find(".col-sm-9");
-                    var selectName = selectToInsert.attr("name");
-                    var selectId = selectToInsert.attr("id");
-                    var ou_count = $("[name=" + selectName + "_count]")
-                    selectToInsert.attr("name", selectName + "-" + ou_count.val());
-                    selectToInsert.attr("id", selectId + "-" + ou_count.val());
-                    ou_count.val(parseInt(ou_count.val()) + 1);
-                    $("<p></p>").appendTo(col);
-                    selectToInsert.appendTo(col);
-                    return false;
-                });
-
                 $(document).on("change", "#deform select", function(){
                     var that = $(this);
                     var ajaxURL = "/ou/list/?ou_id=" +  that.val();
@@ -57,9 +42,45 @@
                                     html += "</select>";
                                     $(html).insertAfter(that);
                                 }
-                            }});
-                        });
+                            }
+                    });
                 });
+
+                $(document).on("click", "#deform input[value='MANAGE'][type=checkbox]", function(){
+                    var that = $(this);
+                    var read = that.closest("div").find("input[value='READONLY'][type=checkbox]");
+                    if (that.is(":checked")) {
+                        read.prop("checked", false);
+                        read.prop("disabled", true);
+                        // Label
+                        read.parent().css({
+                            "text-decoration":"line-through"
+                        });
+                    } else {
+                        read.prop("disabled", false);
+                        read.parent().css({
+                            "text-decoration":"none"
+                        });
+                    }
+                });
+
+                $(document).on("click", "#deform input[value='READONLY'][type=checkbox]", function(){
+                    var that = $(this);
+                    var read = that.closest("div").find("input[value='MANAGE'][type=checkbox]");
+                    if (that.is(":checked")) {
+                        read.prop("checked", false);
+                        read.prop("disabled", true);
+                        read.parent().css({
+                            "text-decoration":"line-through"
+                        });
+                    } else {
+                        read.prop("disabled", false);
+                        read.parent().css({
+                            "text-decoration":"none"
+                        });
+                    }
+                });
+            });
         })(jQuery);
     </script>
 {% endblock %}

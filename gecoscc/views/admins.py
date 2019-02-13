@@ -19,9 +19,11 @@ from deform import ValidationFailure
 
 from gecoscc import messages
 from gecoscc.socks import is_websockets_enabled
-from gecoscc.forms import AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm, AdminUserOUManageForm, MaintenanceForm, UpdateForm
+from gecoscc.forms import (AdminUserAddForm, AdminUserEditForm, AdminUserVariablesForm,
+    MaintenanceForm, UpdateForm, PermissionsForm)
 from gecoscc.i18n import gettext as _
-from gecoscc.models import AdminUser, AdminUserVariables, AdminUserOUManage, Maintenance, UpdateModel
+from gecoscc.models import (AdminUser, AdminUserVariables, Maintenance, UpdateModel, AdminUserOUPerms,
+    AdminUserOUPerm, Permissions)
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq, get_filter_nodes_belonging_ou
 from gecoscc.tasks import script_runner
@@ -99,47 +101,66 @@ def admins_ou_manage(context, request):
     ou_choices = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type': 'ou', 'path': 'root'})]
     ou_choices = [('', 'Select an Organisational Unit')] + ou_choices
     username = request.matchdict['username']
-    schema = AdminUserOUManage().bind(ou_choices=ou_choices)
-    form = AdminUserOUManageForm(schema=schema,
-                                 collection=request.db['adminusers'],
-                                 username=username,
-                                 request=request)
-    data = {}
+    schema = Permissions().bind(ou_choices=ou_choices)
+    form = PermissionsForm(schema=schema,
+                           collection=request.db['adminusers'],
+                           username=username,
+                           request=request)
+    controls = {}
     instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-        data = request.POST.items()
-        ous_variables = {}
+        controls = request.POST.items()
+        # Removing blanks OUs (not filling up by user)
+        data = [tup for tup in controls if not (tup[0] == 'ou_selected' and tup[1] == '')]
+        logger.debug("admins_ou_manage ::: data = {}".format(data))
+
         try:
-            for field_name in ['ou_managed', 'ou_availables']:
-                ous_variables[field_name] = []
-                field_name_count = '%s_count' % (field_name)
-                for i in range(int(request.POST.get(field_name_count))):
-                    if i != 0:
-                        field_name_iter = '%s-%s' % (field_name, i)
-                    else:
-                        field_name_iter = field_name
-                    ous = request.POST.getall(field_name_iter)
-                    if len(ous) == 0:
-                        last_ou = ''
-                    else:
-                        if len(ous) > 1 and ous[-1] == '':
-                            last_ou = ous[-2]
-                        else:
-                            last_ou = ous[-1]
-                    if last_ou:
-                        ous_variables[field_name].append(last_ou)
-            form.save(ous_variables)
+            deserialized = form.validate(data)
+            form.save(deserialized['perms'])
             return HTTPFound(location=get_url_redirect(request))
-        except ValidationFailure, e:
+        except ValidationFailure as e:
+            logger.error("admins_ou_manage ::: ValidationFailure = {}".format(e))
             form = e
-    if instance and not data:
-        instance['ou_managed_count'] = len(instance.get('ou_managed', [])) or 1
-        instance['ou_availables_count'] = len(instance.get('ou_availables', [])) or 1
+
+    if instance and not controls:
+        # instance = {'perms': [
+        #     {'permission': [u'READONLY', u'LINK'], 'ou_selected': [u'562f7adee488e3664c6264e5']},
+        #     {'permission': [u'REMOTE'], 'ou_selected': [u'5821789be488e34fcd2cf61c']},
+        #     {'permission': [u'MANAGE'], 'ou_selected': [u'5526358508d70a63c6024794']}
+        # ]}
+
+        # Mapping model to appstruct
+        instance['perms'] = []
+        ou_managed = instance.get('ou_managed', [])
+        ou_availables = instance.get('ou_availables', [])
+        ou_remote = instance.get('ou_remote', [])
+        ou_readonly = instance.get('ou_readonly', [])
+
+        ous = set(ou_managed + ou_availables + ou_remote + ou_readonly)
+
+        for ou in ous:
+
+            perm = {'permission': [], 'ou_selected': [ou]}
+
+            if ou in ou_managed:
+                perm['permission'].append('MANAGE')
+            if ou in ou_availables:
+                perm['permission'].append('LINK')
+            if ou in ou_remote:
+                perm['permission'].append('REMOTE')
+            if ou in ou_readonly:
+                perm['permission'].append('READONLY')
+
+            instance['perms'].append(perm)
+
         form_render = form.render(instance)
     else:
         form_render = form.render()
-    return {'ou_manage_form': form_render,
-            'username': username}
+
+    return {
+        'ou_manage_form': form_render,
+        'username': username
+    }
 
 
 @view_config(route_name='admins_add', renderer='templates/admins/add.jinja2',
@@ -163,8 +184,11 @@ def admins_set_variables(context, request):
 
     # Ous managed by admin (user)
     if not user.get('is_superuser'):
-        admin_ous = map(ObjectId, user['ou_managed'])
-        ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id':{'$in': admin_ous}})]
+        if 'ou_managed' in user:
+            admin_ous = map(ObjectId, user['ou_managed'])
+            ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id': {'$in': admin_ous}})]
+        else: # Recently new admin created
+            ou_managed = []
     else: # Superuser
         ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'type':'ou'})]
 

@@ -127,6 +127,8 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
 
         onRender: function () {
+            this.check_permissions();
+
             var oids = [],
                 url;
 
