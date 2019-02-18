@@ -159,3 +159,8 @@ def get_jobstorage(request):
     else:
         user = None
     return JobStorage(request.db.jobs, user)
+
+
+class ExpiredSessionEvent(object):
+    def __init__(self, request):
+        self.request = request

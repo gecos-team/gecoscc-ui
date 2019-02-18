@@ -29,6 +29,7 @@ from gecoscc.command_util import get_setting
 from gecoscc.models import PRINTER_TYPE
 from gecoscc.models import PRINTER_CONN_TYPE
 from gecoscc.models import PRINTER_OPPOLICY_TYPE
+from gecoscc.utils import auditlog
 
 
 logger = logging.getLogger(__name__)
@@ -78,6 +79,7 @@ class LoginViews(BaseView):
                     'message': self.translate(_("Please enter the correct username and password")),
                 }
 
+            auditlog(self.request, 'login')
             headers = remember(self.request, username)
             created_msg(self.request, self.translate(
                 _('Welcome ${username}',
@@ -92,6 +94,7 @@ class LoginViews(BaseView):
 
     @view_config(route_name='logout')
     def logout(self):
+        auditlog(self.request, 'logout')
         headers = forget(self.request)
         return HTTPFound(location=self.request.route_path('login'),
                          headers=headers)

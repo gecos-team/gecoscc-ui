@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.4.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2019-02-13 10:15+0100\n"
+"POT-Creation-Date: 2019-02-13 13:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -130,7 +130,7 @@ msgstr ""
 
 #: gecoscc/models.py:352 gecoscc/templates/bb-user.html:37
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
-#: gecoscc/templates/admins/maintenance.jinja2:20
+#: gecoscc/templates/admins/maintenance.jinja2:20 gecoscc/views/report_audit.py:94
 #: gecoscc/views/report_no-computer_users.py:114
 #: gecoscc/views/report_permission.py:135 gecoscc/views/report_user.py:112
 msgid "Username"
@@ -403,16 +403,16 @@ msgstr ""
 msgid "deleted"
 msgstr ""
 
-#: gecoscc/utils.py:2396
+#: gecoscc/utils.py:2398
 msgid "No permission to execute this function from script"
 msgstr ""
 
-#: gecoscc/utils.py:2419 gecoscc/utils.py:2455 gecoscc/utils.py:2489
-#: gecoscc/utils.py:2536 gecoscc/utils.py:2577
+#: gecoscc/utils.py:2421 gecoscc/utils.py:2457 gecoscc/utils.py:2491
+#: gecoscc/utils.py:2538 gecoscc/utils.py:2579
 msgid "Missing required arguments"
 msgstr ""
 
-#: gecoscc/utils.py:2456 gecoscc/utils.py:2490
+#: gecoscc/utils.py:2458 gecoscc/utils.py:2492
 #, python-format
 msgid "Directory %s can't be found."
 msgstr ""
@@ -892,7 +892,7 @@ msgstr ""
 
 #: gecoscc/templates/bb-computer.html:354 gecoscc/templates/bb-computer.html:450
 #: gecoscc/templates/bb-jobs.html:60 gecoscc/templates/admins/updates.jinja2:49
-#: gecoscc/templates/admins/updates.jinja2:87
+#: gecoscc/templates/admins/updates.jinja2:87 gecoscc/views/report_audit.py:97
 msgid "Date"
 msgstr ""
 
@@ -1092,7 +1092,7 @@ msgstr ""
 msgid "Policy"
 msgstr ""
 
-#: gecoscc/templates/bb-jobs.html:75
+#: gecoscc/templates/bb-jobs.html:75 gecoscc/views/report_audit.py:93
 msgid "Action"
 msgstr ""
 
@@ -1416,8 +1416,8 @@ msgstr ""
 msgid "Computer status"
 msgstr ""
 
-#: gecoscc/templates/reports.jinja2:157
-msgid "Permissions"
+#: gecoscc/templates/reports.jinja2:172
+msgid "Audit log"
 msgstr ""
 
 #: gecoscc/templates/settings.jinja2:68
@@ -1624,7 +1624,7 @@ msgstr ""
 msgid "Options"
 msgstr ""
 
-#: gecoscc/templates/server/status.jinja2:68
+#: gecoscc/templates/server/status.jinja2:68 gecoscc/views/report_audit.py:95
 msgid "IP Address"
 msgstr ""
 
@@ -1664,12 +1664,38 @@ msgstr ""
 msgid "User deleted successfully"
 msgstr ""
 
-#: gecoscc/views/portal.py:72 gecoscc/views/portal.py:78
+#: gecoscc/views/portal.py:73 gecoscc/views/portal.py:79
 msgid "Please enter the correct username and password"
 msgstr ""
 
-#: gecoscc/views/portal.py:83
+#: gecoscc/views/portal.py:85
 msgid "Welcome ${username}"
+msgstr ""
+
+#: gecoscc/views/report_audit.py:96
+msgid "User Agent"
+msgstr ""
+
+#: gecoscc/views/report_audit.py:101
+msgid "Audit report"
+msgstr ""
+
+#: gecoscc/views/report_audit.py:108 gecoscc/views/report_computer.py:124
+#: gecoscc/views/report_no-computer_users.py:131
+#: gecoscc/views/report_no-user_computers.py:143
+#: gecoscc/views/report_permission.py:152 gecoscc/views/report_printers.py:200
+#: gecoscc/views/report_status.py:181 gecoscc/views/report_storages.py:192
+#: gecoscc/views/report_user.py:129
+msgid "Page"
+msgstr ""
+
+#: gecoscc/views/report_audit.py:109 gecoscc/views/report_computer.py:125
+#: gecoscc/views/report_no-computer_users.py:132
+#: gecoscc/views/report_no-user_computers.py:144
+#: gecoscc/views/report_permission.py:153 gecoscc/views/report_printers.py:201
+#: gecoscc/views/report_status.py:182 gecoscc/views/report_storages.py:193
+#: gecoscc/views/report_user.py:130
+msgid "of"
 msgstr ""
 
 #: gecoscc/views/report_computer.py:113
@@ -1683,24 +1709,6 @@ msgstr ""
 
 #: gecoscc/views/report_computer.py:117
 msgid "Computers report"
-msgstr ""
-
-#: gecoscc/views/report_computer.py:124
-#: gecoscc/views/report_no-computer_users.py:131
-#: gecoscc/views/report_no-user_computers.py:143
-#: gecoscc/views/report_permission.py:152 gecoscc/views/report_printers.py:200
-#: gecoscc/views/report_status.py:181 gecoscc/views/report_storages.py:192
-#: gecoscc/views/report_user.py:129
-msgid "Page"
-msgstr ""
-
-#: gecoscc/views/report_computer.py:125
-#: gecoscc/views/report_no-computer_users.py:132
-#: gecoscc/views/report_no-user_computers.py:144
-#: gecoscc/views/report_permission.py:153 gecoscc/views/report_printers.py:201
-#: gecoscc/views/report_status.py:182 gecoscc/views/report_storages.py:193
-#: gecoscc/views/report_user.py:130
-msgid "of"
 msgstr ""
 
 #: gecoscc/views/report_no-computer_users.py:118 gecoscc/views/report_user.py:116
