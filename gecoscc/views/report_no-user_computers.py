@@ -76,8 +76,8 @@ def report_no_user_computers(context, request, file_ext):
             raise HTTPBadRequest()
 
         # Checking if ou is managed by administrator
-        ou_managed = request.user.get('ou_managed', [])
-        if ou_id not in ou_managed:
+        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
+        if ou_id not in ou_visibles:
             raise HTTPBadRequest()
 
         ou = ou_id    

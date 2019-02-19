@@ -78,8 +78,8 @@ def report_status(context, request, file_ext):
         if ou_id is None:
             raise HTTPBadRequest()
         
-        ou_managed = request.user.get('ou_managed', [])
-        if ou_id not in ou_managed:
+        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
+        if ou_id not in ou_visibles:
             raise HTTPBadRequest()
 
         ou = ou_id

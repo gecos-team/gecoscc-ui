@@ -28,7 +28,8 @@ from pyramid.threadlocal import get_current_registry
 from gecoscc.db import MongoDB, get_db
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage, ExpiredSessionEvent
-from gecoscc.permissions import is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory, InternalAccessFactory, RootFactory
+from gecoscc.permissions import (is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory,
+    InternalAccessFactory, RootFactory, ReadOnlyOrManageFactory)
 from gecoscc.socks import socketio_service
 from gecoscc.utils import auditlog
 from gecoscc.session import session_factory_from_settings
@@ -72,8 +73,8 @@ def route_config(config):
 
     config.add_route('settings', '/settings/', factory=SuperUserFactory)
     config.add_route('settings_save', '/settings/save/', factory=SuperUserFactory)
-    config.add_route('reports', '/reports/', factory=LoggedFactory)
-    config.add_route('report_file', '/report', factory=LoggedFactory)
+    config.add_route('reports', '/reports/', factory=ReadOnlyOrManageFactory)
+    config.add_route('report_file', '/report', factory=ReadOnlyOrManageFactory)
     config.add_route('computer_logs', '/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('download_computer_logs', '/download/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
@@ -85,7 +86,7 @@ def route_config(config):
     config.add_renderer('pdf', 'gecoscc.views.reports.PDFRenderer')
     config.add_renderer('txt', 'gecoscc.views.computer_logs.TXTRenderer')
     
-    config.add_route('statistics', '/admins/statistics/', factory=LoggedFactory)
+    config.add_route('statistics', '/admins/statistics/', factory=ReadOnlyOrManageFactory)
     config.add_route('server_status', '/server/status', factory=SuperUserFactory)
     config.add_route('internal_server_status', '/internal/server/status', factory=InternalAccessFactory)
     config.add_route('server_connections', '/server/connections', factory=SuperUserFactory)

@@ -74,8 +74,8 @@ def report_computer(context, request, file_ext):
         if ou_id is None:
             raise HTTPBadRequest()
         
-        ou_managed = request.user.get('ou_managed', [])
-        for oid in  ou_managed:
+        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
+        for oid in ou_visibles:
             if oid == ou_id:
                 ou = ou_id
                     
