@@ -26,17 +26,25 @@
                         <ul class="dropdown-menu">
                             {% if request.user.get('is_superuser') %}
                             <li>
-                                <a href="{{ request.route_url('admins') }}">{{ gettext('Administrators') }}</a>
+                                <a href="{{ request.route_url('admins') }}">
+                                    <span class="fa fa-users"></span> {{ gettext('Administrators') }}
+                                </a>
                             </li>
                             <li>
-                                <a href="{{ request.route_url('settings') }}">{{ gettext('Settings') }}</a>
+                                <a href="{{ request.route_url('settings') }}">
+                                    <span class="fa fa-cog"></span> {{ gettext('Settings') }}
+                                </a>
                             <li class="{% block nav_bar_status %}{% endblock %}">
-                                <a href="{{ request.route_url('server_status') }}">{{ gettext('Status') }}</a>
+                                <a href="{{ request.route_url('server_status') }}">
+                                    <span class="fa fa-question"></span> {{ gettext('Status') }}
+                                </a>
                             </li>
                             {% endif %}
                             <li>
-                                <a href="{{ request.route_url('reports') }}">{{ gettext('Reports') }}</a>
                             </li>
+                                <a href="{{ request.route_url('reports') }}">
+                                    <span class="fa fa-file"></span> {{ gettext('Reports') }}
+                                </a>
                             <li>
                                 <a href="{{ request.route_url('statistics', username=request.user['username']) }}">
                                     <span class="fa fa-area-chart"></span> {{ gettext('Statistics') }}
