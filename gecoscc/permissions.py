@@ -14,7 +14,7 @@ import socket
 from bson import ObjectId
 
 from pyramid.httpexceptions import HTTPForbidden
-from pyramid.security import (Allow, Authenticated, Everyone, ALL_PERMISSIONS,
+from pyramid.security import (Allow, Deny, Authenticated, Everyone, ALL_PERMISSIONS,
                               authenticated_userid, forget, remember)
 
 
@@ -270,3 +270,16 @@ class SuperUserOrMyProfileFactory(LoggedFactory):
             if is_superuser or user.get('username') == username:
                 return [(Allow, Authenticated, ALL_PERMISSIONS)]
         return [(Allow, Authenticated, [])]
+
+class ReadOnlyOrManageFactory(LoggedFactory):
+
+    def __acl__(self):
+        user = self.request.user
+        if user:
+            if ( user.get('is_superuser', False) or
+                 user.get('ou_managed', []) or
+                 user.get('ou_readonly', [])
+            ):
+                return [(Allow, Authenticated, 'edit')]
+
+        return [(Deny, Everyone, [])]

@@ -402,7 +402,7 @@ def statistics(context, request):
 
     else:
         # Get managed ous for admin
-        ou_managed = request.user.get('ou_managed', [])
+        ou_managed = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
         ous = list(request.db.nodes.find(
             {"type": "ou", "_id": { "$in": map(ObjectId, ou_managed) }},
             {"_id" : 1, "name" : 1}

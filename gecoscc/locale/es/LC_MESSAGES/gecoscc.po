@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2019-02-13 13:07+0100\n"
+"POT-Creation-Date: 2019-02-19 12:15+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -513,11 +513,11 @@ msgstr "Inicio"
 msgid "Help"
 msgstr "Ayuda"
 
-#: gecoscc/templates/base_navbar.jinja2:25
+#: gecoscc/templates/base_navbar.jinja2:32
 msgid "Administration"
 msgstr "Administración"
 
-#: gecoscc/templates/base_navbar.jinja2:29
+#: gecoscc/templates/base_navbar.jinja2:36
 #: gecoscc/templates/bb-groups-form.html:23
 #: gecoscc/templates/admins/add.jinja2:8 gecoscc/templates/admins/add.jinja2:11
 #: gecoscc/templates/admins/edit.jinja2:16
@@ -531,55 +531,55 @@ msgstr "Administración"
 msgid "Administrators"
 msgstr "Administradores"
 
-#: gecoscc/templates/base_navbar.jinja2:32
+#: gecoscc/templates/base_navbar.jinja2:39
 #: gecoscc/templates/settings.jinja2:122 gecoscc/templates/settings.jinja2:125
 msgid "Settings"
 msgstr "Configuración"
 
-#: gecoscc/templates/base_navbar.jinja2:34
+#: gecoscc/templates/base_navbar.jinja2:41
 #: gecoscc/templates/bb-computer.html:453 gecoscc/templates/bb-jobs.html:82
 #: gecoscc/templates/server/connections.jinja2:26
 #: gecoscc/views/report_status.py:170
 msgid "Status"
 msgstr "Estado"
 
-#: gecoscc/templates/base_navbar.jinja2:38 gecoscc/templates/reports.jinja2:25
+#: gecoscc/templates/base_navbar.jinja2:45 gecoscc/templates/reports.jinja2:25
 msgid "Reports"
 msgstr "Informes"
 
-#: gecoscc/templates/base_navbar.jinja2:42
+#: gecoscc/templates/base_navbar.jinja2:49
 #: gecoscc/templates/admins/statistics.jinja2:8
 #: gecoscc/templates/admins/statistics.jinja2:11
 msgid "Statistics"
 msgstr "Estadísticas"
 
-#: gecoscc/templates/base_navbar.jinja2:48
+#: gecoscc/templates/base_navbar.jinja2:55
 #: gecoscc/templates/admins/tail.jinja2:11
 #: gecoscc/templates/admins/tail.jinja2:15
-#: gecoscc/templates/admins/updates.jinja2:8
-#: gecoscc/templates/admins/updates.jinja2:11
+#: gecoscc/templates/admins/updates.jinja2:26
+#: gecoscc/templates/admins/updates.jinja2:29
 #: gecoscc/templates/admins/updates_add.jinja2:8
 #: gecoscc/templates/admins/updates_add.jinja2:12
 msgid "Updates"
 msgstr "Actualizaciones"
 
-#: gecoscc/templates/base_navbar.jinja2:53
+#: gecoscc/templates/base_navbar.jinja2:60
 #: gecoscc/templates/admins/maintenance.jinja2:8
 #: gecoscc/templates/admins/maintenance.jinja2:12
 msgid "Maintenance Mode"
 msgstr "Modo Mantenimiento"
 
-#: gecoscc/templates/base_navbar.jinja2:64
+#: gecoscc/templates/base_navbar.jinja2:74
 msgid "Edit profile"
 msgstr "Editar perfil"
 
-#: gecoscc/templates/base_navbar.jinja2:69
+#: gecoscc/templates/base_navbar.jinja2:79
 #: gecoscc/templates/admins/edit.jinja2:27
 #: gecoscc/templates/admins/variables.jinja2:15
 msgid "Set variables"
 msgstr "Establecer variables"
 
-#: gecoscc/templates/base_navbar.jinja2:75
+#: gecoscc/templates/base_navbar.jinja2:85
 msgid "Log out"
 msgstr "Salir"
 
@@ -597,7 +597,7 @@ msgstr "Buscar por"
 #: gecoscc/templates/bb-policies-list.html:6
 #: gecoscc/templates/bb-printer.html:13 gecoscc/templates/bb-repository.html:13
 #: gecoscc/templates/bb-storage.html:12 gecoscc/templates/settings.jinja2:62
-#: gecoscc/templates/admins/updates.jinja2:32
+#: gecoscc/templates/admins/updates.jinja2:61
 #: gecoscc/templates/server/status.jinja2:67
 #: gecoscc/templates/server/status.jinja2:113
 #: gecoscc/views/report_computer.py:108
@@ -614,8 +614,8 @@ msgstr "Dirección IP"
 #: gecoscc/templates/base_tree.jinja2:43 gecoscc/templates/bb-computer.html:451
 #: gecoscc/templates/bb-jobs.html:24 gecoscc/templates/bb-jobs.html:66
 #: gecoscc/templates/bb-new-element.html:12 gecoscc/templates/bb-user.html:12
-#: gecoscc/templates/admins/updates.jinja2:56
-#: gecoscc/templates/admins/updates.jinja2:94
+#: gecoscc/templates/admins/updates.jinja2:97
+#: gecoscc/templates/admins/updates.jinja2:135
 #: gecoscc/views/report_storages.py:180
 msgid "User"
 msgstr "Usuario"
@@ -935,8 +935,8 @@ msgstr "Políticas de usuario"
 
 #: gecoscc/templates/bb-computer.html:354
 #: gecoscc/templates/bb-computer.html:450 gecoscc/templates/bb-jobs.html:60
-#: gecoscc/templates/admins/updates.jinja2:49
-#: gecoscc/templates/admins/updates.jinja2:87 gecoscc/views/report_audit.py:97
+#: gecoscc/templates/admins/updates.jinja2:90
+#: gecoscc/templates/admins/updates.jinja2:128 gecoscc/views/report_audit.py:97
 msgid "Date"
 msgstr "Fecha"
 
@@ -949,15 +949,15 @@ msgid "Size (in bytes)"
 msgstr "Tamaño (en bytes)"
 
 #: gecoscc/templates/bb-computer.html:374
-#: gecoscc/templates/admins/updates.jinja2:72
-#: gecoscc/templates/admins/updates.jinja2:110
+#: gecoscc/templates/admins/updates.jinja2:113
+#: gecoscc/templates/admins/updates.jinja2:151
 msgid "Download"
 msgstr "Descargar"
 
 #: gecoscc/templates/bb-computer.html:381
 #: gecoscc/templates/bb-policies-list.html:42
-#: gecoscc/templates/admins/updates.jinja2:63
-#: gecoscc/templates/admins/updates.jinja2:101
+#: gecoscc/templates/admins/updates.jinja2:104
+#: gecoscc/templates/admins/updates.jinja2:142
 msgid "View"
 msgstr "Ver"
 
@@ -1441,6 +1441,14 @@ msgstr "Número de teléfono"
 msgid "Write commentaries about the user here..."
 msgstr "Escribe comentarios acerca del usuario aquí..."
 
+#: gecoscc/templates/forbidden.jinja2:8
+msgid "Forbidden"
+msgstr "Acceso no permitido"
+
+#: gecoscc/templates/forbidden.jinja2:11
+msgid "You do not have permissions to access this resource"
+msgstr "No tiene permisos para acceder a este recurso"
+
 #: gecoscc/templates/login.jinja2:24
 msgid "GECOS CC Login"
 msgstr ""
@@ -1574,47 +1582,47 @@ msgstr "Veces que se usa"
 msgid "Online"
 msgstr "Online"
 
-#: gecoscc/templates/admins/updates.jinja2:18
+#: gecoscc/templates/admins/updates.jinja2:36
 msgid "Search for filename"
 msgstr "Buscar por nombre"
 
-#: gecoscc/templates/admins/updates.jinja2:31
+#: gecoscc/templates/admins/updates.jinja2:54
 msgid "Sequence"
 msgstr "Secuencia"
 
-#: gecoscc/templates/admins/updates.jinja2:33
+#: gecoscc/templates/admins/updates.jinja2:68
 msgid "Update Log"
 msgstr "Log actualización"
 
-#: gecoscc/templates/admins/updates.jinja2:34
+#: gecoscc/templates/admins/updates.jinja2:75
 msgid "Rollback Log"
 msgstr "Log de deshacer"
 
-#: gecoscc/templates/admins/updates.jinja2:35
+#: gecoscc/templates/admins/updates.jinja2:76
 msgid "Control File"
 msgstr "Fichero de Control"
 
-#: gecoscc/templates/admins/updates.jinja2:36
+#: gecoscc/templates/admins/updates.jinja2:77
 msgid "State"
 msgstr "Estado"
 
-#: gecoscc/templates/admins/updates.jinja2:120
+#: gecoscc/templates/admins/updates.jinja2:161
 msgid "Rollback"
 msgstr "Deshacer"
 
-#: gecoscc/templates/admins/updates.jinja2:134
+#: gecoscc/templates/admins/updates.jinja2:175
 msgid "Hover here"
 msgstr "Coloque el puntero del raton"
 
-#: gecoscc/templates/admins/updates.jinja2:143
+#: gecoscc/templates/admins/updates.jinja2:184
 msgid "Updated finished unsuccessfully"
 msgstr "Actualización finalizada con errores"
 
-#: gecoscc/templates/admins/updates.jinja2:149
+#: gecoscc/templates/admins/updates.jinja2:190
 msgid "Updated finished succesfully"
 msgstr "Actualización finalizada con éxito"
 
-#: gecoscc/templates/admins/updates.jinja2:162
+#: gecoscc/templates/admins/updates.jinja2:203
 msgid "Execute update"
 msgstr "Ejecutar actualización"
 
@@ -1722,11 +1730,11 @@ msgstr "Cookbooks"
 msgid "Version"
 msgstr "Versión"
 
-#: gecoscc/views/admins.py:231
+#: gecoscc/views/admins.py:253
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:233
+#: gecoscc/views/admins.py:255
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
