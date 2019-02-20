@@ -48,10 +48,10 @@
                             </li>
                             {% endif %}
                             <li>
-                            </li>
                                 <a href="{{ request.route_url('reports') }}">
                                     <span class="fa fa-file"></span> {{ gettext('Reports') }}
                                 </a>
+                            </li>
                             <li>
                                 <a href="{{ request.route_url('statistics', username=request.user['username']) }}">
                                     <span class="fa fa-area-chart"></span> {{ gettext('Statistics') }}
