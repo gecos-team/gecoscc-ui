@@ -248,13 +248,13 @@ def delete_chef_admin_user(api, usrname):
         return False
 
 
-def remove_chef_computer_data(computer, api, policies=None):
+def remove_chef_computer_data(db, computer, api, policies=None):
     '''
     Remove computer policies in chef node
     '''
     node_chef_id = computer.get('node_chef_id', None)
     if node_chef_id:
-        node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
+        node = reserve_node_or_raise(db, node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
         if node:
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
@@ -275,7 +275,7 @@ def remove_chef_computer_data(computer, api, policies=None):
             save_node_and_free(node)
 
 
-def remove_chef_user_data(user, computers, api, policy_fields=None):
+def remove_chef_user_data(db, user, computers, api, policy_fields=None):
     '''
     Remove computer policies in chef node
     '''
@@ -284,7 +284,7 @@ def remove_chef_user_data(user, computers, api, policy_fields=None):
     for computer in computers:
         node_chef_id = computer.get('node_chef_id', None)
         if node_chef_id:
-            node = reserve_node_or_raise(node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
+            node = reserve_node_or_raise(db, node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
             if node:
                 if policy_fields:
                     for policy in policy_fields:
@@ -313,17 +313,48 @@ def remove_chef_user_data(user, computers, api, policy_fields=None):
                         save_node_and_free(node)
 
 
-def reserve_node_or_raise(node_id, api, controller_requestor='gcc', attempts=1):
-    node, is_busy = is_node_busy_and_reserve_it(node_id, api, controller_requestor, attempts)
+def reserve_node_or_raise(db, node_id, api, controller_requestor='gcc', attempts=1):
+    node, is_busy = is_node_busy_and_reserve_it(db, node_id, api, controller_requestor, attempts)
     if is_busy:
         raise NodeBusyException("Node %s is busy" % node_id)
     return node
 
+def release_node(db, node_id, controller_requestor='gcc', attempts=1):
 
-def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attempts=1):
+    settings = get_current_registry().settings
+    node = db.node_locks.find_one({'node_id': node_id})
+
+    if node['control'] == controller_requestor:
+        # There is only one 'client' running on a node, but can there be
+        # more than one process 'gcc' trying to reserve the node
+        if (controller_requestor == 'client' or
+           (controller_requestor == 'gcc' and 
+            node['ipaddress'] == settings['server_address'] and
+            node['pid'] == os.getpid())
+        ):
+            _attempt = 0
+            removed = None
+            while _attempt < attempts and removed is None:
+                # For remove operations, if the query matches a document,
+                # find_and_modify returns the removed document. If the query
+                # does not match a document to remove, returns None
+                removed = db.node_locks.find_and_modify(
+                    query={'node_id':node_id},
+                    remove=True)
+                _attempt += 1
+             
+            if removed is None:
+                logger.error("utils ::: release_node - Cannot release node")
+            else:
+                logger.info("utils ::: release_node - Free node")
+                return True
+ 
+    return False 
+
+def is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc', attempts=1):
     is_busy = True
     for _attempt in range(attempts):
-        node, is_busy = _is_node_busy_and_reserve_it(node_id, api, controller_requestor)
+        node, is_busy = _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor)
         if not is_busy:
             break
         settings = get_current_registry().settings
@@ -332,47 +363,78 @@ def is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc', attemp
     return (node, is_busy)
 
 
-def _is_node_busy_and_reserve_it(node_id, api, controller_requestor='gcc'):
-    '''
-    Check if the node is busy, else try to get it and write in control and expiration date in the field USE_NODE.
-    '''
+
+def _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc'):
+
+    node = ChefNode(node_id, api)
+    curtime = datetime.datetime.utcnow()
+
     settings = get_current_registry().settings
     seconds_block_is_busy = int(settings.get('chef.seconds_block_is_busy'))
     time_to_exp = datetime.timedelta(seconds=seconds_block_is_busy)
 
-    time_get = time.time()
-    node = ChefNode(node_id, api)
-    time_get = time.time() - time_get
+    exp_date = datetime.datetime.utcnow() + time_to_exp
+    use_node = {
+        'control': controller_requestor,
+        'ipaddress': settings['server_address'],
+        'pid': os.getpid(),
+        'exp_date': exp_date
+    }
 
-    current_use_node = node.attributes.get(USE_NODE, {})
-    current_use_node_control = current_use_node.get('control', None)
-    current_use_node_exp_date = current_use_node.get('exp_date', None)
-    if current_use_node_exp_date:
-        current_use_node_exp_date = json.loads(current_use_node_exp_date, object_hook=json_util.object_hook)
-        current_use_node_exp_date = current_use_node_exp_date.astimezone(pytz.utc).replace(tzinfo=None)
-        now = datetime.datetime.now()
-        if now - current_use_node_exp_date > time_to_exp:
-            current_use_node_control = None
-    if current_use_node_control == controller_requestor:
-        return (node, False)
-    elif current_use_node_control is None:
-        exp_date = datetime.datetime.utcnow() + time_to_exp
-        node.attributes.set_dotted(USE_NODE, {'control': controller_requestor,
-                                              'exp_date': json.dumps(exp_date, default=json_util.default)})
-        node.save()
+    # https://docs.mongodb.com/manual/core/write-operations-atomicity/
+    reserved_node = db.node_locks.find_and_modify(
+        query={'node_id':node_id},
+        update={"$set": use_node},
+        upsert=True, # insert if object does not exist
+        new=False, # return updated rather than original object
+        full_response=False) # return the entire response object from the server
 
-        smart_lock_sleep_parameter = settings.get('chef.smart_lock_sleep_factor', 3)
-        seconds_sleep_is_busy = time_get * int(smart_lock_sleep_parameter)
-        time.sleep(seconds_sleep_is_busy)
+    if reserved_node is None: # It's free.
+        logger.info("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{} First in reserve"
+            .format(use_node['control'], use_node['ipaddress'], use_node['pid']))
+        is_busy = False
 
-        node2 = ChefNode(node.name, api)  # second check
-        current_use_node2 = node2.attributes.get(USE_NODE, {})
-        current_use_control2 = current_use_node2.get('control', None)
-        if current_use_control2 == controller_requestor:
-            return (node2, False)
-    return (node, True)
+    else: # It's busy
+        expired_date = reserved_node['exp_date'].astimezone(pytz.utc).replace(tzinfo=None)
+        if curtime - expired_date > time_to_exp: # Regardless of who reserved the node
+            logger.info("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{} Time expired. Reserved."
+                .format(use_node['control'], use_node['ipaddress'], use_node['pid']))
+            is_busy = False # No undo changes
+        else:
+            # Restore the reservation to the previous state
+            exists = True
+            restored = None
+            time.sleep(0.5)
+            while restored is None and exists:
+                restored = db.node_locks.find_and_modify(
+                    query={
+                        'node_id':node_id,
+                        'control': use_node['control'],
+                        'ipaddress': use_node['ipaddress'],
+                        'pid': use_node['pid']
+                    },
+                    update={"$set": reserved_node},
+                    upsert=False, # insert if object does not exist
+                    new=False, # return updated rather than original object
+                    full_response=False) # return the entire response object from the server
 
+                if restored is None:
+                    # Check if the lock was released before being restored to the previous status
+                    exists = db.node_locks.find_one({'node_id':node_id})
 
+                    curtime = datetime.datetime.utcnow()
+                    expired_date = reserved_node['exp_date'].astimezone(pytz.utc).replace(tzinfo=None)
+                    if curtime - expired_date > time_to_exp: # Regardless of who reserved the node
+                        exists = False # No undo changes
+                        logger.info("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{}: Time expired. Consider restored!"
+                            .format(use_node['control'], use_node['ipaddress'], use_node['pid']))
+
+            is_busy = True
+            logger.debug("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{}: Node is busy. Restored to {} [{}]-{}"
+                .format(use_node['control'], use_node['ipaddress'], use_node['pid'],
+                        reserved_node['control'], reserved_node['ipaddress'], reserved_node['pid']))
+    return (node, is_busy)
+            
 def save_node_and_free(node, api=None, refresh=False):
     if refresh and api:
         node = ChefNode(node.name, api)
@@ -566,7 +628,7 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     if api and initialize:
         computer = visibility_group(nodes_collection.database, computer)
         computer = visibility_object_related(nodes_collection.database, computer)
-        remove_chef_computer_data(computer, api)
+        remove_chef_computer_data(nodes_collection.database, computer, api)
 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
@@ -592,7 +654,7 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     if api and initialize:
         user = visibility_group(nodes_collection.database, user)
         user = visibility_object_related(nodes_collection.database, user)
-        remove_chef_user_data(user, computers, api)
+        remove_chef_user_data(nodes_collection.database, user, computers, api)
 
     if not computers:
         return
@@ -769,7 +831,7 @@ def update_data_computer(nodes_collection, obj, policy, api, auth_user):
                 policy_field_name.append(policy['path'].split('.')[:3])
         else:
             policy_field_name = [policy['path'].split('.')[:3]]
-        remove_chef_computer_data(obj, api, policy_field_name)
+        remove_chef_computer_data(nodes_collection.database, obj, api, policy_field_name)
     object_created(auth_user, 'computer', obj, computers=[obj])
 
 
