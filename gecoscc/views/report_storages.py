@@ -10,8 +10,9 @@
 #
 
 import logging
+import datetime
 
-from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link
+from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link, truncate_string_at_char
 from gecoscc.utils import get_filter_nodes_belonging_ou
 from gecoscc.tasks import ChefTask
 
@@ -96,8 +97,8 @@ def report_storages(context, request, file_ext):
             row = []
             # No path in PDF because it's too long
             row.append('--')
-            row.append(treatment_string_to_pdf(item, 'name', 15))
-            row.append(treatment_string_to_pdf(item, 'uri', 35))
+            row.append(item['name'])
+            row.append(item['uri'])
             row.append(item['_id'])
             
             # Get all nodes related with this storage
@@ -123,7 +124,7 @@ def report_storages(context, request, file_ext):
             else:
                 for user in users:
                     user_row = list(row)
-                    user_row.append(treatment_string_to_pdf(user, 'name', 15))
+                    user_row.append(user['name'])
                     # No path in PDF because it's too long
                     user_row.append('--')
                     rows.append(user_row)
@@ -159,7 +160,6 @@ def report_storages(context, request, file_ext):
                 
             if len(users) == 0:
                 row.append('--')
-                row.append('--')
                 rows.append(row)
             else:
                 for user in users:
@@ -169,21 +169,19 @@ def report_storages(context, request, file_ext):
                     else: # html links
                         user_row.append(get_html_node_link(user))
                     user['complete_path'] = get_complete_path(request.db, item['path'])
-                    user_row.append(treatment_string_to_csv(user, 'complete_path'))
-                    rows.append(user_row)        
+                    rows.append(user_row)
         
     
     header = (_(u'Path').encode('utf-8'),
               _(u'Name').encode('utf-8'),
               _(u'Uri').encode('utf-8'),
               _(u'Id').encode('utf-8'),
-              _(u'User').encode('utf-8'),
-              _(u'Path').encode('utf-8'))
+              _(u'User').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (0, 20, 50, 15, 15, 0)
+    widths = (0, 20, 45, 15, 20, 0)
     title =  _(u'Storages and related users report')
-        
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
     return {'headers': header,
             'rows': rows,
@@ -191,4 +189,5 @@ def report_storages(context, request, file_ext):
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

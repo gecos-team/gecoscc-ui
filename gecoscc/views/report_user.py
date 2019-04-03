@@ -10,8 +10,9 @@
 #
 
 import logging
+import datetime
 
-from gecoscc.views.reports import treatment_string_to_csv
+from gecoscc.views.reports import treatment_string_to_csv, truncate_string_at_char
 from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
@@ -91,15 +92,14 @@ def report_user(context, request, file_ext):
         raise HTTPBadRequest()
   
     rows = []
-    
+
     if file_ext == 'pdf':
-        rows = [(treatment_string_to_pdf(item, 'name', 15),
-                treatment_string_to_pdf(item, 'first_name', 15),
-                treatment_string_to_pdf(item, 'last_name', 15),
-                treatment_string_to_pdf(item, 'email', 15),
-                treatment_string_to_pdf(item, 'phone', 10),
-                treatment_string_to_pdf(item, 'address', 20),
-                str(item['_id'])) for item in query]
+        rows = [('&nbsp;'+item['name'],
+                 '&nbsp;'+item['first_name']+" "+item['last_name'],
+                 '&nbsp;'+item['email'],
+                 '&nbsp;'+item['phone'],
+                 '&nbsp;'+item['address'],
+                 '&nbsp;'+str(item['_id'])) for item in query]
     else:
         rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
                 treatment_string_to_csv(item, 'first_name'),
@@ -108,19 +108,31 @@ def report_user(context, request, file_ext):
                 treatment_string_to_csv(item, 'phone'),
                 treatment_string_to_csv(item, 'address'),
                 str(item['_id'])) for item in query]
-    
-    header = (_(u'Username').encode('utf-8'),
-              _(u'First name').encode('utf-8'),
-              _(u'Last name').encode('utf-8'),
-              _(u'Email').encode('utf-8'),
-              _(u'Phone').encode('utf-8'),
-              _(u'Address').encode('utf-8'),
-              _(u'Id').encode('utf-8'))
+
+    if file_ext == 'pdf':
+        header = (u'Username',
+                  u'Name',
+                  u'Email',
+                  u'Phone',
+                  u'Address',
+                  u'ID')
+    else:
+        header = (_(u'Username').encode('utf-8'),
+                  _(u'First name').encode('utf-8'),
+                  _(u'Last name').encode('utf-8'),
+                  _(u'Email').encode('utf-8'),
+                  _(u'Phone').encode('utf-8'),
+                  _(u'Address').encode('utf-8'),
+                  _(u'Id').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (15, 15, 15, 15, 10, 20, 15)
+    if file_ext == 'pdf':
+        widths = (15, 15, 25, 10, 15, 20)
+    else:
+        widths = (15, 25, 10, 10, 5, 20, 15)
+
     title =  _(u'Users report')
-        
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
     return {'headers': header,
             'rows': rows,
@@ -128,4 +140,5 @@ def report_user(context, request, file_ext):
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

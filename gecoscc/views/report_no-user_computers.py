@@ -10,6 +10,7 @@
 #
 
 import logging
+import datetime
 
 from gecoscc.views.reports import treatment_string_to_csv
 from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
@@ -109,11 +110,11 @@ def report_no_user_computers(context, request, file_ext):
     rows = []
     
     if file_ext == 'pdf':
-        rows = [(treatment_string_to_pdf(item, 'name', 15),
+        rows = [(item['name'],
                  treatment_string_to_pdf(item, 'family', 15),
                  treatment_string_to_pdf(item, 'registry', 15),
                  treatment_string_to_pdf(item, 'serial', 20),
-                 treatment_string_to_pdf(item, 'node_chef_id', 25),
+                 item['node_chef_id'],
                  item['_id']) for item in computers]
     else:
         rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
@@ -131,9 +132,9 @@ def report_no_user_computers(context, request, file_ext):
               _(u'Id').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (15, 10, 15, 15, 30, 15)
+    widths = (25, 10, 15, 15, 20, 15)
     title =  _(u'No-user computers')
-
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
         
     return {'headers': header,
@@ -142,4 +143,5 @@ def report_no_user_computers(context, request, file_ext):
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

@@ -28,8 +28,12 @@
             font-size: 14pt;
             font-weight: bold;
             margin-bottom: 10px;
+            float: left;
         }
-        
+        #signature_and_logo {
+            float: right;
+            font-variant: small-caps;
+        }
         table {
             border-left: 1px solid #11686B;
             border-top: 1px solid #11686B;
@@ -41,49 +45,122 @@
         th, td {
             border-right: 1px solid #11686B;
             border-bottom: 1px solid #11686B;
-            padding: 4px;
+            {% if report_type == 'html' %}
+                padding: 4px;
+            {% endif %}
+            {% if report_type == 'pdf' %}
+                height: 25px;
+            {% endif %}
             overflow: hidden;
-        }
 
+        }
         td div.centered {
             text-align:center;
         }
-
-    </style>  
+    </style>
     <script>
     function goto_parent_window(elm) {
       var url = elm.getAttribute('href');
+
       window.opener.location = url;
       return false;
     }
     </script>
-  
-  </head>
 
+{% if report_type == 'html' %}
+    <!-- TODO: Sustituir CDN -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous"></script>
+    <!-- TODO: Sustituir CDN -->
+    <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
+    <!-- TODO: Sustituir CDN -->
+    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <!-- TODO: Sustituir CDN -->
+    <script src="http://cdn.datatables.net/plug-ins/1.10.19/sorting/alt-string.js"></script>
+    <script type="text/javascript">
+        column_definitions = [];
+        function getColumnTypes() {
+            var tr = $('#report_table').find('tbody tr:first');
+            var index = 0;
+            tr.find("td").each(function() {
+                pattern = new RegExp("<img(.*)");
+                cell_val = $(this).html();
+
+                if(pattern.test(cell_val)) {
+                    // The current cell holds and image, sort by his `alt` attribute.
+                    column_definitions.push({ type: 'alt-string', targets : index});
+                }
+                index++;
+            });
+        }
+
+        (function($){
+            $(document).ready(function () {
+                getColumnTypes();
+
+                $('#report_table').dataTable({
+                    "lengthMenu": [[-1, 10, 25, 50], ["Todos", 10, 25, 50]],
+                    "language" : {
+                      "url" : "http://cdn.datatables.net/plug-ins/1.10.19/i18n/Spanish.json",
+                    },
+                    "dom": 'liprt',
+                    "searching" : false,
+                    "columnDefs" : column_definitions
+                });
+            });
+        })(jQuery);
+      </script>
+{% endif %}
+  </head>
   <body>
     <!-- Content for Static Frame 'header_frame' -->
     <div id="header_content">{{report_title}}</div>
-
+    <!-- GECOSCC Signature and Logo (HTML header) -->
+    {% if report_type == 'html' %}
+    <div id="signature_and_logo" style="float: right;">
+       {{now}} - Centro de Control <img src="/static/images/gecos-logo-v2b.png" width="50px" height="33px"/>
+    </div>
+    {% endif %}
     {% if report_type == 'pdf' %}
     <!-- Content for Static Frame 'footer_frame' -->
     <div id="footer_content">{{page}} <pdf:pagenumber> {{of}} <pdf:pagecount>.</div>
     {% endif %}
-  
-    <table cellspacing="0">
+
+    <table cellspacing="5" id="report_table">
+      {% if report_type == 'html' %}
+        <!-- DT -->
+        <thead>
+      {% endif %}
       <tr>
+
       {% for header in headers %}
         {% if (widths[loop.index0] > 0) or report_type != 'pdf' %}
          <th style="background-color: #2AABB0; color: #FFFFFF; width: {{ widths[loop.index0] }}%;">{{header}}</th>
         {% endif %}
       {% endfor %}
       </tr>
-    
+
+      {% if report_type == 'html' %}
+        <!-- DT -->
+        </thead>
+        <tbody>
+      {% endif %}
+
     {% for row in rows %}
-      {% if (loop.index0 % 15) == 0 and loop.index0 > 0 and report_type == 'pdf' %}
+      {% if (loop.index0 % 20) == 0 and loop.index0 > 0 and report_type == 'pdf' %}
         </table>
+
+        <!-- GECOSCC Signature and Logo (PDF footer (last page)) -->
+        {% if report_type == 'pdf' %}
+            <div style="width: 100%; text-align: right;">
+            {{now}} - Centro de Control <img src="/static/images/gecos-logo-v2b.png" width="50px" height="33px" style="border-bottom-style: none;"/>
+            </div>
+        {% endif %}
+
         <pdf:nextpage />
         
-        <table cellspacing="0">
+        <table cellspacing="5">
           <tr>
           {% for header in headers %}
             {% if widths[loop.index0] > 0 %}
@@ -92,7 +169,8 @@
           {% endfor %}
           </tr>
       {% endif %}
-      
+
+
       <tr>
       {% if (loop.index0 % 2) == 0 %}
         {% for col in row %}
@@ -109,8 +187,16 @@
       {% endif %}
       </tr>
     {% endfor %}
-    
+    {% if report_type == 'html' %}
+        <!-- DT -->
+        </tbody>
+    {% endif %}
     </table>
-    
+    <!-- GECOSCC Signature and Logo (PDF footer (last page)) -->
+    {% if report_type == 'pdf' %}
+        <div style="width: 100%; text-align: right;">
+        {{now}} - Centro de Control <img src="/static/images/gecos-logo-v2b.png" width="50px" height="33px" style="border-bottom-style: none;"/>
+        </div>
+    {% endif %}
   </body>
 <html>
