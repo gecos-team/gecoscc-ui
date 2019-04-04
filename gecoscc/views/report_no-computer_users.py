@@ -121,6 +121,7 @@ def report_no_computer_users(context, request, file_ext):
         widths = (25, 25, 15, 10, 20, 15)
     else:
         widths = (15, 15, 10, 15, 10, 20, 15)
+        header = header[ : 2] + (_(u'Last name').encode('utf-8'),) + header[ 2 : ]
 
     title =  _(u'No-computer users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")

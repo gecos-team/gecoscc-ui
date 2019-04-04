@@ -938,3 +938,11 @@ legend {
 .select-label {
   margin-top: 8px;
 }
+
+select.overflow-ellipsis,
+select.overflow-ellipsis option:checked {
+    width:350px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+

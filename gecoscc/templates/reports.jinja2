@@ -38,8 +38,8 @@ window.external.comeback = function() {
             <div class="col-sm-3">
                 <label for="ou_id">{{ gettext('Please select the Organizational Unit') }}</label>
             </div>
-            <div class="col-sm-3">
-                <select class="form-control" style="width:auto;" name="ou_id" id="ou_id">
+            <div>
+                <select class="form-control overflow-ellipsis" name="ou_id" id="ou_id">
                   {% for oid in ou_managed %}
                    <option value="{{oid}}">{{ou_managed[oid]}}</option>
                   {% endfor %}                

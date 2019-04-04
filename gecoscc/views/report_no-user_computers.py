@@ -101,10 +101,7 @@ def report_no_user_computers(context, request, file_ext):
 
     references = [c['_id'] for c in related_computers]
     logger.info("report_no-user_computers: references = {}".format(references))
-    filters2 = (
-        {'type': 'computer'} if is_superuser
-        else {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)})
-
+    filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)})
     filters2.update({'_id': {'$nin': [c['_id'] for c in related_computers]}})
     logger.info("report_no-user_computers: filters2 = {}".format(filters2))
     computers = request.db.nodes.find(filters2)
