@@ -11,6 +11,7 @@
 
 import logging
 import datetime
+from bson import ObjectId
 
 from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
@@ -64,34 +65,32 @@ def report_printers(context, request, file_ext):
         report_type    : Type of report (html, csv or pdf)
     '''    
 
-    # Check current user permissions    
+    # Check current user permissions
     is_superuser = request.user.get('is_superuser', False)
-    ou = None 
-    
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        for oid in ou_visibles:
-            if oid == ou_id:
-                ou = ou_id
+
+    # Get managed ous
+    ou_id = request.GET.get('ou_id', None)
+    logger.debug("report_computer ::: ou_id = {}".format(ou_id))
+    if ou_id is None:
+        raise HTTPBadRequest()
+
+    if not is_superuser: # Administrator: checks if ou is visible
+        is_visible = ou_id in request.user.get('ou_managed', []) or \
+                     ou_id in request.user.get('ou_readonly', [])
+    else: # Superuser: only checks if exists
+        is_visible = request.db.nodes.find_one({'_id': ObjectId(ou_id)})
+
+    logger.debug("report_computer ::: is_visible = {}".format(is_visible))
+    if not is_visible:
+        raise HTTPBadRequest()
                     
     # Get printers policy
     policy = request.db.policies.find_one({'slug': 'printer_can_view'})
     property_name = 'policies.' + str(policy['_id']) + '.object_related_list'
     
     # Get all printers
-    query = None
-    if is_superuser:
-        query = request.db.nodes.find({'type': 'printer'})
-    elif ou is not None:
-        query = request.db.nodes.find(
-            {'type': 'printer','path': get_filter_nodes_belonging_ou(ou)})
-    else:
-        raise HTTPBadRequest()
+    query = request.db.nodes.find(
+        {'type': 'printer', 'path': get_filter_nodes_belonging_ou(ou_id)})
 
     task = ChefTask()
 

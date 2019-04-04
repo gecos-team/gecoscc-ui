@@ -12,8 +12,7 @@
         </ol>
     {% endblock %}
 
-    {% if not is_superuser %}
-    <div class="row"> 
+    <div class="row">
         <div class="row list-group-top">
             <form method="GET" role="form" class="form-inline row">
                 <div class="col-md-3">
@@ -21,19 +20,14 @@
                 </div>
                 <div class="col-md-3">
                 <select name="ou_id" id="ou_id" class="col-md-3 form-control" onchange="this.form.submit()">
-                    {% for ou in ou_managed %}
-                        {% if ou_selected == ou._id|string %}
-                            <option value="{{ou._id}}" selected>{{ou.name}}</option>
-                        {% else %}
-                            <option value="{{ou._id}}">{{ou.name}}</option>
-                        {% endif %}
+                    {% for oid in ou_managed %}
+                        <option value="{{oid}}" {% if ou_selected == oid|string %} selected {% endif %}>{{ou_managed[oid]}}</option>
                     {% endfor %}
                 </select>
                 </div>
             </form>
         </div>
     </div>
-    {% endif %}
 
     <div class="row" id="statistics">
         <div class="col-sm-6">

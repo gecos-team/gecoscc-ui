@@ -27,12 +27,14 @@ from gecoscc.models import (AdminUser, AdminUserVariables, Maintenance, UpdateMo
 from gecoscc.pagination import create_pagination_mongo_collection
 from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq, get_filter_nodes_belonging_ou
 from gecoscc.tasks import script_runner
+from gecoscc.views.reports import get_complete_path
 
 import os
 import pymongo
 import time
 import pickle
 import json
+import collections
 import logging
 logger = logging.getLogger(__name__)
 
@@ -375,7 +377,8 @@ def statistics(context, request):
 
     object_counters = []
     policy_counters = []
-    ous = []
+    ous = {}
+    ous_visibles = []
     settings = get_current_registry().settings
     policyname = "name_{}".format(settings['pyramid.default_locale_name'])
 
@@ -384,60 +387,55 @@ def statistics(context, request):
     logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
 
     if is_superuser:
-        # Objects
-        object_counters = request.db.nodes.aggregate([
-            {"$group" : { "_id" : "$type", "count":{"$sum":1}}} 
-        ]).get("result", [])
-
-        logger.debug("admins.py ::: statistics - object_counters = {}".format(object_counters))
-
-        # Policies
-        for pol in request.db.policies.find().sort("name"):
-            c = request.db.nodes.find({"policies."+str(pol['_id']): {'$exists': True}}).count()
-            try:
-                policy_counters.append([pol[policyname],c])
-            except KeyError:
-                policy_counters.append([pol['name'],c])
-                 
-
+        ous_visibles = request.db.nodes.find(
+            {"type": "ou"},
+            {"_id": 1, "name": 1, "path": 1}
+        )
     else:
         # Get managed ous for admin
-        ou_managed = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        ous = list(request.db.nodes.find(
-            {"type": "ou", "_id": { "$in": map(ObjectId, ou_managed) }},
-            {"_id" : 1, "name" : 1}
-        ).sort("name", 1))
-        logger.debug("admins.py ::: statistics - ous = {}".format(ous))
+        oids = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
+        ous_visibles = request.db.nodes.find(
+            {"_id": { "$in": map(ObjectId, oids) }},
+            {"_id": 1, "name": 1, "path": 1}
+        )
+    for ou in ous_visibles:
+        path = ou['path'] + ',' + str(ou['_id'])
+        ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
-        # Defaults
-        if not ou_id:
-            ou_id = str(ous[0]['_id']) 
- 
-        # Objects
-        object_counters = request.db.nodes.aggregate([
-            {"$match" : { "path": get_filter_nodes_belonging_ou(ou_id)}},
-            {"$group" : { "_id" : "$type", "count": {"$sum":1}}}
-        ]).get("result", [])
+    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    logger.debug("admins.py ::: statistics - sorted_ous = {}".format(sorted_ous))
 
-        logger.debug("admins.py ::: statistics - object_counters = {}".format(object_counters))
+    # Defaults
+    if not ou_id:
+        ou_id = str(sorted_ous.items()[0][0])
 
-        # Policies
-        for pol in request.db.policies.find().sort("name"):
-            c = request.db.nodes.find({
-                "$or": [{"path": get_filter_nodes_belonging_ou(ou_id)}, {"_id":ObjectId(ou_id)}],
-                "policies." + str(pol['_id']): {'$exists': True}
-            }).count()
-            try:
-                policy_counters.append([pol[policyname],c])
-            except KeyError:
-                policy_counters.append([pol['name'],c])
+    logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
 
-        logger.debug("admins.py ::: statistics - policy_counters = {}".format(policy_counters))
+    # Objects
+    object_counters = request.db.nodes.aggregate([
+        {"$match" : { "path": get_filter_nodes_belonging_ou(ou_id)}},
+        {"$group" : { "_id" : "$type", "count": {"$sum":1}}}
+    ], cursor={})
+
+    logger.debug("admins.py ::: statistics - object_counters = {}".format(object_counters))
+
+    # Policies
+    for pol in request.db.policies.find().sort("name"):
+        c = request.db.nodes.find({
+            "$or": [{"path": get_filter_nodes_belonging_ou(ou_id)}, {"_id":ObjectId(ou_id)}],
+            "policies." + str(pol['_id']): {'$exists': True}
+        }).count()
+        try:
+            policy_counters.append([pol[policyname],c])
+        except KeyError:
+            policy_counters.append([pol['name'],c])
+
+    logger.debug("admins.py ::: statistics - policy_counters = {}".format(policy_counters))
 
     return {
        'policy_counters': policy_counters,
        'object_counters': object_counters,
-       'ou_managed': ous,
+       'ou_managed': sorted_ous,
        'ou_selected': ou_id,
        'is_superuser': is_superuser
     }

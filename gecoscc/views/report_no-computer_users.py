@@ -11,6 +11,7 @@
 
 import logging
 import datetime
+from bson import ObjectId
 
 from gecoscc.views.reports import treatment_string_to_csv
 from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
@@ -65,32 +66,29 @@ def report_no_computer_users(context, request, file_ext):
         report_type    : Type of report (html, csv or pdf)
     '''    
 
-    # Check current user permissions    
+    # Check current user permissions
     is_superuser = request.user.get('is_superuser', False)
-    ou = None 
-    
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        for oid in ou_visibles:
-            if oid == ou_id:
-                ou = ou_id
-                    
-    
-    # Get user data
-    query = None
-    if is_superuser:
-        query = request.db.nodes.find({'type': 'user', 'computers':[]})
-    elif ou is not None:
-        query = request.db.nodes.find(
-            {'type': 'user','path': get_filter_nodes_belonging_ou(ou), 'computers':[]})
-    else:
+
+    # Get managed ous
+    ou_id = request.GET.get('ou_id', None)
+    logger.debug("report_no_computer ::: ou_id = {}".format(ou_id))
+    if ou_id is None:
         raise HTTPBadRequest()
-  
+
+    if not is_superuser: # Administrator: checks if ou is visible
+        is_visible = ou_id in request.user.get('ou_managed', []) or \
+                     ou_id in request.user.get('ou_readonly', [])
+    else: # Superuser: only checks if exists
+        is_visible = request.db.nodes.find_one({'_id': ObjectId(ou_id)})
+
+    logger.debug("report_no_computer ::: is_visible = {}".format(is_visible))
+    if not is_visible:
+        raise HTTPBadRequest()
+
+    # Get user data
+    query = request.db.nodes.find(
+        {'type': 'user', 'path': get_filter_nodes_belonging_ou(ou_id), 'computers': []})
+
     rows = []
     
     if file_ext == 'pdf':
