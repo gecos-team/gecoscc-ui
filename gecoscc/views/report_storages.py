@@ -89,11 +89,8 @@ def report_storages(context, request, file_ext):
     property_name = 'policies.' + str(policy['_id']) + '.object_related_list'
     
     # Get all storages
-    filters = (
-        {'type': 'storage'} if is_superuser
-        else {'type': 'storage','path': get_filter_nodes_belonging_ou(ou_id)})
-
-    query = request.db.nodes.find(filters)
+    query = request.db.nodes.find(
+        {'type': 'storage','path': get_filter_nodes_belonging_ou(ou_id)})
 
     rows = []
     if file_ext == 'pdf':

@@ -11,6 +11,7 @@
 
 import logging
 import datetime
+from bson import ObjectId
 
 from gecoscc.views.reports import treatment_string_to_csv, truncate_string_at_char
 from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
@@ -67,29 +68,26 @@ def report_user(context, request, file_ext):
 
     # Check current user permissions    
     is_superuser = request.user.get('is_superuser', False)
-    ou = None 
-    
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        for oid in ou_visibles:
-            if oid == ou_id:
-                ou = ou_id
-                    
+
+    # Get managed ous
+    ou_id = request.GET.get('ou_id', None)
+    logger.debug("report_user ::: ou_id = {}".format(ou_id))
+    if ou_id is None:
+        raise HTTPBadRequest()
+
+    if not is_superuser: # Administrator: checks if ou is visible
+        is_visible = ou_id in request.user.get('ou_managed', []) or \
+                     ou_id in request.user.get('ou_readonly', [])
+    else: # Superuser: only checks if exists
+        is_visible = request.db.nodes.find_one({'_id': ObjectId(ou_id)})
+
+    logger.debug("report_user ::: is_visible = {}".format(is_visible))
+    if not is_visible:
+        raise HTTPBadRequest()    
     
     # Get user data
-    query = None
-    if is_superuser:
-        query = request.db.nodes.find({'type': 'user'})
-    elif ou is not None:
-        query = request.db.nodes.find(
-            {'type': 'user','path': get_filter_nodes_belonging_ou(ou)})
-    else:
-        raise HTTPBadRequest()
+    query = request.db.nodes.find(
+            {'type': 'user','path': get_filter_nodes_belonging_ou(ou_id)})
   
     rows = []
 

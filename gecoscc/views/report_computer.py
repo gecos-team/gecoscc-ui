@@ -10,6 +10,7 @@
 #
 
 import logging
+import datetime
 from bson import ObjectId
 
 from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_html_node_link

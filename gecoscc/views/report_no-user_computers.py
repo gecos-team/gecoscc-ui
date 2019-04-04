@@ -91,9 +91,7 @@ def report_no_user_computers(context, request, file_ext):
     related_computers = []
     related_objects = []
     
-    filters = (
-        {'type': 'user'} if is_superuser
-        else {'type': 'user','path': get_filter_nodes_belonging_ou(ou_id)})
+    filters = ({'type': 'user','path': get_filter_nodes_belonging_ou(ou_id)})
 
     logger.info("report_no-user_computers: filters = {}".format(filters))
 
