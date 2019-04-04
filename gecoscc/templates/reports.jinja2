@@ -159,7 +159,7 @@ window.external.comeback = function() {
 
                     {% if is_superuser %}
                     <fieldset>
-                    <legend>_(Only Superadmins. Not apply filter)</legend>
+                    <legend>{{ gettext('Only Superadmins. Not apply OU filter') }}</legend>
                     <li class="list-group-item">{{ gettext('Permissions') }}
 
                       <button title="csv" type="button" class="btn btn-default pull-right btn-export"
