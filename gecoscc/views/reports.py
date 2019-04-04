@@ -106,7 +106,8 @@ class PDFRenderer(object):
                                       report_title = value.get('report_title', ''),
                                       page = value.get('page', ''),
                                       of = value.get('of', ''),
-                                      report_type = value.get('report_type', ''))
+                                      report_type = value.get('report_type', ''),
+                                      now=value.get('now', ''))
 
         #logger.info("HTML=%s"%(html))
         
@@ -165,11 +166,11 @@ def get_complete_path(db, path):
             if idx == len(lpath)-1:
                 complete_path += node['name'] 
             else:
-                complete_path += node['name'] + ', '
+                complete_path += node['name'] + ' > '
          
     return complete_path
 
-def get_html_node_link(node):
+def get_html_node_link(node, previous_window=None):
     '''
     Getting html tag link to node
 
@@ -187,8 +188,12 @@ def get_html_node_link(node):
     if len(path) > 1:
         parent_id = node['path'].split(',')[-1]
         href = '/#ou/{0}/{1}/{2}'.format(parent_id, node['type'], node_id)
-        link = '<a href="{0}" onclick="return goto_parent_window(this);">{1}</a>'.format(href, node['name'])
-  
+
+        if previous_window == True:
+            link = '<a href="{0}" target="_blank">{1}</a>'.format(href, node['name'])
+        else:
+            link = '<a href="{0}" onclick="return goto_parent_window(this);">{1}</a>'.format(href, node['name'])
+
     return link
 
 def treatment_string_to_csv(item, key):
@@ -204,3 +209,17 @@ def treatment_string_to_pdf(item, key, length):
         
     return pdfstr 
 
+
+def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
+    start = 0
+    data = []
+    times = int(round(len(string)/new_line_at))+1
+
+    for i in range(0, times):
+        if(start >= len(string)):
+            break
+
+        data.append(string[start:start+new_line_at])
+        start += new_line_at
+
+    return new_line_char.join(data)

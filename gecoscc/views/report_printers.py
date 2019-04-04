@@ -10,6 +10,7 @@
 #
 
 import logging
+import datetime
 
 from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
@@ -100,13 +101,12 @@ def report_printers(context, request, file_ext):
             row = []
             # No path in PDF because it's too long
             row.append('--')
-            row.append(treatment_string_to_pdf(item, 'name', 20))
+            row.append(item['name']);
             row.append(treatment_string_to_pdf(item, 'manufacturer', 15))
             row.append(treatment_string_to_pdf(item, 'model', 15))
             row.append(treatment_string_to_pdf(item, 'serial', 15))
             row.append(treatment_string_to_pdf(item, 'registry', 15))
-            row.append(item['_id'])
-            
+
             # Get all nodes related with this printer
             nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
             related_computers = []
@@ -125,14 +125,12 @@ def report_printers(context, request, file_ext):
             
             if len(computers) == 0:
                 row.append('--')
-                row.append('--')                
                 rows.append(row)
             else:
                 for computer in computers:
                     computer_row = list(row)
                     computer_row.append(treatment_string_to_pdf(computer, 'name', 15))
                     # No path in PDF because it's too long
-                    computer_row.append('--')
                     rows.append(computer_row)
 
             
@@ -146,8 +144,7 @@ def report_printers(context, request, file_ext):
             row.append(treatment_string_to_csv(item, 'model'))
             row.append(treatment_string_to_csv(item, 'serial'))
             row.append(treatment_string_to_csv(item, 'registry'))
-            row.append(item['_id'])
-            
+
             # Get all nodes related with this printer
             nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
             related_computers = []
@@ -167,15 +164,13 @@ def report_printers(context, request, file_ext):
                 
             if len(computers) == 0:
                 row.append('--')
-                row.append('--')
                 rows.append(row)
             else:
                 for computer in computers:
                     computer_row = list(row)
                     computer_row.append(treatment_string_to_csv(computer, 'name') if file_ext == 'csv' else get_html_node_link(computer))
                     computer['complete_path'] = get_complete_path(request.db, item['path'])
-                    computer_row.append(treatment_string_to_csv(computer, 'complete_path'))
-                    rows.append(computer_row)        
+                    rows.append(computer_row)
         
     
     header = (_(u'Path').encode('utf-8'),
@@ -184,14 +179,15 @@ def report_printers(context, request, file_ext):
               _(u'Model').encode('utf-8'),
               _(u'Serial number').encode('utf-8'),
               _(u'Registry number').encode('utf-8'),
-              _(u'Id').encode('utf-8'), 
-              _(u'Computer').encode('utf-8'),
-              _(u'Path').encode('utf-8'))
+              _(u'Computer').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (0, 20, 10, 10, 10, 10, 20, 20, 0)
+    if file_ext == 'pdf':
+        widths = (0, 25, 15, 15, 15, 15, 15)
+    else:
+        widths = (0, 20, 10, 10, 10, 10, 20)
     title =  _(u'Printers and related computers report')
-        
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
     return {'headers': header,
             'rows': rows,
@@ -199,4 +195,5 @@ def report_printers(context, request, file_ext):
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

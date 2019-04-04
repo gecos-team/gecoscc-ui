@@ -10,6 +10,7 @@
 #
 
 import logging
+import datetime
 
 from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_html_node_link
 from gecoscc.utils import get_filter_nodes_belonging_ou
@@ -95,27 +96,27 @@ def report_computer(context, request, file_ext):
                  treatment_string_to_pdf(item, 'family', 10),
                  treatment_string_to_pdf(item, 'registry', 10),
                  treatment_string_to_pdf(item, 'serial', 15),
-                 treatment_string_to_pdf(item, 'node_chef_id', 25),
+                 #treatment_string_to_pdf(item, 'node_chef_id', 25),
                  item['_id']) for item in query]
     else:
         rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
                  treatment_string_to_csv(item, 'family'),
                  treatment_string_to_csv(item, 'registry'),
                  treatment_string_to_csv(item, 'serial'),
-                 treatment_string_to_csv(item, 'node_chef_id'),
+                 #treatment_string_to_csv(item, 'node_chef_id'),
                  item['_id']) for item in query]
     
     header = (_(u'Name').encode('utf-8'),
               _(u'Type').encode('utf-8'),
               _(u'Registry number').encode('utf-8'),
               _(u'Serial number').encode('utf-8'),
-              _(u'Node chef id').encode('utf-8'),
+              #_(u'Node chef id').encode('utf-8'),
               _(u'Id').encode('utf-8'))
     
     # Column widths in percentage
-    widths = (20, 15, 15, 15, 20, 15)
+    widths = (20, 20, 20, 20, 20)
     title =  _(u'Computers report')
-        
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
     return {'headers': header,
             'rows': rows,
@@ -123,4 +124,5 @@ def report_computer(context, request, file_ext):
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

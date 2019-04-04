@@ -1464,7 +1464,7 @@ msgstr "Selecciona una Unidad Organizativa"
 
 #: gecoscc/templates/reports.jinja2:66
 msgid "Workstations"
-msgstr "Estaciones de trabajo"
+msgstr "Puestos de trabajo"
 
 #: gecoscc/templates/reports.jinja2:81
 msgid "Printers and related computers"
@@ -1475,9 +1475,9 @@ msgid "Storages and related users"
 msgstr "Unidades de almacenamiento remoto y usuarios"
 
 #: gecoscc/templates/reports.jinja2:111
-#: gecoscc/views/report_no-user_computers.py:135
+#: gecoscc/views/report_no-user_computers.py:136
 msgid "No-user computers"
-msgstr "Puestos sin usuarios"
+msgstr "Informe de puestos sin usuarios"
 
 #: gecoscc/templates/reports.jinja2:126
 msgid "No-computer users"
@@ -1837,7 +1837,7 @@ msgstr "Última ejecución del agente"
 
 #: gecoscc/views/report_status.py:174
 msgid "Computer status report"
-msgstr "Informe de estado de puestos"
+msgstr "Informe de puestos con anomalías"
 
 #: gecoscc/views/report_storages.py:178
 msgid "Uri"
@@ -1867,3 +1867,10 @@ msgstr "Configuraciones modificadas con éxito"
 #~ msgid "Organizational Units available to register workstations"
 #~ msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
 
+#: gecoscc/views/report_permission.py:158
+msgid "Username and Email"
+msgstr "Usuario y correo electrónico"
+
+#: gecoscc/views/report_status.py:175
+msgid "Computer with anomalies"
+msgstr "Puestos con anomalías"

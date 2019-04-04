@@ -15,10 +15,13 @@ function generateReport(type, format) {
     $("#report_form").submit();
 }
 
+window.external.comeback = function() {
+    // Do some action from the report view.
+    alert('desde hija');
+}
 
 //]]>
 </script>
-
 
 <div class="container">
     <div class="row"><div class="col-sm-12">
@@ -138,7 +141,7 @@ function generateReport(type, format) {
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
-                    <li class="list-group-item">{{ gettext('Computer status') }}
+                    <li class="list-group-item">{{ gettext('Computer with anomalies') }}
 
                       <button title="csv" type="button" class="btn btn-default pull-right btn-export"
                         onclick="generateReport('status', 'csv')"

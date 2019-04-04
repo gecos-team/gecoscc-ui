@@ -78,7 +78,7 @@ def report_audit(context, request, file_ext):
             row.append(treatment_string_to_pdf(item, 'action', 10))
             row.append(treatment_string_to_pdf(item, 'username', 15))
             row.append(treatment_string_to_pdf(item, 'ipaddr', 20))
-            row.append(treatment_string_to_pdf(item, 'user-agent', 80))
+            row.append(item['user-agent'])#treatment_string_to_pdf(item, 'user-agent',100))
             row.append(treatment_string_to_pdf(item, 'date', 80))
         else:
             row.append(treatment_string_to_csv(item, 'action'))
@@ -99,12 +99,14 @@ def report_audit(context, request, file_ext):
     # Column widths in percentage
     widths = (10, 15, 20, 40, 15)
     title =  _(u'Audit report')
-        
-        
+
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+
     return {'headers': header,
             'rows': rows,
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}

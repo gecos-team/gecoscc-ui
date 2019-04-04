@@ -11,7 +11,8 @@
 
 import logging
 import time
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 
 from gecoscc.views.reports import treatment_string_to_csv
 from gecoscc.views.reports import treatment_string_to_pdf
@@ -119,40 +120,38 @@ def report_status(context, request, file_ext):
         logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
 
         if last_agent_run_time + delay_margin >= current_time:
-            item['status'] = '<div class="centered"><img src="/static/images/checkmark.jpg"/></div>' \
+            item['status'] = '<div class="centered" style="width: 100%"><img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
                              if file_ext != 'csv' else 'OK'
 
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
-            item['status'] = '<div class="centered"><img src="/static/images/xmark.jpg"/></div>' \
+            item['status'] = '<div class="centered" style="width: 100%"><img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
                              if file_ext != 'csv' else 'ERROR'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
-            item['status'] = '<div class="centered"><img src="/static/images/alertmark.jpg"/></div>' \
+            item['status'] = '<div class="centered" style="width: 100%"><img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
                              if file_ext != 'csv' else 'WARN'
         
 
         if file_ext == 'pdf':
             row.append(treatment_string_to_pdf(item, 'name', 20))
-            row.append(treatment_string_to_pdf(item, 'family', 10))
-            row.append(treatment_string_to_pdf(item, 'node_chef_id', 25))
             row.append(item['_id'])
+
             if last_agent_run_time != 0:
                 row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
-                row.append('--')
-            row.append(treatment_string_to_pdf(item, 'status', 80))
+                row.append(' -- ')
+
+            row.append(item['status'])
         else:
             if file_ext == 'csv':
                 row.append(treatment_string_to_csv(item, 'name'))
             else:
                 row.append(get_html_node_link(item))
-            row.append(treatment_string_to_csv(item, 'family'))
-            row.append(treatment_string_to_csv(item, 'node_chef_id'))
-            row.append(item['_id'])
+                row.append(item['_id'])
             if last_agent_run_time != 0:
                 row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
@@ -163,21 +162,25 @@ def report_status(context, request, file_ext):
         
                 
     header = (_(u'Name').encode('utf-8'),
-              _(u'Type').encode('utf-8'),
-              _(u'Node chef id').encode('utf-8'),
               _(u'Id').encode('utf-8'),
               _(u'Agent last runtime').encode('utf-8'),
               _(u'Status').encode('utf-8'))
 
     # Column widths in percentage
-    widths = (15, 10, 35, 15, 20, 5)
-    title =  _(u'Computer status report')
-        
-        
+    if file_ext == 'pdf':
+        widths = (45, 20, 20, 15)
+    else:
+        widths = (15, 35, 15, 20)
+
+    title =  _(u'Computer with anomalies')
+
+    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+
     return {'headers': header,
             'rows': rows,
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
             'of': _(u'of').encode('utf-8'),
-            'report_type': file_ext}
+            'report_type': file_ext,
+            'now': now}
