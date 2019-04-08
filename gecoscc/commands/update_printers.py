@@ -85,6 +85,12 @@ class Command(BaseCommand):
 
         print '\n\nImported %d printers' % num_imported
 
+        # Adding 'Other' model for every manufacturer
+        models.append('Other') # Later, don't remove
+        for m in collection.distinct('manufacturer'):
+            other = printer_model.serialize({'manufacturer': m, 'model': 'Other'})
+            collection.update({'manufacturer': m},{'$set': other})
+
         removed = collection.remove({'model': {'$nin': models}})
         print 'Removed %d printers.\n\n' % removed['n']
 
