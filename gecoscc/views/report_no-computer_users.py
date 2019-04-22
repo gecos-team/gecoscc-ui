@@ -11,9 +11,10 @@
 
 import logging
 import datetime
+from bson import ObjectId
 
-from gecoscc.views.reports import treatment_string_to_csv
-from gecoscc.views.reports import treatment_string_to_pdf, get_html_node_link
+from gecoscc.views.reports import (treatment_string_to_csv,
+    treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
@@ -65,32 +66,15 @@ def report_no_computer_users(context, request, file_ext):
         report_type    : Type of report (html, csv or pdf)
     '''    
 
-    # Check current user permissions    
-    is_superuser = request.user.get('is_superuser', False)
-    ou = None 
-    
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        for oid in ou_visibles:
-            if oid == ou_id:
-                ou = ou_id
-                    
-    
-    # Get user data
-    query = None
-    if is_superuser:
-        query = request.db.nodes.find({'type': 'user', 'computers':[]})
-    elif ou is not None:
-        query = request.db.nodes.find(
-            {'type': 'user','path': get_filter_nodes_belonging_ou(ou), 'computers':[]})
-    else:
+    # Check current user permissions
+    ou_id = check_visibility_of_ou(request)
+    if ou_id is None:
         raise HTTPBadRequest()
-  
+
+    # Get user data
+    query = request.db.nodes.find(
+        {'type': 'user', 'path': get_filter_nodes_belonging_ou(ou_id), 'computers': []})
+
     rows = []
     
     if file_ext == 'pdf':
@@ -123,6 +107,7 @@ def report_no_computer_users(context, request, file_ext):
         widths = (25, 25, 15, 10, 20, 15)
     else:
         widths = (15, 15, 10, 15, 10, 20, 15)
+        header = header[ : 2] + (_(u'Last name').encode('utf-8'),) + header[ 2 : ]
 
     title =  _(u'No-computer users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")

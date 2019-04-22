@@ -17,6 +17,7 @@ from bson import ObjectId
 import csv
 import os
 import gecoscc
+import collections
 
 try:
     from cStringIO import StringIO
@@ -122,21 +123,30 @@ class PDFRenderer(object):
 @view_config(route_name='reports', renderer='templates/reports.jinja2',
              permission='edit')
 def reports(context, request):
-    ous = []
+    ous = {}
+    ou_visibles = []
     
     # Get current user data
     is_superuser = request.user.get('is_superuser', False) 
-    
-    if not is_superuser:
-        # Get visibles ous
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        for ou_id in ou_visibles:
-            ou = request.db.nodes.find_one({'type': 'ou', '_id': ObjectId(ou_id) })
-            if ou is not None:
-                ous.append({'id': ou_id, 'name': ou['name']})
-    
-    return {'ou_managed': ous, 'is_superuser': is_superuser}    
 
+    if not is_superuser:
+        oids = map(ObjectId, request.user.get('ou_managed', []) + request.user.get('ou_readonly', []))
+        ou_visibles = request.db.nodes.find( 
+            {'_id': {'$in': oids }},
+            {'_id':1, 'name':1, 'path':1})
+    else:
+        ou_visibles = request.db.nodes.find(
+            {'type': 'ou'}, 
+            {'_id':1, 'name':1, 'path':1})
+
+    for ou in ou_visibles:
+        path = ou['path'] + ',' + str(ou['_id'])
+        ous.update({str(ou['_id']): get_complete_path(request.db, path)})
+
+    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    logger.debug("reports ::: ous = {}".format(ous))
+
+    return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
 
 def get_complete_path(db, path):
     '''
@@ -223,3 +233,20 @@ def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
         start += new_line_at
 
     return new_line_char.join(data)
+
+def check_visibility_of_ou(request):
+
+    is_superuser = request.user.get('is_superuser', False)
+    oid = request.GET.get('ou_id', None)
+
+    if oid is not None:
+        if not is_superuser: # Administrator: checks if ou is visible
+            is_visible = oid in request.user.get('ou_managed', []) or \
+                         oid in request.user.get('ou_readonly', [])
+        else: # Superuser: only checks if exists
+            is_visible = request.db.nodes.find_one({'_id': ObjectId(oid)})
+
+        if not is_visible:
+            oid = None
+
+    return oid

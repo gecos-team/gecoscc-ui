@@ -929,7 +929,6 @@ legend {
 
 .list-group-top {
     background-color: #fff;
-    border: 1px solid #ddd;
     padding: 10px 15px;
     margin-bottom: 15px;
     margin-right: 15px;
@@ -939,3 +938,11 @@ legend {
 .select-label {
   margin-top: 8px;
 }
+
+select.overflow-ellipsis,
+select.overflow-ellipsis option:checked {
+    width:350px;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+

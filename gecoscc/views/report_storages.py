@@ -11,8 +11,11 @@
 
 import logging
 import datetime
+from bson import ObjectId
 
-from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link, truncate_string_at_char
+from gecoscc.views.reports import (treatment_string_to_csv,
+    treatment_string_to_pdf, get_complete_path, get_html_node_link,
+    truncate_string_at_char, check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
 from gecoscc.tasks import ChefTask
 
@@ -64,32 +67,18 @@ def report_storages(context, request, file_ext):
         report_type    : Type of report (html, csv or pdf)
     '''    
 
-    # Check current user permissions    
-    is_superuser = request.user.get('is_superuser', False)
- 
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        # Checking if ou is managed by administrator
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        if ou_id not in ou_visibles:
-            raise HTTPBadRequest()
-
-        ou = ou_id
+    # Check current user permissions
+    ou_id = check_visibility_of_ou(request)
+    if ou_id is None:
+        raise HTTPBadRequest()
  
     # Get storages policy
     policy = request.db.policies.find_one({'slug': 'storage_can_view'})
     property_name = 'policies.' + str(policy['_id']) + '.object_related_list'
     
     # Get all storages
-    filters = (
-        {'type': 'storage'} if is_superuser
-        else {'type': 'storage','path': get_filter_nodes_belonging_ou(ou)})
-
-    query = request.db.nodes.find(filters)
+    query = request.db.nodes.find(
+        {'type': 'storage','path': get_filter_nodes_belonging_ou(ou_id)})
 
     rows = []
     if file_ext == 'pdf':

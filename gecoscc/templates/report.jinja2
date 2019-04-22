@@ -68,16 +68,15 @@
     </script>
 
 {% if report_type == 'html' %}
-    <!-- TODO: Sustituir CDN -->
-    <script src="https://code.jquery.com/jquery-3.3.1.min.js"
-      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-      crossorigin="anonymous"></script>
-    <!-- TODO: Sustituir CDN -->
-    <link rel="stylesheet" type="text/css" href="http://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" />
-    <!-- TODO: Sustituir CDN -->
-    <script src="http://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
-    <!-- TODO: Sustituir CDN -->
-    <script src="http://cdn.datatables.net/plug-ins/1.10.19/sorting/alt-string.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="{{ request.application_url }}/static/css/jquery.dataTables.min.css" />
+
+    <script src="{{ request.application_url }}/static/js/libs/jquery-3.3.1.min.js"></script>
+
+    <script src="{{ request.application_url }}/static/js/libs/jquery.dataTables.min.js"></script
+
+    <script src="{{ request.application_url }}/static/js/libs/alt-string.js"></script>
+
     <script type="text/javascript">
         column_definitions = [];
         function getColumnTypes() {
@@ -102,7 +101,7 @@
                 $('#report_table').dataTable({
                     "lengthMenu": [[-1, 10, 25, 50], ["Todos", 10, 25, 50]],
                     "language" : {
-                      "url" : "http://cdn.datatables.net/plug-ins/1.10.19/i18n/Spanish.json",
+                      "url" : "/static/Spanish.json",
                     },
                     "dom": 'liprt',
                     "searching" : false,

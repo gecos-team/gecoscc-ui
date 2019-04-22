@@ -11,12 +11,11 @@
 
 import logging
 import time
-import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
+from bson import ObjectId
 
-from gecoscc.views.reports import treatment_string_to_csv
-from gecoscc.views.reports import treatment_string_to_pdf
-from gecoscc.views.reports import get_html_node_link
+from gecoscc.views.reports import (treatment_string_to_csv,
+    treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
@@ -69,32 +68,14 @@ def report_status(context, request, file_ext):
         report_type    : Type of report (html, csv or pdf)
     '''    
 
-    # Check current user permissions    
-    is_superuser = request.user.get('is_superuser', False)
-    ou = None 
-    
-    if not is_superuser:
-        # Get managed ous
-        ou_id = request.GET.get('ou_id', None)
-        if ou_id is None:
-            raise HTTPBadRequest()
-        
-        ou_visibles = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
-        if ou_id not in ou_visibles:
-            raise HTTPBadRequest()
-
-        ou = ou_id
-
+    # Check current user permissions
+    ou_id = check_visibility_of_ou(request)
+    if ou_id is None:
+        raise HTTPBadRequest()
     
     # Get user data
-    query = None
-    if is_superuser:
-        query = request.db.nodes.find({'type': 'computer'}).sort('last_agent_run_time', -1)
-    elif ou is not None:
-        query = request.db.nodes.find(
-            {'type': 'computer','path': get_filter_nodes_belonging_ou(ou)}).sort('last_agent_run_time', -1)
-    else:
-        raise HTTPBadRequest()
+    query = request.db.nodes.find(
+        {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}).sort('last_agent_run_time', -1)
   
     rows = []
 
@@ -174,7 +155,7 @@ def report_status(context, request, file_ext):
 
     title =  _(u'Computer with anomalies')
 
-    now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
+    now = datetime.now().strftime("%d/%m/%Y %H:%M")
 
     return {'headers': header,
             'rows': rows,

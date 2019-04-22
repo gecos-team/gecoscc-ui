@@ -275,8 +275,6 @@ class ReadOnlyOrManageFactory(LoggedFactory):
 
     def __acl__(self):
         user = self.request.user
-        logger.debug('ReadOnlyOrManageFactory: forbidden access for %s'%(user))
-        logger.debug('ReadOnlyOrManageFactory: forbidden access for %s'%(user.get('is_superuser', False)))
         if user:
             if user.get('is_superuser', False):
                 return [(Allow, Authenticated, 'edit'), (Allow, Authenticated, 'is_superuser')]

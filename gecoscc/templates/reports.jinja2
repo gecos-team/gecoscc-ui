@@ -28,26 +28,25 @@ window.external.comeback = function() {
         <h1>{{ gettext('Reports') }}</h1>
     </div>
     <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form" target="_blank">
+        <fieldset class="form-group">
         <input type="hidden" name="type" id="report_type" value="" />
         <input type="hidden" name="format" id="report_format" value="" />
-      {% if not is_superuser %}
         {% if ou_managed|length == 1 %}
             <input type="hidden" name="ou_id" id="ou_id" value="{{ou_managed[0].id}}" />
         {% else %}
         <div class="row list-group-top">
-            <div class="col-sm-6">
-                <label for="ou_id" class="select-label">{{ gettext('Please select the Organizational Unit') }}</label>
+            <div class="col-sm-3">
+                <label for="ou_id">{{ gettext('Please select the Organizational Unit') }}</label>
             </div>
-            <div class="col-sm-6">
-                <select name="ou_id" id="ou_id">
-                  {% for ou in ou_managed %}
-                   <option value="{{ou.id}}">{{ou.name}}</option>
+            <div>
+                <select class="form-control overflow-ellipsis" name="ou_id" id="ou_id">
+                  {% for oid in ou_managed %}
+                   <option value="{{oid}}">{{ou_managed[oid]}}</option>
                   {% endfor %}                
                 </select>
             </div>
         </div>    
         {% endif %}
-      {% endif %}
     
         <div class="row">
             <div class="col-sm-12">
@@ -156,7 +155,11 @@ window.external.comeback = function() {
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
+                    </fieldset>
+
                     {% if is_superuser %}
+                    <fieldset>
+                    <legend>{{ gettext('Only Superadmins. Not apply OU filter') }}</legend>
                     <li class="list-group-item">{{ gettext('Permissions') }}
 
                       <button title="csv" type="button" class="btn btn-default pull-right btn-export"
@@ -187,6 +190,7 @@ window.external.comeback = function() {
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
+                    </fieldset>
                     {% endif %}
                 </ul>
             </div>
