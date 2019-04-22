@@ -13,7 +13,9 @@ import logging
 import datetime
 from bson import ObjectId
 
-from gecoscc.views.reports import treatment_string_to_csv, treatment_string_to_pdf, get_complete_path, get_html_node_link
+from gecoscc.views.reports import (treatment_string_to_csv,
+    treatment_string_to_pdf, get_complete_path, get_html_node_link,
+    check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
 from gecoscc.tasks import ChefTask
 
@@ -66,24 +68,10 @@ def report_printers(context, request, file_ext):
     '''    
 
     # Check current user permissions
-    is_superuser = request.user.get('is_superuser', False)
-
-    # Get managed ous
-    ou_id = request.GET.get('ou_id', None)
-    logger.debug("report_computer ::: ou_id = {}".format(ou_id))
+    ou_id = check_visibility_of_ou(request)
     if ou_id is None:
         raise HTTPBadRequest()
 
-    if not is_superuser: # Administrator: checks if ou is visible
-        is_visible = ou_id in request.user.get('ou_managed', []) or \
-                     ou_id in request.user.get('ou_readonly', [])
-    else: # Superuser: only checks if exists
-        is_visible = request.db.nodes.find_one({'_id': ObjectId(ou_id)})
-
-    logger.debug("report_computer ::: is_visible = {}".format(is_visible))
-    if not is_visible:
-        raise HTTPBadRequest()
-                    
     # Get printers policy
     policy = request.db.policies.find_one({'slug': 'printer_can_view'})
     property_name = 'policies.' + str(policy['_id']) + '.object_related_list'

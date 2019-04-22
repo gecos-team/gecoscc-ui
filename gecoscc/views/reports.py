@@ -233,3 +233,20 @@ def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
         start += new_line_at
 
     return new_line_char.join(data)
+
+def check_visibility_of_ou(request):
+
+    is_superuser = request.user.get('is_superuser', False)
+    oid = request.GET.get('ou_id', None)
+
+    if oid is not None:
+        if not is_superuser: # Administrator: checks if ou is visible
+            is_visible = oid in request.user.get('ou_managed', []) or \
+                         oid in request.user.get('ou_readonly', [])
+        else: # Superuser: only checks if exists
+            is_visible = request.db.nodes.find_one({'_id': ObjectId(oid)})
+
+        if not is_visible:
+            oid = None
+
+    return oid
