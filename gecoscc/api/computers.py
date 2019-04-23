@@ -252,7 +252,7 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
         
         helpchannel_data = self.request.db.helpchannel.find(
             {"computer_node_id" : result['node_chef_id']}).sort(
-                [("last_modified", pymongo.DESCENDING)]).limit(1)        
+                [("last_modified", pymongo.DESCENDING)]).limit(1)
 
         if helpchannel_data is None or helpchannel_data.count() <= 0:
             logger.error("/api/computers/support/: There is no support request for this computer!")
@@ -272,6 +272,9 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
             ou_managed = False
             if 'ou_managed' in admin:
                 ou_managed = admin['ou_managed']
+
+            if 'ou_remote' in admin:
+                ou_managed += admin['ou_remote']
                 
             is_superuser = False
             if 'is_superuser' in admin:
@@ -294,4 +297,4 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
             url = url.replace('/wsServer', '/')
             url = url + '?repeaterID=ID:' + hcdata['token']
             raise HTTPFound(location=url)
-            
+

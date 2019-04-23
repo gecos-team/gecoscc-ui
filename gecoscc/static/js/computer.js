@@ -26,6 +26,7 @@ App.module("Computer.Models", function (Models, App, Backbone, Marionette, $, _)
             source: "gecos",
             name: "",
             registry: "",
+            serial: "",
             family: "",
             users: [],
             uptime: "-",
@@ -229,7 +230,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 id_base = parentData.id_base + "_" + parentData.key.replace(/[^a-zA-Z0-9]/g, '_');
             }
             
-            var childNodesArray = []
+            var childNodesArray = [];
             for( var name in ohai ) {
                 var id = id_base + "_" + name.replace(/[^a-zA-Z0-9]/g, '_');
                 if (Array.isArray(ohai[name]) || (typeof(ohai[name])) === 'object') {
@@ -240,10 +241,10 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     }
                     if (ohai[name] === null) {
                         cssClass = "tree-json-null";
-                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+': <span class="tree-json-null">null</span>', "type": "item", content: ohai[name], "attr": { "id": id, "data-icon": "icon-tree-json-null" }  } )
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+': <span class="tree-json-null">null</span>', "type": "item", content: ohai[name], "attr": { "id": id, "data-icon": "icon-tree-json-null" }  } );
                     }
                     else {
-                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } )
+                        childNodesArray.push( {"id_base": id_base, "key": name, "path": path, "name": name+":", "type": "folder", content: ohai[name], "attr": { "id": id, "hasChildren": !($.isEmptyObject(ohai[name])), "cssClass": cssClass }  } );
                     }
                 }
                 else {
@@ -263,7 +264,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     if (ohai === null)
                         name_value = '<span class="tree-json-null">null</span>';
                 
-                    childNodesArray.push( {"key": name, "path": path, "name": name_value, "type": "item", "attr": { "id": id, "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } )
+                    childNodesArray.push( {"key": name, "path": path, "name": name_value, "type": "item", "attr": { "id": id, "data-icon": "icon-tree-json-"+(typeof(ohai[name])) } } );
                 }
             }
             
@@ -383,7 +384,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                     
                     if (i<parts.length) {
                         // Open container folder
-                        ohai_tree.tree('openFolder', $(folderId))
+                        ohai_tree.tree('openFolder', $(folderId));
                     }
                     else {
                         // Select result
@@ -419,7 +420,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
         
         ohaiTreeDataSearchNextResult: function(ohai_tree, keyword, data, selectedItemPath, path, passed, mode) {
-            if (data == null) {
+            if (data === null) {
                 return [false, passed];
             }
             
@@ -601,12 +602,14 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
         },
         
         onRender: function () {
+
+            this.check_permissions();
+
             if(!_.isUndefined(this.activeTab)) {
                 this.activeTab = this.activeTab;
                 this.$el.find('#' + this.activeTab.id + ' a[href="' + this.activeTab.firstElementChild.getAttribute('href') + '"]').tab('show');
             }
             this.$el.find('[data-toggle="tooltip"]').tooltip();
-            this.checkErrors();
 
             if (!_.isUndefined(this.model.id)) {
                 this.$el.find("#name").attr('disabled', 'disabled');
@@ -703,7 +706,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 });            
 
                 
-            var search_field = this.$el.find("#ohai_tree-search")
+            var search_field = this.$el.find("#ohai_tree-search");
             this.$el.find("#ohai_tree-close-search-btn")
                 .off("click")
                 .on("click", function (evt) {
@@ -817,6 +820,7 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 name: "#name",
                 family: "#family option:selected",
                 registry: "#registry",
+                serial: "#serial",
                 commentaries: "#commentaries"
             });
         }

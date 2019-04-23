@@ -1,12 +1,14 @@
-<html>
-<head>
-</head>
-<body>
+{% extends "base_navbar.jinja2" %}
 
-<h1>Forbidden</h1>
+{% block nav_bar_home %}{% endblock %}
+{% block nav_bar_status %}active{% endblock %}
 
-<p>You do not have permissions to access this resource</p>
+{% block inner_content %}
+<div class="container" id="admin-container">
+    <h1>{{ gettext('Forbidden') }}</h1>
 
-</body>
-</html>
+    <div class="alert alert-danger">
+        <p>{{ gettext('You do not have permissions to access this resource') }}</p>
+    </div>
+{% endblock %}
 

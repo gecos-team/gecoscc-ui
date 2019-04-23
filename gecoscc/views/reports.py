@@ -9,7 +9,15 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import logging
+from xhtml2pdf import pisa
+from pyramid_jinja2 import IJinja2Environment
+from pyramid.threadlocal import get_current_registry
+from bson import ObjectId
 import csv
+import os
+import gecoscc
+import collections
 
 try:
     from cStringIO import StringIO
@@ -17,10 +25,9 @@ except ImportError:
     from StringIO import StringIO
 
 
-from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.view import view_config
 
-from gecoscc.i18n import gettext as _
+logger = logging.getLogger(__name__)
 
 
 class CSVRenderer(object):
@@ -41,59 +48,205 @@ class CSVRenderer(object):
                 response.content_type = 'text/csv'
 
         fout = StringIO()
-        writer = csv.writer(fout, delimiter=',', quotechar=',', quoting=csv.QUOTE_MINIMAL)
-        writer.writerow(value.get('header', []))
+        writer = csv.writer(fout, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer.writerow(value.get('headers', []))
         writer.writerows(value.get('rows', []))
         return fout.getvalue()
+
+
+def link_callback(uri, rel):
+    """
+    Convert HTML URIs to absolute system paths so xhtml2pdf can access those
+    resources
+    """
+    # use short variable names
+    sRoot = os.path.dirname(gecoscc.__file__)
+    iUrl = '/static/images/'
+
+    # convert URIs to absolute system paths
+    if uri.startswith(iUrl):
+        path = os.path.join(sRoot, uri.strip("/"))
+    else:
+        return uri  # handle absolute uri (ie: http://some.tld/foo.png)
+
+    # make sure that file exists
+    if not os.path.isfile(path):
+            raise Exception(
+                'image URI must start with %s' % (iUrl)
+            )
+    return path
+
+
+
+# Para XML:
+# https://pypi.org/project/PyramidXmlRenderer/
+
+# Pruebo a generar un PDF
+
+class PDFRenderer(object):
+
+    def __init__(self, info):
+        pass
+
+    def __call__(self, value, system):
+        """ Returns a PDF file """
+
+        request = system.get('request')
+        if request is not None:
+            response = request.response
+            ct = response.content_type
+            if ct == response.default_content_type:
+                response.content_type = 'application/pdf'
+
+
+        jinja2_env = get_current_registry().queryUtility(IJinja2Environment)
+        jinja2_template = jinja2_env.get_template('report.jinja2')
+        html = jinja2_template.render(headers=value.get('headers', []),
+                                      rows = value.get('rows', []),
+                                      widths = value.get('widths', []),
+                                      report_title = value.get('report_title', ''),
+                                      page = value.get('page', ''),
+                                      of = value.get('of', ''),
+                                      report_type = value.get('report_type', ''),
+                                      now=value.get('now', ''))
+
+        #logger.info("HTML=%s"%(html))
+        
+        fout = StringIO()
+        pisa.CreatePDF(html, dest=fout, link_callback=link_callback)          
+
+        return fout.getvalue()
+        
+
 
 
 @view_config(route_name='reports', renderer='templates/reports.jinja2',
              permission='edit')
 def reports(context, request):
-    return {}
+    ous = {}
+    ou_visibles = []
+    
+    # Get current user data
+    is_superuser = request.user.get('is_superuser', False) 
 
+    if not is_superuser:
+        oids = map(ObjectId, request.user.get('ou_managed', []) + request.user.get('ou_readonly', []))
+        ou_visibles = request.db.nodes.find( 
+            {'_id': {'$in': oids }},
+            {'_id':1, 'name':1, 'path':1})
+    else:
+        ou_visibles = request.db.nodes.find(
+            {'type': 'ou'}, 
+            {'_id':1, 'name':1, 'path':1})
+
+    for ou in ou_visibles:
+        path = ou['path'] + ',' + str(ou['_id'])
+        ous.update({str(ou['_id']): get_complete_path(request.db, path)})
+
+    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    logger.debug("reports ::: ous = {}".format(ous))
+
+    return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
+
+def get_complete_path(db, path):
+    '''
+    Calculate the path with names instead of IDs.
+
+    
+    Args:
+        db (mongodb)  : MongoDB reference.
+        path (string) : Path of the node.
+
+    Returns:
+        compete_path (string) : Path width names instead of IDs
+    '''
+    
+    complete_path = ''
+    
+    lpath = path.split(',')
+    for idx, element in enumerate(lpath):
+        if element == 'root':
+            continue
+        else:
+            node = db.nodes.find_one({'_id': ObjectId(element)})
+            if node is None:
+               complete_path = 'Error path'
+               break
+
+            if idx == len(lpath)-1:
+                complete_path += node['name'] 
+            else:
+                complete_path += node['name'] + ' > '
+         
+    return complete_path
+
+def get_html_node_link(node, previous_window=None):
+    '''
+    Getting html tag link to node
+
+    Args:
+       node : MongoDB record
+    	
+    Returns:
+       link : html tag link to node
+    '''
+
+    link = None
+    path = node['path'].split(',')
+    node_id = str(node['_id'])
+
+    if len(path) > 1:
+        parent_id = node['path'].split(',')[-1]
+        href = '/#ou/{0}/{1}/{2}'.format(parent_id, node['type'], node_id)
+
+        if previous_window == True:
+            link = '<a href="{0}" target="_blank">{1}</a>'.format(href, node['name'])
+        else:
+            link = '<a href="{0}" onclick="return goto_parent_window(this);">{1}</a>'.format(href, node['name'])
+
+    return link
 
 def treatment_string_to_csv(item, key):
-    none = '--'
-    return item.get(key, none).encode('utf-8') or none
+    none = u'--'
+    logger.info("reports:::treatment_string_to_csv - item = {}".format(item))
+    logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
+    return item.get(key, none).decode('utf-8') or none
+
+def treatment_string_to_pdf(item, key, length):
+    pdfstr = treatment_string_to_csv(item, key)
+    if len(pdfstr) > length:
+        pdfstr = pdfstr[0:length] + '...'
+        
+    return pdfstr 
 
 
-@view_config(route_name='report_file', renderer='csv',
-             permission='edit')
-def report_file(context, request):
-    report_type = request.matchdict.get('report_type')
-    filename = 'report_%s.csv' % report_type
-    request.response.content_disposition = 'attachment;filename=' + filename
-    if report_type not in ('user', 'computer'):
-        raise HTTPBadRequest()
-    query = request.db.nodes.find({'type': report_type})
-    if report_type == 'user':
-        rows = [(item['_id'],
-                 treatment_string_to_csv(item, 'name'),
-                 treatment_string_to_csv(item, 'first_name'),
-                 treatment_string_to_csv(item, 'last_name'),
-                 treatment_string_to_csv(item, 'email'),
-                 treatment_string_to_csv(item, 'phone'),
-                 treatment_string_to_csv(item, 'address')) for item in query]
-        header = (_(u'Id').encode('utf-8'),
-                  _(u'Username').encode('utf-8'),
-                  _(u'First name').encode('utf-8'),
-                  _(u'Last name').encode('utf-8'),
-                  _(u'Email').encode('utf-8'),
-                  _(u'Phone').encode('utf-8'),
-                  _(u'Address').encode('utf-8'))
-    elif report_type == 'computer':
-        rows = [(item['_id'],
-                 treatment_string_to_csv(item, 'name'),
-                 treatment_string_to_csv(item, 'family'),
-                 treatment_string_to_csv(item, 'registry'),
-                 treatment_string_to_csv(item, 'serial'),
-                 treatment_string_to_csv(item, 'node_chef_id')) for item in query]
-        header = (_(u'Id').encode('utf-8'),
-                  _(u'Name').encode('utf-8'),
-                  _(u'Type').encode('utf-8'),
-                  _(u'Registry number').encode('utf-8'),
-                  _(u'Serial number').encode('utf-8'),
-                  _(u'Node chef id').encode('utf-8'))
-    return {'header': header,
-            'rows': rows}
+def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
+    start = 0
+    data = []
+    times = int(round(len(string)/new_line_at))+1
+
+    for i in range(0, times):
+        if(start >= len(string)):
+            break
+
+        data.append(string[start:start+new_line_at])
+        start += new_line_at
+
+    return new_line_char.join(data)
+
+def check_visibility_of_ou(request):
+
+    is_superuser = request.user.get('is_superuser', False)
+    oid = request.GET.get('ou_id', None)
+
+    if oid is not None:
+        if not is_superuser: # Administrator: checks if ou is visible
+            is_visible = oid in request.user.get('ou_managed', []) or \
+                         oid in request.user.get('ou_readonly', [])
+        else: # Superuser: only checks if exists
+            is_visible = request.db.nodes.find_one({'_id': ObjectId(oid)})
+
+        if not is_visible:
+            oid = None
+
+    return oid

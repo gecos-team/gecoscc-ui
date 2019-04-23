@@ -154,6 +154,7 @@ App.module("Group.Views", function (Views, App, Backbone, Marionette, $, _) {
             }
         },
         onRender: function () {
+            this.check_permissions();
             this.canMove();
 
             if (!_.isUndefined(this.model.id)) {

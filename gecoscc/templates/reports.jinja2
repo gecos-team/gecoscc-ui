@@ -5,17 +5,198 @@
 
 
 {% block inner_content %}
+
+ <script type="text/javascript">
+//<![CDATA[
+
+function generateReport(type, format) {
+    $("#report_type").val(type);
+    $("#report_format").val(format);
+    $("#report_form").submit();
+}
+
+window.external.comeback = function() {
+    // Do some action from the report view.
+    alert('desde hija');
+}
+
+//]]>
+</script>
+
 <div class="container">
     <div class="row"><div class="col-sm-12">
         <h1>{{ gettext('Reports') }}</h1>
     </div>
-    <div class="row">
-        <div class="col-sm-12">
-            <ul class="list-group">
-                <li class="list-group-item">{{ gettext('Users') }} <a href="{{ request.route_url('report_file', report_type='user') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
-                <li class="list-group-item">{{ gettext('Workstations') }} <a href="{{ request.route_url('report_file', report_type='computer') }}" class="btn btn-default pull-right btn-export">{{ gettext('Export to CSV') }}</a></li>
-            </ul>
+    <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form" target="_blank">
+        <fieldset class="form-group">
+        <input type="hidden" name="type" id="report_type" value="" />
+        <input type="hidden" name="format" id="report_format" value="" />
+        {% if ou_managed|length == 1 %}
+            <input type="hidden" name="ou_id" id="ou_id" value="{{ou_managed[0].id}}" />
+        {% else %}
+        <div class="row list-group-top">
+            <div class="col-sm-3">
+                <label for="ou_id">{{ gettext('Please select the Organizational Unit') }}</label>
+            </div>
+            <div>
+                <select class="form-control overflow-ellipsis" name="ou_id" id="ou_id">
+                  {% for oid in ou_managed %}
+                   <option value="{{oid}}">{{ou_managed[oid]}}</option>
+                  {% endfor %}                
+                </select>
+            </div>
+        </div>    
+        {% endif %}
+    
+        <div class="row">
+            <div class="col-sm-12">
+                <ul class="list-group">
+                    <li class="list-group-item">{{ gettext('Users') }}
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('user', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                     </li>
+                    <li class="list-group-item">{{ gettext('Workstations') }}
+                    
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('computer', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+                    
+                    </li>
+                    <li class="list-group-item">{{ gettext('Printers and related computers') }}
+                    
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('printers', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+                    
+                    </li>
+                    <li class="list-group-item">{{ gettext('Storages and related users') }}
+                    
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('storages', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('storages', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('storages', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+                    
+                    </li>
+                    <li class="list-group-item">{{ gettext('No-user computers') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-user_computers', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    <li class="list-group-item">{{ gettext('No-computer users') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-computer_users', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-computer_users', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('no-computer_users', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    <li class="list-group-item">{{ gettext('Computer with anomalies') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('status', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('status', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('status', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    </fieldset>
+
+                    {% if is_superuser %}
+                    <fieldset>
+                    <legend>{{ gettext('Only Superadmins. Not apply OU filter') }}</legend>
+                    <li class="list-group-item">{{ gettext('Permissions') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('permission', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    <li class="list-group-item">{{ gettext('Audit log') }}
+
+                      <button title="csv" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'csv')"
+                        ><i class="fa fa-file-excel-o"></i></button>
+
+                      <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'pdf')"
+                        ><i class="fa fa-file-pdf-o"></i></button>
+
+                      <button title="www" type="button" class="btn btn-default pull-right btn-export"
+                        onclick="generateReport('audit', 'html')"
+                        ><i class="fa fa-globe"></i></button>
+
+                    </li>
+                    </fieldset>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
-    </div>
+    </form>
+    
+    
 </div>
 {% endblock %}

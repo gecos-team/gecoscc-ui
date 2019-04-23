@@ -4,6 +4,24 @@
 {% block nav_bar_admins %}active{% endblock %}
 
 {% block inner_content %}
+
+<script type="text/javascript">
+//<![CDATA[
+    function sorting(field, el) {
+        var icon = $(el).children();
+
+        if (icon.hasClass('fa-sort-up')) {
+            $("#order").val('desc');
+	} else {
+	    $("#order").val('asc');
+	}
+
+        $("#orderby").val(field);
+	$("#sort_form").submit();
+    }
+//]]>
+</script>
+
 <div class="container" id="admin-container">
     <h1>{{ gettext('Updates') }}</h1>
     {% block breadcrumbs %}
@@ -27,10 +45,33 @@
         <div class="col-sm-12">
             <table class="table">
                 <thead>
+                    <form method="GET" role="form" name="sort_form" id="sort_form">
+                        <input type="hidden" name="orderby" id="orderby" value="" />
+                        <input type="hidden" name="order" id="order" value="" />
+                        <input type="hidden" name="q" id="q" value="{{ request.GET.get('q', '') }}" />
+                    </form>
                     <tr>
-                        <th>{{ gettext('Sequence') }}</th>
-                        <th>{{ gettext('Name') }}</th>
-                        <th>{{ gettext('Update Log') }}</th>
+                        <th onclick="sorting('_id', this);" style="cursor:pointer;">{{ gettext('Sequence') }}
+                            {% if request.GET.get('orderby') == '_id' %}
+                                <i class="fa fa-fw {% if request.GET.get('order') == 'asc' %} fa-sort-up {% else %} fa-sort-down {% endif %}">
+                            {% else %}
+                                <i class="fa fa-fw fa-sort">
+                            {% endif %}
+                        </th>
+                        <th onclick="sorting('name', this);" style="cursor:pointer;">{{ gettext('Name') }}
+                            {% if request.GET.get('orderby') == 'name' %}
+                                <i class="fa fa-fw {% if request.GET.get('order') == 'asc' %} fa-sort-up {% else %} fa-sort-down {% endif %}">
+                            {% else %}
+                                <i class="fa fa-fw fa-sort">
+                            {% endif %}
+                        </th>
+                        <th onclick="sorting('log', this);" style="cursor:pointer;">{{ gettext('Update Log') }}
+                            {% if request.GET.get('orderby') == 'log' %}
+                                <i class="fa fa-fw {% if request.GET.get('order') == 'asc' %} fa-sort-up {% else %} fa-sort-down {% endif %}">
+                            {% else %}
+                                <i class="fa fa-fw fa-sort">
+                            {% endif %}
+                        </th>
                         <th>{{ gettext('Rollback Log') }}</th>
                         <th>{{ gettext('Control File') }}</th>
                         <th>{{ gettext('State') }}</th>

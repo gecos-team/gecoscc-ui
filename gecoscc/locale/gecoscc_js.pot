@@ -1,14 +1,14 @@
 # Translations template for gecoscc.
-# Copyright (C) 2018 ORGANIZATION
+# Copyright (C) 2019 ORGANIZATION
 # This file is distributed under the same license as the gecoscc project.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2019.
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 2.4.0\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2018-11-19 16:50+0100\n"
+"POT-Creation-Date: 2019-04-04 12:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,53 +42,57 @@ msgstr ""
 msgid "This node has been deleted by another administrator."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:178
+#: gecoscc/static/js/app-utils.js:220
+msgid "You have read only access"
+msgstr ""
+
+#: gecoscc/static/js/app-utils.js:264
 msgid "Object changed."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:179
+#: gecoscc/static/js/app-utils.js:265
 msgid ""
 "Someone has changed this object while you were working on it, please reload "
 "before applying any changes."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:189
+#: gecoscc/static/js/app-utils.js:275
 msgid "Object deleted."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:190
+#: gecoscc/static/js/app-utils.js:276
 msgid "Someone has deleted this object while you were working on it"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:302
+#: gecoscc/static/js/app-utils.js:388
 msgid "Invalid data."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:303
+#: gecoscc/static/js/app-utils.js:389
 msgid "Please, fix the errors in the fields below and try again."
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:409 gecoscc/static/js/ou.js:85
+#: gecoscc/static/js/app-utils.js:495 gecoscc/static/js/ou.js:85
 msgid "Only the super admin can cut this object"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:504
+#: gecoscc/static/js/app-utils.js:590
 msgid "Staging"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:508 gecoscc/static/js/tree-views-renderer.js:82
+#: gecoscc/static/js/app-utils.js:594 gecoscc/static/js/tree-views-renderer.js:82
 msgid "Delete"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:510
+#: gecoscc/static/js/app-utils.js:596
 msgid "Save"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:512
+#: gecoscc/static/js/app-utils.js:598
 msgid "Refresh policies"
 msgstr ""
 
-#: gecoscc/static/js/app-utils.js:514
+#: gecoscc/static/js/app-utils.js:600
 msgid "Done"
 msgstr ""
 
@@ -152,56 +156,56 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:122
+#: gecoscc/static/js/computer.js:123
 msgid "No data has been received from this workstation."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:123
+#: gecoscc/static/js/computer.js:124
 msgid "Check connection with Chef server."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:131
+#: gecoscc/static/js/computer.js:132
 msgid "This workstation is not linked."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:132
+#: gecoscc/static/js/computer.js:133
 msgid "It is possible that this node was imported from AD or LDAP."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:139
+#: gecoscc/static/js/computer.js:140
 msgid "This workstation has incomplete Ohai information."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:147 gecoscc/static/js/computer.js:155
-#: gecoscc/static/js/computer.js:165 gecoscc/static/js/computer.js:175
+#: gecoscc/static/js/computer.js:148 gecoscc/static/js/computer.js:156
+#: gecoscc/static/js/computer.js:166 gecoscc/static/js/computer.js:176
 msgid "This workstation is not working properly:"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:148
+#: gecoscc/static/js/computer.js:149
 msgid "There were errors while saving this node in Chef"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:156
+#: gecoscc/static/js/computer.js:157
 msgid "Network problems connecting to the Control Center."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:166
+#: gecoscc/static/js/computer.js:167
 msgid "Last synchronization had problems during its execution."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:176
+#: gecoscc/static/js/computer.js:177
 msgid "Synchronization is not being executed on time."
 msgstr ""
 
-#: gecoscc/static/js/computer.js:217
+#: gecoscc/static/js/computer.js:218
 msgid "Days"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:217
+#: gecoscc/static/js/computer.js:218
 msgid "Hours"
 msgstr ""
 
-#: gecoscc/static/js/computer.js:217
+#: gecoscc/static/js/computer.js:218
 msgid "Minutes"
 msgstr ""
 
