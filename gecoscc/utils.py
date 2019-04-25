@@ -825,7 +825,7 @@ class setPathAttrsToNodeException(Exception):
     pass
 
 def add_path_attrs_to_node(api, node_id, strpath, collection):
-    ''' Setting up path_ids, path_names attributes to Chef node '''
+    ''' Setting up gecos_path_ids, gecos_path_names attributes to Chef node '''
 
     logger.debug("utils ::: add_path_chef_node - node_id = {}".format(node_id))
     logger.debug("utils ::: add_path_chef_node - strpath = {}".format(strpath))
@@ -838,8 +838,8 @@ def add_path_attrs_to_node(api, node_id, strpath, collection):
 
     try:
         node = ChefNode(node_id, api)
-        node.attributes.set_dotted('path_ids', strpath)
-        node.attributes.set_dotted('path_names', pathnames)
+        node.attributes.set_dotted('gecos_path_ids', strpath)
+        node.attributes.set_dotted('gecos_path_names', pathnames)
         node.save()
     except (TypeError, KeyError, ChefError) as e:
         logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
@@ -908,7 +908,7 @@ def update_node(api, node_id, ou, collection_nodes):
             ret = collection_nodes.update({'node_chef_id': node_id}, computer)
 
         except setPathAttrsToNodeException:
-            logger.error('utils.py ::: update_node - Exception adding path_ids, path_names to chef node')
+            logger.error('utils.py ::: update_node - Exception adding gecos_path info to chef node')
 
     return ret
 
