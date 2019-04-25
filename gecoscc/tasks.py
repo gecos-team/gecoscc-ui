@@ -1708,7 +1708,7 @@ class ChefTask(Task):
             self.log('error', "object_moved - 'apply_policies_to_%s' not implemented!"%(objnew['type']))
             raise NotImplementedError
         except setPathAttrsToNodeException:
-            self.log('error', "object_moved - Exception adding path_ids, path_names to chef node")
+            self.log('error', "object_moved - Exception adding gecos path info to chef node")
             raise setPathAttrsToNodeException
 
         func(self.db.nodes, objnew, user, api, initialize=True, use_celery=False, policies_collection=self.db.policies)

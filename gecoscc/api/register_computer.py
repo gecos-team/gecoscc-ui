@@ -61,7 +61,7 @@ class RegisterComputerResource(BaseAPI):
                     'message': 'There is another node with this node chef id (in gcc)'}
         elif computer_id == 'path-err':
             return {'ok': False,
-                    'message': 'Unable to add path_ids, path_names in chef node'}            
+                    'message': 'Unable to add gecos path ids and names to chef node'}            
 
         computer = self.collection.find_one({'_id': computer_id})
         apply_policies_to_computer(self.collection, computer, self.request.user)

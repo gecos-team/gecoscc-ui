@@ -32,8 +32,13 @@
         }
         #signature_and_logo {
             float: right;
-            font-variant: small-caps;
+            text-align: right;
         }
+
+        #signature_and_logo > div {
+            margin-top: 10px;
+        }
+
         table {
             border-left: 1px solid #11686B;
             border-top: 1px solid #11686B;
@@ -99,7 +104,8 @@
                 getColumnTypes();
 
                 $('#report_table').dataTable({
-                    "lengthMenu": [[-1, 10, 25, 50], ["Todos", 10, 25, 50]],
+                    "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "Todos"]],
+                    "pageLength": 25,
                     "language" : {
                       "url" : "/static/js/libs/jquery.dataTables-Spanish.json",
                     },
@@ -117,8 +123,9 @@
     <div id="header_content">{{report_title}}</div>
     <!-- GECOSCC Signature and Logo (HTML header) -->
     {% if report_type == 'html' %}
-    <div id="signature_and_logo" style="float: right;">
-       {{now}} - Centro de Control <img src="/static/images/gecos-logo-v2b.png" width="50px" height="33px"/>
+    <div id="signature_and_logo">
+       <img src="/static/images/gecos-logo-v2b.png" />
+       <div>{{ now }} - Centro de Control</div>
     </div>
     {% endif %}
     {% if report_type == 'pdf' %}
