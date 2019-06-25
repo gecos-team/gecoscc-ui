@@ -2764,7 +2764,12 @@ formNode.prototype.render = function (el) {
  */
 formNode.prototype.getLocalizedAttr = function (attr, lan) {
   lan = lan || this.lan;
-  return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
+  if (this.schemaElement) {
+    return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
+  }
+  else {
+    return this.formElement[attr + "_" + lan] || this[attr];
+  }
 };
 
 
