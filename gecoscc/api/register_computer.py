@@ -22,6 +22,8 @@ from gecoscc.utils import get_chef_api, register_node, apply_policies_to_compute
 from gecoscc.socks import delete_computer, update_tree, invalidate_change, invalidate_delete 
 from gecoscc.eventsmanager import JobStorage
 
+import logging
+logger = logging.getLogger(__name__)
 
 @resource(path='/register/computer/',
           description='Register computer from chef',
@@ -80,7 +82,17 @@ class RegisterComputerResource(BaseAPI):
 
     def delete(self):
         node_id = self.request.GET.get('node_id')
+        logger.info("/register/computer: Deleting computer for node_id = %s" % (str(node_id)))
+        # Find the computer node
         computer = self.collection.find_one({'node_chef_id': node_id})
+        
+        # Delete the reference from users
+        users = self.collection.find({'computers': computer['_id'], 'type': 'user'})
+        for user in users:
+            logger.info("/register/computer: Removing computer %s relationship from user %s" % (str(computer['_id']), str(user['_id'])))
+            self.collection.update({'_id': user['_id']}, {'$pull': { 'computers': computer['_id'] }})
+        
+        # Delete the computer node
         node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
         num_node_deleted = node_deleted['n']
         if num_node_deleted >= 1:
