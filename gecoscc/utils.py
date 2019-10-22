@@ -610,7 +610,7 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
     object_created(auth_user, 'user', user, computers=computers)
 
 
-def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, _initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a emitter object is within the scope of the objects that is related and then update policies
     '''
@@ -654,7 +654,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
     object_created(auth_user, obj['type'], obj)
 
 
-def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''
@@ -688,7 +688,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, _initi
     object_created(auth_user, group['type'], group)
 
 
-def apply_policies_to_ou(nodes_collection, ou, auth_user, _api=None, _initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     '''
     Checks if a group is within the scope of the objects that is related and then update policies
     '''
