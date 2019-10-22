@@ -515,7 +515,7 @@ class TreeResourcePaginated(ResourcePaginated):
                 "{0} has a different path".format(parent_id))
             return False
 
-        return True
+        return self.check_unique_node_name_by_type_at_domain(obj)
 
 # TODO: Only have to extends this class the ComputerResource and UserResource
 # Now there are another class that extends it. I don't make it, because this
