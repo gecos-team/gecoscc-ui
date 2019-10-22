@@ -160,7 +160,7 @@ def check_server_list(config):
         db.servers.insert({'name': server_name.strip(), 'address':server_address.strip()})
     else:
         server['address'] = server_address.strip()
-        db.servers.update({'name': server_name.strip()}, server, new=False)
+        db.servers.update({'name': server_name.strip()}, server)
         
     
 def userdb_config(config):
