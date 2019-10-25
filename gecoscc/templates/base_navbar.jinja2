@@ -22,9 +22,9 @@
                         <a href="{{ help_base_url }}" target="_blank">{{ gettext('Help') }}</a>
                     </li>
 
-                    {% if (request.user.get('is_superuser') or
+                    {% if (request.user and (request.user.get('is_superuser') or
                            request.user.get('ou_managed', []) or
-                           request.user.get('ou_readonly', [])
+                           request.user.get('ou_readonly', []))
                        ):
                     %}
 
@@ -74,6 +74,7 @@
 
                     {% endif %}
 
+                    {% if (request.user): %}
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-hover="dropdown">{{ request.user['username'] }} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
@@ -95,6 +96,7 @@
                             </li>
                         </ul>
                     </li>
+                    {% endif %}
                 </ul>
             </div><!-- /.navbar-collapse -->
         </div>

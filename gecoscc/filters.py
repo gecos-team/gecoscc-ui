@@ -24,7 +24,13 @@ def admin_serialize(admin):
         'ou_managed': admin.get('ou_managed', []),
         'ou_remote': admin.get('ou_remote', [])
     })
-    return json.dumps(serialized)
+    json_data = ''
+    try:
+        json_data = json.dumps(serialized)
+    except TypeError, e:
+        json_data = 'Error serializing user: %s' % (str(e))
+    
+    return json_data
 
 def datetime(value, date_format='medium'):
     '''
