@@ -706,6 +706,8 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, _api=None, _initialize
     visibility_object_related(nodes_collection.database, ou)
 
     if ou_children.count() == 0:
+        logger.debug("utils ::: apply_policies_to_ou - OU without children = %s" % str(ou['name']))
+        object_created(auth_user, 'ou', ou)
         return
 
     for child in ou_children:
@@ -1604,6 +1606,24 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
                 return False             
                 
             trace_inheritance(logger, db, 'change', newnode, policydata)                
+    
+    # Recalculate policies for the path
+    for ou_id in obj['path'].split(','):
+        if ou_id == 'root':
+            continue
+        
+        ou = db.nodes.find_one({'_id': ObjectId(ou_id)})
+        if not ou:
+            logger.error("move_in_inheritance_and_recalculate_policies - OU not found  %s" % str(ou_id))
+            return False                
+            
+        for policy_id in  ou['policies']:
+            policydata = db.policies.find_one({'_id': ObjectId(policy_id)})
+            if not policydata:
+                logger.error("move_in_inheritance_and_recalculate_policies - Policy not found %s" % str(policy_id))
+                return False             
+                
+            recalculate_inheritance_for_node(logger, db, 'change', ou, policydata, obj)
     
     # If the object is a computer or an user and belongs to any group
     # we have to ensure that all the groups appears after the last OU
