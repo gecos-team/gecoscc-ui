@@ -646,7 +646,8 @@ var App;
                 App.tree.currentView.activeNode = itemid;
                 App.tree.currentView.highlightNodeById(itemid);
                 model = App.instances.cache.get(itemid);
-                if (_.isUndefined(model)) {
+                if (_.isUndefined(model) || 
+                    _.isUndefined(App.instances.tree.getTreeNode(itemid))) {
                     Model = this._typeClasses(type)[0];
                     model = new Model({ id: itemid });
                 } else {
