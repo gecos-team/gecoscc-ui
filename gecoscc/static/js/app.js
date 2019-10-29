@@ -770,10 +770,15 @@ var App;
                     throw "Search require a 'search filter' attribute";
                 }
 
+                var lastTreeView = App.tree.currentView;
+                if (!_.isUndefined(App.tree.currentView.treeView)) {
+                    lastTreeView = App.tree.currentView.treeView;
+                }
+
                 var data = new App.Tree.Models.Search({ keyword: keyword, search_by: dparameters['searchby'], search_filter: dparameters['searchfilter']}),
                     view = new App.Tree.Views.SearchResults({
                         collection: data,
-                        treeView: App.tree.currentView
+                        treeView: lastTreeView
                     });
 
                 data.goTo(1, {
