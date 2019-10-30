@@ -143,7 +143,7 @@ def reports(context, request):
         path = ou['path'] + ',' + str(ou['_id'])
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
-    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: kv[1].lower()))
     logger.debug("reports ::: ous = {}".format(ous))
 
     return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
