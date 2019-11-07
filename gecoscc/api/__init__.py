@@ -489,7 +489,7 @@ class TreeResourcePaginated(ResourcePaginated):
         if unique and not is_domain(obj):
             # Check that the node name is not the same as the domain name
             domain = get_domain(obj, self.request.db.nodes)
-            if domain['name'] == obj['name']:
+            if domain['name'].lower() == obj['name'].lower():
                 self.request.errors.add('body', 'name',
                                     "Name already used as domain name.")                
                 return False
