@@ -922,6 +922,9 @@ def register_or_updated_node(api, node_id, ou, collection_nodes):
     return register_node(api, node_id, ou, collection_nodes)
 
 
+def is_root(node):
+    return node['path'].count(',') == 0
+
 def is_domain(node):
     return node['path'].count(',') == 1
 

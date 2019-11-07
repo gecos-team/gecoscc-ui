@@ -32,7 +32,7 @@ from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
                            RESOURCES_EMITTERS_TYPES, get_object_related_list,
-                           is_domain, get_domain)
+                           is_domain, get_domain, is_root)
 
 import gettext
 import logging
@@ -486,7 +486,7 @@ class TreeResourcePaginated(ResourcePaginated):
         if not unique:
             self.request.errors.add('body', 'name',
                                     "Name must be unique in domain.")
-        if unique and not is_domain(obj):
+        if unique and not is_domain(obj) and not is_root(obj):
             # Check that the node name is not the same as the domain name
             domain = get_domain(obj, self.request.db.nodes)
             if domain['name'].lower() == obj['name'].lower():
