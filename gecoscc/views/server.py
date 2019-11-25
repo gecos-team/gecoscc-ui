@@ -168,10 +168,10 @@ def getJSON(url):
         obj = json.loads(content)
         
     except IOError, e:
-        logger.warning("getJSON: error"+str(e))
+        logger.warning("getJSON: error: "+str(e)+" getting data from: "+str(url))
         return None
     except httplib.BadStatusLine, err:
-        logger.warning("getJSON: not receive HTTP response"+str(err))
+        logger.warning("getJSON: not receive HTTP response: "+str(err)+" getting data from: "+str(url))
         return None
     
     return obj    
@@ -453,8 +453,12 @@ def server_status(context, request):
         # Check if the address is actually an IP address
         if not re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", 
                         status['address']):
-            # Try to resolve the IP address
-            status['address'] = socket.gethostbyname(status['address'])
+            try:
+                # Try to resolve the IP address
+                status['address'] = socket.gethostbyname(status['address'])
+            except Exception as e:
+                logger.warning("server_status: Couldn't resolve IP address from hostname: %s: %s"%(status['address'], str(e)))
+                status['address'] = 'X.X.X.X'            
             
         server_status.append(status)
 
