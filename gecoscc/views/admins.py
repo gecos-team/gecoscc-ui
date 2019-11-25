@@ -406,7 +406,7 @@ def statistics(context, request):
     logger.debug("admins.py ::: statistics - sorted_ous = {}".format(sorted_ous))
 
     # Defaults
-    if not ou_id:
+    if not ou_id and sorted_ous.items() is not None and len(sorted_ous.items())>0:
         ou_id = str(sorted_ous.items()[0][0])
 
     logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
