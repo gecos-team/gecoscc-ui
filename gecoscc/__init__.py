@@ -157,13 +157,9 @@ def check_server_list(config):
     
     db = config.registry.settings['mongodb'].get_database()
         
-    # Check if this server is in the collection
-    server = db.servers.find_one({'name': server_name.strip()})
-    if server is None:
-        db.servers.insert({'name': server_name.strip(), 'address':server_address.strip()})
-    else:
-        server['address'] = server_address.strip()
-        db.servers.update({'name': server_name.strip()}, server)
+    # Create/update server is in the collection
+    server = {'name': server_name.strip(), 'address':server_address.strip()}
+    db.servers.update({'name': server_name.strip()}, server, upsert=True)
         
         
 def check_database_indexes(config):
