@@ -246,14 +246,23 @@ class Command(BaseCommand):
         self.policiesdata = {}
         self.slug_check = {}
         for policy in dbpolicies:
-            logger.debug('Addig to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
+            logger.debug('Adding to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
             self.policiesdata[str(policy['_id'])] = policy
             
             # Check policy slug field (must be unique)
             if policy['slug'] in self.slug_check:
                 logger.error("There are more than one policy with '%s' slug!"%(policy['slug']))
             else:
-                self.slug_check[policy['slug']] = policy
+                slug = policy['slug']
+                # The slug of the emitter policies is different from the others
+                if slug == 'printer_can_view':
+                    slug = 'printers_res'
+                elif slug == 'storage_can_view':
+                    slug = 'user_shared_folders_res'
+                elif slug == 'repository_can_view':
+                    slug = 'software_sources_res'
+                
+                self.slug_check[slug] = policy
                 
             # Check policy serialization
             try:
