@@ -71,18 +71,25 @@ def can_access_to_this_path(request, collection_nodes, oid_or_obj, ou_type='ou_m
     obj = None
     request = request
     ou_managed_ids = request.user.get(ou_type, [])
-    if not request.user.get('is_superuser') or ou_managed_ids:
+    if not request.user.get('is_superuser'):
+        if not ou_managed_ids:
+            logger.error("The user %s has no %s data!"%(request.user.get('username'), ou_type));
+            raise HTTPForbidden()
+        
         if isinstance(oid_or_obj, dict):
             obj = oid_or_obj
         else:
             obj = collection_nodes.find_one({'_id': ObjectId(oid_or_obj)})
         
         if obj is None:
+            logger.error("Unknown object! {0}".format(oid_or_obj));
             raise HTTPForbidden()
             
         path = obj['path']
         if (path == 'root' or len(path.split(',')) == 2) and request.method == 'DELETE':
+            logger.warn("Only the superadministrators can delete a domain! (user: %s)"%(request.user.get('username')));
             raise HTTPForbidden()
+        
         if '_id' in obj:
             path = '%s,%s' % (path, obj['_id'])
         if not is_path_right(request, path, ou_type):
