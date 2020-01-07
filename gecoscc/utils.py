@@ -35,6 +35,7 @@ from chef.node import NodeAttributes
 from pyramid.threadlocal import get_current_registry
 
 from collections import defaultdict
+from pymongo.collation import Collation, CollationStrength
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -921,6 +922,9 @@ def register_or_updated_node(api, node_id, ou, collection_nodes):
     return register_node(api, node_id, ou, collection_nodes)
 
 
+def is_root(node):
+    return node['path'].count(',') == 0
+
 def is_domain(node):
     return node['path'].count(',') == 1
 
@@ -966,7 +970,17 @@ def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
 
     if '_id' in obj:
         filters['_id'] = {'$ne': obj['_id']}
-    return collection_nodes.find(filters).count() == 0
+    
+    
+    count = 0
+    settings = get_current_registry().settings
+    locales = settings['pyramid.locales']
+    for lang in locales:
+        # Check that the name is unique in every locale
+        count = count + collection_nodes.find(filters).collation(
+            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
+    
+    return count == 0
 
 
 def _is_local_user(user):
