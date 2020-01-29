@@ -2685,10 +2685,21 @@ def auditlog(request, action=None):
 
         try:
             logger.debug("utils.py ::: auditlog - request.user = {}".format(request.user))
-            try:
-                username = request.user['username']
-            except: # POST login
+            if action == 'login':
                 username = request.POST.get('username')
+            else:
+                # Logout or expired
+                if request.user is None:
+                    logger.warn('utils.py ::: auditlog: there is no user data in session (¿logout after session expired?)')
+                    return                     
+                
+                try:
+                    username = request.user['username']
+                except Exception as e:
+                    logger.warn('utils.py ::: auditlog: error getting user session data: %s'%(str(e)))
+                    return
+                
+                
             logger.debug("utils.py ::: auditlog - username = {}".format(username))
             ipaddr = request.headers.get('X-Forwarded-For', request.remote_addr)
             logger.debug("utils.py ::: auditlog - ipaddr = {}".format(ipaddr))
