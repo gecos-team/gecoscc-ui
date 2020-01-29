@@ -37,6 +37,9 @@ from gecoscc.session import session_factory_from_settings
 from urlparse import urlsplit
 import colander
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
@@ -162,6 +165,17 @@ def check_server_list(config):
         server['address'] = server_address.strip()
         db.servers.update({'name': server_name.strip()}, server)
         
+        
+def check_database_indexes(config):
+    settings = config.registry.settings
+    db = settings['mongodb'].get_database()
+    
+    languages = settings.get("pyramid.locales")
+    for lang in languages:
+        logger.debug('Creating indexes for "%s" locale'%(lang))
+        db.nodes.create_index('name', name=('name_%s'%(lang)),
+            collation=pymongo.collation.Collation(lang, caseLevel=True, strength=pymongo.collation.CollationStrength.PRIMARY) )
+          
     
 def userdb_config(config):
     # TODO
@@ -249,6 +263,7 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
     locale_config(config)
+    check_database_indexes(config)
     
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)

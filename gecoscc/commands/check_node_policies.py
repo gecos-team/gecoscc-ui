@@ -21,7 +21,9 @@ from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import (_get_chef_api, toChefUsername, 
-                           trace_inheritance, order_groups_by_depth)
+                           trace_inheritance, order_groups_by_depth,
+                           check_unique_node_name_by_type_at_domain,
+                           is_domain, get_domain, is_root)
 from gecoscc.rules import get_username_chef_format
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
@@ -430,6 +432,15 @@ class Command(BaseCommand):
         Check the policies applied to a node
         '''        
         logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        
+        # Check for name duplicates
+        if not check_unique_node_name_by_type_at_domain(self.db.nodes, node):
+            logger.error('Duplicates found for node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        elif not is_domain(node) and not is_root(node):
+            # Check that the node name is not the same as the domain name
+            domain = get_domain(node, self.db.nodes)
+            if domain['name'].lower() == node['name'].lower():            
+                logger.error('The node has the same name as the domain: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
         
         if self.options.inheritance:
             inheritance_node = deepcopy(node)      
