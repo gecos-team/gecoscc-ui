@@ -210,7 +210,11 @@ def treatment_string_to_csv(item, key):
     none = u'--'
     logger.info("reports:::treatment_string_to_csv - item = {}".format(item))
     logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
-    return item.get(key, none).decode('utf-8') or none
+    value = item.get(key, none)
+    if value is None:
+        return none
+    
+    return value.decode('utf-8') or none
 
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)
