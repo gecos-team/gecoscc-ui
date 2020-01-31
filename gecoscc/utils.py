@@ -1032,17 +1032,19 @@ def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
 
     if '_id' in obj:
         filters['_id'] = {'$ne': obj['_id']}
+
+# TODO: Replace this line with lines below when MongoDB 3.4 is available
+    return collection_nodes.find(filters).count() == 0
     
+#    count = 0
+#    settings = get_current_registry().settings
+#    locales = settings['pyramid.locales']
+#    for lang in locales:
+#        # Check that the name is unique in every locale
+#        count = count + collection_nodes.find(filters).collation(
+#            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
     
-    count = 0
-    settings = get_current_registry().settings
-    locales = settings['pyramid.locales']
-    for lang in locales:
-        # Check that the name is unique in every locale
-        count = count + collection_nodes.find(filters).collation(
-            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
-    
-    return count == 0
+#    return count == 0
 
 
 def _is_local_user(user):
