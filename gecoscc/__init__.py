@@ -263,7 +263,11 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
     locale_config(config)
-    check_database_indexes(config)
+
+#    Commented out until next big update to Python3. Breaks MongoDB 2.x compatibility.
+#    check_database_indexes(config)
+     logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
+
     
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
