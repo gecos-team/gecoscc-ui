@@ -266,7 +266,7 @@ def main(global_config, **settings):
 
 #    Commented out until next big update to Python3. Breaks MongoDB 2.x compatibility.
 #    check_database_indexes(config)
-     logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
+    logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
 
     
     session_factory = session_factory_from_settings(settings)
