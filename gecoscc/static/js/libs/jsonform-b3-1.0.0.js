@@ -659,11 +659,11 @@ jsonform.elementTypes = {
           lastTerm = "",
           data = {},
           resNode,
-          addedTerm = false;
+          addedTerm = [];
 
       var addTerm = function (list, term) {
-          addedTerm = !_.some(list, function (n) { return n.text == term; });
-          if (!addedTerm) {
+          var newTerm = !_.some(list, function (n) { return n.text == term; });
+          if (!newTerm) {
             return;
           }
           list.push({
@@ -671,6 +671,7 @@ jsonform.elementTypes = {
             value: term,
             id: term
           });
+          addedTerm.push(term);
           node.schemaElement['enum'].push(term);
       };
 
@@ -852,7 +853,7 @@ jsonform.elementTypes = {
                 }
               }
             }).on("change", function(e) {
-              if(e.val != lastTerm || !addedTerm){
+              if(e.val != lastTerm || addedTerm.indexOf(e.val)<0){
                 $(node.el).find(".alert").hide();
               } else {
                 $(node.el).find(".alert").show();
