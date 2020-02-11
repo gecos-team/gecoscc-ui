@@ -1516,7 +1516,7 @@ class ChefTask(Task):
                 self.log("debug","object_action {0}".format(computer['name']))
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
-                node = reserve_node_or_raise(self.db, node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+                node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
@@ -1814,7 +1814,7 @@ class ChefTask(Task):
         gcc_sudoers  = set()
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
-            node = reserve_node_or_raise(self.db, node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+            node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
 
             # Remove variables data
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Removing variables data')
@@ -2209,7 +2209,7 @@ def chef_status_sync(node_id, auth_user):
         
     reserve_node = False
     if job_status:
-        node = reserve_node_or_raise(self.db, node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+        node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
         reserve_node = True
         chef_client_error = False
 
@@ -2287,7 +2287,7 @@ def chef_status_sync(node_id, auth_user):
         self.log("info", "Must check users!")
         self.log("debug", "tasks.py ::: chef_status_sync - users added or removed = {0}".format(set.symmetric_difference(chef_node_usernames, gcc_node_usernames)))
         if not reserve_node:
-            node = reserve_node_or_raise(self.db, node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+            node = reserve_node_or_raise(node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
 
         
         # Add users or vinculate user to computer if already exists

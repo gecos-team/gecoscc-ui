@@ -684,7 +684,7 @@ class ADImport(BaseAPI):
 
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
-                    chef_server_node = reserve_node_or_raise(db, mongoObject['name'],
+                    chef_server_node = reserve_node_or_raise(mongoObject['name'],
                                                              chef_server_api,
                                                              'gcc-ad-import-%s' % random.random(),
                                                              attempts=3)

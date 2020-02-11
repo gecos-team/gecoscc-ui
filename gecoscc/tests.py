@@ -12,7 +12,6 @@
 
 import json
 import unittest
-import multiprocessing
 import sys
 
 import mock
@@ -44,7 +43,6 @@ from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add
-from gecoscc.utils import reserve_node_or_raise
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -3064,67 +3062,6 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.assertNoErrorJobs()
 
-    @mock.patch('gecoscc.utils.isinstance')
-    @mock.patch('gecoscc.tasks.Client')
-    @mock.patch('gecoscc.tasks.Node')
-    @mock.patch('chef.Node')
-    @mock.patch('gecoscc.utils.ChefNode')
-    @mock.patch('gecoscc.tasks.get_cookbook')
-    @mock.patch('gecoscc.utils.get_cookbook')
-    def test_31_reserve_node(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass,
-                             ChefNodeClass, TaskNodeClass, ClientClass, isinstance_method):
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
-        self.cleanErrorJobs()
-
-        # 1 - Register workstation
-        db = self.get_db()
-        chef_node_id = CHEF_NODE_ID
-        self.register_computer()
-
-        # 2  Verification that the workstation has been registered successfully
-        computer = self.get_db().nodes.find_one({'name': 'testing'})
-
-        procs=[]
-       
-        for i in range(10):
-            proc = multiprocessing.Process(
-                target=reserve_node_or_raise,
-                args=(self.get_db(), 
-                      computer['node_chef_id'],
-                      ComputerResource, 
-                      'gcc-%s' % i, 
-                      3,)
-            )
-            procs.append(proc)
-            proc.start()
-
-        # complete the processes
-        for proc in procs:
-            proc.join()
-
-        #try:
-        #    # Create threads for all of the requests and start them
-        #    for i in range(10):
-        #        t = Thread(target=reserve_node_or_raise,args=(self.get_db(), computer['node_id'], api_class, controller_requestor='gcc-%'%i, attempts=3,))
-        #        request_threads.append(t)
-        #        t.start()
-
-        #    # Wait until all of the threads are complete
-        #    all_done = False
-        #    while not all_done:
-        #        all_done = True
-        #        for t in request_threads:
-        #            if t.is_alive():
-        #                all_done = False
-        #                time.sleep(1)
-
-        #except Exception, ex:
-        #    print 'Something went horribly wrong!', ex.message
-        #finally:
-
-            # Stop all running threads
-        #    for t in request_threads:
-        #        t._Thread__stop()
 
 class MovementsTests(BaseGecosTestCase):
 

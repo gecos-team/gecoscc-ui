@@ -15,7 +15,7 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.api import BaseAPI
 from gecoscc.models import Computer, Computers
-from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it, release_node
+from gecoscc.utils import get_chef_api, is_node_busy_and_reserve_it
 
 import json
 import time
@@ -60,7 +60,7 @@ class ChefClientRunResource(BaseAPI):
         # Reserve the node
         settings = get_current_registry().settings
         api = get_chef_api(settings, self.request.user)
-        node, is_busy = is_node_busy_and_reserve_it(self.request.db, node_id, api, 'client', attempts=3)
+        node, is_busy = is_node_busy_and_reserve_it(node_id, api, 'client', attempts=3)
         if not node.attributes.to_dict():
             return {'ok': False,
                     'message': 'The node does not exists (in chef)'}
@@ -138,29 +138,3 @@ class ChefClientRunResource(BaseAPI):
         return {'ok': True,
                     'message': 'Log data saved'}
         
-    def delete(self):
-        """
-        Releases the Chef node after running the Chef client
-        """
-        # Check the parameters
-        node_id = self.request.POST.get('node_id')
-        if node_id is None:
-            return {'ok': False, 'message': 'Missing node ID'}
-
-        username = self.request.POST.get('gcc_username')
-        if not username:
-            return {'ok': False,
-                    'message': 'Please set a admin username (gcc_username)'}
-        self.request.user = self.request.db.adminusers.find_one({'username': username})
-        if not self.request.user:
-            return {'ok': False,
-                    'message': 'The admin user %s does not exists' % username}
-
-        logger.info("/chef-client/run/: Release chef node %s" % (str(node_id)))
-
-        # Reserve the node
-        free = release_node(self.request.db, node_id, controller_requestor='client', attempts=3)
-
-        if free:
-            return {'ok': True, 'message': 'Node free'}
-
