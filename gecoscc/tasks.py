@@ -1480,7 +1480,7 @@ class ChefTask(Task):
         job_storage.create(**job)
 
     def object_action(self, user, obj, objold=None, action=None, computers=None,
-                      api=None, cookbook=None):
+                      api=None, cookbook=None, calculate_inheritance=True):
         '''
         This method try to get the node to make changes in it.
         Theses changes are called actions and can be: changed, created, moved and deleted.
@@ -1567,6 +1567,9 @@ class ChefTask(Task):
             invalidate_jobs(self.request, user)
             
         # Trace inheritance
+        if not calculate_inheritance:
+            return
+        
         self.log("debug","object_action - type = {0} action = {1}".format(obj['type'], action))
         
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
@@ -1680,17 +1683,19 @@ class ChefTask(Task):
                 
 
     def object_created(self, user, objnew, computers=None,
-                       api=None, cookbook=None):
+                       api=None, cookbook=None, calculate_inheritance=True):
         self.object_action(user, objnew, action='created', computers=computers,
-                           api=api, cookbook=cookbook)
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance)
 
     def object_refresh_policies(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='recalculate policies', computers=computers)
 
     def object_changed(self, user, objnew, objold, action, computers=None,
-                       api=None, cookbook=None):
+                       api=None, cookbook=None, calculate_inheritance=True):
         self.object_action(user, objnew, objold, action, computers=computers,
-                           api=api, cookbook=cookbook)
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance)
 
     def object_deleted(self, user, obj, computers=None):
         obj_without_policies = deepcopy(obj)
@@ -1752,17 +1757,20 @@ class ChefTask(Task):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
 
     def group_created(self, user, objnew, computers=None,
-                      api=None, cookbook=None):
+                      api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'Group', objnew)
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'Group', objnew)
 
     def group_changed(self, user, objnew, objold, action='changed',
-                      computers=None, api=None, cookbook=None):
+                      computers=None, api=None, cookbook=None,
+                      calculate_inheritance=True):
         self.log_action('changed BEGIN', 'Group', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
@@ -1776,7 +1784,7 @@ class ChefTask(Task):
         self.log_action('deleted END', 'Group', obj)
 
     def user_created(self, user, objnew, computers=None,
-                     api=None, cookbook=None):
+                     api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'User', objnew)
         api = get_chef_api(self.app.conf, user)
         objnew = update_computers_of_user(self.db, objnew, api)
@@ -1785,14 +1793,17 @@ class ChefTask(Task):
                                   'computers': objnew['computers'] }})
 
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'User', objnew)
 
     def user_changed(self, user, objnew, objold, action='changed',
-                     computers=None, api=None, cookbook=None):
+                     computers=None, api=None, cookbook=None,
+                     calculate_inheritance=True):
         self.log_action('changed BEGIN', 'User', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'User', objnew)
 
     def user_moved(self, user, objnew, objold):
@@ -1808,10 +1819,11 @@ class ChefTask(Task):
         self.log_action('deleted END', 'User', obj)
 
     def computer_created(self, user, objnew, computers=None,
-                         api=None, cookbook=None):
+                         api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'Computer', objnew)
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'Computer', objnew)
 
     def computer_refresh_policies(self, user, obj, computers=None):
@@ -2006,10 +2018,12 @@ class ChefTask(Task):
         self.log_action('refresh_policies END', 'Computer', obj)
 
     def computer_changed(self, user, objnew, objold, action='changed',
-                         computers=None, api=None, cookbook=None):
+                         computers=None, api=None, cookbook=None,
+                         calculate_inheritance=True):
         self.log_action('changed BEGIN', 'Computer', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
@@ -2043,17 +2057,20 @@ class ChefTask(Task):
             self.disassociate_object_from_group(obj)
         self.log_action('deleted END', 'Computer', obj)
 
-    def ou_created(self, user, objnew, computers=None, api=None, cookbook=None):
+    def ou_created(self, user, objnew, computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True):
         self.log_action('created BEGIN', 'OU', objnew)
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'OU', objnew)
 
     def ou_changed(self, user, objnew, objold, action='changed', computers=None,
-                   api=None, cookbook=None):
+                   api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('changed BEGIN', 'OU', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
@@ -2088,17 +2105,20 @@ class ChefTask(Task):
         self.log_action('deleted END', 'OU', obj)
 
     def printer_created(self, user, objnew, computers=None,
-                        api=None, cookbook=None):
+                        api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'Printer', objnew)
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'Printer', objnew)
 
     def printer_changed(self, user, objnew, objold, action='changed',
-                        computers=None, api=None, cookbook=None):
+                        computers=None, api=None, cookbook=None,
+                        calculate_inheritance=True):
         self.log_action('changed BEGIN', 'Printer', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
@@ -2112,17 +2132,20 @@ class ChefTask(Task):
         self.log_action('deleted END', 'Printer', obj)
 
     def storage_created(self, user, objnew, computers=None,
-                        api=None, cookbook=None):
+                        api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'Storage', objnew)
         self.object_created(user, objnew, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('created END', 'Storage', objnew)
 
     def storage_changed(self, user, objnew, objold, action='changed',
-                        computers=None, api=None, cookbook=None):
+                        computers=None, api=None, cookbook=None,
+                        calculate_inheritance=True):
         self.log_action('changed BEGIN', 'Storage', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
@@ -2136,17 +2159,19 @@ class ChefTask(Task):
         self.log_action('deleted END', 'Storage', obj)
 
     def repository_created(self, user, objnew, computers=None,
-                           api=None, cookbook=None):
+                           api=None, cookbook=None, calculate_inheritance=True):
         self.log_action('created BEGIN', 'Repository', objnew)
         self.object_created(user, objnew, computers=computers,
                             api=api, cookbook=cookbook)
         self.log_action('created END', 'Repository', objnew)
 
     def repository_changed(self, user, objnew, objold, action='changed',
-                           computers=None, api=None, cookbook=None):
+                           computers=None, api=None, cookbook=None,
+                           calculate_inheritance=True):
         self.log_action('changed BEGIN', 'Repository', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers,
-                            api=api, cookbook=cookbook)
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance)
         self.log_action('changed END', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
@@ -2174,14 +2199,16 @@ def task_test(value):
 
 
 @task(base=ChefTask)
-def object_created(user, objtype, obj, computers=None, api=None, cookbook=None):
+def object_created(user, objtype, obj, computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True):
     self = object_created
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
         try:
             return func(user, obj, computers=computers,
-                        api=api, cookbook=cookbook)
+                        api=api, cookbook=cookbook,
+                        calculate_inheritance=calculate_inheritance)
         except Exception as e:
             self.report_unknown_error(e, user, obj, 'created')
             invalidate_jobs(self.request, user)
@@ -2207,13 +2234,15 @@ def object_refresh_policies(user, objtype, obj, computers=None):
 
 @task(base=ChefTask)
 def object_changed(user, objtype, objnew, objold, action='changed',
-                   computers=None, api=None, cookbook=None):
+                   computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
         try:
             return func(user, objnew, objold, action, computers=computers,
-                        api=api, cookbook=cookbook)
+                        api=api, cookbook=cookbook,
+                        calculate_inheritance=calculate_inheritance)
         except Exception as e:
             self.report_unknown_error(e, user, objnew, 'changed')
             invalidate_jobs(self.request, user)
