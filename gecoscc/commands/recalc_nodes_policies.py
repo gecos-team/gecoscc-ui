@@ -18,6 +18,7 @@ from bson import ObjectId
 from gecoscc.management import BaseCommand
 from gecoscc.utils import get_chef_api, recalc_node_policies, get_filter_this_domain,\
     get_cookbook
+from jsonschema.validators import validator_for
 
 
 class Command(BaseCommand):
@@ -95,7 +96,14 @@ class Command(BaseCommand):
         sys.stdout.flush()
         results_error = {}
         results_succes = {}
+        # Get the cookbook
         cookbook = get_cookbook(api, cookbook_name)
+        schema = cookbook['metadata']['attributes']['json_schema']['object']
+        
+        # Validate the cookbook schema
+        validator = validator_for(schema)
+        validator.check_schema(schema)
+        
         for i, comp in enumerate(list(computers)):
             if i % step == 0:
                 sys.stdout.write('.')
@@ -103,7 +111,8 @@ class Command(BaseCommand):
             recalculated, reason = recalc_node_policies(db.nodes, db.jobs,
                                                         comp, admin_user,
                                                         cookbook_name, api,
-                                                        cookbook)
+                                                        cookbook,
+                                                        validator)
             if recalculated:
                 results_succes[comp['name']] = reason
             else:
