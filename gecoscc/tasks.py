@@ -1802,11 +1802,15 @@ class ChefTask(Task):
                      api=None, cookbook=None, calculate_inheritance=True,
                      validator=None):
         self.log_action('created BEGIN', 'User', objnew)
-        api = get_chef_api(self.app.conf, user)
-        objnew = update_computers_of_user(self.db, objnew, api)
-        self.db.nodes.update({'_id': objnew['_id']},
-                             {'$set': {
-                                  'computers': objnew['computers'] }})
+        if calculate_inheritance:
+            # If we are not calculating the inheritance information
+            # probably is because this is some kind of automated task
+            # and we don't want to update the computers of the user 
+            api = api or get_chef_api(self.app.conf, user)
+            objnew = update_computers_of_user(self.db, objnew, api)
+            self.db.nodes.update({'_id': objnew['_id']},
+                                 {'$set': {
+                                      'computers': objnew['computers'] }})
 
         self.object_created(user, objnew, computers=computers,
                             api=api, cookbook=cookbook,
