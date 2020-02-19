@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -514,8 +516,9 @@ def get_job_errors_from_computer(jobs_collection, computer):
                                  '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
 
 
-def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user, cookbook_name,
-                         api=None, initialize=True, use_celery=False):
+def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
+                         cookbook_name, api=None,
+                         initialize=True, use_celery=False):
     job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
     node_chef_id = computer.get('node_chef_id', None)
     if not node_chef_id:
@@ -535,6 +538,7 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
     users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
     for user in users:
         apply_policies_to_user(nodes_collection, user, auth_user, api,
+                               [computer],
                                initialize=initialize,
                                use_celery=use_celery)
     new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
@@ -560,6 +564,7 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
 
 def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
+    logger.info('apply_policies_to_computer: %s'%(computer['name']))
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
@@ -582,13 +587,17 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     object_created(auth_user, 'computer', computer, computers=[computer])
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
+                           computers=None, initialize=False,
+                           use_celery=True, policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
+    logger.info('apply_policies_to_user: %s'%(user['name']))
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
 
-    computers = get_computer_of_user(nodes_collection, user)
+    if computers is None:
+        computers = get_computer_of_user(nodes_collection, user)
 
     if api and initialize:
         user = visibility_group(nodes_collection.database, user)
