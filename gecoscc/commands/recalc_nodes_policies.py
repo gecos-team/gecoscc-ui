@@ -94,7 +94,7 @@ class Command(BaseCommand):
         sys.stdout.flush()
         results_error = {}
         results_succes = {}
-        for i, comp in enumerate(computers):
+        for i, comp in enumerate(list(computers)):
             if i % step == 0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
