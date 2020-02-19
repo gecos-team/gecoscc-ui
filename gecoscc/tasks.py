@@ -1748,22 +1748,27 @@ class ChefTask(Task):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
 
     def group_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'Group', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Group', objnew)
+        self.log_action('created END', 'Group', objnew)
 
     def group_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'Group', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Group', objnew)
+        self.log_action('changed END', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Group', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Group', objnew)
+        self.log_action('moved END', 'Group', objnew)
 
     def group_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Group', obj)
         self.object_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Group', obj)
+        self.log_action('deleted END', 'Group', obj)
 
     def user_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'User', objnew)
         api = get_chef_api(self.app.conf, user)
         objnew = update_computers_of_user(self.db, objnew, api)
         self.db.nodes.update({'_id': objnew['_id']},
@@ -1771,28 +1776,33 @@ class ChefTask(Task):
                                   'computers': objnew['computers'] }})
 
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'User', objnew)
+        self.log_action('created END', 'User', objnew)
 
     def user_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'User', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'User', objnew)
+        self.log_action('changed END', 'User', objnew)
 
     def user_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'User', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'User', objnew)
+        self.log_action('moved END', 'User', objnew)
 
     def user_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'User', obj)
         if direct_deleted is False:
             self.disassociate_object_from_group(obj)
         self.object_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'User', obj)
+        self.log_action('deleted END', 'User', obj)
 
     def computer_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'Computer', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Computer', objnew)
+        self.log_action('created END', 'Computer', objnew)
 
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
+        self.log_action('refresh_policies BEGIN', 'Computer', obj)
 
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
@@ -1979,18 +1989,21 @@ class ChefTask(Task):
                 self.object_refresh_policies(user, u, computers=[obj])            
             
         
-        self.log_action('refresh_policies', 'Computer', obj)
+        self.log_action('refresh_policies END', 'Computer', obj)
 
     def computer_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'Computer', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Computer', objnew)
+        self.log_action('changed END', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Computer', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Computer', objnew)
+        self.log_action('moved END', 'Computer', objnew)
 
     def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
+        self.log_action('deleted BEGIN', 'Computer', obj)
         self.object_deleted(user, obj, computers=computers)
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
@@ -2012,21 +2025,25 @@ class ChefTask(Task):
                 }, multi=False)
             # 3 - Disassociate computers from its groups
             self.disassociate_object_from_group(obj)
-        self.log_action('deleted', 'Computer', obj)
+        self.log_action('deleted END', 'Computer', obj)
 
     def ou_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'OU', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'OU', objnew)
+        self.log_action('created END', 'OU', objnew)
 
     def ou_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'OU', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'OU', objnew)
+        self.log_action('changed END', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'OU', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'OU', objnew)
+        self.log_action('moved END', 'OU', objnew)
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'OU', obj)
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
@@ -2049,55 +2066,67 @@ class ChefTask(Task):
                                 message="Pending: 0",
                                 administrator_username=user['username'])
         invalidate_jobs(self.request, user)
-        self.log_action('deleted', 'OU', obj)
+        self.log_action('deleted END', 'OU', obj)
 
     def printer_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'Printer', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Printer', objnew)
+        self.log_action('created END', 'Printer', objnew)
 
     def printer_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'Printer', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Printer', objnew)
+        self.log_action('changed END', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Printer', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Printer', objnew)
+        self.log_action('moved END', 'Printer', objnew)
 
     def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Printer', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Printer', obj)
+        self.log_action('deleted END', 'Printer', obj)
 
     def storage_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'Storage', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Storage', objnew)
+        self.log_action('created END', 'Storage', objnew)
 
     def storage_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'Storage', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Storage', objnew)
+        self.log_action('changed END', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Storage', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Storage', objnew)
+        self.log_action('moved END', 'Storage', objnew)
 
     def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Storage', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Storage', obj)
+        self.log_action('deleted END', 'Storage', obj)
 
     def repository_created(self, user, objnew, computers=None):
+        self.log_action('created BEGIN', 'Repository', objnew)
         self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Repository', objnew)
+        self.log_action('created END', 'Repository', objnew)
 
     def repository_changed(self, user, objnew, objold, action='changed', computers=None):
+        self.log_action('changed BEGIN', 'Repository', objnew)
         self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Repository', objnew)
+        self.log_action('changed END', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Repository', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Repository', objnew)
+        self.log_action('moved END', 'Repository', objnew)
 
     def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Repository', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Repository', obj)
+        self.log_action('deleted END', 'Repository', obj)
 
 
 @task_prerun.connect
