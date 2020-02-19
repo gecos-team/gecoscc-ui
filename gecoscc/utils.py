@@ -517,7 +517,7 @@ def get_job_errors_from_computer(jobs_collection, computer):
 
 
 def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
-                         cookbook_name, api=None,
+                         cookbook_name, api=None, cookbook=None,
                          initialize=True, use_celery=False):
     job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
     node_chef_id = computer.get('node_chef_id', None)
@@ -533,12 +533,14 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
         return (False, 'Node %s is not inizialized in chef server' % node_chef_id)
 
     apply_policies_to_computer(nodes_collection, computer, auth_user, api,
+                               cookbook=cookbook,
                                initialize=initialize,
                                use_celery=use_celery)
     users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
     for user in users:
         apply_policies_to_user(nodes_collection, user, auth_user, api,
                                [computer],
+                               cookbook=cookbook,
                                initialize=initialize,
                                use_celery=use_celery)
     new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
@@ -562,7 +564,9 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
     return nodes_collection.find_one({'_id': obj_id})
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None,
+        cookbook=None, initialize=False, use_celery=True,
+        policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     logger.info('apply_policies_to_computer: %s'%(computer['name']))
     if use_celery:
@@ -577,19 +581,23 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed(auth_user, 'ou', ou, {}, computers=[computer])
+            object_changed(auth_user, 'ou', ou, {}, computers=[computer],
+                           api=api, cookbook=cookbook)
 
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed(auth_user, 'group', group, {}, computers=[computer])
+            object_changed(auth_user, 'group', group, {}, computers=[computer],
+                           api=api, cookbook=cookbook)
 
-    object_created(auth_user, 'computer', computer, computers=[computer])
+    object_created(auth_user, 'computer', computer, computers=[computer],
+                   api=api, cookbook=cookbook)
 
 
 def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
-                           computers=None, initialize=False,
-                           use_celery=True, policies_collection=None):
+                           computers=None, cookbook=None,
+                           initialize=False, use_celery=True,
+                           policies_collection=None):
     from gecoscc.tasks import object_changed, object_created
     logger.info('apply_policies_to_user: %s'%(user['name']))
     if use_celery:
@@ -610,14 +618,17 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed(auth_user, 'ou', ou, {}, computers=computers)
+            object_changed(auth_user, 'ou', ou, {}, computers=computers,
+                           api=api, cookbook=cookbook)
 
     groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed(auth_user, 'group', group, {}, computers=computers)
+            object_changed(auth_user, 'group', group, {}, computers=computers,
+                           api=api, cookbook=cookbook)
 
-    object_created(auth_user, 'user', user, computers=computers)
+    object_created(auth_user, 'user', user, computers=computers,
+                   api=api, cookbook=cookbook)
 
 
 def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):

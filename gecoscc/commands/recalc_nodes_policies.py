@@ -16,7 +16,8 @@ from optparse import make_option
 from bson import ObjectId
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import get_chef_api, recalc_node_policies, get_filter_this_domain
+from gecoscc.utils import get_chef_api, recalc_node_policies, get_filter_this_domain,\
+    get_cookbook
 
 
 class Command(BaseCommand):
@@ -94,13 +95,15 @@ class Command(BaseCommand):
         sys.stdout.flush()
         results_error = {}
         results_succes = {}
+        cookbook = get_cookbook(api, cookbook_name)
         for i, comp in enumerate(list(computers)):
             if i % step == 0:
                 sys.stdout.write('.')
                 sys.stdout.flush()
             recalculated, reason = recalc_node_policies(db.nodes, db.jobs,
                                                         comp, admin_user,
-                                                        cookbook_name, api)
+                                                        cookbook_name, api,
+                                                        cookbook)
             if recalculated:
                 results_succes[comp['name']] = reason
             else:
