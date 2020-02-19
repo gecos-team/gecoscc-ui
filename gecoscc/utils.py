@@ -536,13 +536,23 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
                                cookbook=cookbook,
                                initialize=initialize,
                                use_celery=use_celery)
+    
+    # Mark the OUs of this computer as already visited
+    ous_already_visited = []
+    ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
+    for ou in ous:
+        if ou.get('policies', {}):    
+            oid = str(ou['_id'])
+            ous_already_visited.append(oid)
+    
     users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
     for user in users:
         apply_policies_to_user(nodes_collection, user, auth_user, api,
                                [computer],
                                cookbook=cookbook,
                                initialize=initialize,
-                               use_celery=use_celery)
+                               use_celery=use_celery,
+                               ous_already_visited=ous_already_visited)
     new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
     if new_job_errors > job_errors:
         return (False, 'The computer %s had problems while it was updating' % computer['name'])
@@ -597,7 +607,8 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None,
 def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
                            computers=None, cookbook=None,
                            initialize=False, use_celery=True,
-                           policies_collection=None):
+                           policies_collection=None,
+                           ous_already_visited=[]):
     from gecoscc.tasks import object_changed, object_created
     logger.info('apply_policies_to_user: %s'%(user['name']))
     if use_celery:
@@ -617,7 +628,9 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
 
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
-        if ou.get('policies', {}):
+        oid = str(ou['_id'])
+        if ou.get('policies', {}) and (oid not in ous_already_visited):
+            ous_already_visited.append(oid)
             object_changed(auth_user, 'ou', ou, {}, computers=computers,
                            api=api, cookbook=cookbook)
 
