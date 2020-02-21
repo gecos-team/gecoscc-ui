@@ -56,7 +56,8 @@ from gecoscc.utils import (get_chef_api, get_cookbook,
                            order_groups_by_depth, order_ou_by_depth, move_in_inheritance_and_recalculate_policies,
                            recalculate_inherited_field, remove_group_from_inheritance_tree, add_group_to_inheritance_tree,
                            recalculate_inheritance_for_node, get_filter_ous_from_path, recalculate_policies_for_computers,
-                           add_path_attrs_to_node, setPathAttrsToNodeException)
+                           add_path_attrs_to_node, setPathAttrsToNodeException,
+    release_node)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -1414,7 +1415,7 @@ class ChefTask(Task):
                     setattr(node,'default',NodeAttributes(merge_dict))
 
                     # Saving node
-                    save_node_and_free(node)
+                    save_node_and_free(self.db, node)
 
                     # reset variables next iteration
                     del required_dict, defaults_dict, merge_dict
@@ -1516,28 +1517,30 @@ class ChefTask(Task):
                 self.log("debug","object_action {0}".format(computer['name']))
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
-                node = reserve_node_or_raise(self.db, node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+                node = reserve_node_or_raise(self.db, node_chef_id, api,
+                    attempts=10)
                 if not node.get(self.app.conf.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
                 error_last_chef_client = computer.get('error_last_chef_client', False)
                 force_update = error_last_saved or error_last_chef_client
                 node, updated = self.update_node(user, computer, obj, objold, node, action, macrojob_id, job_ids_by_computer, force_update)
+                self.log("info","node {0}".format(node))
                 if job_ids_by_computer:
                     job_ids_by_order += job_ids_by_computer
                 if not updated:
-                    save_node_and_free(node)
+                    release_node(self.db, node.name)
                     continue
                 are_new_jobs = True
                 self.validate_data(node, cookbook, api)
-                save_node_and_free(node)
+                save_node_and_free(self.db, node)
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
             except NodeNotLinked as e:
                 self.report_node_not_linked(computer, user, obj, action)
                 are_new_jobs = True
-                save_node_and_free(node, api, refresh=True)
+                release_node(self.db, node.name)
             except NodeBusyException as e:
                 self.report_node_busy(computer, user, obj, action)
                 are_new_jobs = True
@@ -1545,14 +1548,14 @@ class ChefTask(Task):
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer, 'Validation error: ')
-                save_node_and_free(node, api, refresh=True)
+                release_node(self.db, node.name)
                 are_new_jobs = True
             except Exception as e:
                 if not job_ids_by_computer:
                     self.report_unknown_error(e, user, obj, action, computer)
                 self.report_error(e, job_ids_by_computer, computer)
                 try:
-                    save_node_and_free(node, api, refresh=True)
+                    release_node(self.db, node.name)
                 except:
                     pass
                 are_new_jobs = True
@@ -1814,7 +1817,8 @@ class ChefTask(Task):
         gcc_sudoers  = set()
         if node_chef_id:
             api = get_chef_api(self.app.conf, user)
-            node = reserve_node_or_raise(self.db, node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
+            node = reserve_node_or_raise(self.db, node_chef_id, api,
+                attempts=10)
 
             # Remove variables data
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Removing variables data')
@@ -1905,7 +1909,7 @@ class ChefTask(Task):
                         self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
                         del node.normal[attr]
         
-            save_node_and_free(node)
+            save_node_and_free(self.db, node)
             
         # 4 - Recalculate policies of the computer
         if obj.get('policies', {}): 
@@ -2209,7 +2213,7 @@ def chef_status_sync(node_id, auth_user):
         
     reserve_node = False
     if job_status:
-        node = reserve_node_or_raise(self.db, node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+        node = reserve_node_or_raise(self.db, node_id, api, attempts=3)
         reserve_node = True
         chef_client_error = False
 
@@ -2287,7 +2291,7 @@ def chef_status_sync(node_id, auth_user):
         self.log("info", "Must check users!")
         self.log("debug", "tasks.py ::: chef_status_sync - users added or removed = {0}".format(set.symmetric_difference(chef_node_usernames, gcc_node_usernames)))
         if not reserve_node:
-            node = reserve_node_or_raise(self.db, node_id, api, 'gcc-chef-status-%s' % random.random(), attempts=3)
+            node = reserve_node_or_raise(self.db, node_id, api, attempts=3)
 
         
         # Add users or vinculate user to computer if already exists
@@ -2393,7 +2397,8 @@ def chef_status_sync(node_id, auth_user):
     if reload_clients:
         update_tree(computer.get('path', ''))
 
-    save_node_and_free(node)
+    # Save node and free
+    save_node_and_free(self.db, node)
 
     for user in users_recalculate_policies:
         apply_policies_to_user(self.db.nodes, user, auth_user)
@@ -2401,9 +2406,6 @@ def chef_status_sync(node_id, auth_user):
     for user in users_remove_policies:
         remove_policies_of_computer(user, computer, auth_user)
 
-    # Save node and free
-    if job_status:
-        save_node_and_free(node)
 
 @task(base=ChefTask)
 def script_runner(user, sequence, rollback=False):

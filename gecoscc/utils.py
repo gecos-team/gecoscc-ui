@@ -49,7 +49,6 @@ RESOURCES_EMITTERS_TYPES = ('printer', 'storage', 'repository')
 POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
-USE_NODE = 'use_node'
 
 # Reserved codes for functions called from scripts
 SCRIPTCODES = { 
@@ -255,7 +254,7 @@ def remove_chef_computer_data(db, computer, api, policies=None):
     '''
     node_chef_id = computer.get('node_chef_id', None)
     if node_chef_id:
-        node = reserve_node_or_raise(db, node_chef_id, api, 'gcc-remove-computer-data-%s' % random.random())
+        node = reserve_node_or_raise(db, node_chef_id, api)
         if node:
             settings = get_current_registry().settings
             cookbook_name = settings.get('chef.cookbook_name')
@@ -273,7 +272,7 @@ def remove_chef_computer_data(db, computer, api, policies=None):
                     if mgmt == USER_MGMT:
                         continue
                     cookbook.pop(mgmt)
-            save_node_and_free(node)
+            save_node_and_free(db, node)
 
 
 def remove_chef_user_data(db, user, computers, api, policy_fields=None):
@@ -285,7 +284,7 @@ def remove_chef_user_data(db, user, computers, api, policy_fields=None):
     for computer in computers:
         node_chef_id = computer.get('node_chef_id', None)
         if node_chef_id:
-            node = reserve_node_or_raise(db, node_chef_id, api, 'gcc-remove-user-data-%s' % random.random())
+            node = reserve_node_or_raise(db, node_chef_id, api)
             if node:
                 if policy_fields:
                     for policy in policy_fields:
@@ -295,9 +294,9 @@ def remove_chef_user_data(db, user, computers, api, policy_fields=None):
                             if not users:
                                 continue
                             users.pop(user['name'])
-                            save_node_and_free(node)
+                            save_node_and_free(db, node)
                         except KeyError:
-                            save_node_and_free(node)
+                            save_node_and_free(db, node)
                 else:
                     try:
                         user_mgmt = node.normal.get_dotted('%s.%s' % (cookbook_name, USER_MGMT))
@@ -309,53 +308,91 @@ def remove_chef_user_data(db, user, computers, api, policy_fields=None):
                                 users.pop(user['name'])
                             except KeyError:
                                 continue
-                        save_node_and_free(node)
+                        save_node_and_free(db, node)
                     except KeyError:
-                        save_node_and_free(node)
+                        save_node_and_free(db, node)
 
 
-def reserve_node_or_raise(db, node_id, api, controller_requestor='gcc', attempts=1):
-    node, is_busy = is_node_busy_and_reserve_it(db, node_id, api, controller_requestor, attempts)
+def reserve_node_or_raise(db, node_id, api, controller_requestor='gcc',
+        attempts=1):
+    node, is_busy = is_node_busy_and_reserve_it(db, node_id, api,
+        controller_requestor, attempts)
     if is_busy:
         raise NodeBusyException("Node %s is busy" % node_id)
     return node
 
-def release_node(db, node_id, controller_requestor='gcc', attempts=1):
+def release_node(db, node_id, controller_requestor='gcc', attempts=3):
 
+    # There is only one 'client' running on a node, but can there be
+    # more than one process 'gcc' trying to reserve the node.
     settings = get_current_registry().settings
-    node = db.node_locks.find_one({'node_id': node_id})
-
-    if node['control'] == controller_requestor:
-        # There is only one 'client' running on a node, but can there be
-        # more than one process 'gcc' trying to reserve the node
+    found = False
+    _attempt = 0
+    while not found and _attempt < attempts:
+        _attempt += 1
+        node = db.node_locks.find_one({'node_id': node_id})
+        if node is None:
+            logger.warn('utils ::: release_node: '
+                'Try to release a node that is not reserved!')
+            return True
+        
+        if node['control'] != controller_requestor:
+            logger.debug("utils ::: release_node - Node %s locked by %s"%(
+                node_id, node['control']))
+            # When a different process is trying to reserve the node
+            # they must restore it immediately. 100ms of waiting should be
+            # more than enough 
+            time.sleep(0.1)
+            continue
+        
         if (controller_requestor == 'client' or
            (controller_requestor == 'gcc' and 
             node['ipaddress'] == settings['server_address'] and
             node['pid'] == os.getpid())
         ):
-            _attempt = 0
-            removed = None
-            while _attempt < attempts and removed is None:
-                # For remove operations, if the query matches a document,
-                # find_and_modify returns the removed document. If the query
-                # does not match a document to remove, returns None
-                removed = db.node_locks.find_and_modify(
-                    query={'node_id':node_id},
-                    remove=True)
-                _attempt += 1
-             
-            if removed is None:
-                logger.error("utils ::: release_node - Cannot release node")
-            else:
-                logger.info("utils ::: release_node - Free node")
-                return True
+            found = True
+        else:
+            logger.debug("utils ::: release_node - Node %s locked by %s"%(
+                node_id, node['control']))
+            # When a different process is trying to reserve the node
+            # they must restore it immediately. 100ms of waiting should be
+            # more than enough 
+            time.sleep(0.1)
+            
+
+    if found:
+        # Try to release the node
+        _attempt = 0
+        removed = None
+        while _attempt < attempts and removed is None:
+            # For remove operations, if the query matches a document,
+            # find_and_modify returns the removed document. If the query
+            # does not match a document to remove, returns None
+            removed = db.node_locks.find_and_modify(
+                query={'node_id':node_id},
+                remove=True)
+            _attempt += 1
+         
+        if removed is None:
+            logger.error("utils ::: release_node - Cannot release node")
+        else:
+            logger.info("utils ::: release_node - Node released")
+            return True
+ 
+    logger.warn('utils ::: release_node: Try to release a node reserved by '
+                'other agent: (%s, %s, %s) != (%s, %s, %s)'%(
+                    node['control'], node['ipaddress'],node['pid'],
+                    controller_requestor, settings['server_address'],
+                    os.getpid()))
  
     return False 
 
-def is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc', attempts=1):
+def is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc',
+        attempts=1):
     is_busy = True
     for _attempt in range(attempts):
-        node, is_busy = _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor)
+        node, is_busy = _is_node_busy_and_reserve_it(db, node_id, api,
+            controller_requestor)
         if not is_busy:
             break
         settings = get_current_registry().settings
@@ -391,12 +428,15 @@ def _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc'):
         full_response=False) # return the entire response object from the server
 
     if reserved_node is None: # It's free.
-        logger.info("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{} First in reserve"
+        logger.debug("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{} First in reserve"
             .format(use_node['control'], use_node['ipaddress'], use_node['pid']))
         is_busy = False
 
     else: # It's busy
         expired_date = reserved_node['exp_date'].astimezone(pytz.utc).replace(tzinfo=None)
+        logger.debug('utils ::: _is_node_busy_and_reserve_it: '
+            'check expiration date current={} exp={} diff={} time_to_exp={}'.format(
+                curtime, expired_date, (curtime - expired_date), time_to_exp))        
         if curtime - expired_date > time_to_exp: # Regardless of who reserved the node
             logger.info("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{} Time expired. Reserved."
                 .format(use_node['control'], use_node['ipaddress'], use_node['pid']))
@@ -405,7 +445,6 @@ def _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc'):
             # Restore the reservation to the previous state
             exists = True
             restored = None
-            time.sleep(0.5)
             while restored is None and exists:
                 restored = db.node_locks.find_and_modify(
                     query={
@@ -434,13 +473,17 @@ def _is_node_busy_and_reserve_it(db, node_id, api, controller_requestor='gcc'):
             logger.debug("utils ::: _is_node_busy_and_reserve_it: {} [{}]-{}: Node is busy. Restored to {} [{}]-{}"
                 .format(use_node['control'], use_node['ipaddress'], use_node['pid'],
                         reserved_node['control'], reserved_node['ipaddress'], reserved_node['pid']))
-    return (node, is_busy)
             
-def save_node_and_free(node, api=None, refresh=False):
+    return (node, is_busy)
+
+
+            
+def save_node_and_free(db, node, api=None, refresh=False,
+        controller_requestor='gcc'):
     if refresh and api:
         node = ChefNode(node.name, api)
-    node.attributes.set_dotted(USE_NODE, {})
     node.save()
+    release_node(db, node.name, controller_requestor=controller_requestor)
 
 
 class NodeBusyException(Exception):
@@ -2754,7 +2797,7 @@ def auditlog(request, action=None):
             else:
                 # Logout or expired
                 if request.user is None:
-                    logger.warn('utils.py ::: auditlog: there is no user data in session (¿logout after session expired?)')
+                    logger.warn('utils.py ::: auditlog: there is no user data in session (logout after session expired?)')
                     return                     
                 
                 try:
