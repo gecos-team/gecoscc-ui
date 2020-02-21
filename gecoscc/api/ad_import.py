@@ -684,9 +684,9 @@ class ADImport(BaseAPI):
 
                 # Create Chef-Server Nodes
                 if mongoObject['type'] == 'computer':
-                    chef_server_node = reserve_node_or_raise(mongoObject['name'],
+                    chef_server_node = reserve_node_or_raise(db, mongoObject['name'],
                                                              chef_server_api,
-                                                             'gcc-ad-import-%s' % random.random(),
+                                                             'gcc-ad-import',
                                                              attempts=3)
                     ohai_gecos_in_runlist = self.RECIPE_NAME_OHAI_GECOS in chef_server_node.run_list
                     gecos_ws_mgmt_in_runlist = self.RECIPE_NAME_GECOS_WS_MGMT in chef_server_node.run_list
@@ -697,7 +697,10 @@ class ADImport(BaseAPI):
                         chef_server_node.run_list.insert(chef_server_node.run_list.index(self.RECIPE_NAME_GECOS_WS_MGMT), self.RECIPE_NAME_OHAI_GECOS)
                     elif ohai_gecos_in_runlist and not gecos_ws_mgmt_in_runlist:
                         chef_server_node.run_list.insert(chef_server_node.run_list.index(self.RECIPE_NAME_OHAI_GECOS) + 1, self.RECIPE_NAME_GECOS_WS_MGMT)
-                    save_node_and_free(chef_server_node)
+                        
+                    save_node_and_free(db, chef_server_node,
+                            controller_requestor='gcc-ad-import')
+                    
                     chef_server_client = Client(mongoObject['name'], api=chef_server_api)
                     if not chef_server_client.exists:
                         chef_server_client.save()
