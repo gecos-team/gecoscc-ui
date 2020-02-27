@@ -1368,13 +1368,19 @@ class ChefTask(Task):
                 node, updated = self.update_node_from_rules(rules, user, computer, obj, obj_receptor, objold, action, node, policy, rule_type, parent_id, job_ids_by_computer)
             return (node, updated)
 
-    def validate_data(self, node, cookbook, api):
+    def validate_data(self, node, cookbook, api, validator=None):
         '''
         Useful method, validate the DATABASES
         '''
         try:
             schema = cookbook['metadata']['attributes']['json_schema']['object']
-            validate(to_deep_dict(node.attributes), schema)
+            instance = to_deep_dict(node.attributes)
+            if validator is None:
+                validate(instance, schema)
+                
+            else:
+                validator(schema).validate(instance)
+                
         except ValidationError as e:
             # Bugfix: Validation error "required property"
             # example:
@@ -1479,17 +1485,18 @@ class ChefTask(Task):
             job['computer'] = computer
         job_storage.create(**job)
 
-    def object_action(self, user, obj, objold=None, action=None, computers=None):
+    def object_action(self, user, obj, objold=None, action=None, computers=None,
+                      api=None, cookbook=None, calculate_inheritance=True,
+                      validator=None):
         '''
         This method try to get the node to make changes in it.
         Theses changes are called actions and can be: changed, created, moved and deleted.
         if the node is free, the method can get the node, it reserves the node and runs the action, later the node is saved and released.
         '''
                                                                    
-                                                                              
-                                                                                    
-        api = get_chef_api(self.app.conf, user)
-        cookbook = get_cookbook(api, self.app.conf.get('chef.cookbook_name'))
+        api = api or get_chef_api(self.app.conf, user)
+        cookbook = cookbook or get_cookbook(api,
+                    self.app.conf.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
                                                                                           
         # MacroJob
@@ -1529,7 +1536,7 @@ class ChefTask(Task):
                     save_node_and_free(node)
                     continue
                 are_new_jobs = True
-                self.validate_data(node, cookbook, api)
+                self.validate_data(node, cookbook, api, validator=validator)
                 save_node_and_free(node)
                 if error_last_saved:
                     self.db.nodes.update({'_id': computer['_id']},
@@ -1567,6 +1574,9 @@ class ChefTask(Task):
             invalidate_jobs(self.request, user)
             
         # Trace inheritance
+        if not calculate_inheritance:
+            return
+        
         self.log("debug","object_action - type = {0} action = {1}".format(obj['type'], action))
         
         if obj['type'] in RESOURCES_RECEPTOR_TYPES:  # ou, user, comp, group
@@ -1679,14 +1689,24 @@ class ChefTask(Task):
                     trace_inheritance(self.logger, self.db, policy_action, obj, policy)        
                 
 
-    def object_created(self, user, objnew, computers=None):
-        self.object_action(user, objnew, action='created', computers=computers)
+    def object_created(self, user, objnew, computers=None,
+                       api=None, cookbook=None, calculate_inheritance=True,
+                       validator=None):
+        self.object_action(user, objnew, action='created', computers=computers,
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
     def object_refresh_policies(self, user, objnew, computers=None):
         self.object_action(user, objnew, action='recalculate policies', computers=computers)
 
-    def object_changed(self, user, objnew, objold, action, computers=None):
-        self.object_action(user, objnew, objold, action, computers=computers)
+    def object_changed(self, user, objnew, objold, action, computers=None,
+                       api=None, cookbook=None, calculate_inheritance=True,
+                       validator=None):
+        self.object_action(user, objnew, objold, action, computers=computers,
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
     def object_deleted(self, user, obj, computers=None):
         obj_without_policies = deepcopy(obj)
@@ -1747,52 +1767,93 @@ class ChefTask(Task):
     def log_action(self, log_action, resource_name, objnew):
         self.log('info', '{0} {1} {2}'.format(resource_name, log_action, objnew['_id']))
 
-    def group_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Group', objnew)
+    def group_created(self, user, objnew, computers=None,
+                      api=None, cookbook=None, calculate_inheritance=True,
+                      validator=None):
+        self.log_action('created BEGIN', 'Group', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'Group', objnew)
 
-    def group_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Group', objnew)
+    def group_changed(self, user, objnew, objold, action='changed',
+                      computers=None, api=None, cookbook=None,
+                      calculate_inheritance=True,
+                      validator=None):
+        self.log_action('changed BEGIN', 'Group', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'Group', objnew)
 
     def group_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Group', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Group', objnew)
+        self.log_action('moved END', 'Group', objnew)
 
     def group_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Group', obj)
         self.object_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Group', obj)
+        self.log_action('deleted END', 'Group', obj)
 
-    def user_created(self, user, objnew, computers=None):
-        api = get_chef_api(self.app.conf, user)
-        objnew = update_computers_of_user(self.db, objnew, api)
-        self.db.nodes.update({'_id': objnew['_id']},
-                             {'$set': {
-                                  'computers': objnew['computers'] }})
+    def user_created(self, user, objnew, computers=None,
+                     api=None, cookbook=None, calculate_inheritance=True,
+                     validator=None):
+        self.log_action('created BEGIN', 'User', objnew)
+        if calculate_inheritance:
+            # If we are not calculating the inheritance information
+            # probably is because this is some kind of automated task
+            # and we don't want to update the computers of the user 
+            api = api or get_chef_api(self.app.conf, user)
+            objnew = update_computers_of_user(self.db, objnew, api)
+            self.db.nodes.update({'_id': objnew['_id']},
+                                 {'$set': {
+                                      'computers': objnew['computers'] }})
 
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'User', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'User', objnew)
 
-    def user_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'User', objnew)
+    def user_changed(self, user, objnew, objold, action='changed',
+                     computers=None, api=None, cookbook=None,
+                     calculate_inheritance=True,
+                     validator=None):
+        self.log_action('changed BEGIN', 'User', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'User', objnew)
 
     def user_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'User', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'User', objnew)
+        self.log_action('moved END', 'User', objnew)
 
     def user_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'User', obj)
         if direct_deleted is False:
             self.disassociate_object_from_group(obj)
         self.object_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'User', obj)
+        self.log_action('deleted END', 'User', obj)
 
-    def computer_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Computer', objnew)
+    def computer_created(self, user, objnew, computers=None,
+                         api=None, cookbook=None, calculate_inheritance=True,
+                         validator=None):
+        self.log_action('created BEGIN', 'Computer', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'Computer', objnew)
 
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
+        self.log_action('refresh_policies BEGIN', 'Computer', obj)
 
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
@@ -1979,18 +2040,27 @@ class ChefTask(Task):
                 self.object_refresh_policies(user, u, computers=[obj])            
             
         
-        self.log_action('refresh_policies', 'Computer', obj)
+        self.log_action('refresh_policies END', 'Computer', obj)
 
-    def computer_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Computer', objnew)
+    def computer_changed(self, user, objnew, objold, action='changed',
+                         computers=None, api=None, cookbook=None,
+                         calculate_inheritance=True,
+                         validator=None):
+        self.log_action('changed BEGIN', 'Computer', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'Computer', objnew)
 
     def computer_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Computer', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Computer', objnew)
+        self.log_action('moved END', 'Computer', objnew)
 
     def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
+        self.log_action('deleted BEGIN', 'Computer', obj)
         self.object_deleted(user, obj, computers=computers)
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
@@ -2012,21 +2082,35 @@ class ChefTask(Task):
                 }, multi=False)
             # 3 - Disassociate computers from its groups
             self.disassociate_object_from_group(obj)
-        self.log_action('deleted', 'Computer', obj)
+        self.log_action('deleted END', 'Computer', obj)
 
-    def ou_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'OU', objnew)
+    def ou_created(self, user, objnew, computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True,
+                   validator=None):
+        self.log_action('created BEGIN', 'OU', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'OU', objnew)
 
-    def ou_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'OU', objnew)
+    def ou_changed(self, user, objnew, objold, action='changed', computers=None,
+                   api=None, cookbook=None, calculate_inheritance=True,
+                   validator=None):
+        self.log_action('changed BEGIN', 'OU', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'OU', objnew)
 
     def ou_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'OU', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'OU', objnew)
+        self.log_action('moved END', 'OU', objnew)
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'OU', obj)
         ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
@@ -2049,55 +2133,99 @@ class ChefTask(Task):
                                 message="Pending: 0",
                                 administrator_username=user['username'])
         invalidate_jobs(self.request, user)
-        self.log_action('deleted', 'OU', obj)
+        self.log_action('deleted END', 'OU', obj)
 
-    def printer_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Printer', objnew)
+    def printer_created(self, user, objnew, computers=None,
+                        api=None, cookbook=None, calculate_inheritance=True,
+                        validator=None):
+        self.log_action('created BEGIN', 'Printer', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'Printer', objnew)
 
-    def printer_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Printer', objnew)
+    def printer_changed(self, user, objnew, objold, action='changed',
+                        computers=None, api=None, cookbook=None,
+                        calculate_inheritance=True,
+                        validator=None):
+        self.log_action('changed BEGIN', 'Printer', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'Printer', objnew)
 
     def printer_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Printer', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Printer', objnew)
+        self.log_action('moved END', 'Printer', objnew)
 
     def printer_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Printer', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Printer', obj)
+        self.log_action('deleted END', 'Printer', obj)
 
-    def storage_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Storage', objnew)
+    def storage_created(self, user, objnew, computers=None,
+                        api=None, cookbook=None, calculate_inheritance=True,
+                        validator=None):
+        self.log_action('created BEGIN', 'Storage', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('created END', 'Storage', objnew)
 
-    def storage_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Storage', objnew)
+    def storage_changed(self, user, objnew, objold, action='changed',
+                        computers=None, api=None, cookbook=None,
+                        calculate_inheritance=True,
+                        validator=None):
+        self.log_action('changed BEGIN', 'Storage', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'Storage', objnew)
 
     def storage_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Storage', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Storage', objnew)
+        self.log_action('moved END', 'Storage', objnew)
 
     def storage_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Storage', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Storage', obj)
+        self.log_action('deleted END', 'Storage', obj)
 
-    def repository_created(self, user, objnew, computers=None):
-        self.object_created(user, objnew, computers=computers)
-        self.log_action('created', 'Repository', objnew)
+    def repository_created(self, user, objnew, computers=None,
+                           api=None, cookbook=None, calculate_inheritance=True,
+                           validator=None):
+        self.log_action('created BEGIN', 'Repository', objnew)
+        self.object_created(user, objnew, computers=computers,
+                            api=api, cookbook=cookbook,
+                            validator=validator)
+        self.log_action('created END', 'Repository', objnew)
 
-    def repository_changed(self, user, objnew, objold, action='changed', computers=None):
-        self.object_changed(user, objnew, objold, action, computers=computers)
-        self.log_action('changed', 'Repository', objnew)
+    def repository_changed(self, user, objnew, objold, action='changed',
+                           computers=None, api=None, cookbook=None,
+                           calculate_inheritance=True,
+                           validator=None):
+        self.log_action('changed BEGIN', 'Repository', objnew)
+        self.object_changed(user, objnew, objold, action, computers=computers,
+                            api=api, cookbook=cookbook,
+                            calculate_inheritance=calculate_inheritance,
+                            validator=validator)
+        self.log_action('changed END', 'Repository', objnew)
 
     def repository_moved(self, user, objnew, objold):
+        self.log_action('moved BEGIN', 'Repository', objnew)
         self.object_moved(user, objnew, objold)
-        self.log_action('moved', 'Repository', objnew)
+        self.log_action('moved END', 'Repository', objnew)
 
     def repository_deleted(self, user, obj, computers=None, direct_deleted=True):
+        self.log_action('deleted BEGIN', 'Repository', obj)
         self.object_emiter_deleted(user, obj, computers=computers)
-        self.log_action('deleted', 'Repository', obj)
+        self.log_action('deleted END', 'Repository', obj)
 
 
 @task_prerun.connect
@@ -2114,13 +2242,18 @@ def task_test(value):
 
 
 @task(base=ChefTask)
-def object_created(user, objtype, obj, computers=None):
+def object_created(user, objtype, obj, computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True,
+                   validator=None):
     self = object_created
 
     func = getattr(self, '{0}_created'.format(objtype), None)
     if func is not None:
         try:
-            return func(user, obj, computers=computers)
+            return func(user, obj, computers=computers,
+                        api=api, cookbook=cookbook,
+                        calculate_inheritance=calculate_inheritance,
+                        validator=validator)
         except Exception as e:
             self.report_unknown_error(e, user, obj, 'created')
             invalidate_jobs(self.request, user)
@@ -2145,12 +2278,18 @@ def object_refresh_policies(user, objtype, obj, computers=None):
             objtype))
 
 @task(base=ChefTask)
-def object_changed(user, objtype, objnew, objold, action='changed', computers=None):
+def object_changed(user, objtype, objnew, objold, action='changed',
+                   computers=None, api=None, cookbook=None,
+                   calculate_inheritance=True,
+                   validator=None):
     self = object_changed
     func = getattr(self, '{0}_changed'.format(objtype), None)
     if func is not None:
         try:
-            return func(user, objnew, objold, action, computers=computers)
+            return func(user, objnew, objold, action, computers=computers,
+                        api=api, cookbook=cookbook,
+                        calculate_inheritance=calculate_inheritance,
+                        validator=validator)
         except Exception as e:
             self.report_unknown_error(e, user, objnew, 'changed')
             invalidate_jobs(self.request, user)
