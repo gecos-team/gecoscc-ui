@@ -11,7 +11,6 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_complete_path, get_html_node_link,
@@ -95,11 +94,13 @@ def report_printers(context, request, file_ext):
             row.append(treatment_string_to_pdf(item, 'registry', 15))
 
             # Get all nodes related with this printer
-            nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
+            nodes_query = request.db.nodes.find(
+                {property_name: str(item['_id'])})
             related_computers = []
             related_objects = []
             for node in nodes_query:
-                related_computers = task.get_related_computers(node, related_computers, related_objects)
+                related_computers = task.get_related_computers(
+                    node, related_computers, related_objects)
             
             # Remove duplicated computers
             computer_paths = []
@@ -116,7 +117,8 @@ def report_printers(context, request, file_ext):
             else:
                 for computer in computers:
                     computer_row = list(row)
-                    computer_row.append(treatment_string_to_pdf(computer, 'name', 15))
+                    computer_row.append(treatment_string_to_pdf(
+                        computer, 'name', 15))
                     # No path in PDF because it's too long
                     rows.append(computer_row)
 
@@ -126,18 +128,21 @@ def report_printers(context, request, file_ext):
             row = []
             item['complete_path'] = get_complete_path(request.db, item['path'])
             row.append(treatment_string_to_csv(item, 'complete_path'))
-            row.append(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item))
+            row.append(treatment_string_to_csv(item, 'name') \
+                if file_ext == 'csv' else get_html_node_link(item))
             row.append(treatment_string_to_csv(item, 'manufacturer'))
             row.append(treatment_string_to_csv(item, 'model'))
             row.append(treatment_string_to_csv(item, 'serial'))
             row.append(treatment_string_to_csv(item, 'registry'))
 
             # Get all nodes related with this printer
-            nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
+            nodes_query = request.db.nodes.find(
+                {property_name: str(item['_id'])})
             related_computers = []
             related_objects = []
             for node in nodes_query:
-                related_computers = task.get_related_computers(node, related_computers, related_objects)
+                related_computers = task.get_related_computers(
+                    node, related_computers, related_objects)
 
             # Remove duplicated computers
             computer_paths = []
@@ -155,8 +160,12 @@ def report_printers(context, request, file_ext):
             else:
                 for computer in computers:
                     computer_row = list(row)
-                    computer_row.append(treatment_string_to_csv(computer, 'name') if file_ext == 'csv' else get_html_node_link(computer))
-                    computer['complete_path'] = get_complete_path(request.db, item['path'])
+                    computer_row.append(treatment_string_to_csv(
+                        computer, 'name') \
+                            if file_ext == 'csv' \
+                            else get_html_node_link(computer))
+                    computer['complete_path'] = get_complete_path(
+                        request.db, item['path'])
                     rows.append(computer_row)
         
     

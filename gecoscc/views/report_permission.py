@@ -14,11 +14,9 @@ import datetime
 
 from gecoscc.views.reports import treatment_string_to_csv
 from gecoscc.views.reports import treatment_string_to_pdf
-from gecoscc.utils import get_filter_nodes_belonging_ou
 from gecoscc.views.reports import get_complete_path
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest
 
 from bson import ObjectId
 
@@ -67,8 +65,10 @@ def report_permission(context, request, file_ext):
 
     items = []
     total_ous = []
-    vmark_html = "<div class='centered'><img alt=\"OK\" src='/static/images/checkmark.jpg'/></div>"
-    xmark_html = "<div class='centered'><img alt=\"NOK\" src='/static/images/xmark.jpg'/></div>"
+    vmark_html = "<div class='centered'><img alt=\"OK\" " + \
+        "src='/static/images/checkmark.jpg'/></div>"
+    xmark_html = "<div class='centered'><img alt=\"NOK\" " + \
+        "src='/static/images/xmark.jpg'/></div>"
 
     # Get all admins
     admins = request.db.adminusers.find()
@@ -95,7 +95,8 @@ def report_permission(context, request, file_ext):
                 item['remote'] = _('Yes') if ou in ou_remote else _('No')
                 item['managed'] = _('Yes') if ou in ou_managed else _('No')
             else:
-                item['readonly'] = vmark_html if ou in ou_readonly else xmark_html
+                item['readonly'] = vmark_html if ou in ou_readonly else \
+                    xmark_html
                 item['link'] = vmark_html if ou in ou_availables else xmark_html
                 item['remote'] =  vmark_html if ou in ou_remote else xmark_html
                 item['managed'] = vmark_html if ou in ou_managed else xmark_html

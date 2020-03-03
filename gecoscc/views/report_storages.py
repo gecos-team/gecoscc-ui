@@ -11,13 +11,11 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
-    treatment_string_to_pdf, get_complete_path, get_html_node_link,
-    truncate_string_at_char, check_visibility_of_ou)
+    get_complete_path, get_html_node_link,
+    check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
-from gecoscc.tasks import ChefTask
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPBadRequest
@@ -91,13 +89,15 @@ def report_storages(context, request, file_ext):
             row.append(item['_id'])
             
             # Get all nodes related with this storage
-            nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
+            nodes_query = request.db.nodes.find(
+                {property_name: str(item['_id'])})
             # Targets: ou, group or user
             users = []
             for node in nodes_query:
                 if node['type'] == 'ou':
                     users = list(request.db.nodes.find(
-                                    {'path': get_filter_nodes_belonging_ou(node['_id']),
+                                    {'path': get_filter_nodes_belonging_ou(
+                                        node['_id']),
                                     'type': 'user'}))
                 elif node['type'] == 'group':
                     users = list(request.db.nodes.find(
@@ -132,13 +132,15 @@ def report_storages(context, request, file_ext):
             row.append(item['_id'])
             
             # Get all nodes related with this printer
-            nodes_query = request.db.nodes.find({property_name: str(item['_id'])})
+            nodes_query = request.db.nodes.find(
+                {property_name: str(item['_id'])})
             # Targets: ou, group or user
             users = []
             for node in nodes_query:
                 if node['type'] == 'ou':
                     users = list(request.db.nodes.find(
-                                    {'path': get_filter_nodes_belonging_ou(node['_id']),
+                                    {'path': get_filter_nodes_belonging_ou(
+                                        node['_id']),
                                     'type': 'user'}))
                 elif node['type'] == 'group':
                     users = list(request.db.nodes.find(
@@ -157,7 +159,8 @@ def report_storages(context, request, file_ext):
                         user_row.append(treatment_string_to_csv(user, 'name'))
                     else: # html links
                         user_row.append(get_html_node_link(user))
-                    user['complete_path'] = get_complete_path(request.db, item['path'])
+                    user['complete_path'] = get_complete_path(
+                        request.db, item['path'])
                     rows.append(user_row)
         
     

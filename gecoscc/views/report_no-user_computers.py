@@ -83,11 +83,13 @@ def report_no_user_computers(context, request, file_ext):
 
     users = request.db.nodes.find(filters)
     for user in users:
-        related_computers = task.get_related_computers_of_user(user, related_computers, related_objects)
+        related_computers = task.get_related_computers_of_user(
+            user, related_computers, related_objects)
 
     references = [c['_id'] for c in related_computers]
     logger.info("report_no-user_computers: references = {}".format(references))
-    filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)})
+    filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(
+        ou_id)})
     filters2.update({'_id': {'$nin': [c['_id'] for c in related_computers]}})
     logger.info("report_no-user_computers: filters2 = {}".format(filters2))
     computers = request.db.nodes.find(filters2)
@@ -102,7 +104,8 @@ def report_no_user_computers(context, request, file_ext):
                  item['node_chef_id'],
                  item['_id']) for item in computers]
     else:
-        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' \
+                    else get_html_node_link(item),
                  treatment_string_to_csv(item, 'family'),
                  treatment_string_to_csv(item, 'registry'),
                  treatment_string_to_csv(item, 'serial'),

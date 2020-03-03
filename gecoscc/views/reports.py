@@ -49,7 +49,8 @@ class CSVRenderer(object):
                 response.content_type = 'text/csv'
 
         fout = StringIO()
-        writer = csv.writer(fout, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        writer = csv.writer(fout, delimiter=',', quotechar='"',
+            quoting=csv.QUOTE_MINIMAL)
         writer.writerow(value.get('headers', []))
         writer.writerows(value.get('rows', []))
         return fout.getvalue()
@@ -105,10 +106,12 @@ class PDFRenderer(object):
         html = jinja2_template.render(headers=value.get('headers', []),
                                       rows = value.get('rows', []),
                                       widths = value.get('widths', []),
-                                      report_title = value.get('report_title', ''),
+                                      report_title = value.get('report_title',
+                                        ''),
                                       page = value.get('page', ''),
                                       of = value.get('of', ''),
-                                      report_type = value.get('report_type', ''),
+                                      report_type = value.get('report_type',
+                                        ''),
                                       now=value.get('now', ''))
 
         #logger.info("HTML=%s"%(html))
@@ -131,7 +134,8 @@ def reports(context, request):
     is_superuser = request.user.get('is_superuser', False) 
 
     if not is_superuser:
-        oids = map(ObjectId, request.user.get('ou_managed', []) + request.user.get('ou_readonly', []))
+        oids = map(ObjectId, request.user.get('ou_managed', []) 
+            + request.user.get('ou_readonly', []))
         ou_visibles = request.db.nodes.find( 
             {'_id': {'$in': oids }},
             {'_id':1, 'name':1, 'path':1})
@@ -144,7 +148,8 @@ def reports(context, request):
         path = ou['path'] + ',' + str(ou['_id'])
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
-    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: kv[1].lower()))
+    sorted_ous = collections.OrderedDict(
+        sorted(ous.items(), key=lambda kv: kv[1].lower()))
     logger.debug("reports ::: ous = {}".format(ous))
 
     return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
@@ -171,8 +176,8 @@ def get_complete_path(db, path):
         else:
             node = db.nodes.find_one({'_id': ObjectId(element)})
             if node is None:
-               complete_path = 'Error path'
-               break
+                complete_path = 'Error path'
+                break
 
             if idx == len(lpath)-1:
                 complete_path += node['name'] 
@@ -201,9 +206,11 @@ def get_html_node_link(node, previous_window=None):
         href = '/#ou/{0}/{1}/{2}'.format(parent_id, node['type'], node_id)
 
         if previous_window == True:
-            link = '<a href="{0}" target="_blank">{1}</a>'.format(href, node['name'])
+            link = '<a href="{0}" target="_blank">{1}</a>'.format(
+                href, node['name'])
         else:
-            link = '<a href="{0}" onclick="return goto_parent_window(this);">{1}</a>'.format(href, node['name'])
+            link = '<a href="{0}" onclick="return '\
+                'goto_parent_window(this);">{1}</a>'.format(href, node['name'])
 
     return link
 
@@ -230,7 +237,8 @@ def ip_to_hex_addr(ipaddr):
     Transform a IP address to hexadecimal coding.
     '''
     
-    reg = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    reg = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}"\
+        "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
     if re.match(reg, ipaddr):
         # IP v4 address
         parts = ipaddr.split('.')
@@ -248,7 +256,7 @@ def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
     data = []
     times = int(round(len(string)/new_line_at))+1
 
-    for i in range(0, times):
+    for _ in range(0, times):
         if(start >= len(string)):
             break
 

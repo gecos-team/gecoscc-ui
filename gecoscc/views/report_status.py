@@ -12,7 +12,6 @@
 import logging
 import time
 from datetime import datetime, timedelta
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
@@ -75,7 +74,8 @@ def report_status(context, request, file_ext):
     
     # Get user data
     query = request.db.nodes.find(
-        {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}).sort('last_agent_run_time', -1)
+        {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}
+        ).sort('last_agent_run_time', -1)
   
     rows = []
 
@@ -83,8 +83,11 @@ def report_status(context, request, file_ext):
     logger.debug("report_status: current_time = {}".format(current_time))
 
     # update_error_interval: Hours. Converts it to seconds
-    update_error_interval = timedelta(hours=int(get_current_registry().settings.get('update_error_interval', 24))).seconds
-    logger.debug("report_status: update_error_interval = {}".format(update_error_interval))
+    update_error_interval = timedelta(
+        hours=int(get_current_registry().settings.get(
+            'update_error_interval', 24))).seconds
+    logger.debug("report_status: update_error_interval = {}".format(
+        update_error_interval))
     
     # gecos-agent runs every 60 minutes (cron resource: minutes 30)
     # See https://github.com/gecos-team/gecos-workstation-management-cookbook/blob/master/recipes/default.rb (line: 57)
@@ -98,23 +101,27 @@ def report_status(context, request, file_ext):
         row = []
 
         last_agent_run_time = int(item.get('last_agent_run_time',0))
-        logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
+        logger.debug("report_status: last_agent_run_time = {}".format(
+            last_agent_run_time))
 
         if last_agent_run_time + delay_margin >= current_time:
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'OK'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'OK'
 
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'ERROR'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'ERROR'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'WARN'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'WARN'
         
 
         if file_ext == 'pdf':
@@ -122,7 +129,8 @@ def report_status(context, request, file_ext):
             row.append(item['_id'])
 
             if last_agent_run_time != 0:
-                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                row.append(datetime.utcfromtimestamp(
+                    last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row.append(' -- ')
 
@@ -134,7 +142,8 @@ def report_status(context, request, file_ext):
                 row.append(get_html_node_link(item))
                 row.append(item['_id'])
             if last_agent_run_time != 0:
-                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                row.append(datetime.utcfromtimestamp(
+                    last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 row.append('--')
             row.append(treatment_string_to_csv(item, 'status'))
