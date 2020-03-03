@@ -21,6 +21,7 @@ from pyramid.view import view_config
 from bson import ObjectId
 
 from gecoscc.i18n import gettext as _
+import pymongo
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,8 @@ def report_permission(context, request, file_ext):
         "src='/static/images/xmark.jpg'/></div>"
 
     # Get all admins
-    admins = request.db.adminusers.find()
+    admins = request.db.adminusers.find().sort(
+        [('username', pymongo.ASCENDING)] )
 
     for admin in admins:
         ou_readonly = admin.get('ou_readonly', [])
@@ -169,6 +171,7 @@ def report_permission(context, request, file_ext):
         
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ]],            
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
