@@ -18,6 +18,7 @@ import csv
 import os
 import gecoscc
 import collections
+import re
 
 try:
     from cStringIO import StringIO
@@ -208,8 +209,8 @@ def get_html_node_link(node, previous_window=None):
 
 def treatment_string_to_csv(item, key):
     none = u'--'
-    logger.info("reports:::treatment_string_to_csv - item = {}".format(item))
-    logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
+    #logger.info("reports:::treatment_string_to_csv - item = {}".format(item))
+    #logger.info("reports:::treatment_string_to_csv - key = {}".format(key))
     value = item.get(key, none)
     if value is None:
         return none
@@ -223,6 +224,24 @@ def treatment_string_to_pdf(item, key, length):
         
     return pdfstr 
 
+
+def ip_to_hex_addr(ipaddr):
+    '''
+    Transform a IP address to hexadecimal coding.
+    '''
+    
+    reg = r"^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$"
+    if re.match(reg, ipaddr):
+        # IP v4 address
+        parts = ipaddr.split('.')
+        
+        hexaddr = ''
+        for p in parts:
+            hexaddr += '{:02x}'.format(int(p))
+        
+        return hexaddr
+        
+    return ipaddr
 
 def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
     start = 0

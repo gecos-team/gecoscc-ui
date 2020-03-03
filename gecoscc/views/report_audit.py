@@ -10,7 +10,7 @@
 #
 
 
-from gecoscc.views.reports import treatment_string_to_csv
+from gecoscc.views.reports import treatment_string_to_csv, ip_to_hex_addr
 from gecoscc.views.reports import treatment_string_to_pdf
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
@@ -23,6 +23,7 @@ from gecoscc.i18n import gettext as _
 
 import datetime
 import logging
+import pymongo
 logger = logging.getLogger(__name__)
 
 
@@ -65,29 +66,44 @@ def report_audit(context, request, file_ext):
     '''    
 
     rows = []
+    orders = []
 
     # Getting audit logs
-    items = request.db.auditlog.find()
+    items = request.db.auditlog.find().sort(
+        [('timestamp', pymongo.DESCENDING)] )
 
     for item in items:
         row = []
+        order = []
         # Converts timestamp to date
-        item['date']  =datetime.datetime.fromtimestamp(item['timestamp']).strftime('%d/%m/%Y %H:%M:%S')
+        item['date']  =datetime.datetime.fromtimestamp(
+            item['timestamp']).strftime('%d/%m/%Y %H:%M:%S')
 
         if file_ext == 'pdf':
             row.append(treatment_string_to_pdf(item, 'action', 10))
+            order.append('')
             row.append(treatment_string_to_pdf(item, 'username', 15))
+            order.append('')
             row.append(treatment_string_to_pdf(item, 'ipaddr', 20))
+            order.append('')
             row.append(item['user-agent'])#treatment_string_to_pdf(item, 'user-agent',100))
+            order.append('')
             row.append(treatment_string_to_pdf(item, 'date', 80))
+            order.append('')
         else:
             row.append(treatment_string_to_csv(item, 'action'))
+            order.append('')
             row.append(treatment_string_to_csv(item, 'username'))
+            order.append('')
             row.append(treatment_string_to_csv(item, 'ipaddr'))
+            order.append(ip_to_hex_addr(item['ipaddr']))
             row.append(treatment_string_to_csv(item, 'user-agent'))
+            order.append('')
             row.append(treatment_string_to_csv(item, 'date'))
+            order.append('%s'%(item['timestamp']))
 
         rows.append(row)
+        orders.append(order)
                 
     
     header = (_(u'Action').encode('utf-8'),
@@ -104,6 +120,8 @@ def report_audit(context, request, file_ext):
 
     return {'headers': header,
             'rows': rows,
+            'orders': orders,
+            'default_order': [[ 4, 'desc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
