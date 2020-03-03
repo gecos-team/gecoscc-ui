@@ -12,12 +12,8 @@
 
 from gecoscc.views.reports import treatment_string_to_csv, ip_to_hex_addr
 from gecoscc.views.reports import treatment_string_to_pdf
-from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPBadRequest
-
-from bson import ObjectId
 
 from gecoscc.i18n import gettext as _
 

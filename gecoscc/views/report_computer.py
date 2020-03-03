@@ -11,7 +11,6 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
@@ -84,7 +83,8 @@ def report_computer(context, request, file_ext):
                  #treatment_string_to_pdf(item, 'node_chef_id', 25),
                  item['_id']) for item in query]
     else:
-        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' \
+                    else get_html_node_link(item),
                  treatment_string_to_csv(item, 'family'),
                  treatment_string_to_csv(item, 'registry'),
                  treatment_string_to_csv(item, 'serial'),
