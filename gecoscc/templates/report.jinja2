@@ -90,8 +90,10 @@
             tr.find("td").each(function() {
                 pattern = new RegExp("<img(.*)");
                 cell_val = $(this).html();
+                var order = $(this).attr('data-order');
 
-                if(pattern.test(cell_val)) {
+                if(pattern.test(cell_val) && 
+                    (typeof order === typeof undefined || order === false)) {
                     // The current cell holds and image, sort by his `alt` attribute.
                     column_definitions.push({ type: 'alt-string', targets : index});
                 }

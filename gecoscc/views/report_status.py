@@ -22,6 +22,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.i18n import gettext as _
+import pymongo
 
 logger = logging.getLogger(__name__)
 
@@ -75,9 +76,13 @@ def report_status(context, request, file_ext):
     # Get user data
     query = request.db.nodes.find(
         {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}
-        ).sort('last_agent_run_time', -1)
+        ).sort(
+        [('error_last_chef_client', pymongo.DESCENDING),
+         ('last_agent_run_time', pymongo.DESCENDING),
+         ('name', pymongo.ASCENDING) ] )
   
     rows = []
+    orders = []
 
     current_time = int(time.time())
     logger.debug("report_status: current_time = {}".format(current_time))
@@ -99,6 +104,8 @@ def report_status(context, request, file_ext):
 
     for item in query:
         row = []
+        order = []
+        status = '0'
 
         last_agent_run_time = int(item.get('last_agent_run_time',0))
         logger.debug("report_status: last_agent_run_time = {}".format(
@@ -109,6 +116,7 @@ def report_status(context, request, file_ext):
                 '<img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
                     if file_ext != 'csv' else 'OK'
 
+            status = '0'
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
@@ -116,39 +124,50 @@ def report_status(context, request, file_ext):
             item['status'] = '<div class="centered" style="width: 100%">'\
                 '<img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
                     if file_ext != 'csv' else 'ERROR'
+            status = '2'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
             item['status'] = '<div class="centered" style="width: 100%">'\
                 '<img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
                     if file_ext != 'csv' else 'WARN'
+            status = '1'
         
 
         if file_ext == 'pdf':
             row.append(treatment_string_to_pdf(item, 'name', 20))
+            order.append('')
             row.append(item['_id'])
+            order.append('')
 
             if last_agent_run_time != 0:
                 row.append(datetime.utcfromtimestamp(
-                    last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                    last_agent_run_time).strftime('%d/%m/%Y %H:%M:%S'))
             else:
                 row.append(' -- ')
+            order.append(last_agent_run_time)
 
             row.append(item['status'])
+            order.append(status)
         else:
             if file_ext == 'csv':
                 row.append(treatment_string_to_csv(item, 'name'))
             else:
                 row.append(get_html_node_link(item))
-                row.append(item['_id'])
+            order.append('')
+            row.append(item['_id'])
+            order.append('')
             if last_agent_run_time != 0:
                 row.append(datetime.utcfromtimestamp(
-                    last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                    last_agent_run_time).strftime('%d/%m/%Y %H:%M:%S'))
             else:
                 row.append('--')
+            order.append(last_agent_run_time)
             row.append(treatment_string_to_csv(item, 'status'))
+            order.append(status)
 
         rows.append(row)
+        orders.append(order)
         
                 
     header = (_(u'Name').encode('utf-8'),
@@ -168,6 +187,8 @@ def report_status(context, request, file_ext):
 
     return {'headers': header,
             'rows': rows,
+            'orders': orders,
+            'default_order': [[ 3, 'desc' ], [ 2, 'desc' ], [ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
