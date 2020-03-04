@@ -50,6 +50,15 @@ def report_status_html(context, request):
     return report_status(context, request, 'html')
 
 
+def get_status(value):
+    if value.find('ERROR')>=0:
+        return 0
+    
+    if value.find('WARN')>=0:
+        return 1
+    else:
+        return 2
+
 def report_status(context, request, file_ext):
     '''
     Generate a report with all the users that belongs to an OU.
@@ -185,10 +194,14 @@ def report_status(context, request, file_ext):
 
     now = datetime.now().strftime("%d/%m/%Y %H:%M")
 
+    # Sort rows
+    rows = sorted(rows, key = lambda i: (get_status(i[3]), i[0].lower()))    
+   
+
     return {'headers': header,
             'rows': rows,
             'orders': orders,
-            'default_order': [[ 3, 'desc' ], [ 2, 'desc' ], [ 0, 'asc' ]],
+            'default_order': [[ 3, 'desc' ], [ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

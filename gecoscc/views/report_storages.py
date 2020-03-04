@@ -175,8 +175,13 @@ def report_storages(context, request, file_ext):
     title =  _(u'Storages and related users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    rows = sorted(rows, key = lambda i: (i[0].lower(), i[1].lower(),
+                                         i[4].lower()))    
+        
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ], [ 1, 'asc' ], [ 4, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

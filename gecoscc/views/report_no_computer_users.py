@@ -114,8 +114,13 @@ def report_no_computer_users(context, request, file_ext):
     title =  _(u'No-computer users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    # (MongoDB 2.6 does not support "ignore case" sorting)   
+    rows = sorted(rows, key = lambda i: (i[0].lower()))    
+        
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

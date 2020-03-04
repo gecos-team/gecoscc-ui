@@ -185,8 +185,13 @@ def report_printers(context, request, file_ext):
     title =  _(u'Printers and related computers report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    rows = sorted(rows, key = lambda i: (i[0].lower(), i[1].lower(),
+                                         i[6].lower()))   
+        
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ], [ 1, 'asc' ], [ 6, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

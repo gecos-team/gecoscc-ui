@@ -21,7 +21,6 @@ from pyramid.view import view_config
 from bson import ObjectId
 
 from gecoscc.i18n import gettext as _
-import pymongo
 
 logger = logging.getLogger(__name__)
 
@@ -72,8 +71,7 @@ def report_permission(context, request, file_ext):
         "src='/static/images/xmark.jpg'/></div>"
 
     # Get all admins
-    admins = request.db.adminusers.find().sort(
-        [('username', pymongo.ASCENDING)] )
+    admins = request.db.adminusers.find()
 
     for admin in admins:
         ou_readonly = admin.get('ou_readonly', [])
@@ -168,6 +166,10 @@ def report_permission(context, request, file_ext):
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
 
     title = _(u'Permissions report')
+        
+    # Sort rows
+    # (MongoDB 2.6 does not support "ignore case" sorting)   
+    rows = sorted(rows, key = lambda i: (i[0].lower()))
         
     return {'headers': header,
             'rows': rows,
