@@ -1722,6 +1722,8 @@ class ChefTask(Task):
 
             # Updates path to Chef node after copying & pasting (computer)
             if objnew['type'] == 'computer':
+                # TODO: change these "reserve" and "release" node functions
+                # when the #248 pull request gets approved. 
                 node = reserve_node_or_raise(objnew['node_chef_id'], api,
                     'gcc-tasks-%s-%s' % (objnew['_id'], random.random()), 10)
                 add_path_attrs_to_node(node, objnew['path'], self.db.nodes,
