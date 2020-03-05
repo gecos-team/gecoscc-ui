@@ -892,8 +892,10 @@ def add_path_attrs_to_node(api, node_id, strpath, collection):
     nodeids = map(ObjectId, strpath.split(',')[1:])
     logger.debug("utils ::: add_path_chef_node - nodeids = {}".format(nodeids))
 
-    pathnames = 'root,' + ','.join([n['name'] for n in collection.find({'_id': {'$in': nodeids}})])
-    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(pathnames))
+    pathnames = 'root,' + ','.join([n['name'] for n in collection.find(
+        {'_id': {'$in': nodeids}})])
+    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(
+        pathnames))
 
     try:
         node = ChefNode(node_id, api)
@@ -901,7 +903,8 @@ def add_path_attrs_to_node(api, node_id, strpath, collection):
         node.attributes.set_dotted('gecos_path_names', pathnames)
         node.save()
     except (TypeError, KeyError, ChefError) as e:
-        logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
+        logger.error("utils ::: add_path_chef_node - Exception to setting up"\
+                     " path in chef node: {}".format(e))
         raise setPathAttrsToNodeException
 
 def register_node(api, node_id, ou, collection_nodes):
