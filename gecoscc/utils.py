@@ -890,11 +890,13 @@ def add_path_attrs_to_node(node, strpath, collection, save=True):
         str(node)))
     logger.debug("utils ::: add_path_chef_node - strpath = {}".format(strpath))
 
-    nodeids = map(ObjectId, strpath.split(',')[1:])
-    logger.debug("utils ::: add_path_chef_node - nodeids = {}".format(nodeids))
+    pathnames = 'root'
+    for elm in strpath.split(','):
+        if elm == 'root':
+            continue
+        ou = collection.find_one({'_id': ObjectId(elm)})
+        pathnames += ',' + ou['name'] 
 
-    pathnames = 'root,' + ','.join([n['name'] for n in collection.find(
-        {'_id': {'$in': nodeids}})])
     logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(
         pathnames))
 
