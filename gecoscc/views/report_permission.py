@@ -168,6 +168,7 @@ def report_permission(context, request, file_ext):
     title = _(u'Permissions report')
         
     # Sort rows
+    # TODO: Use MongoDB Collations to do a "ignore_case" sorting    
     # (MongoDB 2.6 does not support "ignore case" sorting)   
     rows = sorted(rows, key = lambda i: (i[0].lower()))
         

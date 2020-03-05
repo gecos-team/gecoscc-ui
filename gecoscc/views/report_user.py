@@ -119,6 +119,7 @@ def report_user(context, request, file_ext):
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
     # Sort rows
+    # TODO: Use MongoDB Collations to do a "ignore_case" sorting    
     # (MongoDB 2.6 does not support "ignore case" sorting)   
     rows = sorted(rows, key = lambda i: (i[0].lower()))
         
