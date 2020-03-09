@@ -73,7 +73,7 @@ def updates(context, request):
     logger.debug("admins.py ::: updates - order = {}".format(order))
 
     # Orderby
-    sorting = ('_id', -1) # default
+    sorting = ('timestamp', -1) # default
     s = request.GET.get('orderby', None)
     if s:
         if s == '_id':
