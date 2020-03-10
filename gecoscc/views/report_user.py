@@ -11,11 +11,9 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
-    truncate_string_at_char, treatment_string_to_pdf, get_html_node_link,
-    check_visibility_of_ou)
+    get_html_node_link, check_visibility_of_ou)
 from gecoscc.utils import get_filter_nodes_belonging_ou
 
 from pyramid.view import view_config
@@ -86,7 +84,8 @@ def report_user(context, request, file_ext):
                  '&nbsp;'+item['address'],
                  '&nbsp;'+str(item['_id'])) for item in query]
     else:
-        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' \
+                    else get_html_node_link(item),
                 treatment_string_to_csv(item, 'first_name'),
                 treatment_string_to_csv(item, 'last_name'),
                 treatment_string_to_csv(item, 'email'),
@@ -119,8 +118,14 @@ def report_user(context, request, file_ext):
     title =  _(u'Users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    # TODO: Use MongoDB Collations to do a "ignore_case" sorting    
+    # (MongoDB 2.6 does not support "ignore case" sorting)   
+    rows = sorted(rows, key = lambda i: (i[0].lower()))
+        
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

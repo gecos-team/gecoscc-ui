@@ -11,7 +11,6 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
@@ -83,11 +82,13 @@ def report_no_user_computers(context, request, file_ext):
 
     users = request.db.nodes.find(filters)
     for user in users:
-        related_computers = task.get_related_computers_of_user(user, related_computers, related_objects)
+        related_computers = task.get_related_computers_of_user(
+            user, related_computers, related_objects)
 
     references = [c['_id'] for c in related_computers]
     logger.info("report_no-user_computers: references = {}".format(references))
-    filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)})
+    filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(
+        ou_id)})
     filters2.update({'_id': {'$nin': [c['_id'] for c in related_computers]}})
     logger.info("report_no-user_computers: filters2 = {}".format(filters2))
     computers = request.db.nodes.find(filters2)
@@ -102,7 +103,8 @@ def report_no_user_computers(context, request, file_ext):
                  item['node_chef_id'],
                  item['_id']) for item in computers]
     else:
-        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' \
+                    else get_html_node_link(item),
                  treatment_string_to_csv(item, 'family'),
                  treatment_string_to_csv(item, 'registry'),
                  treatment_string_to_csv(item, 'serial'),
@@ -121,9 +123,14 @@ def report_no_user_computers(context, request, file_ext):
     title =  _(u'No-user computers')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    # TODO: Use MongoDB Collations to do a "ignore_case" sorting    
+    # (MongoDB 2.6 does not support "ignore case" sorting)   
+    rows = sorted(rows, key = lambda i: (i[0].lower()))     
         
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),
