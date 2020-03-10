@@ -125,6 +125,34 @@ def updates_log(_context, request):
     return response
 
 
+@view_config(route_name='updates_download', permission='is_superuser')
+def updates_download(_context, request):
+    settings = get_current_registry().settings
+    _id = request.matchdict['id']
+    
+    update = request.db.updates.find_one({'_id': _id})
+    if update is None:
+        raise HTTPNotFound()
+    
+    update_file = os.path.join(settings['updates.dir'],
+                               update['_id'],
+                               update['name'])
+    if not os.path.isfile(update_file):
+        raise HTTPNotFound()
+        
+    response = FileResponse(
+        update_file,
+        request=request,
+        content_type='application/zip'
+    )
+    headers = response.headers
+    headers['Content-Type'] = 'application/download'
+    headers['Content-Disposition'] = 'attachment;filename=' + \
+        str(update['name'])
+
+    return response
+
+
 @view_config(route_name='admins_ou_manage', renderer='templates/admins/ou_manage.jinja2',
              permission='is_superuser')
 def admins_ou_manage(context, request):

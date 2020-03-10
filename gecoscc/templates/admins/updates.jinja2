@@ -81,7 +81,7 @@
                     {% for update in updates %}
                         <tr>
                             <td>{{ update._id }}</td>
-                            <td>{{ update.name }}</td>
+                            <td><a href="{{ request.route_url('updates_download', id=update._id) }}">{{ update.name }}</a></td>
                             <td>
                                 <ul class="list-inline">
                                     <li> 
