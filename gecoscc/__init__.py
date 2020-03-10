@@ -53,8 +53,12 @@ def pregen(_request, elements, kw):
     return elements, kw
 
 def include_file(name):
-    with open(name) as f:
-        return jinja2.Markup(f.read())
+    if os.path.isfile(name):
+        with open(name) as f:
+            return jinja2.Markup(f.read())
+    else:
+        logger.warn('File not found: %s'%(name))
+        return 'File not found: %s'%(name)
 
 def route_config(config):
     config.add_static_view('static', 'static')
