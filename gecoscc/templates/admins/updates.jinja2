@@ -178,18 +178,27 @@
                             </td>
 
                             <td>
-                            {% if update.get('state') %}
-                                <span data-toggle="tooltip" 
-                                      data-placement="top"
-                                      title="{{ gettext('Updated finished unsuccessfully') }}"
-                                      class="fa fa-times" 
-                                      style="color:red;"></span>
+                            {% if 'state' in update %}
+                                {% if update.get('state') %}
+                                    <span data-toggle="tooltip" 
+                                          data-placement="top"
+                                          title="{{ gettext('Updated finished unsuccessfully') }}"
+                                          class="fa fa-times" 
+                                          style="color:red;"></span>
+                                {% else %}
+                                    <span data-toggle="tooltip"
+                                          data-placement="top"
+                                          title="{{ gettext('Updated finished succesfully') }}"
+                                          class="fa fa-check" 
+                                          style="color:green;"></span>
+                                {% endif %}
                             {% else %}
                                 <span data-toggle="tooltip"
                                       data-placement="top"
-                                      title="{{ gettext('Updated finished succesfully') }}"
-                                      class="fa fa-check" 
-                                      style="color:green;"></span>
+                                      title="{{ gettext('Update running...') }}"
+                                      class="fa fa-clock-o" 
+                                      style="color:gray;"></span>
+                            
                             {% endif %}
                             </td>
                         </tr>
