@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gecoscc 0.0\n"
 "Report-Msgid-Bugs-To: pmartin@yaco.es\n"
-"POT-Creation-Date: 2019-04-04 12:01+0200\n"
+"POT-Creation-Date: 2020-03-10 13:41+0100\n"
 "PO-Revision-Date: 2017-03-15 11:15+0100\n"
 "Last-Translator: Alejandro Blanco <ablanco@yaco.es>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -110,22 +110,23 @@ msgstr "Valor"
 
 #: gecoscc/models.py:240 gecoscc/templates/bb-computer.html:74
 #: gecoscc/templates/bb-computer.html:184 gecoscc/templates/bb-printer.html:33
-#: gecoscc/views/report_computer.py:107
-#: gecoscc/views/report_no-user_computers.py:132
+#: gecoscc/views/report_computer.py:95
+#: gecoscc/views/report_no-user_computers.py:113
 msgid "Type"
 msgstr "Tipo"
 
 #: gecoscc/models.py:247 gecoscc/templates/bb-user.html:41
 #: gecoscc/templates/admins/list.jinja2:33
 #: gecoscc/templates/admins/maintenance.jinja2:22
-#: gecoscc/views/report_user.py:121
+#: gecoscc/views/report_user.py:106
 msgid "First name"
 msgstr "Nombre"
 
 #: gecoscc/models.py:251 gecoscc/templates/bb-user.html:45
 #: gecoscc/templates/admins/list.jinja2:34
 #: gecoscc/templates/admins/maintenance.jinja2:23
-#: gecoscc/views/report_user.py:122
+#: gecoscc/views/report_no-computer_users.py:110
+#: gecoscc/views/report_user.py:107
 msgid "Last name"
 msgstr "Apellidos"
 
@@ -133,8 +134,8 @@ msgstr "Apellidos"
 #: gecoscc/templates/login.jinja2:26 gecoscc/templates/admins/list.jinja2:31
 #: gecoscc/templates/admins/maintenance.jinja2:20
 #: gecoscc/views/report_audit.py:94
-#: gecoscc/views/report_no-computer_users.py:112
-#: gecoscc/views/report_permission.py:150 gecoscc/views/report_user.py:120
+#: gecoscc/views/report_no-computer_users.py:98
+#: gecoscc/views/report_permission.py:150 gecoscc/views/report_user.py:105
 msgid "Username"
 msgstr "Nombre de usuario"
 
@@ -147,8 +148,8 @@ msgid "Repeat the password"
 msgstr "Repite la contraseña"
 
 #: gecoscc/models.py:367 gecoscc/templates/bb-user.html:51
-#: gecoscc/views/report_no-computer_users.py:114
-#: gecoscc/views/report_permission.py:151 gecoscc/views/report_user.py:123
+#: gecoscc/views/report_no-computer_users.py:100
+#: gecoscc/views/report_permission.py:151 gecoscc/views/report_user.py:108
 msgid "Email"
 msgstr "Correo electrónico"
 
@@ -172,7 +173,7 @@ msgstr ""
 msgid "Select an Organization Unit"
 msgstr "Selecciona una Unidad Organizativa"
 
-#: gecoscc/models.py:396 gecoscc/templates/reports.jinja2:163
+#: gecoscc/models.py:396 gecoscc/templates/reports.jinja2:166
 msgid "Permissions"
 msgstr "Permisos de Administradores"
 
@@ -392,63 +393,63 @@ msgstr "Cambios aplicados"
 msgid "There were errors"
 msgstr "Se produjeron errores"
 
-#: gecoscc/tasks.py:1500 gecoscc/tasks.py:1718 gecoscc/tasks.py:2040
+#: gecoscc/tasks.py:1508 gecoscc/tasks.py:1746 gecoscc/tasks.py:2132
 msgid "type"
 msgstr "Tipo"
 
-#: gecoscc/tasks.py:1564 gecoscc/tasks.py:1897 gecoscc/tasks.py:2248
-#: gecoscc/api/register_computer.py:92
+#: gecoscc/tasks.py:1572 gecoscc/tasks.py:1966 gecoscc/tasks.py:2395
+#: gecoscc/api/register_computer.py:104
 #, python-format
 msgid "Pending: %d"
 msgstr "Pendientes: %d"
 
-#: gecoscc/tasks.py:1718 gecoscc/tasks.py:2040
+#: gecoscc/tasks.py:1746 gecoscc/tasks.py:2132
 msgid "deleted"
 msgstr "Borrado"
 
-#: gecoscc/utils.py:2398
+#: gecoscc/utils.py:2496
 msgid "No permission to execute this function from script"
 msgstr ""
 
-#: gecoscc/utils.py:2421 gecoscc/utils.py:2457 gecoscc/utils.py:2491
-#: gecoscc/utils.py:2538 gecoscc/utils.py:2579
+#: gecoscc/utils.py:2519 gecoscc/utils.py:2555 gecoscc/utils.py:2589
+#: gecoscc/utils.py:2636 gecoscc/utils.py:2677
 msgid "Missing required arguments"
 msgstr ""
 
-#: gecoscc/utils.py:2458 gecoscc/utils.py:2492
+#: gecoscc/utils.py:2556 gecoscc/utils.py:2590
 #, python-format
 msgid "Directory %s can't be found."
 msgstr ""
 
-#: gecoscc/api/computers.py:172
+#: gecoscc/api/computers.py:173
 msgid "Unknown status"
 msgstr "Estado desconocido"
 
-#: gecoscc/api/computers.py:174 gecoscc/api/computers.py:176
+#: gecoscc/api/computers.py:175 gecoscc/api/computers.py:177
 msgid "User is requesting support"
 msgstr "El usuario está solicitando soporte"
 
-#: gecoscc/api/computers.py:178
+#: gecoscc/api/computers.py:179
 msgid "Terminated by user"
 msgstr "Terminado por usuario"
 
-#: gecoscc/api/computers.py:180
+#: gecoscc/api/computers.py:181
 msgid "Terminated by technician"
 msgstr "Terminado por técnico"
 
-#: gecoscc/api/computers.py:182
+#: gecoscc/api/computers.py:183
 msgid "Terminated because of a communication error"
 msgstr "Terminado debido a un error de comunicación"
 
-#: gecoscc/api/computers.py:184
+#: gecoscc/api/computers.py:185
 msgid "The technician is giving support to the user"
 msgstr "El técnico está dando soporte al usuario"
 
-#: gecoscc/api/register_computer.py:94
+#: gecoscc/api/register_computer.py:106
 msgid "detached"
 msgstr "desvinculado"
 
-#: gecoscc/api/register_computer.py:94
+#: gecoscc/api/register_computer.py:106
 msgid "computer"
 msgstr "puesto"
 
@@ -536,7 +537,7 @@ msgstr "Configuración"
 #: gecoscc/templates/base_navbar.jinja2:46
 #: gecoscc/templates/bb-computer.html:453 gecoscc/templates/bb-jobs.html:82
 #: gecoscc/templates/server/connections.jinja2:26
-#: gecoscc/views/report_status.py:167
+#: gecoscc/views/report_status.py:148
 msgid "Status"
 msgstr "Estado"
 
@@ -566,17 +567,17 @@ msgstr "Actualizaciones"
 msgid "Maintenance Mode"
 msgstr "Modo Mantenimiento"
 
-#: gecoscc/templates/base_navbar.jinja2:82
+#: gecoscc/templates/base_navbar.jinja2:83
 msgid "Edit profile"
 msgstr "Editar perfil"
 
-#: gecoscc/templates/base_navbar.jinja2:87
+#: gecoscc/templates/base_navbar.jinja2:88
 #: gecoscc/templates/admins/edit.jinja2:27
 #: gecoscc/templates/admins/variables.jinja2:15
 msgid "Set variables"
 msgstr "Establecer variables"
 
-#: gecoscc/templates/base_navbar.jinja2:93
+#: gecoscc/templates/base_navbar.jinja2:94
 msgid "Log out"
 msgstr "Salir"
 
@@ -597,11 +598,11 @@ msgstr "Buscar por"
 #: gecoscc/templates/admins/updates.jinja2:61
 #: gecoscc/templates/server/status.jinja2:67
 #: gecoscc/templates/server/status.jinja2:113
-#: gecoscc/views/report_computer.py:106
-#: gecoscc/views/report_no-computer_users.py:113
-#: gecoscc/views/report_no-user_computers.py:131
-#: gecoscc/views/report_permission.py:152 gecoscc/views/report_printers.py:176
-#: gecoscc/views/report_status.py:164 gecoscc/views/report_storages.py:180
+#: gecoscc/views/report_computer.py:94
+#: gecoscc/views/report_no-computer_users.py:99
+#: gecoscc/views/report_no-user_computers.py:112
+#: gecoscc/views/report_permission.py:152 gecoscc/views/report_printers.py:164
+#: gecoscc/views/report_status.py:145 gecoscc/views/report_storages.py:165
 msgid "Name"
 msgstr "Nombre"
 
@@ -614,7 +615,7 @@ msgstr "Dirección IP"
 #: gecoscc/templates/bb-new-element.html:12 gecoscc/templates/bb-user.html:12
 #: gecoscc/templates/admins/updates.jinja2:97
 #: gecoscc/templates/admins/updates.jinja2:135
-#: gecoscc/views/report_storages.py:183
+#: gecoscc/views/report_storages.py:168
 msgid "User"
 msgstr "Usuario"
 
@@ -632,7 +633,7 @@ msgstr "Grupos"
 msgid "Stations"
 msgstr "Puestos"
 
-#: gecoscc/templates/base_tree.jinja2:56 gecoscc/templates/reports.jinja2:54
+#: gecoscc/templates/base_tree.jinja2:56 gecoscc/templates/reports.jinja2:57
 msgid "Users"
 msgstr "Usuarios"
 
@@ -813,16 +814,16 @@ msgid "John's laptop"
 msgstr "Portátil de Juan"
 
 #: gecoscc/templates/bb-computer.html:87 gecoscc/templates/bb-printer.html:63
-#: gecoscc/views/report_computer.py:108
-#: gecoscc/views/report_no-user_computers.py:133
-#: gecoscc/views/report_printers.py:180
+#: gecoscc/views/report_computer.py:96
+#: gecoscc/views/report_no-user_computers.py:114
+#: gecoscc/views/report_printers.py:168
 msgid "Registry number"
 msgstr "Número de registro"
 
 #: gecoscc/templates/bb-computer.html:93 gecoscc/templates/bb-printer.html:57
-#: gecoscc/views/report_computer.py:109
-#: gecoscc/views/report_no-user_computers.py:134
-#: gecoscc/views/report_printers.py:179
+#: gecoscc/views/report_computer.py:97
+#: gecoscc/views/report_no-user_computers.py:115
+#: gecoscc/views/report_printers.py:167
 msgid "Serial number"
 msgstr "Número de serie"
 
@@ -860,7 +861,7 @@ msgid "Workstation specifications (Ohai)"
 msgstr "Características de la estación de trabajo (Ohai)"
 
 #: gecoscc/templates/bb-computer.html:149
-#: gecoscc/views/report_no-user_computers.py:135
+#: gecoscc/views/report_no-user_computers.py:116
 msgid "Node chef id"
 msgstr "Id del nodo chef"
 
@@ -1269,7 +1270,7 @@ msgstr "Atrás"
 msgid "Make and model"
 msgstr "Marca y modelo"
 
-#: gecoscc/templates/bb-printer.html:19 gecoscc/views/report_printers.py:177
+#: gecoscc/templates/bb-printer.html:19 gecoscc/views/report_printers.py:165
 msgid "Manufacturer"
 msgstr "Marca"
 
@@ -1277,7 +1278,7 @@ msgstr "Marca"
 msgid "Select manufacturer"
 msgstr "Selecciona marca"
 
-#: gecoscc/templates/bb-printer.html:25 gecoscc/views/report_printers.py:178
+#: gecoscc/templates/bb-printer.html:25 gecoscc/views/report_printers.py:166
 msgid "Model"
 msgstr "Modelo"
 
@@ -1421,8 +1422,8 @@ msgid "john.doe"
 msgstr "juan.nadie"
 
 #: gecoscc/templates/bb-user.html:55
-#: gecoscc/views/report_no-computer_users.py:116
-#: gecoscc/views/report_user.py:125
+#: gecoscc/views/report_no-computer_users.py:102
+#: gecoscc/views/report_user.py:110
 msgid "Address"
 msgstr "Dirección"
 
@@ -1454,41 +1455,41 @@ msgstr ""
 msgid "GECOS CC Maintenance Mode"
 msgstr "GECOS CC Modo Mantenimiento"
 
-#: gecoscc/templates/reports.jinja2:39
+#: gecoscc/templates/reports.jinja2:42
 #: gecoscc/templates/admins/statistics.jinja2:19
 msgid "Please select the Organizational Unit"
 msgstr "Selecciona una Unidad Organizativa"
 
-#: gecoscc/templates/reports.jinja2:68
+#: gecoscc/templates/reports.jinja2:71
 msgid "Workstations"
 msgstr "Puestos de trabajo"
 
-#: gecoscc/templates/reports.jinja2:83
+#: gecoscc/templates/reports.jinja2:86
 msgid "Printers and related computers"
 msgstr "Impresoras y puestos"
 
-#: gecoscc/templates/reports.jinja2:98
+#: gecoscc/templates/reports.jinja2:101
 msgid "Storages and related users"
 msgstr "Unidades de almacenamiento remoto y usuarios"
 
-#: gecoscc/templates/reports.jinja2:113
-#: gecoscc/views/report_no-user_computers.py:140
+#: gecoscc/templates/reports.jinja2:116
+#: gecoscc/views/report_no-user_computers.py:121
 msgid "No-user computers"
 msgstr "Informe de puestos sin usuarios"
 
-#: gecoscc/templates/reports.jinja2:128
+#: gecoscc/templates/reports.jinja2:131
 msgid "No-computer users"
 msgstr "Usuarios sin puestos"
 
-#: gecoscc/templates/reports.jinja2:143 gecoscc/views/report_status.py:175
+#: gecoscc/templates/reports.jinja2:146 gecoscc/views/report_status.py:156
 msgid "Computer with anomalies"
 msgstr "Puestos con anomalías"
 
-#: gecoscc/templates/reports.jinja2:162
+#: gecoscc/templates/reports.jinja2:165
 msgid "Only Superadmins. Not apply OU filter"
 msgstr "Sólo SuperAdministradores. No aplica el filtro de unidad organizativa"
 
-#: gecoscc/templates/reports.jinja2:178
+#: gecoscc/templates/reports.jinja2:181
 msgid "Audit log"
 msgstr "Registro de accesos"
 
@@ -1615,17 +1616,21 @@ msgstr "Deshacer"
 msgid "Hover here"
 msgstr "Coloque el puntero del raton"
 
-#: gecoscc/templates/admins/updates.jinja2:184
+#: gecoscc/templates/admins/updates.jinja2:185
 msgid "Updated finished unsuccessfully"
 msgstr "Actualización finalizada con errores"
 
-#: gecoscc/templates/admins/updates.jinja2:190
+#: gecoscc/templates/admins/updates.jinja2:191
 msgid "Updated finished succesfully"
 msgstr "Actualización finalizada con éxito"
 
-#: gecoscc/templates/admins/updates.jinja2:203
-msgid "Execute update"
-msgstr "Ejecutar actualización"
+#: gecoscc/templates/admins/updates.jinja2:198
+msgid "Update running..."
+msgstr "Actualización en curso..."
+
+#: gecoscc/templates/admins/updates.jinja2:212
+msgid "Upload file and execute update"
+msgstr "Subir y executar actualización"
 
 #: gecoscc/templates/admins/updates_add.jinja2:14
 msgid "Add update"
@@ -1731,11 +1736,11 @@ msgstr "Cookbooks"
 msgid "Version"
 msgstr "Versión"
 
-#: gecoscc/views/admins.py:255
+#: gecoscc/views/admins.py:289
 msgid "User deleted unsuccessfully from chef"
 msgstr "Usuario borrado insatisfactoriamente de chef"
 
-#: gecoscc/views/admins.py:257
+#: gecoscc/views/admins.py:291
 msgid "User deleted successfully"
 msgstr "Usuario borrado con éxito"
 
@@ -1755,42 +1760,42 @@ msgstr ""
 msgid "Audit report"
 msgstr "Informe de registro de accesos"
 
-#: gecoscc/views/report_audit.py:109 gecoscc/views/report_computer.py:122
-#: gecoscc/views/report_no-computer_users.py:132
-#: gecoscc/views/report_no-user_computers.py:148
-#: gecoscc/views/report_permission.py:173 gecoscc/views/report_printers.py:195
-#: gecoscc/views/report_status.py:183 gecoscc/views/report_storages.py:194
-#: gecoscc/views/report_user.py:141
+#: gecoscc/views/report_audit.py:109 gecoscc/views/report_computer.py:110
+#: gecoscc/views/report_no-computer_users.py:119
+#: gecoscc/views/report_no-user_computers.py:129
+#: gecoscc/views/report_permission.py:173 gecoscc/views/report_printers.py:183
+#: gecoscc/views/report_status.py:164 gecoscc/views/report_storages.py:179
+#: gecoscc/views/report_user.py:126
 msgid "Page"
 msgstr ""
 
-#: gecoscc/views/report_audit.py:110 gecoscc/views/report_computer.py:123
-#: gecoscc/views/report_no-computer_users.py:133
-#: gecoscc/views/report_no-user_computers.py:149
-#: gecoscc/views/report_permission.py:174 gecoscc/views/report_printers.py:196
-#: gecoscc/views/report_status.py:184 gecoscc/views/report_storages.py:195
-#: gecoscc/views/report_user.py:142
+#: gecoscc/views/report_audit.py:110 gecoscc/views/report_computer.py:111
+#: gecoscc/views/report_no-computer_users.py:120
+#: gecoscc/views/report_no-user_computers.py:130
+#: gecoscc/views/report_permission.py:174 gecoscc/views/report_printers.py:184
+#: gecoscc/views/report_status.py:165 gecoscc/views/report_storages.py:180
+#: gecoscc/views/report_user.py:127
 msgid "of"
 msgstr ""
 
-#: gecoscc/views/report_computer.py:111
-#: gecoscc/views/report_no-computer_users.py:117
-#: gecoscc/views/report_no-user_computers.py:136
-#: gecoscc/views/report_status.py:165 gecoscc/views/report_storages.py:182
-#: gecoscc/views/report_user.py:126
+#: gecoscc/views/report_computer.py:99
+#: gecoscc/views/report_no-computer_users.py:103
+#: gecoscc/views/report_no-user_computers.py:117
+#: gecoscc/views/report_status.py:146 gecoscc/views/report_storages.py:167
+#: gecoscc/views/report_user.py:111
 msgid "Id"
 msgstr "Identificador"
 
-#: gecoscc/views/report_computer.py:115
+#: gecoscc/views/report_computer.py:103
 msgid "Computers report"
 msgstr "Informe de puestos"
 
-#: gecoscc/views/report_no-computer_users.py:115
-#: gecoscc/views/report_user.py:124
+#: gecoscc/views/report_no-computer_users.py:101
+#: gecoscc/views/report_user.py:109
 msgid "Phone"
 msgstr "Teléfono"
 
-#: gecoscc/views/report_no-computer_users.py:125
+#: gecoscc/views/report_no-computer_users.py:112
 msgid "No-computer users report"
 msgstr "Informe de usuarios sin puestos"
 
@@ -1827,56 +1832,35 @@ msgstr "Administrar"
 msgid "Permissions report"
 msgstr "Informe de permisos"
 
-#: gecoscc/views/report_printers.py:175 gecoscc/views/report_storages.py:179
+#: gecoscc/views/report_printers.py:163 gecoscc/views/report_storages.py:164
 msgid "Path"
 msgstr ""
 
-#: gecoscc/views/report_printers.py:181
+#: gecoscc/views/report_printers.py:169
 msgid "Computer"
 msgstr "puesto"
 
-#: gecoscc/views/report_printers.py:188
+#: gecoscc/views/report_printers.py:176
 msgid "Printers and related computers report"
 msgstr "Informe impresoras y puestos"
 
-#: gecoscc/views/report_status.py:166
+#: gecoscc/views/report_status.py:147
 msgid "Agent last runtime"
 msgstr "Última ejecución del agente"
 
-#: gecoscc/views/report_storages.py:181
+#: gecoscc/views/report_storages.py:166
 msgid "Uri"
 msgstr "uri"
 
-#: gecoscc/views/report_storages.py:187
+#: gecoscc/views/report_storages.py:172
 msgid "Storages and related users report"
 msgstr "Informe Unidades de almacenamiento remoto y usuarios"
 
-#: gecoscc/views/report_user.py:134
+#: gecoscc/views/report_user.py:119
 msgid "Users report"
 msgstr "Informe de usuarios"
 
 #: gecoscc/views/settings.py:125
 msgid "Settings modified successfully"
 msgstr "Configuraciones modificadas con éxito"
-
-#~ msgid "Export to CSV"
-#~ msgstr "Exportar a CSV"
-
-#~ msgid "Add another"
-#~ msgstr "Añadir otra"
-
-#~ msgid "This user can manage workstations under these Organizational Units"
-#~ msgstr "Este usuario puede administrar puestos en estas unidades organizativas"
-
-#~ msgid "Organizational Units available to register workstations"
-#~ msgstr "Este usuario puede vincular puestos a estas unidades organizativas"
-
-#~ msgid "Computer status"
-#~ msgstr "Estado de puestos"
-
-#~ msgid "Computer status report"
-#~ msgstr "Informe de puestos con anomalías"
-
-#~ msgid "Only Superadmins. Not apply filter"
-#~ msgstr ""
 
