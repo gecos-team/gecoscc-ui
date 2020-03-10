@@ -182,13 +182,13 @@
                                 {% if update.get('state') %}
                                     <span data-toggle="tooltip" 
                                           data-placement="top"
-                                          title="{{ gettext('Updated finished unsuccessfully') }}"
+                                          title="{{ gettext('Updated finished unsuccessfully') }} {{ update|timediff }}"
                                           class="fa fa-times" 
                                           style="color:red;"></span>
                                 {% else %}
                                     <span data-toggle="tooltip"
                                           data-placement="top"
-                                          title="{{ gettext('Updated finished succesfully') }}"
+                                          title="{{ gettext('Updated finished succesfully') }} {{ update|timediff }}"
                                           class="fa fa-check" 
                                           style="color:green;"></span>
                                 {% endif %}

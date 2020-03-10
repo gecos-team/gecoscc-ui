@@ -18,6 +18,7 @@ import subprocess
 import traceback
 import sys
 import shutil
+import time
 
 from glob import glob
 from copy import deepcopy
@@ -2466,6 +2467,7 @@ def script_runner(user, sequence, rollback=False):
             break
 
     if not rollback:
-        self.db.updates.update({'_id': sequence},{'$set': {'state': returncode }})
+        self.db.updates.update({'_id': sequence},{'$set':
+            {'state': returncode, 'timestamp_end': int(time.time()) }})
 
     logfile.close()
