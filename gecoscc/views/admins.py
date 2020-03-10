@@ -106,7 +106,7 @@ def updates_log(_context, request):
     settings = get_current_registry().settings
     logfile = settings['updates.rollback'].format(sequence)
     if not rollback:
-        settings['updates.log'].format(sequence)
+        logfile = settings['updates.log'].format(sequence)
     
     if not os.path.isfile(logfile):
         raise HTTPNotFound()
