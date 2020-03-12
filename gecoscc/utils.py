@@ -883,25 +883,31 @@ def get_cookbook(api, cookbook_name):
 class setPathAttrsToNodeException(Exception):
     pass
 
-def add_path_attrs_to_node(api, node_id, strpath, collection):
+def add_path_attrs_to_node(node, strpath, collection, save=True):
     ''' Setting up gecos_path_ids, gecos_path_names attributes to Chef node '''
 
-    logger.debug("utils ::: add_path_chef_node - node_id = {}".format(node_id))
+    logger.debug("utils ::: add_path_chef_node - node_id = {}".format(
+        str(node)))
     logger.debug("utils ::: add_path_chef_node - strpath = {}".format(strpath))
 
-    nodeids = map(ObjectId, strpath.split(',')[1:])
-    logger.debug("utils ::: add_path_chef_node - nodeids = {}".format(nodeids))
+    pathnames = 'root'
+    for elm in strpath.split(','):
+        if elm == 'root':
+            continue
+        ou = collection.find_one({'_id': ObjectId(elm)})
+        pathnames += ',' + ou['name'] 
 
-    pathnames = 'root,' + ','.join([n['name'] for n in collection.find({'_id': {'$in': nodeids}})])
-    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(pathnames))
+    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(
+        pathnames))
 
     try:
-        node = ChefNode(node_id, api)
         node.attributes.set_dotted('gecos_path_ids', strpath)
         node.attributes.set_dotted('gecos_path_names', pathnames)
-        node.save()
+        if save:
+            node.save()
     except (TypeError, KeyError, ChefError) as e:
-        logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
+        logger.error("utils ::: add_path_chef_node - Exception to setting up"\
+                     " path in chef node: {}".format(e))
         raise setPathAttrsToNodeException
 
 def register_node(api, node_id, ou, collection_nodes):
@@ -918,7 +924,7 @@ def register_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
@@ -955,7 +961,7 @@ def update_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
