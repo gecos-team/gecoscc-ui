@@ -10,7 +10,7 @@
 #
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed
+from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed, HTTPNotFound
 from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
 from pyramid.response import FileResponse
@@ -73,7 +73,7 @@ def updates(context, request):
     logger.debug("admins.py ::: updates - order = {}".format(order))
 
     # Orderby
-    sorting = ('_id', -1) # default
+    sorting = ('timestamp', -1) # default
     s = request.GET.get('orderby', None)
     if s:
         if s == '_id':
@@ -104,7 +104,13 @@ def updates_log(_context, request):
     sequence = request.matchdict['sequence']
     rollback = request.matchdict['rollback']
     settings = get_current_registry().settings
-    logfile = settings['updates.rollback'].format(sequence) if rollback else settings['updates.log'].format(sequence)
+    logfile = settings['updates.rollback'].format(sequence)
+    if not rollback:
+        logfile = settings['updates.log'].format(sequence)
+    
+    if not os.path.isfile(logfile):
+        raise HTTPNotFound()
+    
     response = FileResponse(
         logfile,
         request=request,
@@ -112,9 +118,37 @@ def updates_log(_context, request):
     )
     headers = response.headers
     headers['Content-Type'] = 'application/download'
-    #headers['Accept-Ranges'] = 'bite'
-    headers['Content-Disposition'] = 'attachment;filename=' + os.path.basename(logfile)
-    headers['Content-Disposition'] = "attachment; filename=\"" + os.path.basename(logfile) + "\"; filename*=UTF-8''"+ unicode(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+    headers['Content-Disposition'] = "attachment; filename=\"" + \
+        os.path.basename(logfile) + "\"; filename*=UTF-8''"+ \
+        unicode(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+
+    return response
+
+
+@view_config(route_name='updates_download', permission='is_superuser')
+def updates_download(_context, request):
+    settings = get_current_registry().settings
+    _id = request.matchdict['id']
+    
+    update = request.db.updates.find_one({'_id': _id})
+    if update is None:
+        raise HTTPNotFound()
+    
+    update_file = os.path.join(settings['updates.dir'],
+                               update['_id'],
+                               update['name'])
+    if not os.path.isfile(update_file):
+        raise HTTPNotFound()
+        
+    response = FileResponse(
+        update_file,
+        request=request,
+        content_type='application/zip'
+    )
+    headers = response.headers
+    headers['Content-Type'] = 'application/download'
+    headers['Content-Disposition'] = 'attachment;filename=' + \
+        str(update['name'])
 
     return response
 

@@ -53,14 +53,19 @@ def pregen(_request, elements, kw):
     return elements, kw
 
 def include_file(name):
-    with open(name) as f:
-        return jinja2.Markup(f.read())
+    if os.path.isfile(name):
+        with open(name) as f:
+            return jinja2.Markup(f.read())
+    else:
+        logger.warn('File not found: %s'%(name))
+        return 'File not found: %s'%(name)
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('updates', '/updates/', factory=SuperUserFactory)
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_download', '/updates/download/{id}', factory=SuperUserFactory)
     config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     
