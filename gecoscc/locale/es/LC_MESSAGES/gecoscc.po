@@ -1630,7 +1630,7 @@ msgstr "Actualización en curso..."
 
 #: gecoscc/templates/admins/updates.jinja2:212
 msgid "Upload file and execute update"
-msgstr "Subir y executar actualización"
+msgstr "Subir y ejecutar actualización"
 
 #: gecoscc/templates/admins/updates_add.jinja2:14
 msgid "Add update"
