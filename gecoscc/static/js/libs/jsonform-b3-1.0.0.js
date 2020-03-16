@@ -692,7 +692,15 @@ jsonform.elementTypes = {
         promise = $.ajax({
           url: schemaElmnt.autocomplete_url,
           dataType: 'json',
-          data: data
+          data: data,
+          error: function(xhr, textStatus, error){
+                if (xhr.status === 403) {
+                    forbidden_access();
+                }
+                else {
+                    console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                }
+            }
         });
       } else {
         promise = $.Deferred();
@@ -839,7 +847,15 @@ jsonform.elementTypes = {
                               }
 
                               query.callback({results: nodes, more: more});
-                          }
+                          },
+                          error: function(xhr, textStatus, error){
+                              if (xhr.status === 403) {
+                                forbidden_access();
+                              }
+                              else {
+                                console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                              }
+                          }                          
                       });
                   }
                   lastTerm = query.term;

@@ -83,7 +83,14 @@
                                  $.ajax("{{ request.route_url('admin_maintenance') }}?mode=" + state,
                                      {"type": "GET"}).done(function() {
                                          window.location = "{{ request.route_url('admin_maintenance') }}"
-                                 });
+                                 }).fail( function( jqXHR, textStatus, errorThrown ) {
+                                      if (jqXHR.status === 403) {
+                                        forbidden_access();
+                                      }
+                                      else {
+                                        console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                                      }
+                                });
                             }
                          });
                          confirm.done(function(e) { if (!e) $('input[name="goToMaintenance"]').bootstrapSwitch('state', !state, true)});

@@ -48,6 +48,13 @@
                                 {% else %}
                                     window.location = "{{ request.route_url('home') }}";
                                 {% endif %}
+                            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                                  if (jqXHR.status === 403) {
+                                    forbidden_access();
+                                  }
+                                  else {
+                                      console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                                  }
                             });
                         }
                     });
