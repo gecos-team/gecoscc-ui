@@ -31,6 +31,11 @@ from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api,
     BASE_UPDATE_PATTERN, SERIALIZED_UPDATE_PATTERN
 from pyramid.threadlocal import get_current_registry
 
+import sys
+import logging
+import traceback
+logger = logging.getLogger(__name__)
+
 OU_ORDER = 1
 UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
 PERMISSIONS = (('READONLY', _('read')),
@@ -475,6 +480,11 @@ class UpdateSequenceValidator(UpdateBaseValidator):
             else:
                 if mongodb.updates.find({'name':self.filename}).count() > 0:
                     node.raise_invalid(_('This name already exists'))
+                    
+                sequence = re.match(BASE_UPDATE_PATTERN, self.filename).group(1)
+                if mongodb.updates.find({'_id': sequence}).count() > 0:
+                    node.raise_invalid(_('This sequence already exists'))
+            
 
 class UpdateFileStructureValidator(UpdateBaseValidator):
     ''' Subclass for validating zip file content
@@ -592,16 +602,10 @@ def unzip_preparer(value):
 
             return value
 
-        except urllib2.HTTPError:
-            pass
-        except urllib2.URLError:
-            pass
-        except zipfile.BadZipfile:
-            pass
-        except OSError:
-            pass
-        except IOError:
-            pass
+        except:
+            e = sys.exc_info()[0]
+            logger.error("unzip_preparer: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
 
 class UrlFile(object):
     ''' Custom type for URL string 

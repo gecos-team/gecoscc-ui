@@ -68,6 +68,7 @@ def route_config(config):
     config.add_route('updates_download', '/updates/download/{id}', factory=SuperUserFactory)
     config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_repeat', '/updates/repeat/{sequence}', factory=SuperUserFactory, pregenerator=pregen)
     
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
