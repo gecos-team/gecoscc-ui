@@ -27,7 +27,8 @@ from copy import copy
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
 from gecoscc.i18n import gettext                                
-from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
+from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook,\
+    BASE_UPDATE_PATTERN, SERIALIZED_UPDATE_PATTERN
 from pyramid.threadlocal import get_current_registry
 
 OU_ORDER = 1
@@ -445,7 +446,7 @@ class UpdateNamingValidator(UpdateBaseValidator):
       pattern (str):    regex for valid naming convention
     '''
     err_msg = _('The uploaded file is not followed naming convention')
-    pattern = '^update-(\w+)\.zip$'
+    pattern = BASE_UPDATE_PATTERN
     def __call__(self, node, value):
         super(UpdateNamingValidator, self).__call__(node, value)
         if self.filename and not (re.match(self.pattern, self.filename)):
@@ -459,11 +460,10 @@ class UpdateSequenceValidator(UpdateBaseValidator):
       pattern (str):    regex for valid numeric sequence
     '''
     err_msg = _('No valid update sequence. Must be: {$val}')
-    pattern = '^update-([0-9]{4})\.zip$'
     def __call__(self, node, value):
         super(UpdateSequenceValidator, self).__call__(node,value)
         if self.filename:
-            m = re.match(self.pattern, self.filename)
+            m = re.match(SERIALIZED_UPDATE_PATTERN, self.filename)
             request = pyramid.threadlocal.get_current_request()
             from gecoscc.db import get_db
             mongodb = get_db(request)

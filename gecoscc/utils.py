@@ -53,6 +53,11 @@ USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
 
+# Updates patterns
+BASE_UPDATE_PATTERN = '^update-(\w+)\.zip$'
+SERIALIZED_UPDATE_PATTERN = '^update-[0-9]{4}\.zip$'
+
+
 # Reserved codes for functions called from scripts
 SCRIPTCODES = { 
     'mongodb_backup':'00',
@@ -2475,8 +2480,8 @@ def getNextUpdateSeq(db):
       db (object):    database connection
     '''
 
-    pattern = '^update-[0-9]{4}\.zip$'
-    cursor = db.updates.find({'name':{'$regex':pattern}},{'_id':1}).sort('_id',-1).limit(1)
+    cursor = db.updates.find({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
+                             {'_id':1}).sort('_id',-1).limit(1)
 
     if cursor.count() == 0:
         nseq = '0000'
