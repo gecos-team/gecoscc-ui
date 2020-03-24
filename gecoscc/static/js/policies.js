@@ -72,6 +72,13 @@ App.module("Policies.Models", function (Models, App, Backbone, Marionette, $, _)
                     model.set("autoreverse", p.autoreverse);
                 });
                 that.trigger("policiesloaded");
+            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                  }
             });
         },
 

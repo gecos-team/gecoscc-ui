@@ -164,6 +164,13 @@ App.module("OU.Views", function (Views, App, Backbone, Marionette, $, _) {
                     });
                     list = list.join(", ");
                     $masterPolicies.append("<dd>" + list + "</dd>");
+                }).fail( function( jqXHR, textStatus, errorThrown ) {
+                    if (jqXHR.status === 403) {
+                        forbidden_access();
+                    }
+                    else {
+                        console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                    }
                 });
             }
 

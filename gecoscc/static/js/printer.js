@@ -171,6 +171,14 @@ App.module("Printer.Views", function (Views, App, Backbone, Marionette, $, _) {
                                 }
 
                                 query.callback({results: models, more: more});
+                            },
+                            error: function(xhr, textStatus, error){
+                                if (xhr.status === 403) {
+                                    forbidden_access();
+                                }
+                                else {
+                                    console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                                }
                             }
                         });
                     }
