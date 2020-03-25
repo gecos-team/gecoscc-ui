@@ -639,14 +639,19 @@ var App;
                     }
                     App.instances.cache.set(model.get('id'), model);
 
-                }).fail(function () {
+                }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
                     App.main.close(App.instances.loaderView);
                     App.showAlert(
                             "error",
                             gettext("¡¡ OOOOOPSSS !! The url points to a non-existent object."),
                             "<br/> - " + gettext("If you came here by clicking on a link in a view, refresh that view.")
                     );
-                    return;
+                  }
                 });
             },
 
