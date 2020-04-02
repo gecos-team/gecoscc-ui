@@ -10,7 +10,8 @@
 #
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed, HTTPNotFound
+from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed, HTTPNotFound,\
+    HTTPBadRequest
 from pyramid.security import forget
 from pyramid.threadlocal import get_current_registry
 from pyramid.response import FileResponse
@@ -25,7 +26,8 @@ from gecoscc.i18n import gettext as _
 from gecoscc.models import (AdminUser, AdminUserVariables, Maintenance, UpdateModel, AdminUserOUPerms,
     AdminUserOUPerm, Permissions)
 from gecoscc.pagination import create_pagination_mongo_collection
-from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq, get_filter_nodes_belonging_ou
+from gecoscc.utils import delete_chef_admin_user, get_chef_api, toChefUsername, getNextUpdateSeq, get_filter_nodes_belonging_ou,\
+    SERIALIZED_UPDATE_PATTERN
 from gecoscc.tasks import script_runner
 from gecoscc.views.reports import get_complete_path
 
@@ -36,6 +38,11 @@ import pickle
 import json
 import collections
 import logging
+import re
+import shutil
+import sys
+import traceback
+import zipfile
 logger = logging.getLogger(__name__)
 
 from chef.exceptions import ChefServerError, ChefServerNotFoundError
@@ -134,8 +141,7 @@ def updates_download(_context, request):
     if update is None:
         raise HTTPNotFound()
     
-    update_file = os.path.join(settings['updates.dir'],
-                               update['_id'],
+    update_file = os.path.join(update['path'],
                                update['name'])
     if not os.path.isfile(update_file):
         raise HTTPNotFound()
@@ -320,6 +326,104 @@ def updates_add(context, request):
         'update_form': form_render,
     }
 
+
+
+
+@view_config(route_name='updates_repeat', permission='is_superuser',
+             renderer='templates/admins/tail.jinja2')
+def updates_repeat(_context, request):
+    settings = get_current_registry().settings
+    sequence = request.matchdict.get('sequence') 
+    logger.debug('admins.py ::: updates_repeat - sequence = %s' % sequence)
+
+    # Check sequence number
+    to_repeat = request.db.updates.find_one({'_id': sequence})
+    if to_repeat is None:
+        logging.error('admins.py ::: updates_repeat: ' + \
+                      'update not found with sequence=%s'%(sequence))
+        raise HTTPNotFound()
+
+    updatefile = os.path.join(to_repeat['path'], to_repeat['name'])
+    if not os.path.isfile(updatefile):
+        raise HTTPNotFound()
+
+    if re.match(SERIALIZED_UPDATE_PATTERN, to_repeat['name']) is not None:
+        logging.error('admins.py ::: updates_repeat: ' + \
+                      'update %s is a serialized update!'%(sequence))
+        raise HTTPBadRequest()
+        
+    if 'repetition' in to_repeat:
+        logging.error('admins.py ::: updates_repeat: ' + \
+                      'update %s is repetition!'%(sequence))
+        raise HTTPBadRequest()        
+
+    try:
+        # Calculate the next repetition number for this update
+        cursor = request.db.updates.find(
+            {'name': to_repeat['name'], 'repetition': {'$exists': True}},
+            {'_id':1, 'repetition': 1}).sort('repetition',-1).limit(1)
+    
+        nrep = 0
+        if cursor.count() > 0:
+            latest = int(cursor.next().get('repetition'))
+            nrep = (latest+1)
+            
+        logger.debug('admins.py ::: updates_repeat - repetition = %s' % nrep)
+    
+        # Copy the zip file
+        separator = '_'
+        rsequence = '%s%s%s'%(sequence, separator, nrep)
+        updatesdir = settings['updates.dir'] + rsequence
+        while os.path.exists(updatesdir):
+            separator = separator+ '_'
+            rsequence = '%s%s%s'%(sequence, separator, nrep)
+            updatesdir = settings['updates.dir'] + rsequence            
+        
+        os.mkdir(updatesdir)
+        shutil.copy(updatefile, os.path.join(updatesdir, to_repeat['name']))
+        
+        # Decompress zip file
+        zip_ref = zipfile.ZipFile(updatefile,'r')
+        zip_ref.extractall(updatesdir)
+        zip_ref.close()    
+    
+        # Decompress cookbook zipfile
+        cookbookdir = settings['updates.cookbook'].format(rsequence)
+        logger.debug('admins.py ::: updates_repeat - ' + \
+                     ' cookbookdir = %s' % cookbookdir)
+        for cookbook in os.listdir(cookbookdir):
+            cookbook = cookbookdir + os.sep + cookbook
+            logger.debug("admins.py ::: updates_repeat - cookbook = %s" % cookbook)
+            if zipfile.is_zipfile(cookbook):
+                zip_ref = zipfile.ZipFile(cookbook,'r')
+                zip_ref.extractall(
+                    os.path.join(cookbookdir, settings['chef.cookbook_name']))
+                zip_ref.close()    
+        
+        # Insert update register
+        request.db.updates.insert({
+            '_id': rsequence,
+            'name': to_repeat['name'],
+            'path': updatesdir,
+            'timestamp': int(time.time()),
+            'rollback':0, 
+            'user': request.user['username'],
+            'repetition': nrep})
+        
+        # Launching task for script execution
+        script_runner.delay(request.user, rsequence)
+    
+        messages.created_msg(request, _('The update has been repeated!'), 'success')
+        
+    except:
+        e = sys.exc_info()[0]
+        logger.error("admins.py ::: updates_repeat - " + \
+            "error repeating update: %s"%(str(e)))
+        logger.error("Traceback: %s"%(traceback.format_exc()))
+        messages.created_msg(request,
+            _('There was an error trying to repeat an update'), 'danger')
+
+    return HTTPFound(request.route_url('updates'))
 
 @view_config(route_name='updates_tail', permission='is_superuser', renderer='templates/admins/tail.jinja2')
 def updates_tail(_context, request):

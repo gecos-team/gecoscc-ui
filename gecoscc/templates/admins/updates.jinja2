@@ -159,9 +159,18 @@
                                     <li>
                                         <a class="btn btn-danger btn-xs"
                                            href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}"> {{ gettext('Rollback') }}
-                                        </a>                                
+                                        </a>             
                                     </li>
                                     {% endif %}
+
+                                    {% if not update._id|regex_match('^[0-9]{4}$') and not 'repetition' in update %}
+                                    <li>
+                                        <a class="btn btn-default btn-xs"
+                                           href="{{ request.route_url('updates_repeat', sequence=update._id) }}"> {{ gettext('Repeat') }}
+                                        </a>             
+                                    </li>
+                                    {% endif %}
+                                    
                                 {% endif %}
                                 </ul>
                             </td>
