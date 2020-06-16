@@ -32,7 +32,10 @@ window.external.comeback = function() {
         <input type="hidden" name="type" id="report_type" value="" />
         <input type="hidden" name="format" id="report_format" value="" />
         {% if ou_managed|length == 1 %}
-            <input type="hidden" name="ou_id" id="ou_id" value="{{ou_managed[0].id}}" />
+            {% for oid in ou_managed %}
+             <!-- {{ou_managed[oid]}} -->
+             <input type="hidden" name="ou_id" id="ou_id" value="{{oid}}" />
+            {% endfor %}                
         {% else %}
         <div class="row list-group-top">
             <div class="col-sm-3">

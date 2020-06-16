@@ -31,7 +31,8 @@ from gecoscc.tasks import (object_created, object_changed, object_deleted,
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
-                           RESOURCES_EMITTERS_TYPES, get_object_related_list)
+                           RESOURCES_EMITTERS_TYPES, get_object_related_list,
+                           is_domain, get_domain, is_root)
 
 import gettext
 import logging
@@ -395,7 +396,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         real_obj.update(obj)
         
         try:
-            self.collection.update(obj_filter, real_obj, new=True)
+            self.collection.update(obj_filter, real_obj)
         except DuplicateKeyError, e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))
@@ -485,6 +486,15 @@ class TreeResourcePaginated(ResourcePaginated):
         if not unique:
             self.request.errors.add('body', 'name',
                                     "Name must be unique in domain.")
+        if unique and not is_domain(obj) and not is_root(obj):
+            # Check that the node name is not the same as the domain name
+            domain = get_domain(obj, self.request.db.nodes)
+            if domain['name'].lower() == obj['name'].lower():
+                self.request.errors.add('body', 'name',
+                                    "Name already used as domain name.")                
+                return False
+            
+        
         return unique
 
     def integrity_validation(self, obj, real_obj=None):
@@ -515,7 +525,7 @@ class TreeResourcePaginated(ResourcePaginated):
                 "{0} has a different path".format(parent_id))
             return False
 
-        return True
+        return self.check_unique_node_name_by_type_at_domain(obj)
 
 # TODO: Only have to extends this class the ComputerResource and UserResource
 # Now there are another class that extends it. I don't make it, because this

@@ -81,7 +81,7 @@
                     {% for update in updates %}
                         <tr>
                             <td>{{ update._id }}</td>
-                            <td>{{ update.name }}</td>
+                            <td><a href="{{ request.route_url('updates_download', id=update._id) }}">{{ update.name }}</a></td>
                             <td>
                                 <ul class="list-inline">
                                     <li> 
@@ -159,9 +159,18 @@
                                     <li>
                                         <a class="btn btn-danger btn-xs"
                                            href="{{ request.route_url('updates_tail', sequence=update._id, rollback='rollback') }}"> {{ gettext('Rollback') }}
-                                        </a>                                
+                                        </a>             
                                     </li>
                                     {% endif %}
+
+                                    {% if not update._id|regex_match('^[0-9]{4}$') and not 'repetition' in update %}
+                                    <li>
+                                        <a class="btn btn-default btn-xs"
+                                           href="{{ request.route_url('updates_repeat', sequence=update._id) }}"> {{ gettext('Repeat') }}
+                                        </a>             
+                                    </li>
+                                    {% endif %}
+                                    
                                 {% endif %}
                                 </ul>
                             </td>
@@ -178,18 +187,27 @@
                             </td>
 
                             <td>
-                            {% if update.get('state') %}
-                                <span data-toggle="tooltip" 
-                                      data-placement="top"
-                                      title="{{ gettext('Updated finished unsuccessfully') }}"
-                                      class="fa fa-times" 
-                                      style="color:red;"></span>
+                            {% if 'state' in update %}
+                                {% if update.get('state') %}
+                                    <span data-toggle="tooltip" 
+                                          data-placement="top"
+                                          title="{{ gettext('Updated finished unsuccessfully') }} {{ update|timediff }}"
+                                          class="fa fa-times" 
+                                          style="color:red;"></span>
+                                {% else %}
+                                    <span data-toggle="tooltip"
+                                          data-placement="top"
+                                          title="{{ gettext('Updated finished succesfully') }} {{ update|timediff }}"
+                                          class="fa fa-check" 
+                                          style="color:green;"></span>
+                                {% endif %}
                             {% else %}
                                 <span data-toggle="tooltip"
                                       data-placement="top"
-                                      title="{{ gettext('Updated finished succesfully') }}"
-                                      class="fa fa-check" 
-                                      style="color:green;"></span>
+                                      title="{{ gettext('Update running...') }}"
+                                      class="fa fa-clock-o" 
+                                      style="color:gray;"></span>
+                            
                             {% endif %}
                             </td>
                         </tr>
@@ -200,7 +218,7 @@
     </div>
     <div class="row">
         <div class="col-sm-6">
-            <a href="{{ request.route_url('updates_add') }}" class="btn btn-primary"><span class="fa fa-upload"></span> {{ gettext('Execute update') }}</a>
+            <a href="{{ request.route_url('updates_add') }}" class="btn btn-primary"><span class="fa fa-upload"></span> {{ gettext('Upload file and execute update') }}</a>
         </div>
         <div class="col-sm-6">
             <ul class="pagination pull-right">

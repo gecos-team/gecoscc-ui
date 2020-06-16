@@ -12,7 +12,6 @@
 import logging
 import time
 from datetime import datetime, timedelta
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
@@ -23,6 +22,7 @@ from pyramid.httpexceptions import HTTPBadRequest
 from pyramid.threadlocal import get_current_registry
 
 from gecoscc.i18n import gettext as _
+import pymongo
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +50,15 @@ def report_status_html(context, request):
     return report_status(context, request, 'html')
 
 
+def get_status(value):
+    if value.find('ERROR')>=0:
+        return 0
+    
+    if value.find('WARN')>=0:
+        return 1
+    else:
+        return 2
+
 def report_status(context, request, file_ext):
     '''
     Generate a report with all the users that belongs to an OU.
@@ -75,16 +84,24 @@ def report_status(context, request, file_ext):
     
     # Get user data
     query = request.db.nodes.find(
-        {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}).sort('last_agent_run_time', -1)
+        {'type': 'computer','path': get_filter_nodes_belonging_ou(ou_id)}
+        ).sort(
+        [('error_last_chef_client', pymongo.DESCENDING),
+         ('last_agent_run_time', pymongo.DESCENDING),
+         ('name', pymongo.ASCENDING) ] )
   
     rows = []
+    orders = []
 
     current_time = int(time.time())
     logger.debug("report_status: current_time = {}".format(current_time))
 
     # update_error_interval: Hours. Converts it to seconds
-    update_error_interval = timedelta(hours=int(get_current_registry().settings.get('update_error_interval', 24))).seconds
-    logger.debug("report_status: update_error_interval = {}".format(update_error_interval))
+    update_error_interval = timedelta(
+        hours=int(get_current_registry().settings.get(
+            'update_error_interval', 24))).seconds
+    logger.debug("report_status: update_error_interval = {}".format(
+        update_error_interval))
     
     # gecos-agent runs every 60 minutes (cron resource: minutes 30)
     # See https://github.com/gecos-team/gecos-workstation-management-cookbook/blob/master/recipes/default.rb (line: 57)
@@ -96,50 +113,70 @@ def report_status(context, request, file_ext):
 
     for item in query:
         row = []
+        order = []
+        status = '0'
 
         last_agent_run_time = int(item.get('last_agent_run_time',0))
-        logger.debug("report_status: last_agent_run_time = {}".format(last_agent_run_time))
+        logger.debug("report_status: last_agent_run_time = {}".format(
+            last_agent_run_time))
 
         if last_agent_run_time + delay_margin >= current_time:
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'OK'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="OK" src="/static/images/checkmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'OK'
 
+            status = '0'
         # Chef-run error or update_error_interval hours has elapsed from last agent run time
         elif (item['error_last_chef_client'] or
             last_agent_run_time + update_error_interval >= current_time
         ):
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'ERROR'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="ERROR" src="/static/images/xmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'ERROR'
+            status = '2'
 
         # delay_margin < last_agent_run_time < update_error_interval
         else:
-            item['status'] = '<div class="centered" style="width: 100%"><img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
-                             if file_ext != 'csv' else 'WARN'
+            item['status'] = '<div class="centered" style="width: 100%">'\
+                '<img alt="WARN" src="/static/images/alertmark.jpg"/></div>' \
+                    if file_ext != 'csv' else 'WARN'
+            status = '1'
         
 
         if file_ext == 'pdf':
             row.append(treatment_string_to_pdf(item, 'name', 20))
+            order.append('')
             row.append(item['_id'])
+            order.append('')
 
             if last_agent_run_time != 0:
-                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                row.append(datetime.utcfromtimestamp(
+                    last_agent_run_time).strftime('%d/%m/%Y %H:%M:%S'))
             else:
                 row.append(' -- ')
+            order.append(last_agent_run_time)
 
             row.append(item['status'])
+            order.append(status)
         else:
             if file_ext == 'csv':
                 row.append(treatment_string_to_csv(item, 'name'))
             else:
                 row.append(get_html_node_link(item))
-                row.append(item['_id'])
+            order.append('')
+            row.append(item['_id'])
+            order.append('')
             if last_agent_run_time != 0:
-                row.append(datetime.utcfromtimestamp(last_agent_run_time).strftime('%Y-%m-%d %H:%M:%S'))
+                row.append(datetime.utcfromtimestamp(
+                    last_agent_run_time).strftime('%d/%m/%Y %H:%M:%S'))
             else:
                 row.append('--')
+            order.append(last_agent_run_time)
             row.append(treatment_string_to_csv(item, 'status'))
+            order.append(status)
 
         rows.append(row)
+        orders.append(order)
         
                 
     header = (_(u'Name').encode('utf-8'),
@@ -157,8 +194,14 @@ def report_status(context, request, file_ext):
 
     now = datetime.now().strftime("%d/%m/%Y %H:%M")
 
+    # Sort rows
+    rows = sorted(rows, key = lambda i: (get_status(i[3]), i[0].lower()))    
+   
+
     return {'headers': header,
             'rows': rows,
+            'orders': orders,
+            'default_order': [[ 3, 'desc' ], [ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

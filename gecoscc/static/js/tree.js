@@ -250,6 +250,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         that.set("tree", aux[0]);
                         if (callback) { callback(); }
                     });
+                },
+                error: function(xhr, textStatus, error){
+                    if (xhr.status === 403) {
+                        forbidden_access();
+                    }
+                    else {
+                        console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                    }
                 }
             });
         },
@@ -378,9 +386,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             var nodes = {};
 
             // Get the parent node of this node
-            nodes.parentNode = this.get("tree").first({ strategy: "breadth" }, function (n) {
-                return n.model.id === path.parentId;
-            }) || this.get("tree");
+            nodes.parentNode = this.getTreeNode(path.parentId) || this.get("tree");
             
             // Get this node from parent node children
             nodes.oldNode = _.find(nodes.parentNode.children, function (n) {
@@ -585,6 +591,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     }
                 });
                 if (!silent) { that.trigger("change"); }
+            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                  }
             });
         },
 
@@ -610,15 +623,22 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             search();
         },
 
+
+        getTreeNode: function (id) {
+            return this.get("tree").first({ strategy: 'breadth' }, function (n) {
+                    return n.model.id === id;
+                });
+        },
+
         openAllContainersFrom: function (id, silent) {
             // Id must reference a container (OU)
-            var node = this.get("tree").first({ strategy: 'breadth' }, function (n) {
-                    return n.model.id === id;
-                }),
-                paginatedChildren,
-                openedAtLeastOne;
+            var node = this.getTreeNode(id);
+            var paginatedChildren, openedAtLeastOne;
 
-            if (!node) { return; }
+            if (!node) {
+                console.warn("OU: "+id+" not found!");
+                return; 
+            }
 
             // Include the id passed
             openedAtLeastOne = node.model.closed;
@@ -670,9 +690,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             // It's safe to assume in this case that the node is already
             // present in the tree (as container node or as child)
             var tree = this.get("tree"),
-                node = tree.first({ strategy: 'breadth' }, function (n) {
-                    return n.model.id === id;
-                }),
+                node = this.getTreeNode(id),
                 that = this;
 
             if (!_.isUndefined(node)) {
@@ -685,9 +703,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             $.ajax(this.getUrl({ oids: id })).done(function (response) {
                 var data = response.nodes[0];
 
-                node = tree.first({ strategy: 'breadth' }, function (n) {
-                    return n.model.id === id;
-                });
+                node = that.getTreeNode(id);
                 if (_.isUndefined(node)) {
                     // Maybe the node is not in the loaded page
                     return;
@@ -702,6 +718,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
 
                 if (!silent) { that.trigger("change"); }
+            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                  }
             });
         },
 

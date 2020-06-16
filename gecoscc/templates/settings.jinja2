@@ -211,10 +211,13 @@
                          location.reload();
                       },
                       error: function(xhr, textStatus, error){
-                          console.log(xhr.statusText);
-                          console.log(textStatus);
-                          console.log(error);
-                          $('#saving-error-modal').modal();
+                          if (xhr.status === 403) {
+                            forbidden_access();
+                          }
+                          else {
+                              console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                              $('#saving-error-modal').modal();
+                          }
                       }
                     });
                 }

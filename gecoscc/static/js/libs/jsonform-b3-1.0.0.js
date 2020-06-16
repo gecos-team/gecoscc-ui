@@ -659,11 +659,11 @@ jsonform.elementTypes = {
           lastTerm = "",
           data = {},
           resNode,
-          addedTerm = false;
+          addedTerm = [];
 
       var addTerm = function (list, term) {
-          addedTerm = !_.some(list, function (n) { return n.text == term; });
-          if (!addedTerm) {
+          var newTerm = !_.some(list, function (n) { return n.text == term; });
+          if (!newTerm) {
             return;
           }
           list.push({
@@ -671,6 +671,7 @@ jsonform.elementTypes = {
             value: term,
             id: term
           });
+          addedTerm.push(term);
           node.schemaElement['enum'].push(term);
       };
 
@@ -691,7 +692,15 @@ jsonform.elementTypes = {
         promise = $.ajax({
           url: schemaElmnt.autocomplete_url,
           dataType: 'json',
-          data: data
+          data: data,
+          error: function(xhr, textStatus, error){
+                if (xhr.status === 403) {
+                    forbidden_access();
+                }
+                else {
+                    console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                }
+            }
         });
       } else {
         promise = $.Deferred();
@@ -838,7 +847,15 @@ jsonform.elementTypes = {
                               }
 
                               query.callback({results: nodes, more: more});
-                          }
+                          },
+                          error: function(xhr, textStatus, error){
+                              if (xhr.status === 403) {
+                                forbidden_access();
+                              }
+                              else {
+                                console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                              }
+                          }                          
                       });
                   }
                   lastTerm = query.term;
@@ -852,7 +869,7 @@ jsonform.elementTypes = {
                 }
               }
             }).on("change", function(e) {
-              if(e.val != lastTerm || !addedTerm){
+              if(e.val != lastTerm || addedTerm.indexOf(e.val)<0){
                 $(node.el).find(".alert").hide();
               } else {
                 $(node.el).find(".alert").show();
@@ -2764,7 +2781,12 @@ formNode.prototype.render = function (el) {
  */
 formNode.prototype.getLocalizedAttr = function (attr, lan) {
   lan = lan || this.lan;
-  return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
+  if (this.schemaElement) {
+    return this.formElement[attr + "_" + lan] || this.schemaElement[attr + "_" + lan] || this[attr];
+  }
+  else {
+    return this.formElement[attr + "_" + lan] || this[attr];
+  }
 };
 
 

@@ -21,7 +21,9 @@ from distutils.version import LooseVersion
 
 from gecoscc.management import BaseCommand
 from gecoscc.utils import (_get_chef_api, toChefUsername, 
-                           trace_inheritance, order_groups_by_depth)
+                           trace_inheritance, order_groups_by_depth,
+                           check_unique_node_name_by_type_at_domain,
+                           is_domain, get_domain, is_root)
 from gecoscc.rules import get_username_chef_format
 from bson.objectid import ObjectId
 from gecoscc.models import Policy
@@ -246,14 +248,23 @@ class Command(BaseCommand):
         self.policiesdata = {}
         self.slug_check = {}
         for policy in dbpolicies:
-            logger.debug('Addig to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
+            logger.debug('Adding to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
             self.policiesdata[str(policy['_id'])] = policy
             
             # Check policy slug field (must be unique)
             if policy['slug'] in self.slug_check:
                 logger.error("There are more than one policy with '%s' slug!"%(policy['slug']))
             else:
-                self.slug_check[policy['slug']] = policy
+                slug = policy['slug']
+                # The slug of the emitter policies is different from the others
+                if slug == 'printer_can_view':
+                    slug = 'printers_res'
+                elif slug == 'storage_can_view':
+                    slug = 'user_shared_folders_res'
+                elif slug == 'repository_can_view':
+                    slug = 'software_sources_res'
+                
+                self.slug_check[slug] = policy
                 
             # Check policy serialization
             try:
@@ -326,9 +337,11 @@ class Command(BaseCommand):
         # Check the references to computer nodes
         for node_id in ChefNode.list():
             found = False
-            computers = self.db.nodes.find({"node_chef_id" : node_id})    
+            computers = self.db.nodes.find({"node_chef_id" : node_id})
+            node_path = None
             for computer in computers:   
                 found = True
+                node_path = computer['path']
                 
             computer_node = ChefNode(node_id, self.api)
             if not found:
@@ -359,6 +372,25 @@ class Command(BaseCommand):
                 computer_node.normal = updated_attributes
                 computer_node.save()
             
+            if node_path is not None:
+                # Check "gecos_path_ids" field
+                if not computer_node.attributes.has_dotted('gecos_path_ids') or computer_node.attributes.get_dotted('gecos_path_ids') != node_path:
+                    logger.info("FIXED: gecos_path_ids attribute in node: %s."%(node_id))
+                    computer_node.attributes.set_dotted('gecos_path_ids', node_path) 
+                    computer_node.save()
+    
+                # Check "gecos_path_names" field
+                node_path_names = 'root'
+                for elm in node_path.split(','):
+                    if elm == 'root':
+                        continue
+                    ou = self.db.nodes.find_one({'_id': ObjectId(elm)})
+                    node_path_names += ',' + ou['name'] 
+                
+                if not computer_node.attributes.has_dotted('gecos_path_names') or computer_node.attributes.get_dotted('gecos_path_names') != node_path_names:
+                    logger.info("FIXED: gecos_path_names attribute in node: %s."%(node_id))
+                    computer_node.attributes.set_dotted('gecos_path_names', node_path_names) 
+                    computer_node.save()
             
         
         logger.info('END ;)')
@@ -421,6 +453,15 @@ class Command(BaseCommand):
         Check the policies applied to a node
         '''        
         logger.info('Checking node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        
+        # Check for name duplicates
+        if not check_unique_node_name_by_type_at_domain(self.db.nodes, node):
+            logger.error('Duplicates found for node: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
+        elif not is_domain(node) and not is_root(node):
+            # Check that the node name is not the same as the domain name
+            domain = get_domain(node, self.db.nodes)
+            if domain['name'].lower() == node['name'].lower():            
+                logger.error('The node has the same name as the domain: "%s" type:%s path: %s'%(node['name'], node['type'], node['path']))
         
         if self.options.inheritance:
             inheritance_node = deepcopy(node)      

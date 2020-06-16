@@ -25,6 +25,7 @@
 
         <script src="{{ request.application_url }}/static/js/libs/jquery-1.10.2.min.js"></script>
         <script src="{{ request.application_url }}/static/js/libs/deform.js"></script>                                                                                                
+        <script src="{{ request.application_url }}/static/js/forbidden.js"></script>                                                                                                
 
         {% block extraheader %}{% endblock %}
     </head>
@@ -134,7 +135,12 @@
                         success: function(result) {
                             // Log deleted, refresh the view
                             App.main.currentView.refresh();
-                        }
+                        },
+                        statusCode: {
+                            403: function() {
+                              forbidden_access();
+                            }
+                        }                        
                     });
                 }
             }

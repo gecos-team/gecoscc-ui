@@ -11,7 +11,6 @@
 
 import logging
 import datetime
-from bson import ObjectId
 
 from gecoscc.views.reports import (treatment_string_to_csv,
     treatment_string_to_pdf, get_html_node_link, check_visibility_of_ou)
@@ -73,7 +72,8 @@ def report_no_computer_users(context, request, file_ext):
 
     # Get user data
     query = request.db.nodes.find(
-        {'type': 'user', 'path': get_filter_nodes_belonging_ou(ou_id), 'computers': []})
+        {'type': 'user', 'path': get_filter_nodes_belonging_ou(ou_id),
+         'computers': []})
 
     rows = []
     
@@ -85,7 +85,8 @@ def report_no_computer_users(context, request, file_ext):
                 treatment_string_to_pdf(item, 'address', 35),
                 item['_id']) for item in query]
     else:
-        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' else get_html_node_link(item),
+        rows = [(treatment_string_to_csv(item, 'name') if file_ext == 'csv' \
+                    else get_html_node_link(item),
                 treatment_string_to_csv(item, 'first_name'),
                 treatment_string_to_csv(item, 'last_name'),
                 treatment_string_to_csv(item, 'email'),
@@ -107,13 +108,20 @@ def report_no_computer_users(context, request, file_ext):
         widths = (25, 25, 15, 10, 20, 15)
     else:
         widths = (15, 15, 10, 15, 10, 20, 15)
-        header = header[ : 2] + (_(u'Last name').encode('utf-8'),) + header[ 2 : ]
+        header = header[ : 2] + (_(u'Last name').encode('utf-8'),) + \
+            header[ 2 : ]
 
     title =  _(u'No-computer users report')
     now = datetime.datetime.now().strftime("%d/%m/%Y %H:%M")
         
+    # Sort rows
+    # TODO: Use MongoDB Collations to do a "ignore_case" sorting    
+    # (MongoDB 2.6 does not support "ignore case" sorting)   
+    rows = sorted(rows, key = lambda i: (i[0].lower()))    
+        
     return {'headers': header,
             'rows': rows,
+            'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
             'page': _(u'Page').encode('utf-8'),

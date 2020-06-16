@@ -37,6 +37,9 @@ from gecoscc.session import session_factory_from_settings
 from urlparse import urlsplit
 import colander
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def read_setting_from_env(settings, key, default=None):
     env_variable = key.upper()
@@ -50,16 +53,22 @@ def pregen(_request, elements, kw):
     return elements, kw
 
 def include_file(name):
-    with open(name) as f:
-        return jinja2.Markup(f.read())
+    if os.path.isfile(name):
+        with open(name) as f:
+            return jinja2.Markup(f.read())
+    else:
+        logger.warn('File not found: %s'%(name))
+        return 'File not found: %s'%(name)
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('updates', '/updates/', factory=SuperUserFactory)
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_download', '/updates/download/{id}', factory=SuperUserFactory)
     config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_repeat', '/updates/repeat/{sequence}', factory=SuperUserFactory, pregenerator=pregen)
     
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
@@ -160,8 +169,19 @@ def check_server_list(config):
         db.servers.insert({'name': server_name.strip(), 'address':server_address.strip()})
     else:
         server['address'] = server_address.strip()
-        db.servers.update({'name': server_name.strip()}, server, new=False)
+        db.servers.update({'name': server_name.strip()}, server)
         
+        
+def check_database_indexes(config):
+    settings = config.registry.settings
+    db = settings['mongodb'].get_database()
+    
+    languages = settings.get("pyramid.locales")
+    for lang in languages:
+        logger.debug('Creating indexes for "%s" locale'%(lang))
+        db.nodes.create_index('name', name=('name_%s'%(lang)),
+            collation=pymongo.collation.Collation(lang, caseLevel=True, strength=pymongo.collation.CollationStrength.PRIMARY) )
+          
     
 def userdb_config(config):
     # TODO
@@ -249,6 +269,11 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
     locale_config(config)
+
+#    Commented out until next big update to Python3. Breaks MongoDB 2.x compatibility.
+#    check_database_indexes(config)
+    logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
+
     
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)

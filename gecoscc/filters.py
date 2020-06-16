@@ -24,7 +24,13 @@ def admin_serialize(admin):
         'ou_managed': admin.get('ou_managed', []),
         'ou_remote': admin.get('ou_remote', [])
     })
-    return json.dumps(serialized)
+    json_data = ''
+    try:
+        json_data = json.dumps(serialized)
+    except TypeError, e:
+        json_data = 'Error serializing user: %s' % (str(e))
+    
+    return json_data
 
 def datetime(value, date_format='medium'):
     '''
@@ -35,6 +41,43 @@ def datetime(value, date_format='medium'):
     elif date_format == 'medium':
         date_format="dd/MM/y HH:mm"
     return format_datetime(value, date_format, tzinfo=LOCALTZ)
+
+
+def timediff(value):
+    '''
+    Custom filter for formatting time differences in jinja2 template
+    '''
+    
+    if not 'timestamp' in value or not 'timestamp_end' in value:
+        return '';
+    
+    start_time = value['timestamp']
+    end_time = value['timestamp_end']
+    difference = (end_time - start_time)
+    
+    formatted = ''
+    seconds = (difference % 60)
+    difference = ((difference - seconds) / 60)
+    
+    minutes = (difference % 60)
+    difference = ((difference - minutes) / 60)    
+
+    hours = (difference % 24)
+    days = ((difference - minutes) / 24)    
+    
+    if days > 0:
+        formatted += '%sd '%(days)
+
+    if hours > 0:
+        formatted += '%sh '%(hours)
+
+    if minutes > 0:
+        formatted += '%sm '%(minutes)
+
+    if seconds > 0:
+        formatted += '%ss '%(seconds)
+    
+    return '(' + formatted.strip() +')'
 
 def _get_regex_flags(ignorecase=False):
     return re.I if ignorecase else 0
