@@ -250,6 +250,14 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                         that.set("tree", aux[0]);
                         if (callback) { callback(); }
                     });
+                },
+                error: function(xhr, textStatus, error){
+                    if (xhr.status === 403) {
+                        forbidden_access();
+                    }
+                    else {
+                        console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                    }
                 }
             });
         },
@@ -583,6 +591,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                     }
                 });
                 if (!silent) { that.trigger("change"); }
+            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                  }
             });
         },
 
@@ -688,7 +703,7 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
             $.ajax(this.getUrl({ oids: id })).done(function (response) {
                 var data = response.nodes[0];
 
-                node = this.getTreeNode(id);
+                node = that.getTreeNode(id);
                 if (_.isUndefined(node)) {
                     // Maybe the node is not in the loaded page
                     return;
@@ -703,6 +718,13 @@ App.module("Tree.Models", function (Models, App, Backbone, Marionette, $, _) {
                 }
 
                 if (!silent) { that.trigger("change"); }
+            }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
+                  }
             });
         },
 

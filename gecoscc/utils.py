@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -50,6 +52,11 @@ POLICY_EMITTER_SUBFIX = '_can_view'
 USER_MGMT = 'users_mgmt'
 SOURCE_DEFAULT = MASTER_DEFAULT = 'gecos'
 USE_NODE = 'use_node'
+
+# Updates patterns
+BASE_UPDATE_PATTERN = '^update-(\w+)\.zip$'
+SERIALIZED_UPDATE_PATTERN = '^update-[0-9]{4}\.zip$'
+
 
 # Reserved codes for functions called from scripts
 SCRIPTCODES = { 
@@ -408,16 +415,18 @@ def to_deep_dict(node_attr):
 
 def dict_merge(a, b):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
-    both a and bhave a key who's value is a dict then dict_merge is called
+    both a and b have a key who's value is a dict then dict_merge is called
     on both values and the result stored in the returned dictionary.'''
     if not isinstance(b, dict):
         return b
-    result = deepcopy(a)
+    result = a.copy()
     for k, v in b.iteritems():
         if k in result and isinstance(result[k], dict):
                 result[k] = dict_merge(result[k], v)
+        elif isinstance(v, list):
+            result[k] = list(v)
         else:
-            result[k] = deepcopy(v)
+            result[k] = v
     return result
 
 
@@ -514,8 +523,10 @@ def get_job_errors_from_computer(jobs_collection, computer):
                                  '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
 
 
-def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user, cookbook_name,
-                         api=None, initialize=True, use_celery=False):
+def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
+                         cookbook_name, api=None, cookbook=None,
+                         validator=None,
+                         initialize=True, use_celery=False):
     job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
     node_chef_id = computer.get('node_chef_id', None)
     if not node_chef_id:
@@ -530,13 +541,30 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
         return (False, 'Node %s is not inizialized in chef server' % node_chef_id)
 
     apply_policies_to_computer(nodes_collection, computer, auth_user, api,
+                               cookbook=cookbook,
                                initialize=initialize,
-                               use_celery=use_celery)
+                               use_celery=use_celery,
+                               calculate_inheritance=False,
+                               validator=validator)
+    
+    # Mark the OUs of this computer as already visited
+    ous_already_visited = []
+    ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
+    for ou in ous:
+        if ou.get('policies', {}):    
+            oid = str(ou['_id'])
+            ous_already_visited.append(oid)
+    
     users = nodes_collection.find({'type': 'user', 'computers': computer['_id']})
     for user in users:
         apply_policies_to_user(nodes_collection, user, auth_user, api,
+                               [computer],
+                               cookbook=cookbook,
                                initialize=initialize,
-                               use_celery=use_celery)
+                               use_celery=use_celery,
+                               ous_already_visited=ous_already_visited,
+                               calculate_inheritance=False,
+                               validator=validator)
     new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
     if new_job_errors > job_errors:
         return (False, 'The computer %s had problems while it was updating' % computer['name'])
@@ -558,8 +586,13 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
     return nodes_collection.find_one({'_id': obj_id})
 
 
-def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None,
+        cookbook=None, initialize=False, use_celery=True,
+        policies_collection=None,
+        calculate_inheritance=True,
+        validator=None):
     from gecoscc.tasks import object_changed, object_created
+    logger.info('apply_policies_to_computer: %s'%(computer['name']))
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
@@ -572,23 +605,40 @@ def apply_policies_to_computer(nodes_collection, computer, auth_user, api=None, 
     ous = nodes_collection.find(get_filter_ous_from_path(computer['path']))
     for ou in ous:
         if ou.get('policies', {}):
-            object_changed(auth_user, 'ou', ou, {}, computers=[computer])
+            object_changed(auth_user, 'ou', ou, {}, computers=[computer],
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
     groups = nodes_collection.find({'_id': {'$in': computer.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed(auth_user, 'group', group, {}, computers=[computer])
+            object_changed(auth_user, 'group', group, {}, computers=[computer],
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
-    object_created(auth_user, 'computer', computer, computers=[computer])
+    object_created(auth_user, 'computer', computer, computers=[computer],
+                   api=api, cookbook=cookbook,
+                   calculate_inheritance=calculate_inheritance,
+                   validator=validator)
 
 
-def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initialize=False, use_celery=True, policies_collection=None):
+def apply_policies_to_user(nodes_collection, user, auth_user, api=None,
+                           computers=None, cookbook=None,
+                           initialize=False, use_celery=True,
+                           policies_collection=None,
+                           ous_already_visited=[],
+                           calculate_inheritance=True,
+                           validator=None):
     from gecoscc.tasks import object_changed, object_created
+    logger.info('apply_policies_to_user: %s'%(user['name']))
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
 
-    computers = get_computer_of_user(nodes_collection, user)
+    if computers is None:
+        computers = get_computer_of_user(nodes_collection, user)
 
     if api and initialize:
         user = visibility_group(nodes_collection.database, user)
@@ -600,15 +650,26 @@ def apply_policies_to_user(nodes_collection, user, auth_user, api=None, initiali
 
     ous = nodes_collection.find(get_filter_ous_from_path(user['path']))
     for ou in ous:
-        if ou.get('policies', {}):
-            object_changed(auth_user, 'ou', ou, {}, computers=computers)
+        oid = str(ou['_id'])
+        if ou.get('policies', {}) and (oid not in ous_already_visited):
+            ous_already_visited.append(oid)
+            object_changed(auth_user, 'ou', ou, {}, computers=computers,
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
     groups = nodes_collection.find({'_id': {'$in': user.get('memberof', [])}})
     for group in groups:
         if group.get('policies', {}):
-            object_changed(auth_user, 'group', group, {}, computers=computers)
+            object_changed(auth_user, 'group', group, {}, computers=computers,
+                           api=api, cookbook=cookbook,
+                           calculate_inheritance=calculate_inheritance,
+                           validator=validator)
 
-    object_created(auth_user, 'user', user, computers=computers)
+    object_created(auth_user, 'user', user, computers=computers,
+                   api=api, cookbook=cookbook,
+                   calculate_inheritance=calculate_inheritance,
+                   validator=validator)
 
 
 def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api=None, initialize=False, use_celery=True, policies_collection=None):
@@ -827,25 +888,31 @@ def get_cookbook(api, cookbook_name):
 class setPathAttrsToNodeException(Exception):
     pass
 
-def add_path_attrs_to_node(api, node_id, strpath, collection):
+def add_path_attrs_to_node(node, strpath, collection, save=True):
     ''' Setting up gecos_path_ids, gecos_path_names attributes to Chef node '''
 
-    logger.debug("utils ::: add_path_chef_node - node_id = {}".format(node_id))
+    logger.debug("utils ::: add_path_chef_node - node_id = {}".format(
+        str(node)))
     logger.debug("utils ::: add_path_chef_node - strpath = {}".format(strpath))
 
-    nodeids = map(ObjectId, strpath.split(',')[1:])
-    logger.debug("utils ::: add_path_chef_node - nodeids = {}".format(nodeids))
+    pathnames = 'root'
+    for elm in strpath.split(','):
+        if elm == 'root':
+            continue
+        ou = collection.find_one({'_id': ObjectId(elm)})
+        pathnames += ',' + ou['name'] 
 
-    pathnames = 'root,' + ','.join([n['name'] for n in collection.find({'_id': {'$in': nodeids}})])
-    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(pathnames))
+    logger.debug("utils ::: add_path_chef_node - pathnames = {}".format(
+        pathnames))
 
     try:
-        node = ChefNode(node_id, api)
         node.attributes.set_dotted('gecos_path_ids', strpath)
         node.attributes.set_dotted('gecos_path_names', pathnames)
-        node.save()
+        if save:
+            node.save()
     except (TypeError, KeyError, ChefError) as e:
-        logger.error("utils ::: add_path_chef_node - Exception to setting up path in chef node: {}".format(e))
+        logger.error("utils ::: add_path_chef_node - Exception to setting up"\
+                     " path in chef node: {}".format(e))
         raise setPathAttrsToNodeException
 
 def register_node(api, node_id, ou, collection_nodes):
@@ -862,7 +929,7 @@ def register_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
@@ -899,7 +966,7 @@ def update_node(api, node_id, ou, collection_nodes):
 
         try:
             nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
-            add_path_attrs_to_node(api, node_id, nodepath, collection_nodes)
+            add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
             computer = comp_model.serialize({'path': nodepath,
@@ -970,17 +1037,19 @@ def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
 
     if '_id' in obj:
         filters['_id'] = {'$ne': obj['_id']}
+
+# TODO: Replace this line with lines below when MongoDB 3.4 is available
+    return collection_nodes.find(filters).count() == 0
     
+#    count = 0
+#    settings = get_current_registry().settings
+#    locales = settings['pyramid.locales']
+#    for lang in locales:
+#        # Check that the name is unique in every locale
+#        count = count + collection_nodes.find(filters).collation(
+#            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
     
-    count = 0
-    settings = get_current_registry().settings
-    locales = settings['pyramid.locales']
-    for lang in locales:
-        # Check that the name is unique in every locale
-        count = count + collection_nodes.find(filters).collation(
-            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
-    
-    return count == 0
+#    return count == 0
 
 
 def _is_local_user(user):
@@ -2411,8 +2480,8 @@ def getNextUpdateSeq(db):
       db (object):    database connection
     '''
 
-    pattern = '^update-[0-9]{4}\.zip$'
-    cursor = db.updates.find({'name':{'$regex':pattern}},{'_id':1}).sort('_id',-1).limit(1)
+    cursor = db.updates.find({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
+                             {'_id':1}).sort('_id',-1).limit(1)
 
     if cursor.count() == 0:
         nseq = '0000'
@@ -2685,10 +2754,21 @@ def auditlog(request, action=None):
 
         try:
             logger.debug("utils.py ::: auditlog - request.user = {}".format(request.user))
-            try:
-                username = request.user['username']
-            except: # POST login
+            if action == 'login':
                 username = request.POST.get('username')
+            else:
+                # Logout or expired
+                if request.user is None:
+                    logger.warn('utils.py ::: auditlog: there is no user data in session (¿logout after session expired?)')
+                    return                     
+                
+                try:
+                    username = request.user['username']
+                except Exception as e:
+                    logger.warn('utils.py ::: auditlog: error getting user session data: %s'%(str(e)))
+                    return
+                
+                
             logger.debug("utils.py ::: auditlog - username = {}".format(username))
             ipaddr = request.headers.get('X-Forwarded-For', request.remote_addr)
             logger.debug("utils.py ::: auditlog - ipaddr = {}".format(ipaddr))

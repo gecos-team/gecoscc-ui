@@ -32,6 +32,7 @@ from pyramid.threadlocal import get_current_request
 import locale
 import datetime
 import re
+import traceback
 
 import logging
 logger = logging.getLogger(__name__)
@@ -213,7 +214,9 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'help_channel_enabled': help_channel_enabled
                            })
         except (urllib2.URLError, ChefError, ChefServerError):
-            pass
+            logger.error("/api/computers/: error getting data: node_chef_id: %s " % (str(result.get('node_chef_id', None))))
+            logger.error(traceback.format_exc())
+
         return result
 
     def put(self):

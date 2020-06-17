@@ -29,8 +29,10 @@ from deform.template import ZPTRendererFactory
 from gecoscc import messages
 from gecoscc.tasks import script_runner
 from gecoscc.i18n import gettext as _
-from gecoscc.utils import get_chef_api, create_chef_admin_user
+from gecoscc.utils import get_chef_api, create_chef_admin_user,\
+    BASE_UPDATE_PATTERN
 from gecoscc.socks import maintenance_mode
+import traceback
 
 
 default_dir = resource_filename('deform', 'templates/')
@@ -239,7 +241,7 @@ class UpdateForm(GecosForm):
     def save(self, update):
         settings = get_current_registry().settings
         update = update['local_file'] if update['local_file'] is not None else update['remote_file']
-        sequence = re.match('^update-(\w+)\.zip$', update['filename']).group(1)
+        sequence = re.match(BASE_UPDATE_PATTERN, update['filename']).group(1)
         logger.debug("forms.py ::: UpdateForm - sequence = %s" % sequence)
         # Updates directory: /opt/gecoscc/updates/<sequence>
         updatesdir = settings['updates.dir'] + sequence
@@ -273,12 +275,20 @@ class UpdateForm(GecosForm):
             link = '<a href="' +  self.request.route_url('updates_tail',sequence=sequence) + '">' + _("here") + '</a>'
             self.created_msg(_("Update log. %s") % link)
         except OSError as e:
-                if e.errno == errno.EACCES:
-                    self.created_msg(_('Permission denied: %s') % updatesdir, 'danger')
-                else:
-                    self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+            if e.errno == errno.EACCES:
+                self.created_msg(_('Permission denied: %s') % updatesdir, 'danger')
+            else:
+                self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')
+                
+            logger.error("forms.py ::: UpdateForm - - " + \
+                "error saving update: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
+                      
         except (IOError, os.error) as e:
-            pass
+            logger.error("forms.py ::: UpdateForm - - " + \
+                "error saving update: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
+                       
         except errors.DuplicateKeyError as e:
             logger.error('Duplicate key error')
             self.created_msg(_('There was an error attempting to upload an update. Please contact an administrator'), 'danger')

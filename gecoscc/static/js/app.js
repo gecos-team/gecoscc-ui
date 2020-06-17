@@ -15,11 +15,6 @@
 * https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 */
 
-// Function to manage a 403 error code in any AJAX call.
-function forbidden_access() {
-    $("#forbidden-modal").modal({backdrop: 'static'});
-}
-
 // This file creates the global App variable, it should be loaded as soon as
 // possible
 var App;
@@ -158,7 +153,15 @@ var App;
                 type: 'PUT',
                 success: function () {
                     that.tasksFilter();
-                }
+                },
+                error: function(xhr, textStatus, error){
+                    if (xhr.status === 403) {
+                        forbidden_access();
+                    }
+                    else {
+                        console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                    }
+                }                
             });
         },
 
@@ -306,7 +309,15 @@ var App;
                 type: 'PUT',
                 success: function () {
                     that.tasksFilter();
-                }
+                },
+                error: function(xhr, textStatus, error){
+                    if (xhr.status === 403) {
+                        forbidden_access();
+                    }
+                    else {
+                        console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+                    }
+                }                
             });
         },        
         
@@ -628,14 +639,19 @@ var App;
                     }
                     App.instances.cache.set(model.get('id'), model);
 
-                }).fail(function () {
+                }).fail( function( jqXHR, textStatus, errorThrown ) {
+                  if (jqXHR.status === 403) {
+                    forbidden_access();
+                  }
+                  else {
+                    console.log('Error: '+jqXHR.status+' '+jqXHR.statusText+' - '+textStatus+' - '+errorThrown);
                     App.main.close(App.instances.loaderView);
                     App.showAlert(
                             "error",
                             gettext("¡¡ OOOOOPSSS !! The url points to a non-existent object."),
                             "<br/> - " + gettext("If you came here by clicking on a link in a view, refresh that view.")
                     );
-                    return;
+                  }
                 });
             },
 
@@ -859,4 +875,21 @@ var App;
         
     }
     App.instances.cut = undefined;
+    
+    /* Override the Backbone ajax function */
+    Backbone.ajax = function() {
+        var args = arguments;
+        var errorFunc = args.error;
+        args.error = function(xhr, textStatus, error){
+            if (xhr.status === 403) {
+                console.log('Forbidden access');
+                forbidden_access();
+            }
+            else {
+                errorFunc(xhr, textStatus, error);
+            }
+        };
+        return Backbone.$.ajax.apply(Backbone.$, args);
+    };
+    
 }(Backbone, jQuery, _, gettext, MessageManager));

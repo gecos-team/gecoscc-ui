@@ -248,14 +248,23 @@ class Command(BaseCommand):
         self.policiesdata = {}
         self.slug_check = {}
         for policy in dbpolicies:
-            logger.debug('Addig to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
+            logger.debug('Adding to dictionary: %s => %s'%(policy['_id'], json.dumps(policy['schema'])))
             self.policiesdata[str(policy['_id'])] = policy
             
             # Check policy slug field (must be unique)
             if policy['slug'] in self.slug_check:
                 logger.error("There are more than one policy with '%s' slug!"%(policy['slug']))
             else:
-                self.slug_check[policy['slug']] = policy
+                slug = policy['slug']
+                # The slug of the emitter policies is different from the others
+                if slug == 'printer_can_view':
+                    slug = 'printers_res'
+                elif slug == 'storage_can_view':
+                    slug = 'user_shared_folders_res'
+                elif slug == 'repository_can_view':
+                    slug = 'software_sources_res'
+                
+                self.slug_check[slug] = policy
                 
             # Check policy serialization
             try:
@@ -328,9 +337,11 @@ class Command(BaseCommand):
         # Check the references to computer nodes
         for node_id in ChefNode.list():
             found = False
-            computers = self.db.nodes.find({"node_chef_id" : node_id})    
+            computers = self.db.nodes.find({"node_chef_id" : node_id})
+            node_path = None
             for computer in computers:   
                 found = True
+                node_path = computer['path']
                 
             computer_node = ChefNode(node_id, self.api)
             if not found:
@@ -361,6 +372,25 @@ class Command(BaseCommand):
                 computer_node.normal = updated_attributes
                 computer_node.save()
             
+            if node_path is not None:
+                # Check "gecos_path_ids" field
+                if not computer_node.attributes.has_dotted('gecos_path_ids') or computer_node.attributes.get_dotted('gecos_path_ids') != node_path:
+                    logger.info("FIXED: gecos_path_ids attribute in node: %s."%(node_id))
+                    computer_node.attributes.set_dotted('gecos_path_ids', node_path) 
+                    computer_node.save()
+    
+                # Check "gecos_path_names" field
+                node_path_names = 'root'
+                for elm in node_path.split(','):
+                    if elm == 'root':
+                        continue
+                    ou = self.db.nodes.find_one({'_id': ObjectId(elm)})
+                    node_path_names += ',' + ou['name'] 
+                
+                if not computer_node.attributes.has_dotted('gecos_path_names') or computer_node.attributes.get_dotted('gecos_path_names') != node_path_names:
+                    logger.info("FIXED: gecos_path_names attribute in node: %s."%(node_id))
+                    computer_node.attributes.set_dotted('gecos_path_names', node_path_names) 
+                    computer_node.save()
             
         
         logger.info('END ;)')

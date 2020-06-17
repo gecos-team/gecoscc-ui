@@ -53,16 +53,22 @@ def pregen(_request, elements, kw):
     return elements, kw
 
 def include_file(name):
-    with open(name) as f:
-        return jinja2.Markup(f.read())
+    if os.path.isfile(name):
+        with open(name) as f:
+            return jinja2.Markup(f.read())
+    else:
+        logger.warn('File not found: %s'%(name))
+        return 'File not found: %s'%(name)
 
 def route_config(config):
     config.add_static_view('static', 'static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('updates', '/updates/', factory=SuperUserFactory)
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
+    config.add_route('updates_download', '/updates/download/{id}', factory=SuperUserFactory)
     config.add_route('updates_log', '/updates/log/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
     config.add_route('updates_tail', '/updates/tail/{sequence}/{rollback:.*}', factory=SuperUserFactory, pregenerator=pregen)
+    config.add_route('updates_repeat', '/updates/repeat/{sequence}', factory=SuperUserFactory, pregenerator=pregen)
     
     config.add_route('admins', '/admins/', factory=SuperUserFactory)
     config.add_route('admins_add', '/admins/add/', factory=SuperUserFactory)
@@ -259,7 +265,11 @@ def main(global_config, **settings):
     auth_config(config)
     celery_config(config)
     locale_config(config)
-    check_database_indexes(config)
+
+#    Commented out until next big update to Python3. Breaks MongoDB 2.x compatibility.
+#    check_database_indexes(config)
+    logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
+
     
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)

@@ -27,8 +27,14 @@ from copy import copy
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
 from gecoscc.i18n import gettext_lazy as _
 from gecoscc.i18n import gettext                                
-from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook
+from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook,\
+    BASE_UPDATE_PATTERN, SERIALIZED_UPDATE_PATTERN
 from pyramid.threadlocal import get_current_registry
+
+import sys
+import logging
+import traceback
+logger = logging.getLogger(__name__)
 
 OU_ORDER = 1
 UPDATE_STRUCTURE = ['control', 'cookbook/', 'scripts/']
@@ -445,7 +451,7 @@ class UpdateNamingValidator(UpdateBaseValidator):
       pattern (str):    regex for valid naming convention
     '''
     err_msg = _('The uploaded file is not followed naming convention')
-    pattern = '^update-(\w+)\.zip$'
+    pattern = BASE_UPDATE_PATTERN
     def __call__(self, node, value):
         super(UpdateNamingValidator, self).__call__(node, value)
         if self.filename and not (re.match(self.pattern, self.filename)):
@@ -459,11 +465,10 @@ class UpdateSequenceValidator(UpdateBaseValidator):
       pattern (str):    regex for valid numeric sequence
     '''
     err_msg = _('No valid update sequence. Must be: {$val}')
-    pattern = '^update-([0-9]{4})\.zip$'
     def __call__(self, node, value):
         super(UpdateSequenceValidator, self).__call__(node,value)
         if self.filename:
-            m = re.match(self.pattern, self.filename)
+            m = re.match(SERIALIZED_UPDATE_PATTERN, self.filename)
             request = pyramid.threadlocal.get_current_request()
             from gecoscc.db import get_db
             mongodb = get_db(request)
@@ -475,6 +480,11 @@ class UpdateSequenceValidator(UpdateBaseValidator):
             else:
                 if mongodb.updates.find({'name':self.filename}).count() > 0:
                     node.raise_invalid(_('This name already exists'))
+                    
+                sequence = re.match(BASE_UPDATE_PATTERN, self.filename).group(1)
+                if mongodb.updates.find({'_id': sequence}).count() > 0:
+                    node.raise_invalid(_('This sequence already exists'))
+            
 
 class UpdateFileStructureValidator(UpdateBaseValidator):
     ''' Subclass for validating zip file content
@@ -592,16 +602,10 @@ def unzip_preparer(value):
 
             return value
 
-        except urllib2.HTTPError:
-            pass
-        except urllib2.URLError:
-            pass
-        except zipfile.BadZipfile:
-            pass
-        except OSError:
-            pass
-        except IOError:
-            pass
+        except:
+            e = sys.exc_info()[0]
+            logger.error("unzip_preparer: %s"%(str(e)))
+            logger.error("Traceback: %s"%(traceback.format_exc()))
 
 class UrlFile(object):
     ''' Custom type for URL string 

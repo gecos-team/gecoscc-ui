@@ -92,6 +92,14 @@ function calculateVersions(node, query) {
             
             query.callback({results: options, more: false});
 
+        },
+        error: function(xhr, textStatus, error){
+            if (xhr.status === 403) {
+                forbidden_access();
+            }
+            else {
+                console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+            }
         }
     });
     
@@ -128,7 +136,15 @@ function calculateProviders(node, query) {
             }
             
             query.callback({results: providers, more: false});
-        }
+        },
+        error: function(xhr, textStatus, error){
+            if (xhr.status === 403) {
+                forbidden_access();
+            }
+            else {
+                console.log('Error: '+xhr.status+' '+xhr.statusText+' - '+textStatus+" - "+error);
+            }
+        }        
     });
     
 }
