@@ -1130,7 +1130,8 @@ class ChefTask(Task):
         obj_type = obj['type']
         if obj_type in ['computer', 'user']:
             if action == DELETED_POLICY_ACTION:
-                del updated_by[obj_type]
+                if obj_type in updated_by:
+                    del updated_by[obj_type]
             else:
                 updated_by[obj_type] = obj_id
             updated = True
