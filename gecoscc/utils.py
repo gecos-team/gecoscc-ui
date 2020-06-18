@@ -2184,7 +2184,8 @@ def calculate_initial_inheritance_for_node(logger, db, node):
                         previousOU = item
             
             if previousOU is None:
-                logger.error("utils.py ::: calculate_initial_inheritance_for_node - OUs not found for path %s" % str(node.get('path')))
+                if 'root' != node.get('path'):
+                    logger.error("utils.py ::: calculate_initial_inheritance_for_node - OUs not found for path %s" % str(node.get('path')))
                 return False
         
             if 'memberof' in node:
