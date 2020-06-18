@@ -291,3 +291,15 @@ class ReadOnlyOrManageFactory(LoggedFactory):
                 return [(Allow, Authenticated, 'edit')]
 
         return [(Deny, Everyone, [])]
+
+class ManageFactory(LoggedFactory):
+
+    def __acl__(self):
+        user = self.request.user
+        if user:
+            if user.get('is_superuser', False):
+                return [(Allow, Authenticated, 'edit'), (Allow, Authenticated, 'is_superuser')]
+            if user.get('ou_managed', []):
+                return [(Allow, Authenticated, 'edit')]
+
+        return [(Deny, Everyone, [])]

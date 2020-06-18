@@ -29,7 +29,7 @@ from gecoscc.db import MongoDB, get_db
 from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage, ExpiredSessionEvent
 from gecoscc.permissions import (is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory,
-    InternalAccessFactory, RootFactory, ReadOnlyOrManageFactory)
+    InternalAccessFactory, RootFactory, ReadOnlyOrManageFactory, ManageFactory)
 from gecoscc.socks import socketio_service
 from gecoscc.utils import auditlog
 from gecoscc.session import session_factory_from_settings
@@ -86,7 +86,7 @@ def route_config(config):
     config.add_route('report_file', '/report', factory=ReadOnlyOrManageFactory)
     config.add_route('computer_logs', '/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
     config.add_route('download_computer_logs', '/download/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
-    config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=LoggedFactory)
+    config.add_route('delete_computer_logs', '/delete/computer/logs/{node_id}/{filename}', factory=ManageFactory)
     config.add_route('i18n_catalog', '/i18n-catalog/')
     config.add_route('login', '/login/')
     config.add_route('logout', 'logout/')

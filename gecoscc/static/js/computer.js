@@ -644,7 +644,16 @@ App.module("Computer.Views", function (Views, App, Backbone, Marionette, $, _) {
                 $el.toggleClass("fa-caret-right").toggleClass("fa-caret-down");
             });
             if (!this.model.get("isEditable")) {
+                // Disable edit textarea, input and select except the
+                // search button
                 this.$el.find("textarea,input,select").prop("disabled", true).prop("placeholder", '');
+                this.$el.find("#ohai_tree-search").
+                    prop("placeholder", 'Buscar').removeProp("disabled");
+                    
+                // Disable delete log button
+                var $rmLog = this.$el.find(".deleteLogBtn");
+                $rmLog.addClass('disabled');
+                $rmLog.unbind('click');                
             }
             
             // OHAI JSON tree rendering
