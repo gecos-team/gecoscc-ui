@@ -111,7 +111,8 @@ def forbidden_view(context, request):
             reason = 'unknown'
         logger.debug("User %s tripped Forbidden view, request %s, "
                      "reason %s"%(str(user), str(request), str(reason)))
-        if request.db.settings.find_one({'key':'maintenance_mode'}).get('value', False):
+        mmode = request.db.settings.find_one({'key':'maintenance_mode'})
+        if (mmode is not None) and mmode.get('value', False):
             msg = request.db.settings.find_one({'key':'maintenance_message'})
             if msg is not None:
                 msg = msg['value']
