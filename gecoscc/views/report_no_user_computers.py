@@ -28,23 +28,23 @@ logger = logging.getLogger(__name__)
 
 @view_config(route_name='report_file', renderer='csv',
              permission='edit',
-             request_param=("type=no-user_computers", "format=csv"))
+             request_param=("type=no_user_computers", "format=csv"))
 def report_no_user_computers_csv(context, request):
-    filename = 'report_no-user_computers.csv'
+    filename = 'report_no_user_computers.csv'
     request.response.content_disposition = 'attachment;filename=' + filename
     return report_no_user_computers(context, request, 'csv')
 
 @view_config(route_name='report_file', renderer='pdf',
              permission='edit',
-             request_param=("type=no-user_computers", "format=pdf"))
+             request_param=("type=no_user_computers", "format=pdf"))
 def report_no_user_computers_pdf(context, request):
-    filename = 'report_no-user_computers.pdf'
+    filename = 'report_no_user_computers.pdf'
     request.response.content_disposition = 'attachment;filename=' + filename
     return report_no_user_computers(context, request, 'pdf')
 
 @view_config(route_name='report_file', renderer='templates/report.jinja2',
              permission='edit',
-             request_param=("type=no-user_computers", "format=html"))
+             request_param=("type=no_user_computers", "format=html"))
 def report_no_user_computers_html(context, request):
     return report_no_user_computers(context, request, 'html')
 
@@ -78,7 +78,7 @@ def report_no_user_computers(context, request, file_ext):
     
     filters = ({'type': 'user','path': get_filter_nodes_belonging_ou(ou_id)})
 
-    logger.info("report_no-user_computers: filters = {}".format(filters))
+    logger.info("report_no_user_computers: filters = {}".format(filters))
 
     users = request.db.nodes.find(filters)
     for user in users:
@@ -86,11 +86,11 @@ def report_no_user_computers(context, request, file_ext):
             user, related_computers, related_objects)
 
     references = [c['_id'] for c in related_computers]
-    logger.info("report_no-user_computers: references = {}".format(references))
+    logger.info("report_no_user_computers: references = {}".format(references))
     filters2 = ({'type': 'computer','path': get_filter_nodes_belonging_ou(
         ou_id)})
     filters2.update({'_id': {'$nin': [c['_id'] for c in related_computers]}})
-    logger.info("report_no-user_computers: filters2 = {}".format(filters2))
+    logger.info("report_no_user_computers: filters2 = {}".format(filters2))
     computers = request.db.nodes.find(filters2)
 
     rows = []

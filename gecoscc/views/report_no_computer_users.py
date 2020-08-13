@@ -26,23 +26,23 @@ logger = logging.getLogger(__name__)
 
 @view_config(route_name='report_file', renderer='csv',
              permission='edit',
-             request_param=("type=no-computer_users", "format=csv"))
+             request_param=("type=no_computer_users", "format=csv"))
 def report_no_computer_users_csv(context, request):
-    filename = 'report_no-computer_users.csv'
+    filename = 'report_no_computer_users.csv'
     request.response.content_disposition = 'attachment;filename=' + filename
     return report_no_computer_users(context, request, 'csv')
 
 @view_config(route_name='report_file', renderer='pdf',
              permission='edit',
-             request_param=("type=no-computer_users", "format=pdf"))
+             request_param=("type=no_computer_users", "format=pdf"))
 def report_no_computer_users_pdf(context, request):
-    filename = 'report_no-computer_users.pdf'
+    filename = 'report_no_computer_users.pdf'
     request.response.content_disposition = 'attachment;filename=' + filename
     return report_no_computer_users(context, request, 'pdf')
 
 @view_config(route_name='report_file', renderer='templates/report.jinja2',
              permission='edit',
-             request_param=("type=no-computer_users", "format=html"))
+             request_param=("type=no_computer_users", "format=html"))
 def report_no_computer_users_html(context, request):
     return report_no_computer_users(context, request, 'html')
 
