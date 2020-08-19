@@ -33,14 +33,14 @@ logger = logging.getLogger(__name__)
 
 @resource(path='/api/gpo_import/',
           description='GroupPolicy import',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class GPOImport(BaseAPI):
 
     collection_name = 'nodes'
     collection_policies_name = 'policies'
 
-    def __init__(self, request):
-        super(GPOImport, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(GPOImport, self).__init__(request, context=context)
         self.collection_policies = self.request.db[self.collection_policies_name]
 
     def _cleanPrefixNamespaces(self, xml):

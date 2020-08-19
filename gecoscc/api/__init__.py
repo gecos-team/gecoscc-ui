@@ -16,7 +16,6 @@ import os
 from bson import ObjectId
 from copy import deepcopy
 
-from cornice.schemas import CorniceSchema
 from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPForbidden
 from webob.multidict import MultiDict
@@ -47,7 +46,7 @@ class BaseAPI(object):
 
     order_field = '_id'
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
         self.collection = self.get_collection()
         localedir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'locale')
@@ -85,8 +84,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
     objtype = None
     key = '_id'
 
-    def __init__(self, request):
-        super(ResourcePaginatedReadOnly, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(ResourcePaginatedReadOnly, self).__init__(request,
+            context=context)
         self.default_pagesize = request.registry.settings.get(
             'default_pagesize', 30)
         if self.objtype is None:
@@ -240,15 +240,15 @@ class ResourcePaginatedReadOnly(BaseAPI):
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
 
-    def __init__(self, request):
-        super(ResourcePaginated, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(ResourcePaginated, self).__init__(request, context=context)
         if request.method == 'POST':
             schema = self.schema_detail()
             del schema['_id']
-            self.schema = CorniceSchema(schema)
+            self.schema = schema
 
         elif request.method == 'PUT':
-            self.schema = CorniceSchema(self.schema_detail)
+            self.schema = self.schema_detail
             # Implement write permissions
 
     def integrity_validation(self, obj, real_obj=None):

@@ -59,5 +59,6 @@ def i18n_catalog(context, request):
     for k, v in pdict.items():
         catalog[k] = [v.get(i, '') for i in range(maxcnts[msgid] + 1)]
 
+    request.response.headers['Content-Type'] = 'text/javascript'
     return {'catalog': json.dumps(catalog),
             'plural': json.dumps(plural)}

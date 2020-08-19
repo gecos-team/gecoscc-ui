@@ -25,10 +25,10 @@ from gecoscc.utils import get_chef_api
 
 @resource(path='/register/node/',
           description='Register a chef node',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class RegisterChefNode(object):
 
-    def __init__(self, request):
+    def __init__(self, request,context=None):
         self.request = request
 
     def post(self):
