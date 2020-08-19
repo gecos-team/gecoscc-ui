@@ -62,6 +62,7 @@ def include_file(name):
 
 def route_config(config):
     config.add_static_view('static', 'static')
+    config.add_static_view('deform_static', 'deform:static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('updates', '/updates/', factory=SuperUserFactory)
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
