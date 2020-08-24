@@ -101,7 +101,8 @@ class PDFRenderer(object):
                 response.content_type = 'application/pdf'
 
 
-        jinja2_env = get_current_registry().queryUtility(IJinja2Environment)
+        jinja2_env = get_current_registry().queryUtility(IJinja2Environment,
+                                                         '.jinja2')
         jinja2_template = jinja2_env.get_template('report.jinja2')
         html = jinja2_template.render(headers=value.get('headers', []),
                                       rows = value.get('rows', []),

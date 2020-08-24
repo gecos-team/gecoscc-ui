@@ -28,7 +28,7 @@ window.external.comeback = function() {
         <h1>{{ gettext('Reports') }}</h1>
     </div>
     <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form" target="_blank">
-        <fieldset class="form-group">
+        <fieldset class="form-group" style="clear: left;">
         <input type="hidden" name="type" id="report_type" value="" />
         <input type="hidden" name="format" id="report_format" value="" />
         {% if ou_managed|length == 1 %}
