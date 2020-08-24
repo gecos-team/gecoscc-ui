@@ -15,7 +15,8 @@
   tal:attributes="autocomplete autocomplete;
                   style style;
                   class css_class;
-                  action action;"
+                  action action;
+                  attributes|field.widget.attributes|{};"
   id="${formid}"
   method="${method}"
   enctype="multipart/form-data"
@@ -24,7 +25,7 @@
   role="form"
   >
 
-  <fieldset class="deformFormFieldset" tal:define="field_len len(list(field))">
+  <fieldset class="deform-form-fieldset" tal:define="field_len len(list(field))">
 
     <legend tal:condition="title">${title}</legend>
 
@@ -32,9 +33,11 @@
     <input type="hidden" name="__formid__" value="${formid}"/>
 
     <div class="alert alert-danger" tal:condition="field.error">
-      <div class="errorMsgLbl" i18n:translate=""
+      <div class="error-msg-lbl" i18n:translate=""
         >There was a problem with your submission</div>
-      <p class="errorMsg">${field.errormsg}</p>
+      <div class="error-msg-detail" i18n:translate=""
+        >Errors have been highlighted below</div>
+      <p class="error-msg">${field.errormsg}</p>
     </div>
 
     <p class="section first" tal:condition="description">

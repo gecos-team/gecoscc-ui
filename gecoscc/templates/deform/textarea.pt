@@ -1,4 +1,4 @@
-  <textarea tal:define="rows rows|field.widget.rows;
+<textarea tal:define="rows rows|field.widget.rows;
                       cols cols|field.widget.cols;
                       css_class css_class|field.widget.css_class;
                       oid oid|field.oid;
@@ -6,11 +6,11 @@
                       style style|field.widget.style"
           tal:attributes="rows rows;
                           cols cols;
-                          class string: form-control ${css_class};
-                          style style"
+                          class string: form-control ${css_class or ''};
+                          style style;
+                          attributes|field.widget.attributes|{};"
           id="${oid}"
-          name="${name}"
-  >${cstruct}</textarea>
+          name="${name}">${cstruct}</textarea>
   <div id="charscounter"><span id="chars"></span> (max:${field.widget.maxlength})</div>
 
   <script type="text/javascript">
