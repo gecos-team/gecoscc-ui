@@ -157,6 +157,12 @@ class GecosGeventSocketIOWorker(GeventSocketIOWorker):
     server_class = GecosSocketIOServer
     wsgi_handler = GecosWSGIHandler
     
+    def patch(self):
+        # Do not patch the sockets! (compatibility with gunicorn 19.+
+        self.sockets_back = self.sockets
+        super(GeventSocketIOWorker, self).patch()
+        self.sockets = self.sockets_back
+    
 class TailNamespace(BaseNamespace):
     ''' Defines a namespace for '/tail' endpoint, where socket working for view update log
     '''

@@ -66,7 +66,9 @@ USERS_OHAI = 'ohai_gecos.users'
 
 class ChefTask(Task):
     abstract = True
-
+    # Since Celery 4 the default serializer is "json", but we need "pickle"
+    serializer = 'pickle'
+    
     def __init__(self):
         self.init_jobid()
         self.logger = self.get_logger()
@@ -75,17 +77,22 @@ class ChefTask(Task):
         gettext.textdomain('gecoscc')
         self._ = gettext.gettext
         
-        
     @property
     def db(self):
         if hasattr(self, '_db'):
             return self._db
-        return self.app.conf.get('mongodb').get_database()
+        return get_current_registry().settings.get(
+            'mongodb').get_database()
 
     def log(self, messagetype, message):
         assert messagetype in ('debug', 'info', 'warning', 'error', 'critical')
         op = getattr(self.logger, messagetype)
         op('[{0}] {1}'.format(self.jid, message))
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        self.log('error', ''.join(traceback.format_exception(
+            etype=type(exc), value=exc, tb=einfo.tb)))
+        super(ChefTask, self).on_failure(exc, task_id, args, kwargs, einfo)
 
     def init_jobid(self):
         if getattr(self, 'request', None) is not None:
@@ -1495,10 +1502,11 @@ class ChefTask(Task):
         Theses changes are called actions and can be: changed, created, moved and deleted.
         if the node is free, the method can get the node, it reserves the node and runs the action, later the node is saved and released.
         '''
-                                                                   
-        api = api or get_chef_api(self.app.conf, user)
+           
+        settings = get_current_registry().settings                                                        
+        api = api or get_chef_api(settings, user)
         cookbook = cookbook or get_cookbook(api,
-                    self.app.conf.get('chef.cookbook_name'))
+                    settings.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
                                                                                           
         # MacroJob
@@ -1526,7 +1534,7 @@ class ChefTask(Task):
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
-                if not node.get(self.app.conf.get('chef.cookbook_name')):
+                if not node.get(settings.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
                 error_last_chef_client = computer.get('error_last_chef_client', False)
@@ -1718,7 +1726,8 @@ class ChefTask(Task):
         object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
     def object_moved(self, user, objnew, objold):
-        api = get_chef_api(self.app.conf, user)
+        settings = get_current_registry().settings
+        api = get_chef_api(settings, user)
         try:
             func = globals()['apply_policies_to_%s' % objnew['type']]
 
@@ -1814,8 +1823,9 @@ class ChefTask(Task):
         if calculate_inheritance:
             # If we are not calculating the inheritance information
             # probably is because this is some kind of automated task
-            # and we don't want to update the computers of the user 
-            api = api or get_chef_api(self.app.conf, user)
+            # and we don't want to update the computers of the user
+            settings = get_current_registry().settings
+            api = api or get_chef_api(settings, user)
             objnew = update_computers_of_user(self.db, objnew, api)
             self.db.nodes.update({'_id': objnew['_id']},
                                  {'$set': {
@@ -1863,6 +1873,7 @@ class ChefTask(Task):
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
         self.log_action('refresh_policies BEGIN', 'Computer', obj)
+        settings = get_current_registry().settings
 
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
@@ -1883,7 +1894,7 @@ class ChefTask(Task):
         node_chef_id = obj.get('node_chef_id', None)
         gcc_sudoers  = set()
         if node_chef_id:
-            api = get_chef_api(self.app.conf, user)
+            api = get_chef_api(settings, user)
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
 
             # Remove variables data
@@ -2069,11 +2080,12 @@ class ChefTask(Task):
 
     def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
+        settings = get_current_registry().settings
         self.log_action('deleted BEGIN', 'Computer', obj)
         self.object_deleted(user, obj, computers=computers)
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
-            api = get_chef_api(self.app.conf, user)
+            api = get_chef_api(settings, user)
             node = Node(node_chef_id, api)
             node.delete()
             client = Client(node_chef_id, api=api)
@@ -2563,23 +2575,24 @@ def script_runner(user, sequence, rollback=False):
       rollback(boolean):    True if rollback action. Otherwise, False
     '''
     self = script_runner
+    settings = get_current_registry().settings
     self.log("info","tasks.py ::: script_runner - Starting ...")
     self.log("debug", "tasks.py ::: script_runner - user = {0}".format(user))
     self.log("debug", "tasks.py ::: script_runner - sequence = {0}".format(sequence))
 
-    scriptdir = self.app.conf.get('updates.scripts').format(sequence)
+    scriptdir = settings.get('updates.scripts').format(sequence)
     self.log("debug", "tasks.py ::: script_runner - scriptdir = {0}".format(scriptdir))
 
 
     if rollback:
         scripts = glob(scriptdir + "99-*")
-        logname = self.app.conf.get('updates.rollback').format(sequence)
+        logname = settings.get('updates.rollback').format(sequence)
     else:
         # Exclude 99-rollback from automatic execution
         scripts = glob(scriptdir + "[0-8][0-9]*") + glob(scriptdir + "9[0-8]*")
         scripts.sort()
-        logname = self.app.conf.get('updates.log').format(sequence)
-        controlfile = self.app.conf.get('updates.control').format(sequence)
+        logname = settings.get('updates.log').format(sequence)
+        controlfile = settings.get('updates.control').format(sequence)
         shutil.copyfile(controlfile, logname)
 
     self.log("debug", "tasks.py ::: script_runner - scripts = {0}".format(scripts))
@@ -2590,10 +2603,10 @@ def script_runner(user, sequence, rollback=False):
 
     env = os.environ.copy()
     env['CLI_REQUEST'] = 'True'
-    env['UPDATE_DIR']  = self.app.conf.get('updates.dir') + sequence
-    env['COOKBOOK_DIR']= self.app.conf.get('updates.cookbook').format(sequence)
-    env['BACKUP_DIR']  = self.app.conf.get('updates.backups').format(sequence)
-    env['CONFIG_URI']  = self.app.conf.get('config_uri')
+    env['UPDATE_DIR']  = settings.get('updates.dir') + sequence
+    env['COOKBOOK_DIR']= settings.get('updates.cookbook').format(sequence)
+    env['BACKUP_DIR']  = settings.get('updates.backups').format(sequence)
+    env['CONFIG_URI']  = settings.get('config_uri')
     env['GECOS_USER']  = user.get('username', None)
 
     returncode = 0

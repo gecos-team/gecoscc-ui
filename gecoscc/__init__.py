@@ -217,9 +217,11 @@ def jinja2_config(config):
 
 
 def celery_config(config):
-    settings = config.registry.settings
-    settings['CELERY_IMPORTS'] = ('gecoscc.tasks', )
-    settings['BROKER_URL'] = settings['celery_broker_url']
+    if sys.argv[0].endswith('pserve'):
+        # Configure Celery only in the pserve script
+        from pyramid_celery import configure, celery_app
+        configure(config, sys.argv[1])
+        #logger.info("Celery configuration: %s"%(celery_app.conf))
 
 
 def locale_config(config):
@@ -270,7 +272,6 @@ def main(global_config, **settings):
 #    check_database_indexes(config)
     logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
 
-    
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 
@@ -287,7 +288,7 @@ def main(global_config, **settings):
     jinja2_env = config.get_jinja2_environment()
     jinja2_env.globals["include_file"] = include_file
     jinja2_env.filters['env_override'] = env_override
-
+    
     def add_renderer_globals(event):
         current_settings = get_current_registry().settings
         event['help_base_url'] = current_settings['help_base_url']
