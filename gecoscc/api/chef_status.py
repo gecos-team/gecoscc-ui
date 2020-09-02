@@ -19,10 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-USERS_OLD = 'ohai_gecos.users_old'
 USERS_OHAI = 'ohai_gecos.users'
-
-NETWORK_INTERFACES = 'network.interfaces'
 
 
 @resource(path='/chef/status/',

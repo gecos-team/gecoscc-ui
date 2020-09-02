@@ -15,7 +15,7 @@ gunicorn==19.10.0
 celery==4.4.7
 pyramid_celery==3.0.0
 cornice==4.0.1
-jsonschema==2.3.0
+jsonschema==3.2.0
 gevent==20.6.2
 gevent-websocket==0.10.1
 gevent-socketio==0.3.6
@@ -25,8 +25,8 @@ Paste==3.4.3
 PyChef==0.3.0
 ordereddict==1.1
 xmltodict==0.12.0
-requests==2.13.0
-BeautifulSoup==3.2.1
+requests==2.24.0
+beautifulsoup4==4.9.1
 iscompatible==0.1.1
 pycrypto
 xhtml2pdf

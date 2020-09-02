@@ -13,7 +13,7 @@ import json
 import requests
 import gzip
 
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from optparse import make_option
 
 try:
