@@ -13,6 +13,8 @@ import logging
 import socket
 from bson import ObjectId
 
+from cornice.validators import colander_body_validator
+
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.security import (Allow, Deny, Authenticated, Everyone, ALL_PERMISSIONS,
                               authenticated_userid, forget, remember)
@@ -27,12 +29,28 @@ def is_logged(request):
     return authenticated_userid(request) is not None
 
 
-def api_login_required(request):
+def colander_validator(request, **kwargs):
+    if 'klass' in kwargs:
+        # Instantiate the class
+        params = dict(request=request)
+        params['context'] = request.context
+        ob = kwargs['klass'](**params)
+        
+        if getattr(ob, 'schema', None) is not None:
+            # Get the schema from the object
+            kwargs['schema'] = ob.schema
+            return colander_body_validator(request, **kwargs)
+    
+    return True
+
+def api_login_required(request, **kwargs):
     if not is_logged(request):
         raise HTTPForbidden('Login required')
+    
+    return colander_validator(request, **kwargs)
 
 
-def http_basic_login_required(request):
+def http_basic_login_required(request, **kwargs):
     try:
         api_login_required(request)
     except HTTPForbidden, e:
@@ -47,6 +65,8 @@ def http_basic_login_required(request):
         except UserDoesNotExist:
             raise e
         remember(request, username)
+        
+    return colander_validator(request, **kwargs)
 
 
 def is_path_right(request, path, ou_type='ou_managed'):

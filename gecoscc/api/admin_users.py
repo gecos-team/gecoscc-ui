@@ -24,7 +24,7 @@ from gecoscc.utils import get_pem_for_username
 
 @resource(path='/auth/config/',
           description='Auth config',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class AdminUserResource(BaseAPI):
 
     schema_detail = AdminUserVariables

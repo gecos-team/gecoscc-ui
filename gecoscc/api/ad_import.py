@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 @resource(path='/api/ad_import/',
           description='Active Directory import',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class ADImport(BaseAPI):
     """
     Create or update objects from a Active Directory XML dump.

@@ -62,6 +62,7 @@ def include_file(name):
 
 def route_config(config):
     config.add_static_view('static', 'static')
+    config.add_static_view('deform_static', 'deform:static')
     config.add_route('home', '/', factory=LoggedFactory)
     config.add_route('updates', '/updates/', factory=SuperUserFactory)
     config.add_route('updates_add', '/updates/add/', factory=SuperUserFactory)
@@ -143,7 +144,7 @@ def database_config(config):
     config.registry.settings['mongodb'] = mongodb
     config.registry.settings['db_conn'] = mongodb.get_connection()
 
-    config.set_request_property(get_db, 'db', reify=True)
+    config.add_request_method(get_db, 'db', reify=True)
 
 def check_server_list(config):
     settings = config.registry.settings
@@ -187,15 +188,15 @@ def userdb_config(config):
     from .userdb import MongoUserDB
     userdb = MongoUserDB(config.registry.settings['mongodb'], 'adminusers')
     config.registry.settings['userdb'] = userdb
-    config.set_request_property(get_userdb, 'userdb', reify=True)
+    config.add_request_method(get_userdb, 'userdb', reify=True)
     config.add_request_method(get_user, 'user', reify=True)
 
 
 def auth_config(config):
     authn_policy = SessionAuthenticationPolicy(callback=get_groups)
     authz_policy = ACLAuthorizationPolicy()
-    config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
+    config.set_authentication_policy(authn_policy)
 
 def env_override(value, key):
     return os.getenv(key, value)
@@ -256,7 +257,8 @@ def main(global_config, **settings):
     """ This function returns a WSGI application.
     """
     settings = dict(settings)
-    config = Configurator(root_factory=RootFactory, settings=settings)
+    config = Configurator(root_factory=RootFactory, settings=settings,
+                          autocommit=True)
 
     # Set Unicode as default encoding
     reload(sys)
@@ -313,8 +315,8 @@ def main(global_config, **settings):
     route_config(config)
     sockjs_config(config, global_config)
 
-    config.set_request_property(is_logged, 'is_logged', reify=True)
-    config.set_request_property(get_jobstorage, 'jobs', reify=True)
+    config.add_request_method(is_logged, 'is_logged', reify=True)
+    config.add_request_method(get_jobstorage, 'jobs', reify=True)
 
     config.scan('gecoscc.views')
     config.scan('gecoscc.api')

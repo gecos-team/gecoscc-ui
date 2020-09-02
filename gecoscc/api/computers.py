@@ -42,7 +42,7 @@ DEBUG_MODE_ENABLE_ATTR_PATH = 'gecos_ws_mgmt.single_node.debug_mode_res.enable_d
 @resource(collection_path='/api/computers/',
           path='/api/computers/{oid}/',
           description='Computers resource',
-          validators=(api_login_required,))
+          validators=(api_login_required))
 class ComputerResource(TreeLeafResourcePaginated):
 
     schema_collection = Computers
@@ -235,7 +235,7 @@ class ComputerResource(TreeLeafResourcePaginated):
 @resource(collection_path='/api/computers/',
           path='/api/computers/support/{oid}/',
           description='Computers resource',
-          validators=(api_login_required,))
+          validators=(api_login_required))
 class ComputerSupportResource(TreeLeafResourcePaginated):
 
     schema_collection = Computers

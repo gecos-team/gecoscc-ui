@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 @resource(path='/register/computer/',
           description='Register computer from chef',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class RegisterComputerResource(BaseAPI):
 
     schema_detail = MongoNode

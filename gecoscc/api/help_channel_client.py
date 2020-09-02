@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
           description='Help Channel client login')
 class HelpChannelClientLogin():
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def post(self):
@@ -182,7 +182,7 @@ class HelpChannelClientLogin():
           description='Help Channel client fetch technician')
 class HelpChannelClientFetch():
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -227,7 +227,7 @@ class HelpChannelClientFetch():
           description='Help Channel client accept technician')
 class HelpChannelClientAccept():
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -267,7 +267,7 @@ class HelpChannelClientAccept():
           description='Help Channel client end connection')
 class HelpChannelClientFinish():
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -315,7 +315,7 @@ class HelpChannelClientFinish():
           description='Help Channel client - check a token')
 class HelpChannelClientCheck():
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
