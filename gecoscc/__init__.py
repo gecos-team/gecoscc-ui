@@ -30,12 +30,13 @@ from gecoscc.userdb import get_userdb, get_groups, get_user
 from gecoscc.eventsmanager import get_jobstorage, ExpiredSessionEvent
 from gecoscc.permissions import (is_logged, LoggedFactory, SuperUserFactory, SuperUserOrMyProfileFactory,
     InternalAccessFactory, RootFactory, ReadOnlyOrManageFactory, ManageFactory)
-from gecoscc.socks import socketio_service
 from gecoscc.utils import auditlog
 from gecoscc.session import session_factory_from_settings
 
 from urlparse import urlsplit
 import colander
+
+import socketio
 
 import logging
 logger = logging.getLogger(__name__)
@@ -111,12 +112,14 @@ def sockjs_config(config, global_config):
 
     settings['sockjs_url'] = settings['sockjs_url']
 
-    config.add_route('socket_io', 'socket.io/*remaining')
-    config.add_view(socketio_service, route_name='socket_io')
-
     parser = ConfigParser({'here': global_config['here']})
     parser.read(global_config['__file__'])
     settings['server:main:worker_class'] = parser.get('server:main', 'worker_class')
+
+    mgr = socketio.RedisManager(settings['sockjs_url'])
+    sio = socketio.Server(client_manager=mgr, async_mode='gevent')
+    config.registry.settings['sio'] = sio
+
 
 
 def route_config_auxiliary(config, route_prefix):
@@ -313,7 +316,6 @@ def main(global_config, **settings):
     config.add_subscriber(expire_session, 'gecoscc.eventsmanager.ExpiredSessionEvent')
 
     route_config(config)
-    sockjs_config(config, global_config)
 
     config.add_request_method(is_logged, 'is_logged', reify=True)
     config.add_request_method(get_jobstorage, 'jobs', reify=True)
@@ -321,4 +323,11 @@ def main(global_config, **settings):
     config.scan('gecoscc.views')
     config.scan('gecoscc.api')
 
-    return config.make_wsgi_app()
+    sockjs_config(config, global_config)
+    
+    # Create socketio middleware
+    app = socketio.WSGIApp(config.registry.settings['sio'],
+                           config.make_wsgi_app())
+        
+
+    return app

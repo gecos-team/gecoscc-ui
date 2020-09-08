@@ -16,8 +16,10 @@ var socket_io_silent_disconnect = false;
 
 var MessageManager = function () {
     "use strict";
-    var socket = io.connect(),
-        manager_handlers = {};
+    var socket = io({transports:['websocket'], upgrade: false,
+        forceNew: true});
+    
+    var manager_handlers = {};
     socket.emit('subscribe');
 
     socket.on("message", function (result) {
@@ -25,12 +27,8 @@ var MessageManager = function () {
             handler,
             i;
 
-        if (result.hasOwnProperty('redis')) {
-            if (result.redis === 'error') {
-                $("#redis-modal").modal({backdrop: 'static'});
-            }
-        }
         if (result.hasOwnProperty('action')) {
+            console.log("Received action: "+result.action);
             handlers = manager_handlers[result.action] || [];
             for (i = 0; i < handlers.length; i += 1) {
                 handler = handlers[i];
