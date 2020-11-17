@@ -278,7 +278,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                     elif policyobj['slug'] == 'local_users_res':
                         ro_collection = None
                     else:
-                        logger.warning("Unrecognized slug: %s" % (str(policyobj['slug'])))
+                        logger.info("Policy without related objects: %s" % (str(policyobj['slug'])))
 
                     # Check the related objects
                     if ro_collection is not None:
