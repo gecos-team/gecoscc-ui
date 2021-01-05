@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
 import json
 import requests
 import tempfile
@@ -18,9 +20,9 @@ import re
 import xml.etree.ElementTree as ET
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import PrinterModel
@@ -30,7 +32,6 @@ PPD = 'PPD'
 PRINTER = 'printer'
 DRIVER = 'driver'
 postscript_re = re.compile(u'Postscript', re.IGNORECASE)
-
 
 class Command(BaseCommand):
     def command(self):
@@ -42,13 +43,13 @@ class Command(BaseCommand):
         models = []
         num_imported = 0
 
-        print '\n\nDownloading printers lists...'
+        print('\n\nDownloading printers lists...')
 
         for url in urls:
             try:
                 res = requests.get(url)
             except requests.exceptions.RequestException:
-                print 'Error downloading file:', url
+                print('Error downloading file:', url)
                 continue
 
             temp = tempfile.NamedTemporaryFile(suffix='.tar.gz')
@@ -73,26 +74,28 @@ class Command(BaseCommand):
 
                 if model:
                     models.append(model)
-                    new_printer = printer_model.serialize({'manufacturer': manufacturer, 'model': model})
+                    new_printer = printer_model.serialize(
+                        {'manufacturer': manufacturer, 'model': model})
                     db_printer = collection.find_one({'model': model})
 
                     if not db_printer:
                         collection.insert(new_printer)
                         num_imported += 1
-                        print "Imported printer: %s" % model
+                        print("Imported printer: %s" % model)
 
             temp.close()
 
-        print '\n\nImported %d printers' % num_imported
+        print('\n\nImported %d printers' % num_imported)
 
         # Adding 'Other' model for every manufacturer
         models.append('Other') # Later, don't remove
         for m in collection.distinct('manufacturer'):
-            other = printer_model.serialize({'manufacturer': m, 'model': 'Other'})
+            other = printer_model.serialize(
+                {'manufacturer': m, 'model': 'Other'})
             collection.update({'manufacturer': m},{'$set': other})
 
         removed = collection.remove({'model': {'$nin': models}})
-        print 'Removed %d printers.\n\n' % removed['n']
+        print('Removed %d printers.\n\n' % removed['n'])
 
     def parse_model_xml(self, xml):
         manufacturer = ''

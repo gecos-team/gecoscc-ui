@@ -24,13 +24,13 @@ WebHelpers2==2.0
 paginate==0.5.6
 Paste==3.4.3
 PyChef==0.3.0
-ordereddict==1.1
 xmltodict==0.12.0
 requests==2.24.0
 beautifulsoup4==4.9.1
 iscompatible==0.1.1
 pycrypto
 xhtml2pdf
+python-dateutil==2.8.1
 # Zipp >=2.0.0 is not compatible with for python 2.7
 zipp==1.2.0 
 # Configparser >= 5.0.0 is not compatible with for python 2.7

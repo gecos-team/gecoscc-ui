@@ -10,6 +10,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import text_type
 import datetime
 import random
 import os
@@ -98,7 +99,7 @@ class ChefTask(Task):
         if getattr(self, 'request', None) is not None:
             self.jid = self.request.id
         else:
-            self.jid = unicode(ObjectId())
+            self.jid = text_type(ObjectId())
 
     def walking_here(self, obj, related_objects):
         '''
@@ -230,7 +231,7 @@ class ChefTask(Task):
             self.log("info","tasks:::get_object_ui obj['type']=%s"%(obj['type']))
             return obj
         elif rule_type == 'policies':
-            policy_id = unicode(policy['_id'])
+            policy_id = text_type(policy['_id'])
             if policy.get('is_emitter_policy', False):
                 if not obj.get(rule_type, None):
                     object_related_id_list = []
@@ -275,8 +276,8 @@ class ChefTask(Task):
         updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
 
         for updater_node in updater_nodes:
-            if unicode(policy['_id']) in updater_node['policies']:
-                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])]['object_related_list']
+            if text_type(policy['_id']) in updater_node['policies']:
+                new_field_chef_value += updater_node['policies'][text_type(policy['_id'])]['object_related_list']
 
         new_field_chef_value = list(set(new_field_chef_value))
         self.log("debug","tasks.py:::get_related_objects -> new_field_chef_value = {0}".format(new_field_chef_value))
@@ -625,11 +626,11 @@ class ChefTask(Task):
 
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
                 try:
-                    updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
+                    updater_node_ui = updater_node['policies'][text_type(policy['_id'])]
                 except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],text_type(policy['_id'])))
                     continue
 
                 if callable(field_ui): # encrypt_password
@@ -706,11 +707,11 @@ class ChefTask(Task):
 
             for updater_node in updater_nodes:
                 try:
-                    node_policy = updater_node['policies'][unicode(policy['_id'])]
+                    node_policy = updater_node['policies'][text_type(policy['_id'])]
                 except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],text_type(policy['_id'])))
                     continue
 
                 for policy_field in node_policy.keys():
@@ -1077,7 +1078,7 @@ class ChefTask(Task):
         for mongo_id in ids:
             node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
             if node:
-                if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
+                if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != mongo_id:
                     return node
         return {}
 
@@ -1113,10 +1114,10 @@ class ChefTask(Task):
         priority_object = {}
 
         if updated_by.get('computer', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
+            if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != updated_by['computer']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
         if not priority_object and updated_by.get('user', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
+            if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != updated_by['user']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
         if not priority_object and updated_by.get('group', None):
             priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
@@ -1133,7 +1134,7 @@ class ChefTask(Task):
             updated_by = node.attributes.get_dotted(attr).to_dict()
         except KeyError:
             updated_by = {}
-        obj_id = unicode(obj['_id'])
+        obj_id = text_type(obj['_id'])
         obj_type = obj['type']
         if obj_type in ['computer', 'user']:
             if action == DELETED_POLICY_ACTION:
@@ -1197,7 +1198,7 @@ class ChefTask(Task):
                                     policy=policy,
                                     parent=parent_id,
                                     administrator_username=user['username'])
-        job_ids.append(unicode(job_id))
+        job_ids.append(text_type(job_id))
         job_ids_by_computer.append(job_id)
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
@@ -1443,7 +1444,7 @@ class ChefTask(Task):
         message = 'No save in chef server.'
         if prefix:
             message = "%s %s" % (prefix, message)
-        message = "%s %s" % (message, unicode(exception))
+        message = "%s %s" % (message, text_type(exception))
         self.log("error","tasks.py ::: report_error - message = {0}".format(message))
         self.log("error",traceback.format_exc())
         for job_id in job_ids:
@@ -1474,7 +1475,7 @@ class ChefTask(Task):
         '''
         Report unknown error
         '''
-        message = 'No save in chef server. %s' % unicode(exception)
+        message = 'No save in chef server. %s' % text_type(exception)
         self.report_generic_error(user, obj, action, message, computer)
 
     def report_generic_error(self, user, obj, action, message, computer=None, status='errors'):
@@ -1766,8 +1767,8 @@ class ChefTask(Task):
                                 administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         
-        obj_id = unicode(obj['_id'])
-        policy_id = unicode(get_policy_emiter_id(self.db, obj))
+        obj_id = text_type(obj['_id'])
+        policy_id = text_type(get_policy_emiter_id(self.db, obj))
         object_related_list = get_object_related_list(self.db, obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
@@ -2132,7 +2133,7 @@ class ChefTask(Task):
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.log_action('deleted BEGIN', 'OU', obj)
-        ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
+        ou_path = '%s,%s' % (obj['path'], text_type(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
             nodes_by_type = self.db.nodes.find({'path': ou_path,
@@ -2258,7 +2259,7 @@ def init_jobid(sender, **kargs):
 @task(base=ChefTask)
 def task_test(value):
     self = task_test
-    self.log('debug', unicode(self.db.adminusers.count()))
+    self.log('debug', text_type(self.db.adminusers.count()))
     return Ignore()
 
 
@@ -2616,7 +2617,7 @@ def script_runner(user, sequence, rollback=False):
         header = header.center(150,'*')
         logfile.write('\n\n ' + header + ' \n\n')
         self.log("debug", "tasks.py ::: script_runner - script = {0}".format(script))
-        os.chmod(script, 0755)
+        os.chmod(script, 0o755)
 
         env['SCRIPT_CODE'] = re.match('.*(\d{2})-.*', script).group(1)
 

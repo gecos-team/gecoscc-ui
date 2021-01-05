@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -8,6 +9,7 @@
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
+from past.utils import old_div
 import math
 import sys
 
@@ -89,7 +91,7 @@ class Command(BaseCommand):
         if total_dots == num_computers:
             step = 1
         else:
-            step = num_computers / total_dots
+            step = old_div(num_computers, total_dots)
             total_dots = int(math.ceil(float(num_computers) / step))
 
         sys.stdout.write('%s 100%%\n' % ('.' * total_dots))
@@ -120,12 +122,12 @@ class Command(BaseCommand):
 
         sys.stdout.write('\n\n\n*********** Success ********** \n')
 
-        for name, reason in results_succes.items():
+        for name, reason in list(results_succes.items()):
             sys.stdout.write('%s: %s \n' % (name, reason))
 
         sys.stdout.write('\n\n\n*********** Errors ********** \n')
 
-        for name, reason in results_error.items():
+        for name, reason in list(results_error.items()):
             sys.stdout.write('%s: %s \n' % (name, reason))
 
         sys.stdout.flush()

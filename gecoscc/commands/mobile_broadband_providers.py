@@ -67,7 +67,7 @@ class Command(BaseCommand):
                     xml = requests.get(f['url'], verify=chef_ssl_verify)
                     break
                 except requests.exceptions.RequestException as e:
-                    print e
+                    print(e)
                     sys.exit(1)
 
         # Parsing XML
@@ -79,9 +79,9 @@ class Command(BaseCommand):
                 if providername.text:
                     try:
                         new_sp=sp_model.serialize({'name': country.get('code').lower(), 'provider': providername.text})
-                        print new_sp
+                        print(new_sp)
                         collection.insert(new_sp)
                     except:
-                        print "ERROR:" + providername.text
+                        print("ERROR:" + providername.text)
                   
 

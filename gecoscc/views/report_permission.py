@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 import logging
 import datetime
 
@@ -105,7 +106,7 @@ def report_permission(context, request, file_ext):
     logger.debug("report_permission: items = {}".format(items))
             
     # Get all OU names
-    ids = map(lambda x: ObjectId(x), total_ous)
+    ids = [ObjectId(x) for x in total_ous]
     result = request.db.nodes.find({'_id': {'$in': ids}},{'_id':1, 'path':1})
     ou_paths = {}
 

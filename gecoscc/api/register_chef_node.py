@@ -11,6 +11,8 @@
 #
 
 
+from builtins import str
+from builtins import object
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry

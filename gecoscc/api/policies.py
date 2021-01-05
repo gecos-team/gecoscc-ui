@@ -34,7 +34,7 @@ policies_filters = {
 
 def get_filters(policies_filters, params):
     filters = []
-    for (filter_name, filter_func) in policies_filters.iteritems():
+    for (filter_name, filter_func) in list(policies_filters.items()):
         if filter_name in params:
             filter_dict = filter_func(params)
             if filter_dict:

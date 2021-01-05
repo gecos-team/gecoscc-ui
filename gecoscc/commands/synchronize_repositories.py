@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
 import json
 import requests
 import gzip
@@ -17,9 +19,9 @@ from bs4 import BeautifulSoup
 from optparse import make_option
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import Package
@@ -41,7 +43,8 @@ class Command(BaseCommand):
     description = """
        Import package data from repositories defined in GECOS CC to MongoDB.
 
-       If the -c option is used, all the data in MongoDB is cleaned before importing. Otherwise only new pagkages are imported.
+       If the -c option is used, all the data in MongoDB is cleaned before
+       importing. Otherwise only new pagkages are imported.
     """
 
     usage = "usage: %prog config_uri synchronize_repositories [-c]"
@@ -72,26 +75,28 @@ class Command(BaseCommand):
     
         packages = []
         packages_urls = {}
-        repositories = json.loads(get_setting('repositories', self.settings, self.db))
+        repositories = json.loads(get_setting('repositories', self.settings,
+                                              self.db))
         num_packages = 0
 
         # Fetch repositories packages files
         for repo in repositories:
-            print '\n\n\nFetching: ', repo
+            print('\n\n\nFetching: ', repo)
             dists_url = repo + 'dists/'
             repo_packages = self.get_packages_urls(dists_url)
             packages_urls[repo] = repo_packages
 
-        print '\n\n\nLooking for new packages...'
+        print('\n\n\nLooking for new packages...')
         for repo in packages_urls:
             for url in packages_urls[repo]:
                 try:
                     r = requests.get(url)
                 except requests.exceptions.RequestException:
-                    print "Error downloading file: ", url
+                    print("Error downloading file: ", url)
                     continue
 
-                packages_list = gzip.GzipFile(fileobj=StringIO(r.content), mode='rb')
+                packages_list = gzip.GzipFile(fileobj=StringIO(r.content),
+                                              mode='rb')
                 package_model = Package()
                 package = {}
                 package['repository'] = repo
@@ -102,39 +107,52 @@ class Command(BaseCommand):
                             if 'name' in package:
                                 packages.append(package['name'])
 
-                                db_package = self.db.packages.find_one({'name': package['name']})
+                                db_package = self.db.packages.find_one(
+                                    {'name': package['name']})
 
                                 newVersion = {'version': package['version']}
                                 
                                 if 'description' in package:
-                                    newVersion['description'] = package['description']
+                                    newVersion['description'] = package[
+                                        'description']
 
                                 if 'depends' in package:
-                                    newVersion['depends'] = package['depends']
+                                    newVersion['depends'] = package[
+                                        'depends']
 
                                 if 'provides' in package:
-                                    newVersion['provides'] = package['provides']
+                                    newVersion['provides'] = package[
+                                        'provides']
 
                                 if 'conflicts' in package:
-                                    newVersion['conflicts'] = package['conflicts']
+                                    newVersion['conflicts'] = package[
+                                        'conflicts']
 
                                 if 'replaces' in package:
-                                    newVersion['replaces'] = package['replaces']
+                                    newVersion['replaces'] = package[
+                                        'replaces']
 
                                 
-                                newArchitecture = { 'architecture': package['architecture'], 'versions': [ newVersion ] }
-                                newRepository = {'repository': package['repository'], 'architectures': [ newArchitecture ] }                                
+                                newArchitecture = {'architecture': package[
+                                    'architecture'], 'versions': [ newVersion ]}
+                                newRepository = {'repository': package[
+                                    'repository'], 'architectures': [
+                                        newArchitecture ] }                                
                                 
                                 if not db_package:
                                     # Create new package record
-                                    newPackage = {'name': package['name'], 'repositories': [ newRepository ]}
+                                    newPackage = {'name': package['name'],
+                                                  'repositories': [
+                                                      newRepository ]}
                                     
                                     # Check with collander
                                     package_model.serialize(newPackage)
 
                                     self.db.packages.insert(newPackage)
                                     num_packages += 1
-                                    print "Imported package:", package['name'], " ", package['version'], " ", package['architecture']
+                                    print("Imported package:", package['name'],
+                                          " ", package['version'], " ",
+                                          package['architecture'])
                                     
                                 else:
                                     # Update existing package record
@@ -142,42 +160,54 @@ class Command(BaseCommand):
                                     # Check package repository
                                     current_repo = None
                                     for repodata in db_package['repositories']:
-                                        if repodata['repository'] == package['repository']:
+                                        if repodata['repository'] == package[
+                                            'repository']:
                                             current_repo = repodata
                                             break
                                     
                                     if current_repo is None:
                                         # Add new repository
-                                        db_package['repositories'].append(newRepository)
+                                        db_package['repositories'].append(
+                                            newRepository)
                                     
                                     else:
                                         # Check package architecture
                                         current_arch = None
-                                        for archdata in current_repo['architectures']:
-                                            if archdata['architecture'] == package['architecture']:
+                                        for archdata in current_repo[
+                                            'architectures']:
+                                            if (archdata['architecture'] ==
+                                                package['architecture']):
                                                 current_arch = archdata
                                                 break
 
                                         if current_arch is None:
                                             # Add new architecture
-                                            current_repo['architectures'].append(newArchitecture)
+                                            current_repo['architectures'
+                                                ].append(newArchitecture)
                                             
                                         else:
                                             # Check version
                                             current_ver = None
-                                            for verdata in current_arch['versions']:
-                                                if verdata['version'] == package['version']:
+                                            for verdata in current_arch[
+                                                'versions']:
+                                                if (verdata['version'] == 
+                                                    package['version']):
                                                     current_ver = verdata
                                                     break
                                             
                                             if current_ver is None:
                                                 # Add new version
-                                                current_arch['versions'].append(newVersion)
+                                                current_arch['versions'
+                                                        ].append(newVersion)
                                                 
                                     # Update
-                                    self.db.packages.update({'name':package['name']},{'$set': db_package})
+                                    self.db.packages.update(
+                                        {'name':package['name']},
+                                        {'$set': db_package})
                                     
-                                    print "Updated package:", package['name'], " ", package['version'], " ", package['architecture']
+                                    print("Updated package:", package['name'],
+                                          " ", package['version'], " ",
+                                          package['architecture'])
 
                                 
                             package = {}
@@ -216,13 +246,13 @@ class Command(BaseCommand):
                             
                             
                 except IOError:
-                    print "Error decompressing file:", url
+                    print("Error decompressing file:", url)
                     continue
 
-        print '\n\nImported %d packages' % num_packages
+        print('\n\nImported %d packages' % num_packages)
 
         removed = self.db.packages.remove({'name': {'$nin': packages}})
-        print 'Removed %d packages.\n\n\n' % removed['n']
+        print('Removed %d packages.\n\n\n' % removed['n'])
 
 
     def get_packages_urls(self, url):
@@ -230,7 +260,7 @@ class Command(BaseCommand):
         try:
             r = requests.get(url)
         except requests.exceptions.RequestException:
-            print "Error parsing repository:", url
+            print("Error parsing repository:", url)
             return packages
 
         links = self.get_links(r.text)
@@ -238,7 +268,7 @@ class Command(BaseCommand):
         if PACKAGES_FILE in links:
             package_url = url + PACKAGES_FILE
             packages.append(package_url)
-            print 'Found packages file: ', package_url
+            print('Found packages file: ', package_url)
         else:
             for link in links:
                 if link[-1] == '/':

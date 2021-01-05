@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 import sys
 from copy import deepcopy
 import datetime

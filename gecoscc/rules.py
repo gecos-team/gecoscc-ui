@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import string_types
 import crypt
 
 from copy import deepcopy
@@ -65,7 +66,7 @@ def get_object_related(obj_related, attrs=None):
             if obj_related[obj_ui_attr] == '':
                 continue
             obj[obj_attr] = obj_related[obj_ui_attr]
-    elif isinstance(attrs, basestring):
+    elif isinstance(attrs, string_types):
         obj = obj_related[attrs]
     return obj
 

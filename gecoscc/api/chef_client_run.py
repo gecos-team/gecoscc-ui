@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry

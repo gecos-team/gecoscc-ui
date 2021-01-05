@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -9,6 +10,13 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import logging
 from xhtml2pdf import pisa
 from pyramid_jinja2 import IJinja2Environment
@@ -21,9 +29,9 @@ import collections
 import re
 
 try:
-    from cStringIO import StringIO
+    from io import StringIO
 except ImportError:
-    from StringIO import StringIO
+    from io import StringIO
 
 
 from pyramid.view import view_config
@@ -135,8 +143,8 @@ def reports(context, request):
     is_superuser = request.user.get('is_superuser', False) 
 
     if not is_superuser:
-        oids = map(ObjectId, request.user.get('ou_managed', []) 
-            + request.user.get('ou_readonly', []))
+        oids = list(map(ObjectId, request.user.get('ou_managed', []) 
+            + request.user.get('ou_readonly', [])))
         ou_visibles = request.db.nodes.find( 
             {'_id': {'$in': oids }},
             {'_id':1, 'name':1, 'path':1})
@@ -150,7 +158,7 @@ def reports(context, request):
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
     sorted_ous = collections.OrderedDict(
-        sorted(ous.items(), key=lambda kv: kv[1].lower()))
+        sorted(list(ous.items()), key=lambda kv: kv[1].lower()))
     logger.debug("reports ::: ous = {}".format(ous))
 
     return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
@@ -255,7 +263,7 @@ def ip_to_hex_addr(ipaddr):
 def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
     start = 0
     data = []
-    times = int(round(len(string)/new_line_at))+1
+    times = int(round(old_div(len(string),new_line_at)))+1
 
     for _ in range(0, times):
         if(start >= len(string)):

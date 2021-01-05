@@ -17,7 +17,7 @@ import sys
 import subprocess
 import jinja2
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 
 from pyramid.authentication import SessionAuthenticationPolicy
 from pyramid.authorization import ACLAuthorizationPolicy
@@ -33,7 +33,7 @@ from gecoscc.permissions import (is_logged, LoggedFactory, SuperUserFactory, Sup
 from gecoscc.utils import auditlog
 from gecoscc.session import session_factory_from_settings
 
-from urlparse import urlsplit
+from urllib.parse import urlsplit
 import colander
 
 import socketio
@@ -262,10 +262,6 @@ def main(global_config, **settings):
     settings = dict(settings)
     config = Configurator(root_factory=RootFactory, settings=settings,
                           autocommit=True)
-
-    # Set Unicode as default encoding
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
     
     database_config(config)
     userdb_config(config)

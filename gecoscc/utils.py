@@ -11,6 +11,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import text_type
 import datetime
 import json
 import os
@@ -40,8 +41,8 @@ from collections import defaultdict
 from pymongo.collation import Collation, CollationStrength
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 DELETED_POLICY_ACTION = 'deleted'
@@ -83,8 +84,8 @@ def get_object_related_list(collection, obj):
     '''
     Get the objects related list to an object
     '''
-    policy_id = unicode(get_policy_emiter_id(collection, obj))
-    return collection.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+    policy_id = text_type(get_policy_emiter_id(collection, obj))
+    return collection.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [text_type(obj['_id'])]}})
 
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
@@ -181,7 +182,7 @@ def get_items_ou_children(ou_id, collection_nodes, objtype=None, filters=None, n
     else:
         filters['path'] = 'no-root'
     ous = collection_nodes.find(filters).sort('name')
-    return [{'_id': unicode(ou['_id']),
+    return [{'_id': text_type(ou['_id']),
         'name': ou['name'], 'path': ou['path']} for ou in ous]
 
 
@@ -500,8 +501,8 @@ def visibility_object_related(db, obj):
     have_updated = False
     for emitter_policy in emitter_policies:
         emitter_policy_id = emitter_policy['_id']
-        if unicode(emitter_policy_id) in obj['policies']:
-            object_related_list = obj['policies'][unicode(emitter_policy_id)].get('object_related_list', [])
+        if text_type(emitter_policy_id) in obj['policies']:
+            object_related_list = obj['policies'][text_type(emitter_policy_id)].get('object_related_list', [])
             object_related_visible = []
             for object_related_id in object_related_list:
                 is_visible = is_object_visible(db.nodes, object_related_id, ou_id, obj_id)
@@ -509,9 +510,9 @@ def visibility_object_related(db, obj):
                     object_related_visible.append(object_related_id)
             if object_related_list != object_related_visible:
                 if object_related_visible:
-                    policies[unicode(emitter_policy_id)]['object_related_list'] = object_related_visible
+                    policies[text_type(emitter_policy_id)]['object_related_list'] = object_related_visible
                 else:
-                    del policies[unicode(emitter_policy_id)]
+                    del policies[text_type(emitter_policy_id)]
                 have_updated = True
     if have_updated:
         obj = update_collection_and_get_obj(db.nodes, obj_id, policies)
@@ -678,13 +679,13 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
     '''
     from gecoscc.tasks import object_changed, object_created
     policy = policies_collection.find_one({'slug': slug})
-    policy_id = unicode(policy.get('_id'))
+    policy_id = text_type(policy.get('_id'))
 
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
 
-    nodes_related_with_obj = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [unicode(obj['_id'])]}})
+    nodes_related_with_obj = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [text_type(obj['_id'])]}})
 
     if nodes_related_with_obj.count() == 0:
         return
@@ -695,7 +696,7 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
 
         if not is_visible:
             object_related_list = node['policies'][policy_id].get('object_related_list', [])
-            object_related_list.remove(unicode(obj['_id']))
+            object_related_list.remove(text_type(obj['_id']))
 
             if not object_related_list:
                 del node['policies'][policy_id]
@@ -758,12 +759,12 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
-    children_path = ou['path'] + ',' + unicode(ou['_id'])
+    children_path = ou['path'] + ',' + text_type(ou['_id'])
     # From the pymongo documentation:
     # Cursors in MongoDB can timeout on the server if they have been open for a long time without any operations being 
     # performed on them. This can lead to an CursorNotFound exception being raised when attempting to iterate the cursor.
     # OUs with a lot of depth levels
-    ou_children = nodes_collection.find({'path': {'$regex': '.*' + unicode(ou['_id']) + '.*'}}, no_cursor_timeout=True)
+    ou_children = nodes_collection.find({'path': {'$regex': '.*' + text_type(ou['_id']) + '.*'}}, no_cursor_timeout=True)
 
     visibility_object_related(nodes_collection.database, ou)
 
@@ -783,7 +784,7 @@ def apply_policies_to_ou(nodes_collection, ou, auth_user, api=None, initialize=F
 
 
 def update_data_ou(nodes_collection, obj, policy, api, auth_user):
-    members_path = obj['path'] + ',' + unicode(obj['_id'])
+    members_path = obj['path'] + ',' + text_type(obj['_id'])
     members = nodes_collection.find({'path': members_path})
 
     for member in members:
@@ -928,7 +929,7 @@ def register_node(api, node_id, ou, collection_nodes):
             computer_name = node_id
 
         try:
-            nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
+            nodepath = '{},{}'.format(ou['path'], text_type(ou['_id']))
             add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
@@ -965,7 +966,7 @@ def update_node(api, node_id, ou, collection_nodes):
             computer_name = node_id
 
         try:
-            nodepath = '{},{}'.format(ou['path'], unicode(ou['_id']))
+            nodepath = '{},{}'.format(ou['path'], text_type(ou['_id']))
             add_path_attrs_to_node(node, nodepath, collection_nodes)
 
             comp_model = Computer()
@@ -1019,7 +1020,7 @@ def get_filter_in_domain(node):
 
 
 def get_filter_this_domain(domain):
-    path_domain = '%s,%s' % (domain['path'], unicode(domain['_id']))
+    path_domain = '%s,%s' % (domain['path'], text_type(domain['_id']))
     return {'$regex': '^%s' % path_domain}
 
 
@@ -1174,7 +1175,7 @@ def order_groups_by_depth(db, groups_ids):
     groups_ids = [ObjectId(groups_id) for groups_id in groups_ids]
     groups = [group for group in db.nodes.find({'_id': {'$in': groups_ids}, 'type': 'group'}).sort([('name',-1)])]
     groups.sort(key=lambda x: x['path'].count(','), reverse=True)
-    return [unicode(group['_id']) for group in groups]
+    return [text_type(group['_id']) for group in groups]
 
 # ------------------------------------------------------------------------------------------------------
 def order_ou_by_depth(db, ou_ids):
@@ -1202,7 +1203,7 @@ def order_ou_by_depth(db, ou_ids):
     ou_ids = [ObjectId(ou_id) for ou_id in ou_ids]
     ous = [ou for ou in db.nodes.find({'_id': {'$in': ou_ids}, 'type': 'ou'})]
     ous.sort(key=lambda x: x['path'].count(','), reverse=True)
-    return [unicode(ou['_id']) for ou in ous]
+    return [text_type(ou['_id']) for ou in ous]
 
 # ------------------------------------------------------------------------------------------------------
 def get_priority_node(db, nodes_list):
@@ -2431,7 +2432,7 @@ def trace_inheritance(logger, db, action, obj, policy):
 
     # First lets calculate all the nodes that are affected by this change
     affected_nodes = []
-    policyId = unicode(policy['_id'])
+    policyId = text_type(policy['_id'])
     logger.info("utils.py ::: trace_inheritance - policyId = {0}".format(policyId))
     
     if obj['type'] == 'ou':
@@ -2440,7 +2441,7 @@ def trace_inheritance(logger, db, action, obj, policy):
         targets = policy['targets']
         targets.remove('group')
         logger.info("utils.py ::: trace_inheritance - obj is OU = {0}".format(obj['name']))
-        affected_nodes = list(db.nodes.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}, 
+        affected_nodes = list(db.nodes.find({'path': {'$regex': '.*' + text_type(obj['_id']) + '.*'}, 
                                     'type':{'$in': targets}}))
         affected_nodes.append(obj)
              
@@ -2532,7 +2533,7 @@ def mongodb_backup(path=None, collection=None):
         exitstatus = mongodb.dump(path, collection)
         logger.info("mongodb backup ended.")
 
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.warning(msg)
         exitstatus = 1
 
@@ -2566,7 +2567,7 @@ def mongodb_restore(path=None, collection=None):
         exitstatus = mongodb.restore(path, collection)
         logger.info("mongodb restored from backup.")
 
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.warning(msg)
         exitstatus = 1
 
@@ -2607,11 +2608,11 @@ def upload_cookbook(user=None,cookbook_path=None):
         logger.info(upload_output)
         logger.info("Uploaded cookbook.")
         
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.warning(msg)
         exitstatus = 1
 
-    except subprocess.CalledProcessError, msg:
+    except subprocess.CalledProcessError as msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
         exitstatus = msg.returncode
@@ -2649,11 +2650,11 @@ def chefserver_backup(backupdir=None):
         logger.info(backup_output)
         logger.info("Chef Server backup ended.")
 
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.error(msg)
         exitstatus = 1
 
-    except subprocess.CalledProcessError, msg:
+    except subprocess.CalledProcessError as msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
         exitstatus = msg.returncode
@@ -2690,11 +2691,11 @@ def chefserver_restore(backupdir=None):
         logger.info(restore_output)
         logger.info("Chef Server restore ended.")
 
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.warning(msg)
         exitstatus = 1
 
-    except subprocess.CalledProcessError, msg:
+    except subprocess.CalledProcessError as msg:
         logger.error(msg.cmd)
         logger.error(msg.output)
         exitstatus = msg.returncode
@@ -2736,7 +2737,7 @@ def import_policies(username=None, inifile=None):
 
         logger.info("Imported policies.")
 
-    except AssertionError, msg:
+    except AssertionError as msg:
         logger.warning(msg)
 
 def auditlog(request, action=None):

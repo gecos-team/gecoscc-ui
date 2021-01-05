@@ -37,22 +37,29 @@ def create_setting(key):
     setting.key = key
 
     if key == "update_error_interval":
-        appstruct = {'key': key, 'type': 'number', 'value': default_settings.get('update_error_interval')}
+        appstruct = {'key': key, 'type': 'number',
+                     'value': default_settings.get('update_error_interval')}
     elif key == "repositories":
-        appstruct = {'key': key, 'type': 'URLs', 'value': default_settings.get('repositories')}
+        appstruct = {'key': key, 'type': 'URLs',
+                     'value': default_settings.get('repositories')}
     elif key == "printers.urls":
-        appstruct = {'key': key, 'type': 'URLs', 'value': default_settings.get('printers.urls')}
+        appstruct = {'key': key, 'type': 'URLs',
+                     'value': default_settings.get('printers.urls')}
     elif key ==  "mimetypes":
-        appstruct = {'key': key, 'type': 'Mimetypes', 'value': default_settings.get(key)}
+        appstruct = {'key': key, 'type': 'Mimetypes',
+                     'value': default_settings.get(key)}
     else:
-        appstruct = {'key': key, 'type': 'string', 'value': default_settings.get(key)}
+        appstruct = {'key': key, 'type': 'string',
+                     'value': default_settings.get(key)}
 
     return Setting().serialize(appstruct)
 
 @view_config(route_name='settings', renderer='templates/settings.jinja2',
              permission='is_superuser')
 def settings(_context, request):
-    settings_data = request.db.settings.find({'key':{'$nin': EXCLUDE_SETTINGS}}).sort([("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
+    settings_data = request.db.settings.find(
+        {'key':{'$nin': EXCLUDE_SETTINGS}}).sort(
+            [("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
     result = []
     if settings_data.count() == 0:
         # If there aren't settings in the database then load the default values
@@ -108,7 +115,7 @@ def settings_save(_context, request):
             else:
                 setting = Setting().deserialize(setting_data)
             
-            if isinstance(data[key], str) or isinstance(data[key], unicode):
+            if isinstance(data[key], str):
                 Setting().set_value(setting, 'value', data[key])
             else:
                 Setting().set_value(setting, 'value', json.dumps(data[key]))
@@ -122,7 +129,8 @@ def settings_save(_context, request):
             #logger.debug('save= %s'%(obj))
             request.db.settings.save(obj)
                                     
-    messages.created_msg(request, _('Settings modified successfully'), 'success')
+    messages.created_msg(request, _('Settings modified successfully'),
+                         'success')
     response.write('SUCCESS')
     return response
 

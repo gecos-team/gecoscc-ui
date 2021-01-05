@@ -13,7 +13,7 @@
 import os
 import pymongo
 import subprocess
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 
 DEFAULT_MONGODB_HOST = 'localhost'
@@ -141,7 +141,7 @@ class MongoDB(object):
                     dump_output = subprocess.check_output(cmd)
                 logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             logger.info("mongodump ended.")
-        except subprocess.CalledProcessError, msg:
+        except subprocess.CalledProcessError as msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
             exitstatus = msg.returncode
@@ -185,7 +185,7 @@ class MongoDB(object):
             restore_output = subprocess.check_output(command)
             logger.debug("db.py ::: restore - restore_output = %s" % restore_output)
             logger.info("mongorestore ended")
-        except subprocess.CalledProcessError, msg:
+        except subprocess.CalledProcessError as msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
             exitstatus = msg.returncode

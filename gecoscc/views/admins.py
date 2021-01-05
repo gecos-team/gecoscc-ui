@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
+from builtins import map
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed, HTTPNotFound,\
     HTTPBadRequest
@@ -127,7 +129,7 @@ def updates_log(_context, request):
     headers['Content-Type'] = 'application/download'
     headers['Content-Disposition'] = "attachment; filename=\"" + \
         os.path.basename(logfile) + "\"; filename*=UTF-8''"+ \
-        unicode(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+        str(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
 
     return response
 
@@ -173,7 +175,7 @@ def admins_ou_manage(context, request):
     controls = {}
     instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-        controls = request.POST.items()
+        controls = list(request.POST.items())
         # Removing blanks OUs (not filling up by user)
         data = [tup for tup in controls if not (tup[0] == 'ou_selected' and tup[1] == '')]
         logger.debug("admins_ou_manage ::: data = {}".format(data))
@@ -249,7 +251,7 @@ def admins_set_variables(context, request):
     # Ous managed by admin (user)
     if not user.get('is_superuser'):
         if 'ou_managed' in user:
-            admin_ous = map(ObjectId, user['ou_managed'])
+            admin_ous = list(map(ObjectId, user['ou_managed']))
             ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id': {'$in': admin_ous}})]
         else: # Recently new admin created
             ou_managed = []
@@ -266,12 +268,12 @@ def admins_set_variables(context, request):
     data = {}
     instance = request.userdb.get_user(username).get('variables', None)
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         try:
             variables = form.validate(data)
             form.save(variables)
             return HTTPFound(location=get_url_redirect(request))
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             form = e
     if instance and not data:
         form_render = form.render(instance)
@@ -307,14 +309,14 @@ def updates_add(context, request):
 
     instance = controls = {}
     if '_submit' in request.POST:
-        controls = request.POST.items()
+        controls = list(request.POST.items())
         logger.info('admin_updates - controls = %s' % controls)
         try:
             params = form.validate(controls)
             logger.info('admin_updates - params = %s' % params)
             form.save(params)
             return HTTPFound(location='')
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             form = e
 
     if instance and not controls:
@@ -459,13 +461,13 @@ def admin_maintenance(_context, request):
     settings = get_current_registry().settings
     instance = request.db.settings.find_one({'key':'maintenance_message'})
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         try:
             postdata = form.validate(data)
             logger.debug("admins_log ::: admin_maintenance  = %s" % (postdata))
             form.save(postdata)
             return HTTPFound(location='')
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             form = e
 
     if instance and not data:
@@ -533,19 +535,19 @@ def statistics(context, request):
         # Get managed ous for admin
         oids = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
         ous_visibles = request.db.nodes.find(
-            {"_id": { "$in": map(ObjectId, oids) }},
+            {"_id": { "$in": list(map(ObjectId, oids)) }},
             {"_id": 1, "name": 1, "path": 1}
         )
     for ou in ous_visibles:
         path = ou['path'] + ',' + str(ou['_id'])
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
-    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    sorted_ous = collections.OrderedDict(sorted(list(ous.items()), key=lambda kv: len(kv[1])))
     logger.debug("admins.py ::: statistics - sorted_ous = {}".format(sorted_ous))
 
     # Defaults
-    if not ou_id and sorted_ous.items() is not None and len(sorted_ous.items())>0:
-        ou_id = str(sorted_ous.items()[0][0])
+    if not ou_id and list(sorted_ous.items()) is not None and len(list(sorted_ous.items()))>0:
+        ou_id = str(list(sorted_ous.items())[0][0])
 
     logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
 
@@ -636,7 +638,7 @@ def _admin_edit(request, form_class, username=None):
     if username:
         instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         if username:
             data.append(('username', username))
         try:
@@ -652,7 +654,7 @@ def _admin_edit(request, form_class, username=None):
                     _check_if_user_belongs_to_admin_group(request, 'default', username)
             
                 return HTTPFound(location=get_url_redirect(request))
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             admin_user_form = e
     if instance and not data:
         form_render = admin_user_form.render(instance)

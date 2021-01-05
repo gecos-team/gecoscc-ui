@@ -10,7 +10,12 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import urllib2
+from builtins import next
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import map
+import urllib.request, urllib.error, urllib.parse
 
 from pyramid.httpexceptions import HTTPForbidden, HTTPFound
 from bson import ObjectId
@@ -114,7 +119,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                 logs_data = logs_data['logs']
                 
                 date_format = locale.nl_langinfo(locale.D_T_FMT)
-                date = datetime.datetime(*map(int, re.split('[^\d]', logs_data['date'])[:-1]))
+                date = datetime.datetime(*list(map(int, re.split('[^\d]', logs_data['date'])[:-1])))
                 localename = locale.normalize(get_current_request().locale_name+'.UTF-8')
                 logger.debug("/api/computers/: localename: %s" % (str(localename)))
                 locale.setlocale(locale.LC_TIME, localename)
@@ -143,7 +148,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                     last_mod = re.split('[^\d]', str(hcdata['last_modified']))
                     logger.info("last_mod: {0}".format(last_mod))
 
-                    date = datetime.datetime(*map(int, last_mod[:-2]))
+                    date = datetime.datetime(*list(map(int, last_mod[:-2])))
                     localename = locale.normalize(get_current_request().locale_name+'.UTF-8')
                     logger.debug("/api/computers/: localename: %s" % (str(localename)))
                     locale.setlocale(locale.LC_TIME, localename)
@@ -213,7 +218,7 @@ class ComputerResource(TreeLeafResourcePaginated):
                            'helpchannel': helpchannel,
                            'help_channel_enabled': help_channel_enabled
                            })
-        except (urllib2.URLError, ChefError, ChefServerError):
+        except (urllib.error.URLError, ChefError, ChefServerError):
             logger.error("/api/computers/: error getting data: node_chef_id: %s " % (str(result.get('node_chef_id', None))))
             logger.error(traceback.format_exc())
 
@@ -261,7 +266,7 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
             logger.error("/api/computers/support/: There is no support request for this computer!")
             raise HTTPForbidden()
 
-        hcdata = helpchannel_data.next()
+        hcdata = next(helpchannel_data)
         
         if hcdata is None or hcdata['action'] != 'accepted':
             logger.error("/api/computers/support/: There is no support request for this computer!")

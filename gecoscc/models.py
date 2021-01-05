@@ -10,10 +10,11 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import string_types
 import re
 import zipfile
 import tempfile
-import urllib2
+from urllib.request import urlopen
 import colander
 import deform
 import os
@@ -71,7 +72,7 @@ class ObjectIdField(object):
         if not isinstance(appstruct, ObjectId):
             raise colander.Invalid(node, '{0} is not a ObjectId'.format(
                 appstruct))
-        return unicode(appstruct)
+        return str(appstruct)
 
     def deserialize(self, node, cstruct):
         if not cstruct or cstruct is colander.null:
@@ -588,7 +589,7 @@ def unzip_preparer(value):
                     zipped.write(value['fp'].read())
             else: 
                 # remote_file
-                f = urllib2.urlopen(value['url'])
+                f = urlopen(value['url'])
                 with open(settings['updates.tmp'] + os.path.basename(value['url']), "wb") as zipped:
                     zipped.write(f.read())
 
@@ -615,10 +616,10 @@ class UrlFile(object):
             if isinstance(node.missing, colander._drop):
                 return colander.drop
             return colander.null
-        if not isinstance(appstruct, basestring):
+        if not isinstance(appstruct, string_types):
             raise colander.Invalid(node, '{0} is not a url'.format(
                 appstruct))
-        return unicode(appstruct)
+        return str(appstruct)
 
     def deserialize(self, node, pstruct):
         if not pstruct or pstruct is colander.null:

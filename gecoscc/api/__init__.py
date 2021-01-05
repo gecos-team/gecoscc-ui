@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -10,6 +11,9 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
+from past.utils import old_div
+from builtins import object
 import cgi
 import os
 
@@ -201,7 +205,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
 
         objects = self.collection.find(mongo_query, **extraargs).sort(self.order_field)
         objects = self.get_distinct_filter(objects)
-        pages = int(nodes_count / pagesize)
+        pages = int(old_div(nodes_count, pagesize))
         if nodes_count % pagesize > 0:
             pages += 1
         parsed_objects = self.parse_collection(list(objects))
@@ -327,7 +331,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
 
         try:
             obj_id = self.collection.insert(obj)
-        except DuplicateKeyError, e:
+        except DuplicateKeyError as e:
             raise HTTPBadRequest('The Object already exists: '
                                  '{0}'.format(e.message))
 
@@ -397,7 +401,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         
         try:
             self.collection.update(obj_filter, real_obj)
-        except DuplicateKeyError, e:
+        except DuplicateKeyError as e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))
 
@@ -474,7 +478,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 'ok': 1
             }
         else:
-            self.request.errors.add(unicode(obj[self.key]), 'db status',
+            self.request.errors.add(str(obj[self.key]), 'db status',
                                     status)
             return
 
@@ -513,7 +517,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
         parent = self.collection.find_one({self.key: ObjectId(parent_id)})
         if not parent:
-            self.request.errors.add(unicode(obj[self.key]), 'path', "parent"
+            self.request.errors.add(str(obj[self.key]), 'path', "parent"
                                     " doesn't exist {0}".format(parent_id))
             return False
 
@@ -521,7 +525,7 @@ class TreeResourcePaginated(ResourcePaginated):
 
         if parent['path'] != candidate_path_parent:
             self.request.errors.add(
-                unicode(obj[self.key]), 'path', "the parent object "
+                str(obj[self.key]), 'path', "the parent object "
                 "{0} has a different path".format(parent_id))
             return False
 
@@ -540,15 +544,15 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             return True
         obj_validated = visibility_group(self.request.db, obj)
         if obj != obj_validated:
-            self.request.errors.add(unicode(obj[self.key]), 'memberof',
+            self.request.errors.add(str(obj[self.key]), 'memberof',
                                     "There is a group out of scope.")
             return False
         for group_id in obj['memberof']:
             group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
                 self.request.errors.add(
-                    unicode(obj[self.key]), 'memberof',
-                    "The group {0} doesn't exist".format(unicode(group_id)))
+                    str(obj[self.key]), 'memberof',
+                    "The group {0} doesn't exist".format(str(group_id)))
                 return False
         return True
 
@@ -560,7 +564,7 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         visibility_object_related(self.request.db, obj)
         if not is_moved:
             if obj != obj_original:
-                self.request.errors.add(unicode(obj[self.key]), 'policies',
+                self.request.errors.add(str(obj[self.key]), 'policies',
                                         "The related object is out of scope")
                 return False
         return True
@@ -657,7 +661,7 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
 
             policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
             nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
-                                                                % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
+                                                                % str(policy_id): {'$in': [str(obj['_id'])]}})
 
             if nodes_related_with_obj.count() == 0:
                 return True
