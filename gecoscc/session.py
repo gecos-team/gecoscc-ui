@@ -1,13 +1,19 @@
-from beaker.session import SessionObject, Session
-from pyramid_beaker import coerce_session_params
-from gecoscc.eventsmanager import ExpiredSessionEvent
-from pyramid.settings import asbool
-from zope.interface import implementer
-from pyramid.interfaces import ISession
-from pyramid.threadlocal import get_current_registry
-
 import time
 import logging
+import os
+
+from binascii import hexlify
+from beaker.session import SessionObject, Session, CookieSession
+from pyramid_beaker import coerce_session_params
+from pyramid.settings import asbool
+from pyramid.interfaces import ISession
+from pyramid.threadlocal import get_current_registry
+from zope.interface import implementer
+
+
+from gecoscc.eventsmanager import ExpiredSessionEvent
+
+
 logger = logging.getLogger(__name__)
 
 class GecosSession(Session):
@@ -69,7 +75,8 @@ class GecosSession(Session):
                 try:
                     user = dict({'username':session_data['auth.userid']})
                     setattr(self.request_object, 'user', user)
-                    get_current_registry().notify(ExpiredSessionEvent(self.request_object))
+                    get_current_registry().notify(ExpiredSessionEvent(
+                        self.request_object))
                 except (KeyError, TypeError):
                     pass
                 timed_out = True
@@ -113,7 +120,7 @@ class GecosSessionObject(SessionObject):
                 else:
                     session_cls = GecosSession
             else:
-                assert issubclass(session_cls, MySession),\
+                assert issubclass(session_cls, Session),\
                     "Not a Session: " + session_cls
             self.__dict__['_sess'] = session_cls(req, **params)
         return self.__dict__['_sess']
@@ -226,4 +233,3 @@ def session_factory_from_settings(settings):
 
     options = coerce_session_params(options)
     return GecosSessionFactoryConfig(**options)
-

@@ -385,6 +385,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if not self.integrity_validation(obj, real_obj=real_obj):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
+                logger.error("Integrity error in object: {0}".format(obj))
+            else:
+                logger.error("Integrity error {0} in object: {1}".format(
+                    self.request.errors, obj))
+                
             return
 
         obj = self.pre_save(obj, old_obj=old_obj)
@@ -558,13 +563,14 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
 
     def check_policies_integrity(self, obj, is_moved=False):
         """
-        Check if the policie is out of scope
+        Check if the policy is out of scope
         """
         obj_original = deepcopy(obj)
         visibility_object_related(self.request.db, obj)
         if not is_moved:
             if obj != obj_original:
-                self.request.errors.add(str(obj[self.key]), 'policies',
+                self.request.errors.add('body',
+                                        '%s - policies'%(str(obj[self.key])),
                                         "The related object is out of scope")
                 return False
         return True

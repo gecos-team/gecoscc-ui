@@ -72,27 +72,27 @@ class MongoDB(object):
         return db
 
     def indexes(self, db):
-        db.nodes.ensure_index([
+        db.nodes.create_index([
             ('node_chef_id', pymongo.DESCENDING),
         ])
-        db.nodes.ensure_index([
+        db.nodes.create_index([
             ('path', pymongo.DESCENDING),
             ('type', pymongo.DESCENDING),
         ])
         # TODO: this try/except will be removed in review release
         try:
-            db.nodes.ensure_index([
+            db.nodes.create_index([
                 ('name', pymongo.DESCENDING),
                 ('type', pymongo.DESCENDING),
             ])
         except pymongo.errors.OperationFailure:
             db.nodes.drop_index('name_-1_type_-1')
-            db.nodes.ensure_index([
+            db.nodes.create_index([
                 ('name', pymongo.DESCENDING),
                 ('type', pymongo.DESCENDING),
             ])
 
-        db.jobs.ensure_index([
+        db.jobs.create_index([
             ('userid', pymongo.DESCENDING),
         ])
 

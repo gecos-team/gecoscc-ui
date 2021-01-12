@@ -180,7 +180,8 @@ def check_database_indexes(config):
     for lang in languages:
         logger.debug('Creating indexes for "%s" locale'%(lang))
         db.nodes.create_index('name', name=('name_%s'%(lang)),
-            collation=pymongo.collation.Collation(lang, caseLevel=True, strength=pymongo.collation.CollationStrength.PRIMARY) )
+            collation=pymongo.collation.Collation(lang, caseLevel=True,
+                strength=pymongo.collation.CollationStrength.PRIMARY) )
           
     
 def userdb_config(config):
@@ -219,13 +220,24 @@ def jinja2_config(config):
     """)
 
 
+def test_celery_config(config):
+    # Configure for the tests 
+    from pyramid_celery import configure, celery_app
+    configure(config, '%s/config-templates/test.ini'%(os.getcwd()))
+    logger.info("Celery in eager mode: %s"%(celery_app.conf.task_always_eager))
+    
+
+
 
 def celery_config(config):
     if sys.argv[0].endswith('pserve'):
-        # Configure Celery only in the pserve script
+        # Configure Celery only in the pserve script (gecoscc process)
         from pyramid_celery import configure, celery_app
         configure(config, sys.argv[1])
-        #logger.info("Celery configuration: %s"%(celery_app.conf))
+        # logger.info("Celery configuration: %s"%(celery_app.conf))
+        
+    if sys.argv[0].endswith('setup.py'):
+        test_celery_config(config)
 
 
 def locale_config(config):
@@ -269,10 +281,8 @@ def main(global_config, **settings):
     celery_config(config)
     locale_config(config)
 
-#    Commented out until next big update to Python3. Breaks MongoDB 2.x compatibility.
-#    check_database_indexes(config)
-    logger.debug('ATTENTION: activate check_database_indexes in __init__ when Mongo 3.4 is available')
-
+    check_database_indexes(config)
+    
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 

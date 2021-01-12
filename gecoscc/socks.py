@@ -12,6 +12,7 @@
 
 import logging
 
+from six import text_type
 from geventwebsocket.gunicorn.workers import GeventWebSocketWorker
 from geventwebsocket.handler import WebSocketHandler
 
@@ -44,7 +45,7 @@ def invalidate_change(request, objnew):
     sio.emit(CHANNEL_WEBSOCKET, {
         'token': request.GET.get(TOKEN, ''),
         'action': 'change',
-        'objectId': unicode(objnew['_id']),
+        'objectId': text_type(objnew['_id']),
         'user': request.user['username']
     })
 
@@ -58,13 +59,13 @@ def invalidate_delete(request, obj):
     sio.emit(CHANNEL_WEBSOCKET, {
         'token': request.GET.get(TOKEN, ''),
         'action': 'delete',
-        'objectId': unicode(obj['_id']),
+        'objectId': text_type(obj['_id']),
         'path': obj['path'],
         'user': request.user['username']
     })
 
 
-def invalidate_jobs(request, user=None):
+def invalidate_jobs(_request, user=None):
     if not is_websockets_enabled():
         logger.info("Websockets not enabled!")
         return
@@ -106,8 +107,8 @@ def add_computer_to_user(computer, user):
     sio = get_sio()
     sio.emit(CHANNEL_WEBSOCKET, {
         'action': 'add_computer_to_user',
-        'computer': unicode(computer),
-        'user': unicode(user)
+        'computer': text_type(computer),
+        'user': text_type(user)
     })
 
 def delete_computer(object_id, path):
@@ -119,7 +120,7 @@ def delete_computer(object_id, path):
     sio.emit(CHANNEL_WEBSOCKET, {
         'token': '',
         'action': 'delete',
-        'objectId': unicode(object_id),
+        'objectId': text_type(object_id),
         'path': path,
         'user': 'Chef server'
     })
@@ -132,7 +133,7 @@ def socktail(logdata):
     sio = get_sio()
     sio.emit('logdata', {
         'action': 'socktail',
-        'logdata': unicode(logdata)
+        'logdata': text_type(logdata)
     },
     namespace='/tail')
 
@@ -141,7 +142,8 @@ class GecosWSGIHandler(WebSocketHandler):
     def get_environ(self):
         env = super(GecosWSGIHandler, self).get_environ()
         headers = dict(self._headers())
-        if ('HTTP_X_FORWARDED_PROTO' in headers and headers['HTTP_X_FORWARDED_PROTO'] == 'https'):
+        if ('HTTP_X_FORWARDED_PROTO' in headers and 
+            headers['HTTP_X_FORWARDED_PROTO'] == 'https'):
             env['wsgi.url_scheme'] = 'https'
         return env
 

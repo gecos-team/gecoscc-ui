@@ -37,7 +37,8 @@ from gecoscc.api.storages import StorageResource
 from gecoscc.api.users import UserResource
 from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
-from gecoscc.commands.recalc_nodes_policies import Command as RecalcNodePoliciesCommand
+from gecoscc.commands.recalc_nodes_policies import Command as \
+    RecalcNodePoliciesCommand
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
@@ -49,11 +50,14 @@ from gecoscc.views.admins import admin_add
 CHEF_URL = 'https://CHEF_URL/'
 CHEF_NODE_ID = '36e13492663860e631f53a00afcdd92d'
 
-# To disable this tests
-DISABLE_TESTS = True
+# To disable this integration tests, set this value to TRUE
+# (To run the integration test you will need a MongoDB server,
+# a REDIS server, )
+DISABLE_TESTS = False
 
 
-def create_chef_admin_user_mock(api, settings, username, password=None, email='nobody@nobody.es'):
+def create_chef_admin_user_mock(api, settings, username, password=None,
+                                email='nobody@nobody.es'):
     pass
 
 
@@ -66,9 +70,15 @@ def get_cookbook_mock(api, cookbook_name):
     Returns a static cookbook saved in  json file
     If the cookbook change the cookbook.json should be updated
     '''
-    cook_book_json = open('gecoscc/test_resources/cookbook.json').read().replace('%(chef_url)s', CHEF_URL)
-    return json.loads(cook_book_json)
+    cbmock = None
+    with open('gecoscc/test_resources/cookbook.json') as cook_book_file:
+        cook_book_json = cook_book_file.read().replace('%(chef_url)s', CHEF_URL)
+        cbmock = json.loads(cook_book_json) 
+    return cbmock
 
+
+def _check_if_user_belongs_to_admin_group_mock(request, organization, username):
+    return True
 
 def isinstance_mock(instance, klass):
     '''
@@ -183,23 +193,32 @@ class NodeMock(object):
 
     '''
     NodeMock emulates NodeAttributes <chef.node.Node>
-    With this class and the two previous classes the chef client and chef server are emulated
+    With this class and the two previous classes the chef client and chef
+    server are emulated
     '''
 
     def __init__(self, chef_node_id, api):
         super(NodeMock, self).__init__()
         self.name = chef_node_id
-        node_default_json = open('gecoscc/test_resources/node_default.json').read().replace(
-            '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', chef_node_id)
-        self.default = NodeAttributesMock(json.loads(node_default_json), self, 'default')
+        node_default_json = '{}'
+        with open('gecoscc/test_resources/node_default.json') as file:
+            node_default_json = file.read().replace(
+                '%(chef_url)s', CHEF_URL).replace(
+                    '%s(node_name)s', chef_node_id)
+        self.default = NodeAttributesMock(json.loads(node_default_json), self,
+                                          'default')
 
         if chef_node_id in NODES:
-            self.attributes = NodeAttributesMock(copy(NODES[chef_node_id]), self)
+            self.attributes = NodeAttributesMock(copy(NODES[chef_node_id]),
+                                                 self)
             self.normal = self.attributes
             self.exists = True
         else:
-            node_attributes_json = open('gecoscc/test_resources/node_attributes.json').read().replace(
-                '%(chef_url)s', CHEF_URL).replace('%s(node_name)s', chef_node_id)
+            node_attributes_json = '{}'
+            with open('gecoscc/test_resources/node_attributes.json') as file:
+                node_attributes_json = file.read().replace(
+                    '%(chef_url)s', CHEF_URL).replace(
+                        '%s(node_name)s', chef_node_id)
 
             node_attributes_json = json.loads(node_attributes_json)
             self.check_no_exists_name(node_attributes_json)
@@ -242,15 +261,33 @@ class BaseGecosTestCase(unittest.TestCase):
         6. Create a basic structure
         '''
         if DISABLE_TESTS: return
+
+        # Since this file imports from gecoscc.api and gecoscc.api
+        # import from gecoscc.tasks, the tasks are binding to a "default"
+        # Celery app before the Pyramid celery app is created and configured
+        #
+        # So, we need to bind all the tasks to the Pyramid celery task  
+        from celery._state import get_current_app
+        default_celery_app = get_current_app()
+        print("Current app (before celery setup): %s"%(default_celery_app))
+        gecos_tasks = default_celery_app.tasks
         
         app_sec = 'config:config-templates/test.ini'
         name = None
         relative_to = '.'
         kw = {'global_conf': {}}
         config = loadapp(app_sec, name=name, relative_to=relative_to, **kw)
+
+        # Bind all the tasks to the Pyramid celery task
+        from pyramid_celery import celery_app
+        for task in gecos_tasks.keys():
+            celery_app.register_task(gecos_tasks[task])  
+
+        
         self.config = config
-        testing.setUp(config.application.registry)
-        current_app.add_defaults(config.application.registry.settings)
+        self.registry = config.application.wsgi_app.registry
+        testing.setUp(self.registry)
+        current_app.add_defaults(self.registry.settings)
         self.drop_database()
         self.drop_mock_nodes()
         self.import_policies()
@@ -258,6 +295,7 @@ class BaseGecosTestCase(unittest.TestCase):
 
     def tearDown(self):
         testing.tearDown()
+        
 
     @classmethod
     def get_db(self):
@@ -271,8 +309,8 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         Useful method, drop test database
         '''
-        c = self.config.application.registry.settings['mongodb'].get_connection()
-        db_name = self.config.application.registry.settings['mongodb'].database_name
+        c = self.registry.settings['mongodb'].get_connection()
+        db_name = self.registry.settings['mongodb'].database_name
         c.drop_database(db_name)
 
     def drop_mock_nodes(self):
@@ -451,6 +489,7 @@ class BaseGecosTestCase(unittest.TestCase):
         2. Create a domain (organisational unit level 1)
         3. Create a organisational unit
         '''
+        print("Creating basic structure...")
         get_cookbook_method.side_effect = get_cookbook_mock
         get_cookbook_method_tasks.side_effect = get_cookbook_mock
         data = {'name': 'Flag',
@@ -466,7 +505,8 @@ class BaseGecosTestCase(unittest.TestCase):
         data, ou = self.create_ou('OU 1')
         # 2 - Create user in domain
         username = 'usertest'
-        data, new_user = self.create_user(username, domain['name'])        
+        data, new_user = self.create_user(username, ou['name'])        
+        print("Basic structure created!")
 
     @mock.patch('gecoscc.commands.import_policies.get_cookbook')
     def import_policies(self, get_cookbook_method):
@@ -474,6 +514,7 @@ class BaseGecosTestCase(unittest.TestCase):
         Useful method, import the policies
         '''
 
+        print("Importing policies...")
         get_cookbook_method.side_effect = get_cookbook_mock
         argv_bc = sys.argv
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
@@ -481,6 +522,7 @@ class BaseGecosTestCase(unittest.TestCase):
         command = ImportPoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
+        print("Policies imported")
 
     def recalc_policies(self):
         '''
@@ -628,10 +670,12 @@ class BaseGecosTestCase(unittest.TestCase):
         response = computer_response.post()
         self.assertEqual(response['ok'], True)
 
-    def add_admin_user(self, username):
+    @mock.patch('gecoscc.views.admins._check_if_user_belongs_to_admin_group')
+    def add_admin_user(self, username, mock_function):
         '''
         Userful method, register an admin User
         '''
+        mock_function.side_effect = _check_if_user_belongs_to_admin_group_mock
         data = {'username': username,
                 'first_name': '',
                 'last_name': '',
@@ -697,6 +741,7 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         request_put = self.get_dummy_json_put_request(node, api_class.schema_detail)
         node_api = api_class(request_put)
+        print("add_and_get_policy json={0}".format(request_put.json))
         node_update = node_api.put()
         if node_update is not None:
             self.assertEqualsObjects(node, node_update, api_class.schema_detail)
@@ -705,6 +750,7 @@ class BaseGecosTestCase(unittest.TestCase):
         try:
             node_policy = node.attributes.get_dotted(policy_path)
         except KeyError:
+            print("ERROR: No '%s' key!"%(policy_path))
             node_policy = []
         return node_policy
 
@@ -1080,6 +1126,7 @@ class AdvancedTests(BaseGecosTestCase):
         user['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
         node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
+        self.assertEqual(1, len(node_policy), 'The policy was not added!')
 
         # 6 - Verification if the storage is applied to user in chef node
         self.assertEqualsObjects(node_policy[0], new_storage, fields=('name',
