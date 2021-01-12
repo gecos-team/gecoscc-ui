@@ -436,7 +436,7 @@ class BaseGecosTestCase(unittest.TestCase):
         every job should be "processing"
         '''
         db = self.get_db()
-        self.assertEqual(db.jobs.find({'status': {'$ne': 'processing'}}).count(),
+        self.assertEqual(db.jobs.find({'status': 'errors'}).count(),
                          0)
 
     def assertEmitterObjects(self, node_policy, db_emiters, fields):
