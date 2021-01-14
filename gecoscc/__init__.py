@@ -169,7 +169,8 @@ def check_server_list(config):
         
     # Create/update server is in the collection
     server = {'name': server_name.strip(), 'address':server_address.strip()}
-    db.servers.update({'name': server_name.strip()}, server, upsert=True)
+    db.servers.update_one({'name': server_name.strip()}, {'$set': server},
+                          upsert=True)
         
         
 def check_database_indexes(config):

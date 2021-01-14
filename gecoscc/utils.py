@@ -943,7 +943,7 @@ def register_node(api, node_id, ou, collection_nodes):
                 if collection_nodes.find_one({'node_chef_id': node_id}):
                     ret = 'duplicated-node-id'
                 else:
-                    node_id = collection_nodes.insert(computer)
+                    node_id = collection_nodes.insert_one(computer).inserted_id
                     ret = node_id
             else:
                 ret = 'duplicated'
@@ -1039,18 +1039,16 @@ def check_unique_node_name_by_type_at_domain(collection_nodes, obj):
     if '_id' in obj:
         filters['_id'] = {'$ne': obj['_id']}
 
-# TODO: Replace this line with lines below when MongoDB 3.4 is available
-    return collection_nodes.find(filters).count() == 0
+    count = 0
+    settings = get_current_registry().settings
+    locales = settings['pyramid.locales']
+    for lang in locales:
+        # Check that the name is unique in every locale
+        count = count + collection_nodes.count_documents(filters,
+            collation=Collation(locale=lang,
+                strength=CollationStrength.PRIMARY))
     
-#    count = 0
-#    settings = get_current_registry().settings
-#    locales = settings['pyramid.locales']
-#    for lang in locales:
-#        # Check that the name is unique in every locale
-#        count = count + collection_nodes.find(filters).collation(
-#            Collation(locale=lang, strength=CollationStrength.PRIMARY)).count()
-    
-#    return count == 0
+    return count == 0
 
 
 def _is_local_user(user):
@@ -1674,7 +1672,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
     recalculate_path_values(logger, obj['inheritance'], 'root', [])
     
     # Update node in mongo db
-    db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+    db.nodes.update_one({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
     
     # Recalculate policies for each added node
     for newnode_id in nodes_added:
@@ -1731,7 +1729,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
         recalculate_path_values(logger, obj['inheritance'], 'root', [])
         
         # Update node in mongo db
-        db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+        db.nodes.update_one({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
         
     
     # Finaly recalculate the 'inherited' field of all the non mergeable policies
@@ -1755,7 +1753,7 @@ def move_in_inheritance_and_recalculate_policies(logger, db, srcobj, obj):
                     recalculate_inheritance_for_node(logger, db, 'changed', obj, policy, member)            
             
             # Update node in mongo db
-            db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
+            db.nodes.update_one({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
     
     return True
     
@@ -2377,7 +2375,7 @@ def recalculate_inheritance_for_node(logger, db, action, obj, policy, node):
             set_inherited_field(logger, node['inheritance'], str(policy['_id']), node_list, str(priority_node))
     
         # Update node in mongo db
-        db.nodes.update({'_id': node['_id']}, {'$set':{'inheritance': node['inheritance']}})
+        db.nodes.update_one({'_id': node['_id']}, {'$set':{'inheritance': node['inheritance']}})
     
     return success
                         

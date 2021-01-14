@@ -107,7 +107,7 @@ class AdminUserAddForm(BaseAdminUserForm):
     ignore_unique = False
 
     def save(self, admin_user):
-        self.collection.insert(admin_user)
+        self.collection.insert_one(admin_user)
         admin_user['plain_password'] = self.cstruct['password']
         settings = get_current_registry().settings
         user = self.request.user
@@ -145,7 +145,7 @@ class AdminUserEditForm(BaseAdminUserForm):
     def save(self, admin_user):
         if admin_user['password'] == '':
             del admin_user['password']
-        self.collection.update({'username': self.username},
+        self.collection.update_one({'username': self.username},
                                {'$set': admin_user})
         if admin_user['username'] != self.username and self.request.session['auth.userid'] == self.username:
             self.request.session['auth.userid'] = admin_user['username']

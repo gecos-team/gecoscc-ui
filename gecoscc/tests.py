@@ -428,7 +428,7 @@ class BaseGecosTestCase(unittest.TestCase):
         Clean all jobs.
         '''
         db = self.get_db()
-        db.jobs.remove()
+        db.jobs.delete_many({})
 
     def assertNoErrorJobs(self):
         '''
@@ -436,8 +436,7 @@ class BaseGecosTestCase(unittest.TestCase):
         every job should be "processing"
         '''
         db = self.get_db()
-        self.assertEqual(db.jobs.find({'status': 'errors'}).count(),
-                         0)
+        self.assertEqual(db.jobs.count_documents({'status': 'errors'}), 0)
 
     def assertEmitterObjects(self, node_policy, db_emiters, fields):
         '''
@@ -709,7 +708,8 @@ class BaseGecosTestCase(unittest.TestCase):
         computers = user.get('computers', [])
         if computer['_id'] not in computers:
             computers.append(computer['_id'])
-            self.get_db().nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+            self.get_db().nodes.update_one({'_id': user['_id']},
+                                           {'$set': {'computers': computers}})
        
 
     def assign_group_to_node(self, node_name, api_class, group):
@@ -741,7 +741,7 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         request_put = self.get_dummy_json_put_request(node, api_class.schema_detail)
         node_api = api_class(request_put)
-        print("add_and_get_policy json={0}".format(request_put.json))
+        #print("add_and_get_policy json={0}".format(request_put.json))
         node_update = node_api.put()
         if node_update is not None:
             self.assertEqualsObjects(node, node_update, api_class.schema_detail)

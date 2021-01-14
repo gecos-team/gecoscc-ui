@@ -119,7 +119,7 @@ class Unique(object):
         request = pyramid.threadlocal.get_current_request()
         from gecoscc.db import get_db
         mongodb = get_db(request)
-        if mongodb.adminusers.find({node.name: value}).count() > 0:
+        if mongodb.adminusers.count_documents({node.name: value}) > 0:
             err_msg = _(self.err_msg, mapping={'val': value})
             node.raise_invalid(err_msg)
 

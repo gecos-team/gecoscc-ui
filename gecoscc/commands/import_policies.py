@@ -161,10 +161,10 @@ class Command(BaseCommand):
         policy_slug = new_policy['slug']
         db_policy = self.db.policies.find_one({'slug': policy_slug})
         if not db_policy:
-            self.db.policies.insert(new_policy)
+            self.db.policies.insert_one(new_policy)
             print("Imported policy: %s" % policy_slug)
         else:
-            self.db.policies.update({'slug': policy_slug}, new_policy)
+            self.db.policies.update_one({'slug': policy_slug}, new_policy)
             print("Updated policy: %s" % policy_slug)
 
     def command(self):

@@ -118,7 +118,7 @@ class MongoUserDB:
             'apikey': [self.create_unique_apikey()],
         })
 
-        self.collection.save(user)
+        self.collection.insert_one(user)
 
     def create_unique_apikey(self):
         while True:

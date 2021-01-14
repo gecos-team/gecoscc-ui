@@ -405,7 +405,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         real_obj.update(obj)
         
         try:
-            self.collection.update(obj_filter, real_obj)
+            self.collection.replace_one(obj_filter, real_obj)
         except DuplicateKeyError as e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))

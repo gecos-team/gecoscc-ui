@@ -1575,7 +1575,7 @@ class ChefTask(Task):
                     pass
                 are_new_jobs = True
         job_status = 'processing' if job_ids_by_order else 'finished'
-        self.db.jobs.update({'_id': macrojob_id},
+        self.db.jobs.update_one({'_id': macrojob_id},
                             {'$set': {'status': job_status,
                                       'childs':  len(job_ids_by_order),
                                       'counter': len(job_ids_by_order),
@@ -1828,7 +1828,7 @@ class ChefTask(Task):
             settings = get_current_registry().settings
             api = api or get_chef_api(settings, user)
             objnew = update_computers_of_user(self.db, objnew, api)
-            self.db.nodes.update({'_id': objnew['_id']},
+            self.db.nodes.update_one({'_id': objnew['_id']},
                                  {'$set': {
                                       'computers': objnew['computers'] }})
 
