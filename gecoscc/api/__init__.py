@@ -34,7 +34,8 @@ from gecoscc.tasks import (object_created, object_changed, object_deleted,
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
-                           RESOURCES_EMITTERS_TYPES, get_object_related_list,
+                           RESOURCES_EMITTERS_TYPES, 
+                           get_object_related_list_count,
                            is_domain, get_domain, is_root)
 
 import gettext
@@ -238,8 +239,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
         return node
         
     def is_assigned(self, related_object):
-        node_with_related_object = get_object_related_list(self.request.db, related_object)
-        return bool(node_with_related_object.count())
+        node_with_related_object_count = get_object_related_list_count(
+            self.request.db, related_object)
+        return bool(node_with_related_object_count)
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
@@ -471,7 +473,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
         obj = self.pre_delete(obj)
 
-        status = self.collection.remove(filters)
+        status = self.collection.delete_one(filters).raw_result
 
         if status['ok']:
             obj = self.post_save(obj, old_obj)

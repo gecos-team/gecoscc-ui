@@ -87,6 +87,15 @@ def get_object_related_list(collection, obj):
     policy_id = text_type(get_policy_emiter_id(collection, obj))
     return collection.nodes.find({"policies.%s.object_related_list" % policy_id: {'$in': [text_type(obj['_id'])]}})
 
+def get_object_related_list_count(collection, obj):
+    '''
+    Get the objects count of the object related list to an object
+    '''
+    policy_id = text_type(get_policy_emiter_id(collection, obj))
+    return collection.nodes.count_documents(
+        {"policies.%s.object_related_list" % policy_id: {
+            '$in': [text_type(obj['_id'])]}})
+
 
 def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='_id'):
     """

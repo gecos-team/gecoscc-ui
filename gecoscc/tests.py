@@ -44,6 +44,7 @@ from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add
+from pkg_resources import parse_version
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -79,6 +80,38 @@ def get_cookbook_mock(api, cookbook_name):
 
 def _check_if_user_belongs_to_admin_group_mock(request, organization, username):
     return True
+
+class ChefApiMock(object):
+    def __init__(self):
+        self.version = '0.11'
+        self.version_parsed = parse_version(self.version)
+     
+    def __getitem__(self, item):
+        print("CHEF API MOCK: %s"%(item))
+        data = None
+        if item == '/nodes/%s'%(CHEF_NODE_ID):
+            data = {}
+            with open('gecoscc/test_resources/node_default.json') as file:
+                node_default_json = file.read().replace(
+                    '%(chef_url)s', CHEF_URL).replace(
+                        '%s(node_name)s', CHEF_NODE_ID)
+            data['default'] = json.loads(node_default_json)
+            
+            with open('gecoscc/test_resources/node_attributes.json') as file:
+                node_attributes_json = file.read().replace(
+                    '%(chef_url)s', CHEF_URL).replace(
+                        '%s(node_name)s', CHEF_NODE_ID)
+
+            data['normal'] = json.loads(node_attributes_json)
+
+            
+        return data
+    
+    
+def _get_chef_api_mock(chef_url, username, chef_pem, chef_ssl_verify,
+                       chef_version = '11.0.0'):
+    
+    return ChefApiMock()
 
 def isinstance_mock(instance, klass):
     '''
@@ -788,12 +821,16 @@ class BaseGecosTestCase(unittest.TestCase):
                                                'policy_data_node_2': {"desktop_file": "river.png"}}}
         return policies
 
-    def apply_mocks(self, get_cookbook_method=None, get_cookbook_method_tasks=None, NodeClass=None,
-                    ChefNodeClass=None, isinstance_method=None, gettext=None, create_chef_admin_user_method=None,
-                    ChefNodeStatusClass=None, TaskNodeClass=None, TaskClientClass=None, ClientClass=None):
+    def apply_mocks(self, get_chef_api_method=None, get_cookbook_method=None,
+        get_cookbook_method_tasks=None, NodeClass=None, ChefNodeClass=None,
+        isinstance_method=None, gettext=None,
+        create_chef_admin_user_method=None, ChefNodeStatusClass=None,
+        TaskNodeClass=None, TaskClientClass=None, ClientClass=None):
         '''
         mocks
         '''
+        if get_chef_api_method is not None:
+            get_chef_api_method.side_effect = _get_chef_api_mock
         if get_cookbook_method is not None:
             get_cookbook_method.side_effect = get_cookbook_mock
         if get_cookbook_method_tasks is not None:
@@ -1167,15 +1204,20 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_02_update_resources_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                             isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_02_update_resources_workstation(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 2:
         1. Check the printer policy works using workstation
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create printer
