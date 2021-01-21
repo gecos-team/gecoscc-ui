@@ -813,8 +813,8 @@ class BaseGecosTestCase(unittest.TestCase):
     def get_default_policies_user(self):
         policies = {"user_apps_autostart_res": {'policy': self.get_default_user_policy(slug='user_apps_autostart_res'),
                                                 'path': self.get_default_user_policy(slug="user_apps_autostart_res")['path'] + '.users.',
-                                                'policy_data_node_1': {"desktops": ["kate"]},
-                                                'policy_data_node_2': {"desktops": ["sublime"]}},
+                                                'policy_data_node_1': {"desktops": [{"name": "kate", "action": "add"}]},
+                                                'policy_data_node_2': {"desktops": [{"name": "sublime", "action": "add"}]}},
                     "desktop_background_res": {'policy': self.get_default_user_policy(slug='desktop_background_res'),
                                                'path': self.get_default_user_policy(slug="desktop_background_res")['path'] + '.users.',
                                                'policy_data_node_1': {"desktop_file": "mountain.png"},
@@ -1391,8 +1391,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_04_priority_user_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                          isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_04_priority_user_workstation(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 4:
         1. Check the registration work station works
@@ -1400,7 +1403,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # Register administrator
@@ -1419,67 +1424,96 @@ class AdvancedTests(BaseGecosTestCase):
         self.register_computer()
 
         # 3 - Register user in ws
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         policies = self.get_default_policies_user()
         user = db.nodes.find_one({'name': username})
         for policy in policies:
             # 4 - Add policy in OU
-            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_1']}
+            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']): 
+                                policies[policy]['policy_data_node_1']}
             name_element_policy = policies[policy]['policy_data_node_1']
-            policy_path_1 = policies[policy]['path'] + username + '.' + name_element_policy.keys()[0]
-            node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path_1)
+            policy_path_1 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]
+            node_policy = self.add_and_get_policy(node=ou_1,
+                chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+                policy_path=policy_path_1)
             # 5 - Verification if this policy is applied in chef node
             if policies[policy]['policy']['is_mergeable']:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['desktops'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['desktops'])
             else:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['desktop_file'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['desktop_file'])
             # 6 - Add policy in user
             name_element_policy = policies[policy]['policy_data_node_2']
-            policy_path_2 = policies[policy]['path'] + username + '.' + name_element_policy.keys()[0]
-            user['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_2']}
-            node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path_2)
+            policy_path_2 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]
+            user['policies'] = {text_type(policies[policy]['policy']['_id']): 
+                policies[policy]['policy_data_node_2']}
+            node_policy = self.add_and_get_policy(node=user,
+                chef_node_id=chef_node_id, api_class=UserResource,
+                policy_path=policy_path_2)
 
             if policies[policy]['policy']['is_mergeable']:
                 # 7 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, ['kate', 'sublime'])
+                self.assertEqual(node_policy, [
+                    {'name': 'kate', 'action': 'add'},
+                    {'name': 'sublime', 'action': 'add'}])
             else:
                 # 7 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_2']['desktop_file'])
             # Remove policy in OU
-            self.remove_policy_and_get_dotted(ou_1, chef_node_id, OrganisationalUnitResource, policy_path_1)
+            self.remove_policy_and_get_dotted(ou_1, chef_node_id,
+                OrganisationalUnitResource, policy_path_1)
 
         # 8, 9 - Create user Assign user to workstation
         username = 'usertest'
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
 
         for policy in policies:
             # 10 - Add policy in user
             name_element_policy = policies[policy]['policy_data_node_2']
-            policy_path_2 = policies[policy]['path'] + username + '.' + name_element_policy.keys()[0]
-            user['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_2']}
-            node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path_2)
+            policy_path_2 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]
+            user['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_2']}
+            node_policy = self.add_and_get_policy(node=user,
+                chef_node_id=chef_node_id, api_class=UserResource,
+                policy_path=policy_path_2)
 
             if policies[policy]['policy']['is_mergeable']:
                 # 11 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, ['sublime'])
+                self.assertEqual(node_policy, [
+                    {'name': 'sublime', 'action': 'add'}])
             else:
                 # 11 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_2']['desktop_file'])
             # 12 - Add policy in OU
-            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_1']}
+            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_1']}
             name_element_policy = policies[policy]['policy_data_node_1']
-            policy_path_1 = policies[policy]['path'] + username + '.' + name_element_policy.keys()[0]
-            node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path_1)
+            policy_path_1 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]
+            node_policy = self.add_and_get_policy(node=ou_1,
+                chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+                policy_path=policy_path_1)
             if policies[policy]['policy']['is_mergeable']:
                 # 13 - Verification if this policy is applied in chef node
                 node = NodeMock(chef_node_id, None)
                 node_policy = node.attributes.get_dotted(policy_path_1)
-                self.assertEqual(node_policy, ['kate', 'sublime'])
+                self.assertEqual(node_policy, [
+                    {'name': 'kate', 'action': 'add'},
+                    {'name': 'sublime', 'action': 'add'}])
             else:
                 # 13 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_2']['desktop_file'])
 
         self.assertNoErrorJobs()
 
@@ -3076,10 +3110,13 @@ class AdvancedTests(BaseGecosTestCase):
 
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if this policy is applied in chef node
-                self.assertEqual(node_policy, ['sublime', 'kate'])
+                self.assertEqual(node_policy, [
+                    {'name': 'sublime', 'action': 'add'},
+                    {'name': 'kate', 'action': 'add'}])
                 # 10 - Remove user's policy and verification if group's policy is applied in chef node
                 policy_applied = self.remove_policy_and_get_dotted(user, chef_node_id, UserResource, policy_path_1)
-                self.assertEqual(policy_applied, ['kate'])
+                self.assertEqual(policy_applied, [
+                    {'name': 'kate', 'action': 'add'}])
             else:
                 # 9 - Verification if this policy is applied in chef node
                 self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['desktop_file'])
