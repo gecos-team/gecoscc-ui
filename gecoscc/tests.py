@@ -1839,8 +1839,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_08_priority_user_ous_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                         isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_08_priority_user_ous_groups(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 8:
         1. Check the registration work station works
@@ -1848,7 +1851,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create a group
@@ -1867,49 +1872,71 @@ class AdvancedTests(BaseGecosTestCase):
         # 3, 4 - Register user in chef node and register user in chef node
         username = 'testuser'
         self.create_user(username)  
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         # 5 - Assign group to user
         user = db.nodes.find_one({'name': username})
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        self.assign_group_to_node(node_name=user['name'],
+            api_class=UserResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
-        policies = self.get_default_policies()
+        policies = self.get_default_policies_user()
         for policy in policies:
             # 6 - Add policy in OU
-            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_1']}
-            node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policies[policy]['path'])
+            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_1']}
+            name_element_policy = policies[policy]['policy_data_node_1']
+            policy_path_1 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]
+            node_policy = self.add_and_get_policy(node=ou_1,
+                chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+                policy_path=policy_path_1)
 
             # 7 - Verification if this policy is applied in chef node
             if policies[policy]['policy']['is_mergeable']:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['package_list'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['desktops'])
             else:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['shutdown_mode'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['desktop_file'])
 
             # 8 -  Add policy in group
-            group['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_2']}
-            node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
+            group['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_2']}
+            name_element_policy = policies[policy]['policy_data_node_2']
+            policy_path_2 = policies[policy]['path'] + username + '.' + list(
+                name_element_policy.keys())[0]            
+            node_policy = self.add_and_get_policy(node=group,
+                chef_node_id=chef_node_id, api_class=GroupResource,
+                policy_path=policy_path_2)
 
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEqual(node_policy, ['libreoffice', 'gimp'])
+                self.assertItemsEqual(node_policy, [
+                    {'name': 'kate', 'action': 'add'},
+                    {'name': 'sublime', 'action': 'add'}])
                 # 10 - Remove policy in group
-                policy_applied = self.remove_policy_and_get_dotted(group, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group,
+                    chef_node_id, GroupResource, policy_path_1)
 
                 # 11 - Verification if the OU's policy is applied in chef node
-                self.assertEqual(policy_applied, ['gimp'])
+                self.assertItemsEqual(policy_applied,
+                    [{'name': 'kate', 'action': 'add'}])
             else:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['shutdown_mode'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_2']['desktop_file'])
 
                 # 10 - Remove policy in group
-                policy_applied = self.remove_policy_and_get_dotted(group, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group,
+                    chef_node_id, GroupResource, policy_path_1)
 
                 # 11 - Verification if the OU's policy is applied in chef node
-                self.assertEqual(policy_applied, 'reboot')
+                self.assertEqual(policy_applied, 'mountain.png')
 
         self.assertNoErrorJobs()
 
