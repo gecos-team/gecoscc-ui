@@ -1736,8 +1736,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_07_priority_workstation_groups_different_ou(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                                         isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_07_priority_workstation_groups_different_ou(self,
+        get_chef_api_method, get_cookbook_method, get_cookbook_method_tasks,
+        NodeClass, ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 7:
         1. Check the registration work station works
@@ -1745,7 +1748,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create A group
@@ -1761,10 +1766,12 @@ class AdvancedTests(BaseGecosTestCase):
         computer = db.nodes.find_one({'name': 'testing'})
 
         # 4 - Assign groupA to computer
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_a)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group_a)
 
         # 5 - Assign groupB to computer
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group_b)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group_b)
 
         # Check if group's node is update in node chef
         group_a = db.nodes.find_one({'name': new_group_a['name']})
@@ -1775,34 +1782,52 @@ class AdvancedTests(BaseGecosTestCase):
         policies = self.get_default_policies()
         for policy in policies:
             # 6 - Add policy in A group
-            group_a['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_1']}
-            group_a_policy = self.add_and_get_policy(node=group_a, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
+            group_a['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_1']}
+            group_a_policy = self.add_and_get_policy(node=group_a,
+                chef_node_id=chef_node_id, api_class=GroupResource,
+                policy_path=policies[policy]['path'])
 
             # 7 - Verification if this policy is applied in chef node
             if policies[policy]['policy']['is_mergeable']:
-                self.assertEqual(group_a_policy, policies[policy]['policy_data_node_1']['package_list'])
+                self.assertEqual(group_a_policy, policies[policy][
+                    'policy_data_node_1']['package_list'])
             else:
-                self.assertEqual(group_a_policy, policies[policy]['policy_data_node_1']['shutdown_mode'])
+                self.assertEqual(group_a_policy, policies[policy][
+                    'policy_data_node_1']['shutdown_mode'])
 
             # 8 -  Add policy in B group
-            group_b['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_2']}
-            group_b_policy = self.add_and_get_policy(node=group_b, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
+            group_b['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_2']}
+            group_b_policy = self.add_and_get_policy(node=group_b,
+                chef_node_id=chef_node_id, api_class=GroupResource,
+                policy_path=policies[policy]['path'])
             if policies[policy]['policy']['is_mergeable']:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEqual(group_b_policy, ['libreoffice', 'gimp'])
+                self.assertItemsEqual(group_b_policy, [
+                    {'name': 'libreoffice', 'version': 'latest',
+                        'action': 'add'},
+                    {'name': 'gimp', 'version': 'latest', 'action': 'add'}])
                 # 10 - Remove policy in A group
-                policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group_a,
+                    chef_node_id, GroupResource, policies[policy]['path'])
 
-                # 11 - Verification if the B group's policy is applied in chef node
-                self.assertEqual(policy_applied, ['libreoffice'])
+                # 11 - Verification if the B group's policy is applied in chef
+                # node
+                self.assertItemsEqual(policy_applied, [
+                    {'name': 'libreoffice', 'version': 'latest',
+                     'action': 'add'}])
             else:
                 # 9 - Verification if the policy is applied in chef node
-                self.assertEqual(group_b_policy, policies[policy]['policy_data_node_1']['shutdown_mode'])
+                self.assertEqual(group_b_policy, policies[policy][
+                    'policy_data_node_1']['shutdown_mode'])
 
                 # 10 - Remove policy in A group
-                policy_applied = self.remove_policy_and_get_dotted(group_a, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group_a,
+                    chef_node_id, GroupResource, policies[policy]['path'])
 
-                # 11 - Verification if the B group's policy is applied in chef node
+                # 11 - Verification if the B group's policy is applied in chef
+                # node
                 self.assertEqual(policy_applied, 'halt')
 
         self.assertNoErrorJobs()
