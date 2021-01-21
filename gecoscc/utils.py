@@ -2300,7 +2300,8 @@ def recalculate_inherited_field(logger, db, obj_id):
 
     if inherited_updated:
         # Update node in mongo db to save the 'inherited' field
-        db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+        db.nodes.update_one({'_id': obj['_id']},
+                            {'$set':{'inheritance': obj['inheritance']}})
     
     return obj['inheritance']
     

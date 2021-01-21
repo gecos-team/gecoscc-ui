@@ -101,7 +101,6 @@
         }, 
         "software_mgmt": {
             "package_res": {
-                "pkgs_to_remove": [], 
                 "support_os": [
                     "GECOS V2", 
                     "Gecos V2 Lite", 
