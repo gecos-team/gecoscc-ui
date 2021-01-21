@@ -1669,7 +1669,8 @@ class ChefTask(Task):
                 if groups_changed:
                     self.log("debug","object_action - groups changed!")
                     # Update node in mongo db
-                    self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                    self.db.nodes.update_one({'_id': obj['_id']},
+                        {'$set':{'inheritance': obj['inheritance']}})
                     
                     # Refresh all policies of the added groups in the inheritance field
                     for group_id, group_action in self.get_groups(obj, objold):

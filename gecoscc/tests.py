@@ -481,7 +481,20 @@ class BaseGecosTestCase(unittest.TestCase):
         for i, emiter in enumerate(db_emiters):
             self.assertEqualObjects(node_policy[i], emiter, fields=fields)
 
-    def assertEqualObjects(self, data, new_data, schema_data=None, schema_new_data=None, fields=None):
+    def assertItemsEqual(self, list1, list2):
+        '''
+        Useful method, check that both list contains the same items
+        '''
+        self.assertEqual(len(list1), len(list2),
+            'The lists have different lengths')
+        
+        for elm in list1:
+            self.assertTrue(elm in list2, 
+                '{0} not in {1}'.format(elm, list2))
+        
+
+    def assertEqualObjects(self, data, new_data, schema_data=None,
+        schema_new_data=None, fields=None):
         '''
         Useful method, check the second dictionary has the same values than
         the first. The second dictionary could have other attrs
@@ -1525,16 +1538,22 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_05_priority_workstation_ous_groups(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                                isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_05_priority_workstation_ous_groups(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 5:
         1. Check the registration work station works
-        2. Check the policies priority works using organisational unit and groups
+        2. Check the policies priority works using organisational unit and
+           groups
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1- Create a group
@@ -1548,7 +1567,8 @@ class AdvancedTests(BaseGecosTestCase):
         computer = db.nodes.find_one({'name': 'testing'})
 
         # 3 - Assign group to computer
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -1557,33 +1577,48 @@ class AdvancedTests(BaseGecosTestCase):
         policies = self.get_default_policies()
         for policy in policies:
             # 4 - Add policy in OU
-            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_1']}
-            node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policies[policy]['path'])
+            ou_1['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_1']}
+            node_policy = self.add_and_get_policy(node=ou_1,
+                chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+                policy_path=policies[policy]['path'])
 
             # 5 - Verification if this policy is applied in chef node
             if policies[policy]['policy']['is_mergeable']:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['package_list'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['package_list'])
             else:
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_1']['shutdown_mode'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_1']['shutdown_mode'])
 
             # 6 -  Add policy in group
-            group['policies'] = {text_type(policies[policy]['policy']['_id']): policies[policy]['policy_data_node_2']}
-            node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policies[policy]['path'])
+            group['policies'] = {text_type(policies[policy]['policy']['_id']):
+                policies[policy]['policy_data_node_2']}
+            node_policy = self.add_and_get_policy(node=group,
+                chef_node_id=chef_node_id, api_class=GroupResource,
+                policy_path=policies[policy]['path'])
 
             if policies[policy]['policy']['is_mergeable']:
                 # 7 - Verification if the policy is applied in chef node
-                self.assertEqual(node_policy, ['libreoffice', 'gimp'])
+                self.assertItemsEqual(node_policy, [
+                    {'name': 'libreoffice', 'version': 'latest',
+                        'action': 'add'},
+                    {'name': 'gimp', 'version': 'latest', 'action': 'add'}])
                 # 8 - Remove policy in group
-                policy_applied = self.remove_policy_and_get_dotted(group, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group,
+                    chef_node_id, GroupResource, policies[policy]['path'])
 
                 # 9 - Verification if the OU's policy is applied in chef node
-                self.assertEqual(policy_applied, ['gimp'])
+                self.assertItemsEqual(policy_applied,
+                    [{'name': 'gimp', 'version': 'latest', 'action': 'add'}])
             else:
                 # 7 - Verification if the policy is applied in chef node
-                self.assertEqual(node_policy, policies[policy]['policy_data_node_2']['shutdown_mode'])
+                self.assertEqual(node_policy, policies[policy][
+                    'policy_data_node_2']['shutdown_mode'])
 
                 # 8 - Remove policy in group
-                policy_applied = self.remove_policy_and_get_dotted(group, chef_node_id, GroupResource, policies[policy]['path'])
+                policy_applied = self.remove_policy_and_get_dotted(group,
+                    chef_node_id, GroupResource, policies[policy]['path'])
 
                 # 9 - Verification if the OU's policy is applied in chef node
                 self.assertEqual(policy_applied, 'reboot')

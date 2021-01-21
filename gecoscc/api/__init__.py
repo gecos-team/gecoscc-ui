@@ -625,13 +625,13 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         for group_id in adds:
 
             # Add newmember to new group
-            self.request.db.nodes.update({
+            self.request.db.nodes.update_one({
                 '_id': group_id
             }, {
                 '$push': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
             group = self.request.db.nodes.find_one({'_id': group_id})
             computers = self.computers_to_group(obj)
             object_changed.delay(self.request.user, 'group', group, {}, 'changed', computers)
