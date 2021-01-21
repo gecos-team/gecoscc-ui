@@ -286,7 +286,7 @@ def remove_chef_computer_data(computer, api, policies=None):
                     except KeyError:
                         continue
             else:
-                for mgmt in cookbook.keys():
+                for mgmt in list(cookbook.keys()):
                     if mgmt == USER_MGMT:
                         continue
                     cookbook.pop(mgmt)

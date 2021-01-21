@@ -2036,7 +2036,7 @@ class AdvancedTests(BaseGecosTestCase):
                     {"name": "sublime", "action": "add"}])
                 # 12 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a,
-                    chef_node_id, GroupResource, policies[policy]['path'])
+                    chef_node_id, GroupResource, policy_path_1)
 
                 # 13 - Verification if the B group's policy is applied in chef
                 # node
@@ -2045,11 +2045,11 @@ class AdvancedTests(BaseGecosTestCase):
             else:
                 # 11 - Verification if the policy is applied in chef node
                 self.assertEqual(group_b_policy, policies[policy][
-                    'policy_data_node_1']['shutdown_mode'])
+                    'policy_data_node_1']['desktop_file'])
 
                 # 12 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a,
-                    chef_node_id, GroupResource, policies[policy]['path'])
+                    chef_node_id, GroupResource, policy_path_1)
 
                 # 13 - Verification if the B group's policy is applied in chef
                 # node
@@ -2162,7 +2162,7 @@ class AdvancedTests(BaseGecosTestCase):
             else:
                 # 11 - Verification if the policy is applied in chef node
                 self.assertEqual(group_b_policy, policies[policy][
-                    'policy_data_node_1']['shutdown_mode'])
+                    'policy_data_node_1']['desktop_file'])
 
                 # 12 - Remove policy in A group
                 policy_applied = self.remove_policy_and_get_dotted(group_a,
@@ -2181,8 +2181,12 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_11_move_workstation(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    
+    def test_11_move_workstation(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 11:
         1. Check the registration work station works
@@ -2190,7 +2194,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Register workstation
@@ -2205,26 +2211,32 @@ class AdvancedTests(BaseGecosTestCase):
         ou_1['policies'] = {text_type(package_res_policy['_id']): {
             'package_list': [
                 {'name': 'gimp', 'version': 'latest', 'action': 'add'}]}}
-        package_res_node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        package_res_node_policy = self.add_and_get_policy(node=ou_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=policy_path)
 
         # 3 - Verification if this policy is applied in chef node
-        self.assertEqual(package_res_node_policy, ['gimp'])
+        self.assertItemsEqual(package_res_node_policy, [
+            {'name': 'gimp', 'version': 'latest', 'action': 'add'}])
 
         # 4 - Add policy in domain
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         domain_1['policies'] = {text_type(package_res_policy['_id']): {
             'package_list': [
                 {'name': 'libreoffice', 'version': 'latest', 'action': 'add'}]}}
-        package_res_domain_policy = self.add_and_get_policy(node=domain_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        package_res_domain_policy = self.add_and_get_policy(node=domain_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=policy_path)
 
         # 5 - Verification if the OU's policy is applied in chef node
-        self.assertEqual(package_res_domain_policy, [
+        self.assertItemsEqual(package_res_domain_policy, [
             {'name': 'gimp', 'version': 'latest', 'action': 'add'}, 
             {'name': 'libreoffice', 'version': 'latest', 'action': 'add'}])
 
         # 6 - Move workstation to domain_1
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        request = self.dummy_get_request(computer,
+            ComputerResource.schema_detail)
         computer_api = ComputerResource(request)
         computer = computer_api.get()
         self.assertNoErrorJobs()
@@ -2235,7 +2247,8 @@ class AdvancedTests(BaseGecosTestCase):
         # 7 - Verification if domain_1's policy is applied in chef node
         node = NodeMock(chef_node_id, None)
         package_list = node.attributes.get_dotted(policy_path)
-        self.assertEqual(package_list, ['libreoffice'])
+        self.assertItemsEqual(package_list, [
+            {'name': 'libreoffice', 'version': 'latest', 'action': 'add'}])
 
         self.assertNoErrorJobs()
 
