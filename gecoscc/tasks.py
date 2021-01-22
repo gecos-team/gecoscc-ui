@@ -2097,15 +2097,16 @@ class ChefTask(Task):
             client.delete()
         if direct_deleted is False:
             # 2 - Disassociate computer from its users
-            users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
+            users = self.db.nodes.find({'type': 'user',
+                'computers': obj['_id']})
             for u in users:
-                self.db.nodes.update({
+                self.db.nodes.update_one({
                     '_id': u['_id']
                 }, {
                     '$pull': {
                         'computers': obj['_id']
                     }
-                }, multi=False)
+                })
             # 3 - Disassociate computers from its groups
             self.disassociate_object_from_group(obj)
         self.log_action('deleted END', 'Computer', obj)
@@ -2145,7 +2146,7 @@ class ChefTask(Task):
             for node in nodes_by_type:
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
                 node_deleted_function(user, node, computers=computers, direct_deleted=False)
-        self.db.nodes.remove({'path': ou_path})
+        self.db.nodes.delete_many({'path': ou_path})
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)

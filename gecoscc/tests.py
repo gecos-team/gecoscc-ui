@@ -2670,8 +2670,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_17_delete_ou_with_workstation_and_user_in_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                              gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_17_delete_ou_with_workstation_and_user_in_domain(self,
+        get_chef_api_method, get_cookbook_method, get_cookbook_method_tasks,
+        NodeClass, ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 17:
         1. Check the registration work station works
@@ -2679,8 +2682,10 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method,
+            None, TaskNodeClass, TaskClientClass)
         self.cleanErrorJobs()
 
         # Register administrator
@@ -2694,12 +2699,13 @@ class AdvancedTests(BaseGecosTestCase):
         self.register_computer()
 
         # 2 - Create user in domain
-        username = 'usertest'
+        username = 'testuser'
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
         data, new_user = self.create_user(username, domain_1['name'])
 
         # 3 - Register user in chef node
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
 
@@ -2710,7 +2716,8 @@ class AdvancedTests(BaseGecosTestCase):
         self.delete_node(ou_1, OrganisationalUnitResource)
         self.assertDeleted(field_name='name', field_value=ou_1['name'])
 
-        # 6, 7 - Verification that the OU and worskstation have been deleted successfully
+        # 6, 7 - Verification that the OU and worskstation have been deleted
+        # successfully
         ou_1 = db.nodes.find_one({'name': ou_1['name']})
         computer = db.nodes.find_one({'name': computer['name']})
         self.assertIsNone(ou_1)
