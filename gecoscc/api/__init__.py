@@ -199,10 +199,7 @@ class ResourcePaginatedReadOnly(BaseAPI):
         else:
             mongo_query = {}
 
-        nodes_count = self.collection.find(
-            mongo_query,
-            {'type': 1}
-        ).count()
+        nodes_count = self.collection.count_documents(mongo_query)
 
         objects = self.collection.find(mongo_query, **extraargs).sort(self.order_field)
         objects = self.get_distinct_filter(objects)

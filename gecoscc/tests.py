@@ -212,7 +212,8 @@ class NodeAttributesMock(object):
         return self.data.pop(key)
 
     def __getitem__(self, key):
-        return NodeAttributesMock(self.data.__getitem__(key), self.node, self.node_attr_type)
+        return NodeAttributesMock(self.data.__getitem__(key), self.node,
+            self.node_attr_type)
 
     def __iter__(self):
         return self.data.__iter__()
@@ -357,8 +358,8 @@ class BaseGecosTestCase(unittest.TestCase):
 
     def get_dummy_request(self, is_superuser=True):
         '''
-        Useful method, returns a typical request, with the same request properties
-        than pyramid add (see gecoscc/__init__)
+        Useful method, returns a typical request, with the same request
+        properties than pyramid add (see gecoscc/__init__)
         '''
         request = testing.DummyRequest()
         request.db = get_db(request)
@@ -366,13 +367,18 @@ class BaseGecosTestCase(unittest.TestCase):
         if is_superuser is True:
             user = request.db.adminusers.find_one({'is_superuser': True})
             if not user:
-                user = request.userdb.create_user('test', 'test', 'test@example.com', {'is_superuser': True})
-            request.user = request.db.adminusers.find_one({'is_superuser': True})
+                user = request.userdb.create_user('test', 'test',
+                    'test@example.com', {'is_superuser': True})
+            request.user = request.db.adminusers.find_one(
+                {'is_superuser': True})
         else:
             user = request.db.adminusers.find_one({'is_superuser': False})
             if not user:
-                user = request.userdb.create_user('test_no_super', 'test_no_super', 'test_no_super@example.com', {'is_superuser': False})
-            request.user = request.db.adminusers.find_one({'is_superuser': False})
+                user = request.userdb.create_user('test_no_super',
+                    'test_no_super', 'test_no_super@example.com',
+                    {'is_superuser': False})
+            request.user = request.db.adminusers.find_one(
+                {'is_superuser': False})
 
         return request
 
@@ -417,12 +423,14 @@ class BaseGecosTestCase(unittest.TestCase):
             request.validated['_id'] = ObjectId(request.validated['_id'])
 
             node_type = data.get('type', '')
-            data_validated_hook = getattr(self, 'data_validated_hook_%s' % node_type, None)
+            data_validated_hook = getattr(self,
+                'data_validated_hook_%s' % node_type, None)
             if data_validated_hook:
                 data_validated_hook(request.validated)
 
         request.json = json.dumps(serialize_data)
-        request.path = '/api/%ss/%s/' % (serialize_data['type'], serialize_data['_id'])
+        request.path = '/api/%ss/%s/' % (serialize_data['type'],
+            serialize_data['_id'])
         return request
 
     def get_dummy_delete_request(self, data, schema=None):
@@ -475,7 +483,8 @@ class BaseGecosTestCase(unittest.TestCase):
 
     def assertEmitterObjects(self, node_policy, db_emiters, fields):
         '''
-        Useful method, check if the second list has the same values than the first
+        Useful method, check if the second list has the same values than the
+        first
         '''
         node_policy.sort(key=lambda e: e['uri'])
         db_emiters.sort(key=lambda e: e['uri'])
@@ -530,7 +539,8 @@ class BaseGecosTestCase(unittest.TestCase):
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def create_basic_structure(self, get_cookbook_method, get_cookbook_method_tasks):
+    def create_basic_structure(self, get_cookbook_method,
+        get_cookbook_method_tasks):
         '''
         1. Create a flag (organisational unit level 0)
         2. Create a domain (organisational unit level 1)
@@ -544,7 +554,8 @@ class BaseGecosTestCase(unittest.TestCase):
                 'path': 'root',
                 'source': 'gecos'}
 
-        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
+        request_post = self.get_dummy_json_post_request(data,
+            OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_post)
         flag_new = ou_api.collection_post()
 
@@ -565,7 +576,8 @@ class BaseGecosTestCase(unittest.TestCase):
         get_cookbook_method.side_effect = get_cookbook_mock
         argv_bc = sys.argv
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
-                    '-a', 'test', '-k', 'gecoscc/test_resources/media/users/test/chef_client.pem']
+                    '-a', 'test', '-k', 'gecoscc/test_resources/media/users/'
+                    'test/chef_client.pem']
         command = ImportPoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
@@ -576,8 +588,8 @@ class BaseGecosTestCase(unittest.TestCase):
         Useful method, recalculate policies
         '''
         argv_bc = sys.argv
-        sys.argv = ['pmanage', 'config-templates/test.ini', 'recalc_nodes_policies',
-                    '-a', 'test']
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'recalc_nodes_policies', '-a', 'test']
         command = RecalcNodePoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
@@ -652,7 +664,8 @@ class BaseGecosTestCase(unittest.TestCase):
                 'type': 'ou',
                 'path': '%s,%s' % (domain['path'], domain['_id']),
                 'source': 'gecos'}
-        return self.create_node(data, OrganisationalUnitResource, ou_name=domain_name)
+        return self.create_node(data, OrganisationalUnitResource,
+                ou_name=domain_name)
 
     def create_domain(self, ou_name, flag):
         '''
@@ -663,7 +676,8 @@ class BaseGecosTestCase(unittest.TestCase):
                 'path': '%s,%s' % (flag['path'], flag['_id']),
                 'master': 'gecos',
                 'source': 'gecos'}
-        return self.create_node(data, OrganisationalUnitResource, ou_name=flag['name'])
+        return self.create_node(data, OrganisationalUnitResource,
+                ou_name=flag['name'])
 
     def create_node(self, data, api_class, ou_name='OU 1'):
         '''
@@ -674,12 +688,14 @@ class BaseGecosTestCase(unittest.TestCase):
 
         data['path'] = '%s,%s' % (ou_1['path'], ou_1['_id'])
 
-        request_post = self.get_dummy_json_post_request(data, api_class.schema_detail)
+        request_post = self.get_dummy_json_post_request(data,
+            api_class.schema_detail)
         object_api = api_class(request_post)
 
         return (data, object_api.collection_post())
 
-    def update_node(self, obj, field_name, field_value, api_class, is_superuser=True):
+    def update_node(self, obj, field_name, field_value, api_class,
+        is_superuser=True):
         '''
         Useful method, update a node
         '''
@@ -687,7 +703,8 @@ class BaseGecosTestCase(unittest.TestCase):
             obj[field_name].append(field_value)
         else:
             obj[field_name] = field_value
-        request_put = self.get_dummy_json_put_request(obj, api_class.schema_detail, is_superuser)
+        request_put = self.get_dummy_json_put_request(obj,
+            api_class.schema_detail, is_superuser)
         api = api_class(request_put)
         return api.put()
 
@@ -699,7 +716,8 @@ class BaseGecosTestCase(unittest.TestCase):
         node_api = api_class(request)
         node = node_api.get()
 
-        request_delete = self.get_dummy_delete_request(node, api_class.schema_detail)
+        request_delete = self.get_dummy_delete_request(node,
+            api_class.schema_detail)
         api = api_class(request_delete)
         return api.delete()
 
@@ -787,7 +805,8 @@ class BaseGecosTestCase(unittest.TestCase):
         '''
         Useful method, add policy to node and return this policy
         '''
-        request_put = self.get_dummy_json_put_request(node, api_class.schema_detail)
+        request_put = self.get_dummy_json_put_request(node,
+            api_class.schema_detail)
         node_api = api_class(request_put)
         #print("add_and_get_policy json={0}".format(request_put.json))
         node_update = node_api.put()
@@ -802,7 +821,8 @@ class BaseGecosTestCase(unittest.TestCase):
             node_policy = []
         return node_policy
 
-    def remove_policy_and_get_dotted(self, node, chef_node_id, api_class, policy_path):
+    def remove_policy_and_get_dotted(self, node, chef_node_id, api_class,
+        policy_path):
         '''
         Useful method, remove policy from node and return dotted
         '''
@@ -815,25 +835,39 @@ class BaseGecosTestCase(unittest.TestCase):
         return node.attributes.get_dotted(policy_path)
 
     def get_default_policies(self):
-        policies = {"package_res_policy": {'policy': self.get_default_ws_policy(),
-                                           'path': self.get_default_ws_policy()['path'] + '.package_list',
-                                           'policy_data_node_1': {'package_list': [{'name': 'gimp', 'version': 'latest', 'action': 'add'}]},
-                                           'policy_data_node_2': {'package_list': [{'name': 'libreoffice', 'version': 'latest', 'action': 'add'}]}},
-                    "remote_shutdown_res": {'policy': self.get_default_ws_policy(slug='remote_shutdown_res'),
-                                            'path': self.get_default_ws_policy(slug='remote_shutdown_res')['path'] + '.shutdown_mode',
-                                            'policy_data_node_1': {'shutdown_mode': 'reboot'},
-                                            'policy_data_node_2': {'shutdown_mode': 'halt'}}}
+        policies = {"package_res_policy": {
+                'policy': self.get_default_ws_policy(),
+                'path': self.get_default_ws_policy()['path'] + '.package_list',
+                'policy_data_node_1': {'package_list': [
+                    {'name': 'gimp', 'version': 'latest', 'action': 'add'}]},
+                'policy_data_node_2': {'package_list': [
+                    {'name': 'libreoffice', 'version': 'latest', 'action':
+                     'add'}]}},
+            "remote_shutdown_res": {'policy':
+                self.get_default_ws_policy(slug='remote_shutdown_res'),
+                'path': self.get_default_ws_policy(slug=
+                    'remote_shutdown_res')['path'] + '.shutdown_mode',
+                'policy_data_node_1': {'shutdown_mode': 'reboot'},
+                'policy_data_node_2': {'shutdown_mode': 'halt'}}}
         return policies
 
     def get_default_policies_user(self):
-        policies = {"user_apps_autostart_res": {'policy': self.get_default_user_policy(slug='user_apps_autostart_res'),
-                                                'path': self.get_default_user_policy(slug="user_apps_autostart_res")['path'] + '.users.',
-                                                'policy_data_node_1': {"desktops": [{"name": "kate", "action": "add"}]},
-                                                'policy_data_node_2': {"desktops": [{"name": "sublime", "action": "add"}]}},
-                    "desktop_background_res": {'policy': self.get_default_user_policy(slug='desktop_background_res'),
-                                               'path': self.get_default_user_policy(slug="desktop_background_res")['path'] + '.users.',
-                                               'policy_data_node_1': {"desktop_file": "mountain.png"},
-                                               'policy_data_node_2': {"desktop_file": "river.png"}}}
+        policies = {"user_apps_autostart_res": {
+                'policy': self.get_default_user_policy(
+                    slug='user_apps_autostart_res'),
+                'path': self.get_default_user_policy(
+                    slug="user_apps_autostart_res")['path'] + '.users.',
+                'policy_data_node_1': {"desktops": [
+                    {"name": "kate", "action": "add"}]},
+                'policy_data_node_2': {"desktops": [
+                    {"name": "sublime", "action": "add"}]}},
+            "desktop_background_res": {
+                'policy': self.get_default_user_policy(
+                    slug='desktop_background_res'),
+                'path': self.get_default_user_policy(
+                    slug="desktop_background_res")['path'] + '.users.',
+                'policy_data_node_1': {"desktop_file": "mountain.png"},
+                'policy_data_node_2': {"desktop_file": "river.png"}}}
         return policies
 
     def apply_mocks(self, get_chef_api_method=None, get_cookbook_method=None,
@@ -859,7 +893,8 @@ class BaseGecosTestCase(unittest.TestCase):
         if gettext is not None:
             gettext.side_effect = gettext_mock
         if create_chef_admin_user_method is not None:
-            create_chef_admin_user_method.side_effect = create_chef_admin_user_mock
+            create_chef_admin_user_method.side_effect = \
+                create_chef_admin_user_mock
         if ChefNodeStatusClass is not None:
             ChefNodeStatusClass.side_effect = NodeMock
         if TaskNodeClass is not None:
@@ -906,7 +941,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=PrinterResource)
 
@@ -917,11 +953,14 @@ class BasicTests(BaseGecosTestCase):
         self.assertEqualObjects(data, new_printer)
 
         # 3 - Update printer's description
-        printer_updated = self.update_node(obj=new_printer, field_name='description',
-                                           field_value=u'Test', api_class=PrinterResource)
+        printer_updated = self.update_node(obj=new_printer,
+            field_name='description', field_value=u'Test',
+            api_class=PrinterResource)
 
-        # 4 - Verification that printer's description has been updated successfully
-        self.assertEqualObjects(new_printer, printer_updated, PrinterResource.schema_detail)
+        # 4 - Verification that printer's description has been updated
+        # successfully
+        self.assertEqualObjects(new_printer, printer_updated,
+            PrinterResource.schema_detail)
 
         # 5 - Delete printer
         self.delete_node(printer_updated, PrinterResource)
@@ -933,13 +972,15 @@ class BasicTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_03_shared_folder(self, get_cookbook_method, get_cookbook_method_tasks):
+    def test_03_shared_folder(self, get_cookbook_method,
+            get_cookbook_method_tasks):
         '''
         Test 3: Create, update and delete a shared folder
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=StorageResource)
 
@@ -950,10 +991,12 @@ class BasicTests(BaseGecosTestCase):
         self.assertEqualObjects(data, new_folder)
 
         # 3 - Update shared folder's URI
-        folder_updated = self.update_node(obj=new_folder, field_name='uri', field_value=u'Test',
-                                          api_class=StorageResource)
-        # 4 - Verification that shared folder's URI has been updated successfully
-        self.assertEqualObjects(new_folder, folder_updated, StorageResource.schema_detail)
+        folder_updated = self.update_node(obj=new_folder, field_name='uri',
+            field_value=u'Test', api_class=StorageResource)
+        # 4 - Verification that shared folder's URI has been updated
+        # successfully
+        self.assertEqualObjects(new_folder, folder_updated,
+            StorageResource.schema_detail)
 
         # 5 - Delete shared folder
         self.delete_node(folder_updated, StorageResource)
@@ -965,13 +1008,15 @@ class BasicTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_04_repository(self, get_cookbook_method, get_cookbook_method_tasks):
+    def test_04_repository(self, get_cookbook_method,
+        get_cookbook_method_tasks):
         '''
         Test 4: Create, update and delete a repository
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=RepositoryResource)
         # 1 - Create repository
@@ -981,11 +1026,13 @@ class BasicTests(BaseGecosTestCase):
         self.assertEqualObjects(data, new_repository)
 
         # 3 - Update repository's URI
-        repository_update = self.update_node(obj=new_repository, field_name='uri',
-                                             field_value=u'Test', api_class=RepositoryResource)
+        repository_update = self.update_node(obj=new_repository,
+            field_name='uri', field_value=u'Test', api_class=RepositoryResource)
 
-        # 4 - Verification that shared folder's URI has been updated successfully
-        self.assertEqualObjects(new_repository, repository_update, RepositoryResource.schema_detail)
+        # 4 - Verification that shared folder's URI has been updated
+        # successfully
+        self.assertEqualObjects(new_repository, repository_update,
+            RepositoryResource.schema_detail)
 
         # 5 - Delete repository
         self.delete_node(repository_update, RepositoryResource)
@@ -1003,7 +1050,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=UserResource)
         # 1 - Create user
@@ -1014,10 +1062,11 @@ class BasicTests(BaseGecosTestCase):
 
         # 3 - Update user's first name
         user_updated = self.update_node(obj=new_user, field_name='first_name',
-                                        field_value=u'Another name', api_class=UserResource)
+            field_value=u'Another name', api_class=UserResource)
 
         # 4 - Verification that user's first name has been updated successfully
-        self.assertEqualObjects(new_user, user_updated, UserResource.schema_detail)
+        self.assertEqualObjects(new_user, user_updated,
+            UserResource.schema_detail)
 
         # 5 - Delete user
         self.delete_node(user_updated, UserResource)
@@ -1035,7 +1084,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=GroupResource)
         # 1 - Create group
@@ -1059,14 +1109,19 @@ class BasicTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_07_computer(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass,
-                         ChefNodeClass, TaskNodeClass, ClientClass, isinstance_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_07_computer(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, TaskNodeClass,
+        ClientClass, isinstance_method):
         '''
         Test 7: Create, update and delete a computer
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, TaskNodeClass=TaskNodeClass, ClientClass=ClientClass)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, TaskNodeClass=TaskNodeClass,
+            ClientClass=ClientClass)
         self.cleanErrorJobs()
         
         # 1 - Register workstation
@@ -1079,11 +1134,14 @@ class BasicTests(BaseGecosTestCase):
         request = self.get_dummy_request()
         computer_api = ComputerResource(request)
         computer = computer_api.collection_get()
-        computer_updated = self.update_node(obj=computer['nodes'][0], field_name='family',
-                                            field_value=u'laptop', api_class=ComputerResource)
+        computer_updated = self.update_node(obj=computer['nodes'][0],
+            field_name='family', field_value=u'laptop',
+            api_class=ComputerResource)
 
-        # 4 - Verification that the workstation's type has been udpated successfully
-        self.assertEqualObjects(computer['nodes'][0], computer_updated, ComputerResource.schema_detail)
+        # 4 - Verification that the workstation's type has been udpated
+        # successfully
+        self.assertEqualObjects(computer['nodes'][0], computer_updated,
+            ComputerResource.schema_detail)
 
         # 5 - Delete workstation
         self.delete_node(computer_updated, ComputerResource)
@@ -1101,7 +1159,8 @@ class BasicTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method=get_cookbook_method, get_cookbook_method_tasks=get_cookbook_method_tasks)
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
         self.cleanErrorJobs()
         self.assertIsPaginatedCollection(api_class=OrganisationalUnitResource)
         # 1 - Create OU
@@ -1117,7 +1176,8 @@ class BasicTests(BaseGecosTestCase):
                                       api_class=OrganisationalUnitResource)
 
         # 4 - Verification that OU has been updated successfully
-        self.assertEqualObjects(new_ou, ou_updated, OrganisationalUnitResource.schema_detail)
+        self.assertEqualObjects(new_ou, ou_updated,
+            OrganisationalUnitResource.schema_detail)
 
         # 5 - Delete OU
         self.delete_node(ou_updated, OrganisationalUnitResource)
