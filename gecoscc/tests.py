@@ -2405,8 +2405,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_14_printer_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                   isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_14_printer_visibility(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 14:
         1. Check the registration work station works
@@ -2414,7 +2417,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create a group in OU
@@ -2432,7 +2437,8 @@ class AdvancedTests(BaseGecosTestCase):
 
         # Assign group to computer
         computer = db.nodes.find_one({'name': 'testing'})
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         computer = db.nodes.find_one({'name': computer['name']})
         group = db.nodes.find_one({'name': new_group['name']})
@@ -2440,9 +2446,12 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 3, 4 - Add printer to group and check if it is applied in chef node
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
-        group['policies'] = {text_type(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
+        group['policies'] = {text_type(printer_policy['_id']): {
+            'object_related_list': [new_printer['_id']]}}
         policy_path = printer_policy['path']
-        printer_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
+        printer_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
         self.assertEqual(printer_policy, [])
 
         # 5 - Create printer
@@ -2450,14 +2459,15 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 6, 7 - Add printer to group and check if it is applied in chef node
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
-        group['policies'] = {text_type(printer_policy['_id']): {'object_related_list': [new_printer_ou['_id']]}}
+        group['policies'] = {text_type(printer_policy['_id']): {
+            'object_related_list': [new_printer_ou['_id']]}}
         policy_path = printer_policy['path']
-        printer_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
-        self.assertEqualObjects(printer_policy[0], new_printer_ou, fields=('oppolicy',
-                                                                            'model',
-                                                                            'uri',
-                                                                            'name',
-                                                                            'manufacturer'))
+        printer_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
+        self.assertEqualObjects(printer_policy[0],
+            new_printer_ou, fields=('oppolicy', 'model', 'uri', 'name',
+                                    'manufacturer'))
 
         node = NodeMock(chef_node_id, None)
         node.attributes.get_dotted(policy_path)

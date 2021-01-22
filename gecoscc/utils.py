@@ -592,7 +592,7 @@ def update_collection_and_get_obj(nodes_collection, obj_id, policies_value):
     '''
     Updates the node policy and return the obj
     '''
-    nodes_collection.update({'_id': obj_id}, {'$set': {'policies': policies_value}})
+    nodes_collection.update_one({'_id': obj_id}, {'$set': {'policies': policies_value}})
     return nodes_collection.find_one({'_id': obj_id})
 
 
