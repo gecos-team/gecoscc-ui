@@ -1631,21 +1631,28 @@ class ChefTask(Task):
                     obj['inheritance'] = updated_obj['inheritance']
                 
                 
-            if action == 'deleted' and obj['type'] == 'group' and ('members' in obj):
+            if (action == 'deleted' and obj['type'] == 'group' 
+                and ('members' in obj)):
                 # When a group is deleted we must remove it from all its members
                 self.log("debug","object_action - Deleting a group!")
                 for object_id in obj['members']:
                     member = self.db.nodes.find_one({'_id': object_id})
                     if not member:
-                        self.log("error","object_action - Node not found  %s (%s,%s)" %(str(object_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        self.log("error", "object_action - Node not found  "
+                            "%s (%s,%s)" %(str(object_id),
+                                sys._getframe().f_code.co_filename,
+                                sys._getframe().f_lineno))
                         return False  
 
                     if not 'inheritance' in member:
                         continue                        
                         
-                    remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
-                    self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
-                    recalculate_inherited_field(self.logger, self.db, str(object_id))
+                    remove_group_from_inheritance_tree(self.logger, self.db,
+                        obj, member['inheritance'])
+                    self.db.nodes.update_one({'_id': member['_id']},
+                        {'$set':{'inheritance': member['inheritance']}})
+                    recalculate_inherited_field(self.logger, self.db,
+                        str(object_id))
                     
             else:
             

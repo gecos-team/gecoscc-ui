@@ -2903,16 +2903,21 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_20_delete_group_with_workstation_and_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
-                                                       gettext, create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_20_delete_group_with_workstation_and_user(self,
+        get_chef_api_method, get_cookbook_method, get_cookbook_method_tasks,
+        NodeClass, ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
         '''
         Test 20:
         1. Check the policies priority works
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock,
-                         create_chef_admin_user_method, None, TaskNodeClass, TaskClientClass)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method,
+            None, TaskNodeClass, TaskClientClass)
         self.cleanErrorJobs()
 
         # 1 - Create a group
@@ -2932,18 +2937,21 @@ class AdvancedTests(BaseGecosTestCase):
         data, new_user = self.create_user(username)
 
         # 4 - Register user in chef node
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # 5 - Assign group to computer
         computer = db.nodes.find_one({'name': computer['name']})
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         # 6 - Assign group to user
         user = db.nodes.find_one({'name': username})
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        self.assign_group_to_node(node_name=user['name'],
+            api_class=UserResource, group=new_group)
 
         # 7 - Check if group's node is update in node chef
         group = db.nodes.find_one({'name': new_group['name']})
@@ -2954,7 +2962,8 @@ class AdvancedTests(BaseGecosTestCase):
         self.delete_node(group, GroupResource)
         self.assertDeleted(field_name='name', field_value=new_group['name'])
 
-        # 9 - Verification if the groups has been deleted successfully from chef node, user and workstation.
+        # 9 - Verification if the groups has been deleted successfully from chef
+        # node, user and workstation.
         user = db.nodes.find_one({'name': username})
         group = db.nodes.find_one({'name': new_group['name']})
         workstation = db.nodes.find_one({'name': computer['name']})
