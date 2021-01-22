@@ -2182,7 +2182,6 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
     @mock.patch('gecoscc.utils._get_chef_api')
-    
     def test_11_move_workstation(self, get_chef_api_method,
         get_cookbook_method, get_cookbook_method_tasks, NodeClass,
         ChefNodeClass, isinstance_method, gettext,
@@ -2259,8 +2258,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_12_move_user(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                          isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_12_move_user(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+        gettext, create_chef_admin_user_method):
         '''
         Test 12:
         1. Check the registration work station works
@@ -2268,7 +2269,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Register workstation
@@ -2284,21 +2287,28 @@ class AdvancedTests(BaseGecosTestCase):
         # 2, 3 - Register user in chef node
         username = 'testuser'
         self.create_user(username)  
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         # 4 - Add policy in OU
         user_launcher_policy = self.get_default_user_policy()
-        policy_path = user_launcher_policy['path'] + '.users.' + username + '.launchers'
-        ou_1['policies'] = {text_type(user_launcher_policy['_id']): {'launchers': ['OUsLauncher']}}
-        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        policy_path = user_launcher_policy['path'] + '.users.' + username + \
+            '.launchers'
+        ou_1['policies'] = {text_type(user_launcher_policy['_id']): {
+            'launchers': ['OUsLauncher']}}
+        node_policy = self.add_and_get_policy(node=ou_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=policy_path)
 
         # 5 - Verification if this policy is applied in chef node
         self.assertEqual(node_policy, ['OUsLauncher'])
 
         # 6 - Add policy in domain
         domain_1 = db.nodes.find_one({'name': 'Domain 1'})
-        domain_1['policies'] = {text_type(user_launcher_policy['_id']): {'launchers': ['DomainLauncher']}}
-        self.add_and_get_policy(node=domain_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        domain_1['policies'] = {text_type(user_launcher_policy['_id']): {
+            'launchers': ['DomainLauncher']}}
+        self.add_and_get_policy(node=domain_1, chef_node_id=chef_node_id,
+            api_class=OrganisationalUnitResource, policy_path=policy_path)
 
         # 7 - Verification if the OU's policy is applied in chef node
         self.assertEqual(node_policy, ['OUsLauncher'])
@@ -2331,8 +2341,10 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_13_group_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_13_group_visibility(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+        gettext, create_chef_admin_user_method):
         '''
         Test 13:
         1. Check the registration work station works
@@ -2340,7 +2352,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create group in OU
@@ -2358,12 +2372,14 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 2 - Register user in chef node
         username = 'testuser'
-        self.create_user(username)  
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.create_user(username, ou_name=domain_1['name'])  
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         # 3 -Assign group to user
         user = db.nodes.find_one({'name': username})
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        self.assign_group_to_node(node_name=user['name'],
+            api_class=UserResource, group=new_group)
         user = db.nodes.find_one({'name': username})
 
         # 4 - Verification that the user can't be assigned to group
@@ -2373,7 +2389,8 @@ class AdvancedTests(BaseGecosTestCase):
         data, new_group_b = self.create_group('group_B', ou_name='Domain 1')
 
         # 6 - Assign group to user
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group_b)
+        self.assign_group_to_node(node_name=user['name'],
+            api_class=UserResource, group=new_group_b)
         user = db.nodes.find_one({'name': username})
 
         # 7 - Verification that the user has been assigned to user successfully

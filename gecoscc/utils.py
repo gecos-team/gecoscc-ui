@@ -481,7 +481,7 @@ def visibility_group(db, obj):
         else:
             hide_groups.append(group_id)
     if visible_groups != groups:
-        db.nodes.update({'_id': obj['_id']},
+        db.nodes.update_one({'_id': obj['_id']},
                         {'$set': {'memberof': visible_groups}})
         for hide_group_id in hide_groups:
             group = db.nodes.find_one({'_id': hide_group_id})
@@ -494,7 +494,7 @@ def visibility_group(db, obj):
                 del members[members.index(obj['_id'])]
             except ValueError:
                 pass
-            db.nodes.update({'_id': hide_group_id},
+            db.nodes.update_one({'_id': hide_group_id},
                             {'$set': {'members': members}})
         return db.nodes.find_one({'_id': obj['_id']})
     return obj

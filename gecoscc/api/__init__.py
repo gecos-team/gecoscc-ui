@@ -485,7 +485,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 'ok': 1
             }
         else:
-            self.request.errors.add(str(obj[self.key]), 'db status',
+            self.request.errors.add('body', '%s: db status'%(obj[self.key]),
                                     status)
             return
 
@@ -524,16 +524,16 @@ class TreeResourcePaginated(ResourcePaginated):
 
         parent = self.collection.find_one({self.key: ObjectId(parent_id)})
         if not parent:
-            self.request.errors.add(str(obj[self.key]), 'path', "parent"
-                                    " doesn't exist {0}".format(parent_id))
+            self.request.errors.add('body', '%s: path'%(str(obj[self.key])),
+                "parent doesn't exist {0}".format(parent_id))
             return False
 
         candidate_path_parent = ','.join(parents[:-1])
 
         if parent['path'] != candidate_path_parent:
-            self.request.errors.add(
-                str(obj[self.key]), 'path', "the parent object "
-                "{0} has a different path".format(parent_id))
+            self.request.errors.add('body',
+                '%s: path'%(str(obj[self.key])),
+                "the parent object {0} has a different path".format(parent_id))
             return False
 
         return self.check_unique_node_name_by_type_at_domain(obj)
@@ -551,14 +551,14 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             return True
         obj_validated = visibility_group(self.request.db, obj)
         if obj != obj_validated:
-            self.request.errors.add(str(obj[self.key]), 'memberof',
+            self.request.errors.add('body', '%s: memberof'%(str(obj[self.key])),
                                     "There is a group out of scope.")
             return False
         for group_id in obj['memberof']:
             group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
                 self.request.errors.add(
-                    str(obj[self.key]), 'memberof',
+                    'body', '%s: memberof'%(str(obj[self.key])),
                     "The group {0} doesn't exist".format(str(group_id)))
                 return False
         return True
