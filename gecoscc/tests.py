@@ -2481,8 +2481,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_15_shared_folder_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                         isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_15_shared_folder_visibility(self, get_chef_api_method, 
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 15:
         1. Check the registration work station works
@@ -2490,7 +2493,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create a group in OU
@@ -2515,23 +2520,28 @@ class AdvancedTests(BaseGecosTestCase):
         # Register user in chef node
         username = 'testuser'
         self.create_user(username)  
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        self.assign_group_to_node(node_name=user['name'],
+            api_class=UserResource, group=new_group)
 
         group = db.nodes.find_one({'name': new_group['name']})
         self.assertEqual(group['members'][0], user['_id'])
 
         # 3, 4 - Add printer to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
-        group['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
+        group['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_storage['_id']]}}
         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-        storage_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
+        storage_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
         self.assertEqual(storage_policy, [])
 
         # 5 - Create a storage
@@ -2539,10 +2549,13 @@ class AdvancedTests(BaseGecosTestCase):
 
         # 6,7 - Add printer to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
-        group['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_storage_ou['_id']]}}
-        storage_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
-        self.assertEqualObjects(storage_policy[0], new_storage_ou, fields=('name',
-                                                                            'uri'))
+        group['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_storage_ou['_id']]}}
+        storage_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
+        self.assertEqualObjects(storage_policy[0], new_storage_ou,
+            fields=('name', 'uri'))
         node = NodeMock(chef_node_id, None)
         node.attributes.get_dotted(policy_path)
 
@@ -2555,8 +2568,11 @@ class AdvancedTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_16_repository_visibility(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                      isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_16_repository_visibility(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 16:
         1. Check the registration work station works
@@ -2564,7 +2580,9 @@ class AdvancedTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create a group in OU
@@ -2575,7 +2593,8 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertEqualObjects(data, new_ou)
 
         # 2 - Create a repository
-        data, new_repository = self.create_repository('repo_ou2', new_ou['name'])
+        data, new_repository = self.create_repository('repo_ou2',
+            new_ou['name'])
 
         # Create a workstation in OU
         db = self.get_db()
@@ -2589,49 +2608,56 @@ class AdvancedTests(BaseGecosTestCase):
         # Register user in chef node
         username = 'testuser'
         self.create_user(username)  
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
         user = db.nodes.find_one({'name': username})
         computer = db.nodes.find_one({'name': 'testing'})
         self.assertEqual(user['computers'][0], computer['_id'])
 
         # Assign group to user
         user = db.nodes.find_one({'name': username})
-        self.assign_group_to_node(node_name=user['name'], api_class=UserResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         group = db.nodes.find_one({'name': 'group_test'})
-        self.assertEqual(group['members'][0], user['_id'])
+        self.assertEqual(group['members'][0], computer['_id'])
 
         # 3, 4 - Add repository to group and check if it is applied in chef node
         storage_policy = db.policies.find_one({'slug': 'repository_can_view'})
-        group['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_repository['_id']]}}
+        group['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_repository['_id']]}}
         policy_path = storage_policy['path']
-        node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
+        node_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
         self.assertEqual(node_policy, [])
 
         # 5 - Create a repository
         data, new_repository_ou = self.create_repository('repo_ou')
 
         # 6, 7 - Add repository to group and check if it is applied in chef node
-        group['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_repository_ou['_id']]}}
-        node_policy = self.add_and_get_policy(node=group, chef_node_id=chef_node_id, api_class=GroupResource, policy_path=policy_path)
-        self.assertEqualObjects(node_policy[0], new_repository_ou, fields=('key_server',
-                                                                            'uri',
-                                                                            'components',
-                                                                            'repo_key',
-                                                                            'deb_src'))
+        group['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_repository_ou['_id']]}}
+        node_policy = self.add_and_get_policy(node=group,
+            chef_node_id=chef_node_id, api_class=GroupResource,
+            policy_path=policy_path)
+        self.assertEqualObjects(node_policy[0], new_repository_ou,
+            fields=('key_server', 'uri', 'components', 'repo_key', 'deb_src'))
         # 8 - Create a repository
         data, new_repository_ou_2 = self.create_repository('repo_ou_mergeable')
 
-        # 9, 10 - Add repository to group and check if it is applied in chef node
+        # 9, 10 - Add repository to group and check if it is applied in chef
+        # node
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        ou_1['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_repository_ou_2['_id']]}}
-        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        ou_1['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_repository_ou_2['_id']]}}
+        node_policy = self.add_and_get_policy(node=ou_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=policy_path)
 
-        self.assertEmitterObjects(node_policy, [new_repository_ou, new_repository_ou_2], fields=('key_server',
-                                                                                                 'uri',
-                                                                                                 'components',
-                                                                                                 'repo_key',
-                                                                                                 'deb_src'))
+        self.assertEmitterObjects(node_policy,
+            [new_repository_ou, new_repository_ou_2],
+            fields=('key_server', 'uri', 'components', 'repo_key', 'deb_src'))
 
         self.assertNoErrorJobs()
 
