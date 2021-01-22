@@ -1209,13 +1209,13 @@ class ChefTask(Task):
         '''
         groups = self.db.nodes.find({'type': 'group', 'members': obj['_id']})
         for g in groups:
-            self.db.nodes.update({
+            self.db.nodes.update_one({
                 '_id': g['_id']
             }, {
                 '$pull': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
 
     def get_policies(self, rule_type, action, obj, objold):
         '''
