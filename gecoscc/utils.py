@@ -529,15 +529,15 @@ def visibility_object_related(db, obj):
 
 
 def get_job_errors_from_computer(jobs_collection, computer):
-    return jobs_collection.find({'computerid': computer['_id'],
-                                 '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
+    return jobs_collection.count_documents({'computerid': computer['_id'],
+        '$or': [{'status': 'warnings'}, {'status': 'errors'}]})
 
 
 def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
                          cookbook_name, api=None, cookbook=None,
                          validator=None,
                          initialize=True, use_celery=False):
-    job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    job_errors = get_job_errors_from_computer(jobs_collection, computer)
     node_chef_id = computer.get('node_chef_id', None)
     if not node_chef_id:
         return (False, 'The computer %s does not have node_chef_id' % computer['name'])
@@ -575,7 +575,7 @@ def recalc_node_policies(nodes_collection, jobs_collection, computer, auth_user,
                                ous_already_visited=ous_already_visited,
                                calculate_inheritance=False,
                                validator=validator)
-    new_job_errors = get_job_errors_from_computer(jobs_collection, computer).count()
+    new_job_errors = get_job_errors_from_computer(jobs_collection, computer)
     if new_job_errors > job_errors:
         return (False, 'The computer %s had problems while it was updating' % computer['name'])
     return (True, 'success')
