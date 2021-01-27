@@ -84,7 +84,10 @@ def _check_if_user_belongs_to_admin_group_mock(request, organization, username):
 class ChefApiMock(object):
     def __init__(self):
         self.version = '0.11'
-        self.version_parsed = parse_version(self.version)
+        
+    @property
+    def version_parsed(self):
+        return parse_version(self.version)        
      
     def __getitem__(self, item):
         print("CHEF API MOCK: %s"%(item))
@@ -3804,15 +3807,20 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_01_printers_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                   isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_01_printers_movements(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 01:
         1. Check the printers movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create printer
@@ -3826,37 +3834,38 @@ class MovementsTests(BaseGecosTestCase):
 
         # 3 - Add printer to workstation and check if it is applied in chef node
         computer = db.nodes.find_one({'name': 'testing'})
-        request = self.dummy_get_request(computer, ComputerResource.schema_detail)
+        request = self.dummy_get_request(computer,
+            ComputerResource.schema_detail)
         computer_api = ComputerResource(request)
         computer = computer_api.get()
 
         printer_policy = db.policies.find_one({'slug': 'printer_can_view'})
-        computer['policies'] = {text_type(printer_policy['_id']): {'object_related_list': [new_printer['_id']]}}
+        computer['policies'] = {text_type(printer_policy['_id']): {
+            'object_related_list': [new_printer['_id']]}}
         policy_path = printer_policy['path']
-        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id,
+            api_class=ComputerResource, policy_path=policy_path)
 
         printer = db.nodes.find_one({'name': 'Testprinter'})
         # 4 - Move printer to the OU path
         try:
-            printer_update = self.update_node(obj=new_printer, field_name='path',
-                                              field_value=ou_1['path'], api_class=PrinterResource,
-                                              is_superuser=False)
+            printer_update = self.update_node(obj=new_printer,
+                field_name='path', field_value=ou_1['path'],
+                api_class=PrinterResource, is_superuser=False)
         except HTTPForbidden:
             printer_update = printer
 
-        # 5 - Checks if the printer has been moved and check if the policy has been updated
+        # 5 - Checks if the printer has been moved and check if the policy has
+        # been updated
         self.assertEqual(printer_update['path'], printer['path'])
         node = NodeMock(CHEF_NODE_ID, None)
         printer_policy = node.attributes.get_dotted(policy_path)
-        self.assertEqualObjects(printer_policy[0], new_printer, fields=('oppolicy',
-                                                                         'model',
-                                                                         'uri',
-                                                                         'name',
-                                                                         'manufacturer'))
+        self.assertEqualObjects(printer_policy[0], new_printer,
+            fields=('oppolicy', 'model', 'uri', 'name', 'manufacturer'))
         # 6 - Move printer to the OU path like superadmin
         printer_update = self.update_node(obj=new_printer, field_name='path',
-                                          field_value=ou_1['path'], api_class=PrinterResource,
-                                          is_superuser=True)
+            field_value=ou_1['path'], api_class=PrinterResource,
+            is_superuser=True)
 
         # 7 - Checks if the printer has been moved
         self.assertNotEqual(printer_update['path'], printer['path'])
@@ -3866,9 +3875,8 @@ class MovementsTests(BaseGecosTestCase):
 
         # 9 - Move printer to OU 2 like superadmin
         printer_update = self.update_node(obj=new_printer, field_name='path',
-                                          field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
-                                          api_class=PrinterResource,
-                                          is_superuser=True)
+            field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
+            api_class=PrinterResource, is_superuser=True)
 
         # 10 - Check if the printer is moved and the policy has been updated
         self.assertNotEqual(printer_update['path'], printer['path'])

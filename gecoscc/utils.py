@@ -694,10 +694,15 @@ def apply_policies_to_emitter_object(nodes_collection, obj, auth_user, slug, api
         object_created = object_created.delay
         object_changed = object_changed.delay
 
+    nodes_related_with_obj_count = nodes_collection.count_documents(
+        {"policies.%s.object_related_list" % policy_id: {
+            '$in': [text_type(obj['_id'])]}})
+
+    if nodes_related_with_obj_count == 0:
+        return
+
     nodes_related_with_obj = nodes_collection.find({"policies.%s.object_related_list" % policy_id: {'$in': [text_type(obj['_id'])]}})
 
-    if nodes_related_with_obj.count() == 0:
-        return
 
     for node in nodes_related_with_obj:
         is_visible = is_object_visible(nodes_collection, object_related_id=obj['_id'],
