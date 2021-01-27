@@ -1294,7 +1294,8 @@ class ChefTask(Task):
         
         
     def has_changed_user_data(self, obj, objold):
-        if objold is None:
+        if (objold is None or not bool(objold)):
+            # objold is None or an empty dictionary
             return True
         
         if (obj['email'] != objold['email'] 

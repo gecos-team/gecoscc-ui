@@ -3893,15 +3893,20 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_02_shared_folder_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                        isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_02_shared_folder_movements(self, get_chef_api_method, 
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 02:
         1. Check the shared folder movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # Register admin
@@ -3924,7 +3929,8 @@ class MovementsTests(BaseGecosTestCase):
         self.register_computer()
 
         # 4 - Register user in ws
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         # 5 - Add storage to user and check if it is applied in chef node
         user = db.nodes.find_one({'name': username})
@@ -3937,16 +3943,18 @@ class MovementsTests(BaseGecosTestCase):
 
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
 
-        user['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [new_storage['_id']]}}
+        user['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [new_storage['_id']]}}
         policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-        self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=policy_path)
+        self.add_and_get_policy(node=user, chef_node_id=chef_node_id,
+                                api_class=UserResource, policy_path=policy_path)
 
         storage = db.nodes.find_one({'name': 'shared folder'})
         # 6 - Move storage
         try:
-            storage_update = self.update_node(obj=new_storage, field_name='path',
-                                              field_value=ou_2['path'], api_class=StorageResource,
-                                              is_superuser=False)
+            storage_update = self.update_node(obj=new_storage,
+                field_name='path', field_value=ou_2['path'],
+                api_class=StorageResource, is_superuser=False)
         except HTTPForbidden:
             storage_update = storage
 
@@ -3955,24 +3963,21 @@ class MovementsTests(BaseGecosTestCase):
 
         # 8 - Move storage to the OU path like admin
         storage_update = self.update_node(obj=new_storage, field_name='path',
-                                          field_value=ou_2['path'], api_class=StorageResource,
-                                          is_superuser=True)
+            field_value=ou_2['path'], api_class=StorageResource,
+            is_superuser=True)
         # 9 - Check if the storage is moved and the policy has been updated
         self.assertNotEqual(storage_update['path'], storage['path'])
         node = NodeMock(CHEF_NODE_ID, None)
         printer_policy = node.attributes.get_dotted(policy_path)
-        self.assertEqualObjects(printer_policy[0], storage, fields=('oppolicy',
-                                                                     'model',
-                                                                     'uri',
-                                                                     'name',
-                                                                     'manufacturer'))
+        self.assertEqualObjects(printer_policy[0], storage,
+            fields=('oppolicy', 'model', 'uri', 'name', 'manufacturer'))
         # 10 - Create another OU
         data, ou_3 = self.create_ou('OU 3')
 
         # 11 - Move storage in the OU 3 like admin
         storage_update = self.update_node(obj=new_storage, field_name='path',
-                                          field_value=ou_3['path'] + ',' + ou_3['_id'], api_class=StorageResource,
-                                          is_superuser=True)
+            field_value=ou_3['path'] + ',' + ou_3['_id'],
+            api_class=StorageResource, is_superuser=True)
 
         # 12 - Check if the storage is moved and the policy has been updated
         self.assertNotEqual(storage_update['path'], storage['path'])
