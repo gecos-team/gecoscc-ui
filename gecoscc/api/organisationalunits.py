@@ -71,7 +71,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
                 old_child_path = child['path']
                 new_child_path = str(old_child_path).replace(old_path,
                                                              new_path)
-                self.collection.update({
+                self.collection.update_one({
                     self.key: child[self.key]
                 }, {
                     '$set': {

@@ -4223,15 +4223,19 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_06_OUs_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                              isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_06_OUs_movements(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+        gettext, create_chef_admin_user_method):
         '''
         Test 06:
         1. Check the ous movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1- Create OU 2
@@ -4246,8 +4250,8 @@ class MovementsTests(BaseGecosTestCase):
         # 3 - Move OU 2 to OU 1 path
         try:
             ou_moved = self.update_node(obj=new_ou, field_name='path',
-                                        field_value=ou_1['path'], api_class=OrganisationalUnitResource,
-                                        is_superuser=False)
+                field_value=ou_1['path'], api_class=OrganisationalUnitResource,
+                is_superuser=False)
 
         except HTTPForbidden:
             ou_moved = ou_2
@@ -4257,8 +4261,8 @@ class MovementsTests(BaseGecosTestCase):
 
         # 8 - Move printer to the OU path like admin
         ou_moved = self.update_node(obj=new_ou, field_name='path',
-                                    field_value=ou_1['path'], api_class=OrganisationalUnitResource,
-                                    is_superuser=True)
+            field_value=ou_1['path'], api_class=OrganisationalUnitResource,
+            is_superuser=True)
 
         # 9- Check if the storage has been moved
         self.assertNotEqual(ou_moved['path'], ou_2['path'])
@@ -4272,15 +4276,20 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_07_OUs_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                     isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_07_OUs_movements_domain(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 07:
         1. Check the ous movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create domain
@@ -4289,7 +4298,8 @@ class MovementsTests(BaseGecosTestCase):
                 'path': 'root',
                 'source': 'gecos'}
 
-        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
+        request_post = self.get_dummy_json_post_request(data,
+            OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_post)
         flag_new = ou_api.collection_post()
 
@@ -4303,8 +4313,9 @@ class MovementsTests(BaseGecosTestCase):
         # 3 - Move OU 1 to Domain path like admin
         try:
             ou_moved = self.update_node(obj=ou_1, field_name='path',
-                                        field_value=domain['path'], api_class=OrganisationalUnitResource,
-                                        is_superuser=True)
+                field_value=domain['path'],
+                api_class=OrganisationalUnitResource,
+                is_superuser=True)
         except HTTPForbidden:
             ou_moved = ou_1
 
@@ -4320,20 +4331,25 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_08_complete_policy(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_08_complete_policy(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+        gettext, create_chef_admin_user_method):
         '''
         Test 08:
         1. Check the ous movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
         chef_node_id = CHEF_NODE_ID
 
-        # 1 - Create OU 1
-        data, ou_1 = self.create_ou('OU 1')
+        # 1 - Get OU 1 (it belongs to the basic structure)
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
 
         # 2 - Create OU 2
         data, ou_2 = self.create_ou('OU 2')
@@ -4349,14 +4365,15 @@ class MovementsTests(BaseGecosTestCase):
         data, user = self.create_user(username, 'OU 3')
         self.assertEqualObjects(data, user)
 
-        db = self.get_db()
         chef_node_id = CHEF_NODE_ID
         self.register_computer(ou_name=ou_3['name'])
 
-        self.assign_user_to_node(gcc_superusername=admin_username, chef_node_id=chef_node_id, username=username)
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
 
         data, storage = self.create_storage('shared folder', ou_3['name'])
-        data, storage_ou_1 = self.create_storage('shared folder_ou_1', ou_1['name'])
+        data, storage_ou_1 = self.create_storage('shared folder_ou_1',
+                                                 ou_1['name'])
 
         user = db.nodes.find_one({'name': username})
         request = self.dummy_get_request(user, UserResource.schema_detail)
@@ -4368,13 +4385,20 @@ class MovementsTests(BaseGecosTestCase):
 
         storage_policy = db.policies.find_one({'slug': 'storage_can_view'})
 
-        user['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [storage['_id']]}}
-        storage_policy_path = storage_policy['path'] + '.' + username + '.gtkbookmarks'
-        node_policy = self.add_and_get_policy(node=user, chef_node_id=chef_node_id, api_class=UserResource, policy_path=storage_policy_path)
+        user['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [storage['_id']]}}
+        storage_policy_path = storage_policy['path'] + '.' + username + \
+            '.gtkbookmarks'
+        node_policy = self.add_and_get_policy(node=user,
+            chef_node_id=chef_node_id, api_class=UserResource,
+            policy_path=storage_policy_path)
 
         ou_1 = db.nodes.find_one({'name': 'OU 1'})
-        ou_1['policies'] = {text_type(storage_policy['_id']): {'object_related_list': [storage_ou_1['_id']]}}
-        node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=storage_policy_path)
+        ou_1['policies'] = {text_type(storage_policy['_id']): {
+            'object_related_list': [storage_ou_1['_id']]}}
+        node_policy = self.add_and_get_policy(node=ou_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=storage_policy_path)
 
         # 7 - add package policy to OU_1, OU_3 and ws
         package_res_policy = self.get_default_ws_policy()
@@ -4382,11 +4406,17 @@ class MovementsTests(BaseGecosTestCase):
         ou_1['policies'] = {text_type(package_res_policy['_id']): {
             'package_list': [
                 {'name': 'gimp', 'version': 'latest', 'action': 'add'}]}}
-        package_res_node_policy = self.add_and_get_policy(node=ou_1, chef_node_id=chef_node_id, api_class=OrganisationalUnitResource, policy_path=policy_path)
+        package_res_node_policy = self.add_and_get_policy(node=ou_1,
+            chef_node_id=chef_node_id, api_class=OrganisationalUnitResource,
+            policy_path=policy_path)
 
-        apply_package = [{'node': 'testing', 'api_type': ComputerResource, 'package': 'sublime'},
-                         {'node': 'OU 1', 'api_type': OrganisationalUnitResource, 'package': 'gimp'},
-                         {'node': 'OU 3', 'api_type': OrganisationalUnitResource, 'package': 'kate'}]
+        apply_package = [
+            {'node': 'testing', 'api_type': ComputerResource,
+             'package': 'sublime'},
+            {'node': 'OU 1', 'api_type': OrganisationalUnitResource,
+             'package': 'gimp'},
+            {'node': 'OU 3', 'api_type': OrganisationalUnitResource,
+             'package': 'kate'}]
 
         package_res_policy = self.get_default_ws_policy()
         policy_path = package_res_policy['path'] + '.package_list'
@@ -4397,28 +4427,30 @@ class MovementsTests(BaseGecosTestCase):
                 'package_list': [
                     {'name': node['package'], 'version': 'latest',
                      'action': 'add'}]}}
-            package_res_node_policy = self.add_and_get_policy(node=node_to_apply, chef_node_id=chef_node_id, api_class=node['api_type'], policy_path=policy_path)
+            package_res_node_policy = self.add_and_get_policy(
+                node=node_to_apply, chef_node_id=chef_node_id,
+                api_class=node['api_type'], policy_path=policy_path)
 
         self.assertItemsEqual(package_res_node_policy, [
             {'name': 'kate', 'version': 'latest', 'action': 'add'},
             {'name': 'sublime', 'version': 'latest', 'action': 'add'},
             {'name': 'gimp', 'version': 'latest', 'action': 'add'}])
-        self.assertEmitterObjects(node_policy, [storage_ou_1, storage], fields=('name',
-                                                                                'uri'))
+        self.assertEmitterObjects(node_policy, [storage_ou_1, storage],
+            fields=('name', 'uri'))
 
         # 8 - Move OU 3 to OU 1 path
         ou_3 = db.nodes.find_one({'name': 'OU 3'})
         self.update_node(obj=ou_3, field_name='path',
-                         field_value=ou_1['path'], api_class=OrganisationalUnitResource,
-                         is_superuser=True)
+            field_value=ou_1['path'], api_class=OrganisationalUnitResource,
+            is_superuser=True)
 
         # 9 - Check if the policies has been updated in chef node
         node = NodeMock(chef_node_id, None)
         node_storage_policy = node.attributes.get_dotted(storage_policy_path)
         node_package_policy = node.attributes.get_dotted(policy_path)
 
-        self.assertEmitterObjects(node_storage_policy, [storage], fields=('name',
-                                                                          'uri'))
+        self.assertEmitterObjects(node_storage_policy, [storage],
+            fields=('name', 'uri'))
         self.assertItemsEqual(node_package_policy, [
             {'name': 'kate', 'version': 'latest', 'action': 'add'},
             {'name': 'sublime', 'version': 'latest', 'action': 'add'}])
