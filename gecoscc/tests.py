@@ -3997,15 +3997,20 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_03_repository_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                     isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_03_repository_movements(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 03:
         1. Check the repository movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1 - Create printer
@@ -4018,27 +4023,30 @@ class MovementsTests(BaseGecosTestCase):
         self.register_computer()
 
         # 3 - Add repository to workstation
-        repository_policy = db.policies.find_one({'slug': 'repository_can_view'})
+        repository_policy = db.policies.find_one(
+            {'slug': 'repository_can_view'})
         policy_path = repository_policy['path']
         computer = db.nodes.find_one({'name': 'testing'})
-        computer['policies'] = {text_type(repository_policy['_id']): {'object_related_list': [new_repository['_id']]}}
-        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id, api_class=ComputerResource, policy_path=policy_path)
+        computer['policies'] = {text_type(repository_policy['_id']): {
+            'object_related_list': [new_repository['_id']]}}
+        self.add_and_get_policy(node=computer, chef_node_id=chef_node_id,
+            api_class=ComputerResource, policy_path=policy_path)
 
         repository = db.nodes.find_one({'name': 'Testrepo'})
         # 4 - Move repository to the OU path
         try:
-            repository_update = self.update_node(obj=new_repository, field_name='path',
-                                                 field_value=ou_1['path'], api_class=RepositoryResource,
-                                                 is_superuser=False)
+            repository_update = self.update_node(obj=new_repository,
+                field_name='path', field_value=ou_1['path'],
+                api_class=RepositoryResource, is_superuser=False)
         except HTTPForbidden:
             repository_update = repository
         # 5 - Checks if the repository has been moved
         self.assertEqual(repository_update['path'], repository['path'])
 
         # 6 - Move repository to the OU path like admin
-        repository_update = self.update_node(obj=new_repository, field_name='path',
-                                             field_value=ou_1['path'], api_class=RepositoryResource,
-                                             is_superuser=True)
+        repository_update = self.update_node(obj=new_repository,
+            field_name='path', field_value=ou_1['path'],
+            api_class=RepositoryResource, is_superuser=True)
 
         # 7 - Checks if the repository has been moved
         self.assertNotEqual(repository_update['path'], repository['path'])
@@ -4050,9 +4058,9 @@ class MovementsTests(BaseGecosTestCase):
         repository = db.nodes.find_one({'name': 'Testrepo'})
         repository_path = repository['path']
         repository_update = self.update_node(obj=repository, field_name='path',
-                                             field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
-                                             api_class=RepositoryResource,
-                                             is_superuser=True)
+            field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
+            api_class=RepositoryResource,
+            is_superuser=True)
 
         # 10 - Check if the printer is moved and the policy has been updated
         self.assertNotEqual(repository_update['path'], repository_path)
@@ -4069,15 +4077,19 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_04_groups_movements(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                 isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_04_groups_movements(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method,
+        gettext, create_chef_admin_user_method):
         '''
         Test 04:
         1. Check the groups movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1- Create a group
@@ -4090,7 +4102,8 @@ class MovementsTests(BaseGecosTestCase):
         computer = db.nodes.find_one({'name': 'testing'})
 
         # 3 - Assign group to computer
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -4098,9 +4111,11 @@ class MovementsTests(BaseGecosTestCase):
 
         # 4 - move group to the OU path
         try:
-            group_update = self.update_node(obj=group, field_name='path',
-                                            field_value=ou_1['path'], api_class=GroupResource,
-                                            is_superuser=False)
+            self.update_node(obj=group, field_name='path',
+                field_value=ou_1['path'], api_class=GroupResource,
+                is_superuser=False)
+            group_update = db.nodes.find_one({'name': 'testgroup'})
+            
         except HTTPForbidden:
             group_update = group
 
@@ -4110,9 +4125,10 @@ class MovementsTests(BaseGecosTestCase):
         # 6 - move group to the OU path like admin
         group = db.nodes.find_one({'name': 'testgroup'})
         group_path = group['path']
-        group_update = self.update_node(obj=group, field_name='path',
-                                        field_value=ou_1['path'], api_class=GroupResource,
-                                        is_superuser=True)
+        self.update_node(obj=group, field_name='path',
+            field_value=ou_1['path'], api_class=GroupResource,
+            is_superuser=True)
+        group_update = db.nodes.find_one({'name': 'testgroup'})
         # 7 - Check if the groups has been moved
         self.assertNotEqual(group_update['path'], group_path)
         self.assertNotEqual(group_update['members'], [])
@@ -4123,10 +4139,11 @@ class MovementsTests(BaseGecosTestCase):
         # 9 - Move group to OU 2 like superadmin
         group = db.nodes.find_one({'name': 'testgroup'})
         group_path = group['path']
-        group_update = self.update_node(obj=group, field_name='path',
-                                        field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
-                                        api_class=GroupResource,
-                                        is_superuser=True)
+        self.update_node(obj=group, field_name='path',
+            field_value=ou_2['path'] + ',' + text_type(ou_2['_id']),
+            api_class=GroupResource,
+            is_superuser=True)
+        group_update = db.nodes.find_one({'name': 'testgroup'})
 
         # 10 - Check if the group is moved and the policy has been updated
         self.assertNotEqual(group_update['path'], group_path)
@@ -4141,15 +4158,20 @@ class MovementsTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils.ChefNode')
     @mock.patch('gecoscc.tasks.get_cookbook')
     @mock.patch('gecoscc.utils.get_cookbook')
-    def test_05_groups_movements_domain(self, get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-                                        isinstance_method, gettext, create_chef_admin_user_method):
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_05_groups_movements_domain(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
         '''
         Test 05:
         1. Check the groups movements work
         '''
         if DISABLE_TESTS: return
         
-        self.apply_mocks(get_cookbook_method, get_cookbook_method_tasks, NodeClass, ChefNodeClass, isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
         self.cleanErrorJobs()
 
         # 1- Create a group
@@ -4161,7 +4183,8 @@ class MovementsTests(BaseGecosTestCase):
         computer = db.nodes.find_one({'name': 'testing'})
 
         # 3 - Assign group to computer
-        self.assign_group_to_node(node_name=computer['name'], api_class=ComputerResource, group=new_group)
+        self.assign_group_to_node(node_name=computer['name'],
+            api_class=ComputerResource, group=new_group)
 
         # Check if group's node is update in node chef
         group = db.nodes.find_one({'name': 'testgroup'})
@@ -4173,7 +4196,8 @@ class MovementsTests(BaseGecosTestCase):
                 'path': 'root',
                 'source': 'gecos'}
 
-        request_post = self.get_dummy_json_post_request(data, OrganisationalUnitResource.schema_detail)
+        request_post = self.get_dummy_json_post_request(data,
+            OrganisationalUnitResource.schema_detail)
         ou_api = OrganisationalUnitResource(request_post)
         flag_new = ou_api.collection_post()
 
@@ -4182,8 +4206,8 @@ class MovementsTests(BaseGecosTestCase):
         # 5 - move group to the OU path like admin
         try:
             group_update = self.update_node(obj=new_group, field_name='path',
-                                            field_value=domain['path'], api_class=GroupResource,
-                                            is_superuser=True)
+                field_value=domain['path'], api_class=GroupResource,
+                is_superuser=True)
         except KeyError:
             group_update = group
 

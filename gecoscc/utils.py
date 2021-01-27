@@ -753,8 +753,10 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
             user_member_of_groups = member['memberof']
             group['members'].remove(member['_id'])
             groups_members = group['members']
-            nodes_collection.update({'_id': member_id, }, {'$set': {'memberof': user_member_of_groups}})
-            nodes_collection.update({'_id': group['_id']}, {'$set': {'members': groups_members}})
+            nodes_collection.update_one({'_id': member_id, }, 
+                {'$set': {'memberof': user_member_of_groups}})
+            nodes_collection.update_one({'_id': group['_id']},
+                {'$set': {'members': groups_members}})
 
             if member['type'] == 'user':
                 update_data_user(nodes_collection, member, policies, api, auth_user)
