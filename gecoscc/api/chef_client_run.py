@@ -56,7 +56,8 @@ class ChefClientRunResource(BaseAPI):
         logger.info("/chef-client/run/: Reserve chef node %s" % (str(node_id)))
 
         # Saving last agent run time 
-        self.request.db.nodes.update({'node_chef_id': node_id},{'$set': {'last_agent_run_time': int(time.time())}})
+        self.request.db.nodes.update_one({'node_chef_id': node_id},
+            {'$set': {'last_agent_run_time': int(time.time())}})
         
         # Reserve the node
         settings = get_current_registry().settings
@@ -134,7 +135,8 @@ class ChefClientRunResource(BaseAPI):
             computer['logs']['files'].append(filedata)
             
         # Save logs data
-        self.collection.update({"node_chef_id": node_id, "type": "computer"}, computer)
+        self.collection.replace_one(
+            {"node_chef_id": node_id, "type": "computer"}, computer)
         
         return {'ok': True,
                     'message': 'Log data saved'}

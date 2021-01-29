@@ -128,7 +128,9 @@ class HelpChannelClientLogin(object):
             
             client_certificate = chef_client.certificate
             public_key = RSA.importKey(client_certificate)
-            decrypted = public_key.encrypt(secret.decode('hex'), 0)[0]
+            
+            decrypted = public_key.encrypt(bytes.fromhex(secret), 0)[0]
+            decrypted = decrypted.decode("utf-8")
             
             known_message_setting = self.request.registry.settings.get('helpchannel.known_message')
             if known_message_setting is not None:
@@ -154,7 +156,7 @@ class HelpChannelClientLogin(object):
             token = ''.join(choice(allchar) for _ in range(
                 randint(min_char, max_char)))        
                 
-            self.request.db.helpchannel.insert(
+            self.request.db.helpchannel.insert_one(
                 {
                     'last_modified': datetime.datetime.utcnow(),
                     'action': 'request',
@@ -255,13 +257,13 @@ class HelpChannelClientAccept(object):
 
         logger.debug('/help-channel-client/accept token=%s'%(token)) 
 
-        self.request.db.helpchannel.update({
+        self.request.db.helpchannel.update_one({
             '_id': hc_data['_id']
         }, {
             '$set': {
                 'action': 'accepted'
             }
-        }, multi=True)
+        })
             
             
         return {'ok': True}
@@ -302,13 +304,13 @@ class HelpChannelClientFinish(object):
         logger.debug('/help-channel-client/finish token=%s'%(token)) 
         logger.debug('/help-channel-client/finish finisher=%s'%(finisher)) 
 
-        self.request.db.helpchannel.update({
+        self.request.db.helpchannel.update_one({
             '_id': hc_data['_id']
         }, {
             '$set': {
                 'action': 'finished ' + finisher
             }
-        }, multi=True)
+        })
             
             
         return {'ok': True}

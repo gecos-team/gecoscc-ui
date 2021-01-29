@@ -27,7 +27,7 @@ from paste.deploy import loadapp
 from pyramid import testing
 from pyramid.httpexceptions import HTTPForbidden
 
-from gecoscc.api.chef_status import USERS_OHAI
+from gecoscc.api.chef_status import USERS_OHAI, ChefStatusResource
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
 from gecoscc.api.computers import ComputerResource
 from gecoscc.api.groups import GroupResource
@@ -45,6 +45,13 @@ from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add
 from pkg_resources import parse_version
+from gecoscc.api.admin_users import AdminUserResource
+from gecoscc.api.archive_jobs import ArchiveJobsResource
+from gecoscc.api.chef_client_run import ChefClientRunResource
+from gecoscc.api.help_channel_client import HelpChannelClientLogin,\
+    HelpChannelClientFetch, HelpChannelClientCheck, HelpChannelClientAccept,\
+    HelpChannelClientFinish
+from Crypto.PublicKey import RSA
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -84,6 +91,7 @@ def _check_if_user_belongs_to_admin_group_mock(request, organization, username):
 class ChefApiMock(object):
     def __init__(self):
         self.version = '0.11'
+        self.platform = False
         
     @property
     def version_parsed(self):
@@ -109,6 +117,16 @@ class ChefApiMock(object):
 
         if item == '/cookbooks/gecos_ws_mgmt/_latest/':
             data = get_cookbook_mock(None, None)
+
+
+        if item == '/clients/%s'%(CHEF_NODE_ID):
+            data = {}
+            with open('gecoscc/test_resources/client.json') as file:
+                client_json = file.read().replace(
+                    '%(chef_url)s', CHEF_URL).replace(
+                        '%s(node_name)s', CHEF_NODE_ID)
+                data = json.loads(client_json)
+
             
         return data
     
@@ -410,7 +428,8 @@ class BaseGecosTestCase(unittest.TestCase):
             del request.validated['_id']
         return request
 
-    def get_dummy_json_put_request(self, data, schema=None, is_superuser=True):
+    def get_dummy_json_put_request(self, data, schema=None, is_superuser=True,
+        path=None):
         '''
         Useful method, returns a typical put request
         '''
@@ -430,10 +449,15 @@ class BaseGecosTestCase(unittest.TestCase):
                 'data_validated_hook_%s' % node_type, None)
             if data_validated_hook:
                 data_validated_hook(request.validated)
+                
+            request.json = json.dumps(serialize_data)
+            request.path = '/api/%ss/%s/' % (serialize_data['type'],
+                serialize_data['_id'])
+                
+        else:
+            request.json = data
+            request.path = path
 
-        request.json = json.dumps(serialize_data)
-        request.path = '/api/%ss/%s/' % (serialize_data['type'],
-            serialize_data['_id'])
         return request
 
     def get_dummy_delete_request(self, data, schema=None):
@@ -1189,6 +1213,234 @@ class BasicTests(BaseGecosTestCase):
         self.assertDeleted(field_name='extra', field_value='Test')
 
         self.assertNoErrorJobs()
+
+
+    def test_09_auth_config(self):
+        '''
+        Test 9: Check the configuration of a user
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Create request access to auth config view's
+        request = self.get_dummy_request()
+        node_api = AdminUserResource(request)
+        response = node_api.get()
+        
+        # 2 - Check if the response is valid
+        self.assertEqual(response['version'],
+            self.registry.settings['firstboot_api.version'])
+        self.assertNoErrorJobs()
+
+    def test_10_archive_jobs(self):
+        '''
+        Test 9: Execute test_08 to create jobs and after that archive the jobs
+        '''
+        if DISABLE_TESTS: return
+
+        self.test_08_OU()
+        
+        # Ensure that thera are jobs that haven't been archived
+        db = self.get_db()
+        self.assertNotEqual(db.jobs.count_documents({'archived': False}), 0)
+
+        # Archive all the jobs of this user
+        request = self.get_dummy_request()
+        node_api = ArchiveJobsResource(request)
+        response = node_api.put()
+        self.assertEqual(response['ok'], 'test')
+        
+        # Ensure that all the jobs have been archived
+        self.assertEqual(db.jobs.count_documents({'archived': False}), 0)
+
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_11_chef_client_run(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 11: Check the Chef node lockup
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        # 1 - Register workstation in OU
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # 2-  Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+        
+        # 3 - Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        
+        # 4 - Create request access to the node lockup
+        # (Test invalid request)
+        request_put = self.get_dummy_json_put_request({},
+            path='/chef-client/run/')
+        node_api = ChefClientRunResource(request_put)
+        response = node_api.put()
+        self.assertEqual(response['ok'], False)
+        
+        # (Test invalid request)
+        data ={'node_id': CHEF_NODE_ID}
+        request_put = self.get_dummy_json_put_request(data,
+            path='/chef-client/run/')
+        request_put.POST = data
+        node_api = ChefClientRunResource(request_put)
+        response = node_api.put()
+        self.assertEqual(response['ok'], False)
+        
+        # (Test valid request)
+        data ={'node_id': CHEF_NODE_ID, 'gcc_username':  admin_username}
+        request_put = self.get_dummy_json_put_request(data,
+            path='/chef-client/run/')
+        request_put.POST = data
+        node_api = ChefClientRunResource(request_put)
+        response = node_api.put()
+        
+        # 5 - Check if the response is valid
+        self.assertEqual(response['ok'], True)
+        
+        self.assertNoErrorJobs()
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_12_upload_logs(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 12: Upload log files
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        # 1 - Register workstation in OU
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # 2-  Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+        
+        # 3 - Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        
+        # 4 - Create request upload the log files
+        logs = {
+            'date': '2021-01-28 12:00:00',
+            'files': { 
+                'test.log': {
+                    'content': 'Hello world!',
+                    'size': 12        
+                }
+            }
+        }
+        
+        data ={
+            'node_id': CHEF_NODE_ID,
+            'gcc_username':  admin_username,
+            'logs': json.dumps(logs)
+        }
+        request_post = self.get_dummy_json_post_request(data)
+        request_post.POST = data
+        node_api = ChefClientRunResource(request_post)
+        response = node_api.post()
+        
+        # 5 - Check if the response is valid
+        self.assertEqual(response['ok'], True)
+        
+        # 6 - Get the computer and check the logs
+        db = self.get_db()
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer,
+            ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+
+        self.assertEqual('test.log', computer['logs']['files'][0]['filename'])
+        
+        self.assertNoErrorJobs()
+
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_13_update_chef_status(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 13: Upload status after running chef-client in the workstation
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        # 1 - Register workstation in OU
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # 2-  Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+        
+        # 3 - Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        
+        # 4 - Create request
+        data ={'node_id': CHEF_NODE_ID, 'gcc_username':  admin_username}
+        request_put = self.get_dummy_json_put_request(data,
+            path='/chef/status/')
+        request_put.POST = data
+        node_api = ChefStatusResource(request_put)
+        response = node_api.put()
+        
+        # 5 - Check if the response is valid
+        self.assertEqual(response['ok'], True)
+        
+        self.assertNoErrorJobs()
+
 
 
 class AdvancedTests(BaseGecosTestCase):
@@ -3798,6 +4050,150 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
 
 
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_31_help_channel(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
+
+        '''
+        31. Test the help channel functionality
+        '''
+
+        if DISABLE_TESTS: return
+
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method,
+            None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
+
+        db = self.get_db()
+        db.helpchannel.delete_many({})
+        
+
+        # 1 - Register workstation in OU
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # 2-  Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+        
+        # 3 - Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        
+        # 4 - Create request upload the log files
+        secret = self.registry.settings['helpchannel.known_message']
+        # (cipher the secret message with the public key)
+        with open('gecoscc/test_resources/client.pem') as client_f:
+            client_pem = client_f.read()
+            private_key = RSA.importKey(client_pem)
+            secret = private_key.decrypt((secret.encode(),))       
+            
+        data = {
+            'node_id': CHEF_NODE_ID,
+            'username':  username,
+            'secret': secret.hex(),
+            'gcc_username': 'test',
+            'hc_server': '127.0.0.1'
+            
+        }
+        request_post = self.get_dummy_json_post_request(data)
+        request_post.POST = data
+        node_api = HelpChannelClientLogin(request_post)
+        response = node_api.post()
+        
+        # 5 - Check if the response is valid
+        self.assertEqual(response['ok'], True, str(response))
+        
+        # 6 - Check helpchannel data
+        hcdata = db.helpchannel.find_one(
+            {'computer_node_id': CHEF_NODE_ID})
+        self.assertEqual(response['token'], hcdata['token'])
+        token = response['token']
+        print('Token: %s'%(token))
+
+        # 7 - Test fetch operation
+        data = {
+            'connection_code': token 
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/help-channel-client/fetch'
+        request.GET = data
+        node_api = HelpChannelClientFetch(request)
+        response = node_api.get()
+        
+        self.assertEqual(response['ok'], True, str(response))
+
+
+        # 8 - Accept the support
+        data = {
+            'connection_code': token 
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/help-channel-client/accept'
+        request.GET = data
+        node_api = HelpChannelClientAccept(request)
+        response = node_api.get()
+        
+        self.assertEqual(response['ok'], True, str(response))
+
+        # 9 - Check the token        
+        data = {
+            'connection_code': token
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/help-channel-client/check'
+        request.GET = data
+        request.remote_addr = '127.0.0.1'
+        
+        node_api = HelpChannelClientCheck(request)
+        response = node_api.get()
+        
+        self.assertEqual(response['ok'], True, str(response))
+
+        # Finish the support
+        data = {
+            'connection_code': token,
+            'finisher': 'user'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/help-channel-client/finish'
+        request.GET = data
+        request.remote_addr = '127.0.0.1'
+        
+        node_api = HelpChannelClientFinish(request)
+        response = node_api.get()
+        
+        self.assertEqual(response['ok'], True, str(response))
+        
+        
+        self.assertNoErrorJobs()
+
+
+
+
 class MovementsTests(BaseGecosTestCase):
 
     @mock.patch('gecoscc.forms.create_chef_admin_user')
@@ -4456,3 +4852,8 @@ class MovementsTests(BaseGecosTestCase):
             {'name': 'sublime', 'version': 'latest', 'action': 'add'}])
 
         self.assertNoErrorJobs()
+
+
+
+
+

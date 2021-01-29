@@ -1933,7 +1933,7 @@ class ChefTask(Task):
                     usr = update_computers_of_user(self.db, usr, api)
         
                     del usr['_id']
-                    usr_id = self.db.nodes.insert(usr)
+                    usr_id = self.db.nodes.insert_one(usr).inserted_id
                     usr = self.db.nodes.find_one({'_id': usr_id})
     
                 else:
@@ -2374,12 +2374,14 @@ def chef_status_sync(node_id, auth_user):
     # Previously, gcc_link attribute of chef node is updated by network policies
     gcc_link = node.attributes.get('gcc_link')
     self.log("info", "Saving gcc_link: {0}".format(gcc_link))
-    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
+    self.db.nodes.update_one({'node_chef_id':node_id},
+                             {'$set': {'gcc_link':gcc_link}})
 
     # Update IP address
     ipaddress = node.attributes.get('ipaddress')
     self.log("info", "ipaddress: {0}".format(ipaddress))
-    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
+    self.db.nodes.update_one({'node_chef_id':node_id},
+                             {'$set': {'ipaddress':ipaddress}})
         
     reserve_node = False
     if job_status:
@@ -2394,14 +2396,14 @@ def chef_status_sync(node_id, auth_user):
             # Parent
             macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
             if job_status['status'] == 0:
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'finished',
                                               'last_update': datetime.datetime.utcnow()}})
                 # Decrement number of children in parent
                 if macrojob and 'counter' in macrojob:
                     macrojob['counter'] -= 1
             elif job_status['status'] == 2:
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'warnings',
                                               'message': job_status.get('message', 'Warning'),
                                               'last_update': datetime.datetime.utcnow()}})
@@ -2409,7 +2411,7 @@ def chef_status_sync(node_id, auth_user):
                     macrojob['status'] = 'warnings'
             else:
                 chef_client_error = True
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'errors',
                                               'message': job_status.get('message', 'Error'),
                                               'last_update': datetime.datetime.utcnow()}})
@@ -2417,11 +2419,11 @@ def chef_status_sync(node_id, auth_user):
                     macrojob['status'] = 'errors'
             # Update parent                                 
             if macrojob:
-                self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                self.db.jobs.update_one({'_id': macrojob['_id']},                                                                
                                     {'$set': {'counter': macrojob['counter'],
                                               'message': self._("Pending: %d") % macrojob['counter'],
                                               'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})
-        self.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
+        self.db.nodes.update_one({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
         invalidate_jobs(self.request, auth_user)
         node.attributes.set_dotted('job_status', {})
 
@@ -2481,7 +2483,7 @@ def chef_status_sync(node_id, auth_user):
                 user = update_computers_of_user(self.db, user, api)
     
                 del user['_id']
-                user_id = self.db.nodes.insert(user)
+                user_id = self.db.nodes.insert_one(user).inserted_id
                 user = self.db.nodes.find_one({'_id': user_id})
                 reload_clients = True
 
@@ -2489,7 +2491,8 @@ def chef_status_sync(node_id, auth_user):
                 computers = user.get('computers', [])
                 if computer['_id'] not in computers:
                     computers.append(computer['_id'])
-                    self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                    self.db.nodes.update_one({'_id': user['_id']},
+                        {'$set': {'computers': computers}})
                     add_computer_to_user(computer['_id'], user['_id'])
                     invalidate_change(self.request, auth_user)
 
@@ -2528,7 +2531,8 @@ def chef_status_sync(node_id, auth_user):
             if computer['_id'] in computers:
                 users_remove_policies.append(deepcopy(user))
                 computers.remove(computer['_id'])
-                self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                self.db.nodes.update_one({'_id': user['_id']},
+                    {'$set': {'computers': computers}})
                 invalidate_change(self.request, auth_user)
             
             username = get_username_chef_format(user)
@@ -2563,7 +2567,8 @@ def chef_status_sync(node_id, auth_user):
         self.log("debug", "tasks.py ::: chef_status_sync - sudo-to-normal - gcc_sudoers = {0}".format(gcc_sudoers))
 
     # Upgrade sudoers
-    self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+    self.db.nodes.update_one({'_id': computer['_id']},
+        {'$set': {'sudoers': list(gcc_sudoers)}})
     if reload_clients:
         update_tree(computer.get('path', ''))
 
