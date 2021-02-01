@@ -262,7 +262,7 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
             {"computer_node_id" : result['node_chef_id']}).sort(
                 [("last_modified", pymongo.DESCENDING)]).limit(1)
 
-        if helpchannel_data is None or helpchannel_data.count() <= 0:
+        if helpchannel_data is None:
             logger.error("/api/computers/support/: There is no support request for this computer!")
             raise HTTPForbidden()
 
@@ -289,7 +289,7 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
                 is_superuser = admin['is_superuser']
             
             
-            self.request.db.helpchannel.update({
+            self.request.db.helpchannel.update_one({
                 '_id': hcdata['_id']
             }, {
                 '$set': {
@@ -298,7 +298,7 @@ class ComputerSupportResource(TreeLeafResourcePaginated):
                     'adminuser_ou_managed': ou_managed,
                     'adminuser_is_superuser': is_superuser                    
                 }
-            }, multi=True)            
+            })            
             
             # Redirect to suppor NoVNC page
             url = hcdata['helpchannel_server'].replace('wss://', 'https://')

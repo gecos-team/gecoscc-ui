@@ -239,7 +239,7 @@ class Setting(colander.MappingSchema):
                               title=_('Key'),
                               default='',
                               missing='')
-    value = colander.SchemaNode(colander.String('UTF-8'),
+    value = colander.SchemaNode(colander.String(),
                                 title=_('Value'),
                                 default='',
                                 missing='')

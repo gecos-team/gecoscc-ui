@@ -57,11 +57,10 @@ def create_setting(key):
 @view_config(route_name='settings', renderer='templates/settings.jinja2',
              permission='is_superuser')
 def settings(_context, request):
-    settings_data = request.db.settings.find(
-        {'key':{'$nin': EXCLUDE_SETTINGS}}).sort(
-            [("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
+    settings_data_count = request.db.settings.count_documents(
+        {'key':{'$nin': EXCLUDE_SETTINGS}})
     result = []
-    if settings_data.count() == 0:
+    if settings_data_count == 0:
         # If there aren't settings in the database then load the default values
         
         # firstboot_api.comments
@@ -88,6 +87,10 @@ def settings(_context, request):
         
     else:
         includesMimeTypes = False
+        settings_data = request.db.settings.find(
+            {'key':{'$nin': EXCLUDE_SETTINGS}}).sort(
+                [("type", pymongo.DESCENDING), ("key", pymongo.ASCENDING)])
+        
         for setting in settings_data:
             if setting['key'] == "mimetypes":
                 includesMimeTypes = True
@@ -124,10 +127,10 @@ def settings_save(_context, request):
             obj = Setting().serialize(setting)
             if obj['_id'] == colander.null:
                 del obj['_id']
+                request.db.settings.insert_one(obj)
             else:
                 obj['_id'] = ObjectId(obj['_id'])
-            #logger.debug('save= %s'%(obj))
-            request.db.settings.save(obj)
+                request.db.settings.replace_one({'_id': obj['_id']}, obj)
                                     
     messages.created_msg(request, _('Settings modified successfully'),
                          'success')

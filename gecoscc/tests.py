@@ -25,11 +25,11 @@ from chef.node import NodeAttributes
 from cornice.errors import Errors
 from paste.deploy import loadapp
 from pyramid import testing
-from pyramid.httpexceptions import HTTPForbidden
+from pyramid.httpexceptions import HTTPForbidden, HTTPFound
 
 from gecoscc.api.chef_status import USERS_OHAI, ChefStatusResource
 from gecoscc.api.organisationalunits import OrganisationalUnitResource
-from gecoscc.api.computers import ComputerResource
+from gecoscc.api.computers import ComputerResource, ComputerSupportResource
 from gecoscc.api.groups import GroupResource
 from gecoscc.api.printers import PrinterResource
 from gecoscc.api.repositories import RepositoryResource
@@ -52,6 +52,15 @@ from gecoscc.api.help_channel_client import HelpChannelClientLogin,\
     HelpChannelClientFetch, HelpChannelClientCheck, HelpChannelClientAccept,\
     HelpChannelClientFinish
 from Crypto.PublicKey import RSA
+from gecoscc.api.gca_ous import GCAOuResource
+from gecoscc.api.jobs import JobResource
+from gecoscc.api.jobs_statistics import JobStatistics
+from gecoscc.views.settings import settings, settings_save
+from gecoscc.api.mimetypes import MimestypesResource
+from gecoscc.api.my_jobs_statistics import MyJobStatistics
+from gecoscc.api.nodes import NodesResource
+from gecoscc.api.public_computers import ComputerPublicResource
+from gecoscc.api.public_ous import OuPublicResource
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -1233,7 +1242,7 @@ class BasicTests(BaseGecosTestCase):
 
     def test_10_archive_jobs(self):
         '''
-        Test 9: Execute test_08 to create jobs and after that archive the jobs
+        Test 10: Execute test_08 to create jobs and after that archive the jobs
         '''
         if DISABLE_TESTS: return
 
@@ -1441,6 +1450,321 @@ class BasicTests(BaseGecosTestCase):
         
         self.assertNoErrorJobs()
 
+
+    def test_14_search_ous_from_cga(self):
+        '''
+        Test 14: Search OUs from the GECOS Config Assistant
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Create request get all OUs
+        data = {
+            'q': ''
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/ou/gca/'
+        request.GET = data
+        node_api = GCAOuResource(request)
+        response = node_api.get()
+        
+        # 2 - Check if the response is valid
+        self.assertEqual(len(response['ous']),2)
+
+        # 3 - Create request to get a specific OU
+        data = {
+            'q': 'OU 1'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/ou/gca/'
+        request.GET = data
+        node_api = GCAOuResource(request)
+        response = node_api.get()
+        
+        # 2 - Check if the response is valid
+        self.assertEqual(len(response['ous']),1)
+
+        
+        self.assertNoErrorJobs()
+
+    def test_15_jobs_search(self):
+        '''
+        Test 15: Execute test_08 to create jobs and after that execute
+        a jobs search
+        '''
+        if DISABLE_TESTS: return
+
+        self.test_08_OU()
+        
+        # Get jobs for this user
+        data = {
+            'page': 1,
+            'pagesize': 30,
+            'status': '',
+            'archived': 'false',
+            'parentId': '',
+            'seeAll': 'false',
+            'source': '',
+            'workstation': '',
+            'userfilter': ''
+            }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/jobs/'
+        request.GET = data
+        node_api = JobResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 3)
+        
+
+    def test_16_jobs_statistics(self):
+        '''
+        Test 16: Execute test_08 to create jobs and after that get
+        the jobs statistics
+        '''
+        if DISABLE_TESTS: return
+
+        self.test_08_OU()
+        
+        # Get jobs statistics (general)
+        data = {}
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/jobs-statistics/'
+        request.GET = data
+        node_api = JobStatistics(request)
+        response = node_api.get()
+        self.assertEqual(response['processing'], 0)
+        
+        
+        # Get jobs statistics for this user
+        data = {}
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/my-jobs-statistics/'
+        request.GET = data
+        node_api = MyJobStatistics(request)
+        response = node_api.get()
+        self.assertEqual(response['processing'], 0)
+        
+    def test_17_node_search(self):
+        '''
+        Test 17: Node search
+        '''
+        if DISABLE_TESTS: return
+
+        # 1 - Seach for "ou" in node name
+        data = {
+            'iname': 'ou',
+            'search_by': 'nodename',
+            'type': ''
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 1)
+        
+        # 2 - Seach for "test" in node name, for workstations and users
+        data = {
+            'iname': 'test',
+            'search_by': 'nodename',
+            'type': 'computer,user'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 1)
+        
+        # 3 - Run other test to create a user and a workstation
+        self.test_13_update_chef_status()
+
+        # 4 - Seach for "test" in node name, for workstations and users
+        data = {
+            'iname': 'test',
+            'search_by': 'nodename',
+            'type': 'computer,user'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 4)
+
+        # 5 - Seach for "test" in node name, for workstations
+        data = {
+            'iname': 'test',
+            'search_by': 'nodename',
+            'type': 'computer'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 1)
+        
+
+        # 6 - Seach for "10.35.1.16" in ip address
+        data = {
+            'iname': '10.35.1.16',
+            'search_by': 'ip'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 1)
+
+
+        # 7 - Seach for "test" in username
+        data = {
+            'iname': 'test',
+            'search_by': 'username'
+        }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/nodes/'
+        request.GET = data
+        node_api = NodesResource(request)
+        response = node_api.collection_get()
+        self.assertEqual(response['total'], 1)
+
+    def test_18_public_computers(self):
+        '''
+        Test 18: test public API to retrieve the list of computers.
+        '''
+        if DISABLE_TESTS: return
+
+        # 1 - Run other test to create a user and a workstation
+        self.test_13_update_chef_status()
+
+
+        # 2 - Get list of computers
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/computers/list/'
+        request.GET = data
+        node_api = ComputerPublicResource(request)
+        response = node_api.get()
+        self.assertEqual(len(response['computers']), 1)
+        self.assertEqual(response['computers'][0]['name'], 'testing')
+        
+
+    def test_19_public_ous(self):
+        '''
+        Test 19: test public API to retrieve the list of ous.
+        '''
+        if DISABLE_TESTS: return
+
+        # 1 - Get list of OUs
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        data = { 'ou_id': str(domain_1['_id']) }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/ou/list/'
+        request.GET = data
+        node_api = OuPublicResource(request)
+        response = node_api.get()
+        self.assertEqual(len(response), 1)
+        self.assertEqual(response[0]['name'], 'OU 1')
+        
+        
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_20_computer_CRUD(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 20: Registers a computer, updates it and deletes it
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        db = self.get_db()
+        
+        # 1 - Register workstation in OU and user
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        
+        # 2 - Check that the computer exists
+        count = db.nodes.count_documents({'node_chef_id': chef_node_id})
+        self.assertEqual(count, 1)
+        
+        # 3 - Update policies of the computer
+        data = {'node_id': chef_node_id}
+        request = self.get_dummy_request()
+        request.POST = data
+        computer_response = RegisterComputerResource(request)
+        response = computer_response.put()
+        self.assertEqual(response['ok'], True)
+
+        # 4 - Check that the computer exists
+        count = db.nodes.count_documents({'node_chef_id': chef_node_id})
+        self.assertEqual(count, 1)
+        
+        # 5 - Delete the computer
+        data = {'node_id': chef_node_id}
+        request = self.get_dummy_request()
+        request.GET = data
+        computer_response = RegisterComputerResource(request)
+        response = computer_response.delete()
+        self.assertEqual(response['ok'], True)
+        
+        # 6 - Check that the computer does not exists
+        count = db.nodes.count_documents({'node_chef_id': chef_node_id})
+        self.assertEqual(count, 0)
+        
+        self.assertNoErrorJobs()
+        
 
 
 class AdvancedTests(BaseGecosTestCase):
@@ -4016,7 +4340,7 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.apply_mocks(get_chef_api_method, get_cookbook_method,
             get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-            isinstance_method, gettext_mock, create_chef_admin_user_method,
+            isinstance_method, gettext, create_chef_admin_user_method,
             None, TaskNodeClass, TaskClientClass)
         self.cleanErrorJobs()
 
@@ -4050,6 +4374,7 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
 
 
+    @mock.patch('gecoscc.api.computers._')
     @mock.patch('gecoscc.tasks.Client')
     @mock.patch('gecoscc.tasks.Node')
     @mock.patch('gecoscc.forms.create_chef_admin_user')
@@ -4063,7 +4388,8 @@ class AdvancedTests(BaseGecosTestCase):
     def test_31_help_channel(self, get_chef_api_method,
         get_cookbook_method, get_cookbook_method_tasks, NodeClass,
         ChefNodeClass, isinstance_method, gettext,
-        create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
+        create_chef_admin_user_method, TaskNodeClass, TaskClientClass,
+        gettext_computers):
 
         '''
         31. Test the help channel functionality
@@ -4073,8 +4399,9 @@ class AdvancedTests(BaseGecosTestCase):
 
         self.apply_mocks(get_chef_api_method, get_cookbook_method,
             get_cookbook_method_tasks, NodeClass, ChefNodeClass,
-            isinstance_method, gettext_mock, create_chef_admin_user_method,
+            isinstance_method, gettext, create_chef_admin_user_method,
             None, TaskNodeClass, TaskClientClass)
+        gettext_computers.side_effect = gettext_mock
         self.cleanErrorJobs()
 
         db = self.get_db()
@@ -4171,7 +4498,28 @@ class AdvancedTests(BaseGecosTestCase):
         
         self.assertEqual(response['ok'], True, str(response))
 
-        # Finish the support
+
+        # 10 - Check help channel data in computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer,
+            ComputerResource.schema_detail)
+        computer_api = ComputerResource(request)
+        computer = computer_api.get()
+        self.assertEqual(computer['helpchannel']['current']['action'],
+                         'accepted')
+        
+        
+        # 11 - Give support to the user
+        computer = db.nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer,
+            ComputerSupportResource.schema_detail)
+        computer_api = ComputerSupportResource(request)
+        try:
+            computer = computer_api.get()
+        except HTTPFound as ex:
+            self.assertEqual(ex.location, '127.0.0.1?repeaterID=ID:%s'%(token))
+            
+        # 12 - Finish the support
         data = {
             'connection_code': token,
             'finisher': 'user'
@@ -4190,6 +4538,7 @@ class AdvancedTests(BaseGecosTestCase):
         
         
         self.assertNoErrorJobs()
+
 
 
 
@@ -4855,5 +5204,122 @@ class MovementsTests(BaseGecosTestCase):
 
 
 
+class SuperadminTests(BaseGecosTestCase):
 
+    def _parse_settings(self, settings):
+        parsed = {}
+        for elm in settings:
+            parsed[elm['key']] = elm['value']
+            
+        return parsed
+
+
+    @mock.patch('gecoscc.views.settings._')
+    def test_01_settings(self, gettext):
+        '''
+        Test 1: Check that the settings view works
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(gettext=gettext)
+        db = self.get_db()
+        db.settings.drop()
+
+        
+        # 1 - Create request access to settings view's
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = settings(context, request)
+        parsed = self._parse_settings(response['settings'])
+        
+        # 2 - Check if the response is valid
+        self.assertEqual(parsed['firstboot_api.version'],
+                         self.registry.settings['firstboot_api.version'])
+        
+        
+        # 3 - Modify a setting
+        data = '{"firstboot_api___comments":"None",' \
+            '"firstboot_api___organization_name":"Junta de Andalucía",'\
+            '"firstboot_api___version":"0.2.0_test",'\
+            '"update_error_interval":24,'\
+            '"printers___urls":['\
+              '"http://www.openprinting.org/download/foomatic/'\
+                'foomatic-db-nonfree-current.tar.gz",'\
+               '"http://www.openprinting.org/download/foomatic/'\
+                'foomatic-db-current.tar.gz"],'\
+            '"repositories":['\
+                '"http://v2.gecos.guadalinex.org/gecos/",'\
+                '"http://v2.gecos.guadalinex.org/ubuntu/",'\
+                '"http://v2.gecos.guadalinex.org/mint/",'\
+                '"http://v3.gecos.guadalinex.org/gecos/",'\
+                '"http://v3.gecos.guadalinex.org/ubuntu/",'\
+                '"http://v3.gecos.guadalinex.org/mint/"],'\
+            '"mimetypes":["image/jpeg","image/png"]}'
+        request = self.get_dummy_request()
+        request.POST = { 'data': data }
+        context = LoggedFactory(request)
+        response = settings_save(context, request)
+        self.assertEqual(response.status_code, 200)
+        
+        # 4 - Check that the setting has changed
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = settings(context, request)
+        parsed = self._parse_settings(response['settings'])
+        
+        self.assertEqual(parsed['firstboot_api.version'],
+                         '0.2.0_test')
+        
+        # 4 - Check mime-types
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/mimetypes/'
+        request.GET = data
+        node_api = MimestypesResource(request)
+        response = node_api.collection_get()
+        
+        self.assertEqual(response['settings'][0]['value'],
+                         '["image/jpeg", "image/png"]')
+        
+        
+        # 5 -Change the mime-types
+        data = '{"firstboot_api___comments":"None",' \
+            '"firstboot_api___organization_name":"Junta de Andalucía",'\
+            '"firstboot_api___version":"0.2.0_test",'\
+            '"update_error_interval":24,'\
+            '"printers___urls":['\
+              '"http://www.openprinting.org/download/foomatic/'\
+                'foomatic-db-nonfree-current.tar.gz",'\
+               '"http://www.openprinting.org/download/foomatic/'\
+                'foomatic-db-current.tar.gz"],'\
+            '"repositories":['\
+                '"http://v2.gecos.guadalinex.org/gecos/",'\
+                '"http://v2.gecos.guadalinex.org/ubuntu/",'\
+                '"http://v2.gecos.guadalinex.org/mint/",'\
+                '"http://v3.gecos.guadalinex.org/gecos/",'\
+                '"http://v3.gecos.guadalinex.org/ubuntu/",'\
+                '"http://v3.gecos.guadalinex.org/mint/"],'\
+            '"mimetypes":["image/jpeg","image/png","text/html"]}'
+        request = self.get_dummy_request()
+        request.POST = { 'data': data }
+        context = LoggedFactory(request)
+        response = settings_save(context, request)
+        self.assertEqual(response.status_code, 200)
+        
+        
+        # 6 - Check mime-types
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/mimetypes/'
+        request.GET = data
+        node_api = MimestypesResource(request)
+        response = node_api.collection_get()
+        
+        self.assertEqual(response['settings'][0]['value'],
+                         '["image/jpeg", "image/png", "text/html"]')
+        
 
