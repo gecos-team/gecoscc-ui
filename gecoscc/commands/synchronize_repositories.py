@@ -18,10 +18,7 @@ import gzip
 from bs4 import BeautifulSoup
 from optparse import make_option
 
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
+from io import BytesIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import Package
@@ -95,14 +92,15 @@ class Command(BaseCommand):
                     print("Error downloading file: ", url)
                     continue
 
-                packages_list = gzip.GzipFile(fileobj=StringIO(r.content),
-                                              mode='rb')
+                packages_list = gzip.GzipFile(fileobj=BytesIO(r.content),
+                                              mode='rb').readlines()
                 package_model = Package()
                 package = {}
                 package['repository'] = repo
                 
                 try:
                     for line in packages_list:
+                        line = line.decode("utf-8") 
                         if line.strip() == '':
                             if 'name' in package:
                                 packages.append(package['name'])
@@ -148,7 +146,7 @@ class Command(BaseCommand):
                                     # Check with collander
                                     package_model.serialize(newPackage)
 
-                                    self.db.packages.insert(newPackage)
+                                    self.db.packages.insert_one(newPackage)
                                     num_packages += 1
                                     print("Imported package:", package['name'],
                                           " ", package['version'], " ",
@@ -201,7 +199,7 @@ class Command(BaseCommand):
                                                         ].append(newVersion)
                                                 
                                     # Update
-                                    self.db.packages.update(
+                                    self.db.packages.update_one(
                                         {'name':package['name']},
                                         {'$set': db_package})
                                     
@@ -251,8 +249,8 @@ class Command(BaseCommand):
 
         print('\n\nImported %d packages' % num_packages)
 
-        removed = self.db.packages.remove({'name': {'$nin': packages}})
-        print('Removed %d packages.\n\n\n' % removed['n'])
+        removed = self.db.packages.delete_many({'name': {'$nin': packages}})
+        print('Removed %d packages.\n\n\n' % removed.deleted_count)
 
 
     def get_packages_urls(self, url):
@@ -279,7 +277,7 @@ class Command(BaseCommand):
 
     def get_links(self, html):
         links = []
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, features="html5lib")
 
         for link in soup.findAll("a"):
             href = link.get("href")

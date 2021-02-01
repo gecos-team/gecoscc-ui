@@ -37,6 +37,8 @@ from gecoscc.api.storages import StorageResource
 from gecoscc.api.users import UserResource
 from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
+from gecoscc.commands.synchronize_repositories import Command as SyncRepCommand
+from gecoscc.commands.update_printers import Command as UpdatePrintersCommand
 from gecoscc.commands.recalc_nodes_policies import Command as \
     RecalcNodePoliciesCommand
 from gecoscc.db import get_db
@@ -61,6 +63,10 @@ from gecoscc.api.my_jobs_statistics import MyJobStatistics
 from gecoscc.api.nodes import NodesResource
 from gecoscc.api.public_computers import ComputerPublicResource
 from gecoscc.api.public_ous import OuPublicResource
+from gecoscc.api.register_chef_node import RegisterChefNode
+from gecoscc.api.packages import PackagesResource
+from gecoscc.api.policies import PoliciesResource
+from gecoscc.api.printer_models import PrinterModelsResource
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -618,6 +624,29 @@ class BaseGecosTestCase(unittest.TestCase):
         command.command()
         sys.argv = argv_bc
         print("Policies imported")
+
+    def sync_repositories(self):
+        '''
+        Useful method, synchronize repositories
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'synchronize_repositories', '-c']
+        command = SyncRepCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    def update_printers(self):
+        '''
+        Useful method, update printers data
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'update_printers']
+        command = UpdatePrintersCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
 
     def recalc_policies(self):
         '''
@@ -1765,6 +1794,103 @@ class BasicTests(BaseGecosTestCase):
         
         self.assertNoErrorJobs()
         
+
+    def test_21_packages_tests(self):
+        '''
+        Test 21: test the API to retrieve the list of packages
+        '''
+        if DISABLE_TESTS: return
+
+        # Load the packages from a small repository
+        self.sync_repositories()
+
+        # 1 - Get the package list
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/packages/'
+        request.GET = data
+        package_api = PackagesResource(request)
+        response = package_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+
+
+        # 2 - Get filtered package imformation
+        data = { 'package_name': 'firefox' }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/packages/'
+        request.GET = data
+        package_api = PackagesResource(request)
+        response = package_api.collection_get()
+        self.assertEqual(response['name'], 'firefox')
+
+    def test_22_policies_tests(self):
+        '''
+        Test 22: test the API to retrieve the list of policies
+        '''
+        if DISABLE_TESTS: return
+
+        # 1 - Get the policies list
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/policies/'
+        request.GET = data
+        policies_api = PoliciesResource(request)
+        response = policies_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+
+
+    def test_23_printer_models_tests(self):
+        '''
+        Test 23: test the API to retrieve the list of printer models
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Update the printers list
+        self.update_printers()
+
+        # 2 - Get the manufacturer list
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/printer_models/'
+        request.GET = data
+        policies_api = PrinterModelsResource(request)
+        response = policies_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+
+        # 3 - Get the models list for a manufacturer
+        data = { 'manufacturer': "Lexmark"}
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/printer_models/'
+        request.GET = data
+        policies_api = PrinterModelsResource(request)
+        response = policies_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+        self.assertEqual(response['printer_models'][0]['manufacturer'],
+                         "Lexmark")
+
+        # 4 - Filter a model
+        data = { 'manufacturer': "Lexmark", "imodel": 'B2860'}
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/printer_models/'
+        request.GET = data
+        policies_api = PrinterModelsResource(request)
+        response = policies_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+        self.assertTrue('B2860' in response['printer_models'][0]['model'])
+        self.assertEqual(response['printer_models'][0]['manufacturer'],
+                         "Lexmark")
 
 
 class AdvancedTests(BaseGecosTestCase):

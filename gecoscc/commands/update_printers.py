@@ -10,6 +10,7 @@
 #
 
 from future import standard_library
+from _io import BytesIO
 standard_library.install_aliases()
 import json
 import requests
@@ -18,11 +19,6 @@ import tarfile
 import re
 
 import xml.etree.ElementTree as ET
-
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
 
 from gecoscc.management import BaseCommand
 from gecoscc.models import PrinterModel
@@ -52,8 +48,12 @@ class Command(BaseCommand):
                 print('Error downloading file:', url)
                 continue
 
-            temp = tempfile.NamedTemporaryFile(suffix='.tar.gz')
-            temp.write(StringIO(res.content).read())
+            suffix = '.tar.gz'
+            if url.endswith('.tar.xz'):
+                suffix = '.tar.xz'
+
+            temp = tempfile.NamedTemporaryFile(suffix=suffix)
+            temp.write(BytesIO(res.content).read())
             temp.flush()
 
             tar = tarfile.open(temp.name)
@@ -70,7 +70,8 @@ class Command(BaseCommand):
 
                 if ext == 'xml' and (path[-2] == PRINTER or path[-2] == DRIVER):
                     xml_file = tar.extractfile(member)
-                    manufacturer, model = self.parse_model_xml(xml_file.read())
+                    xml_data = xml_file.read().decode('UTF-8')
+                    manufacturer, model = self.parse_model_xml(xml_data)
 
                 if model:
                     models.append(model)
@@ -79,7 +80,7 @@ class Command(BaseCommand):
                     db_printer = collection.find_one({'model': model})
 
                     if not db_printer:
-                        collection.insert(new_printer)
+                        collection.insert_one(new_printer)
                         num_imported += 1
                         print("Imported printer: %s" % model)
 
@@ -92,10 +93,10 @@ class Command(BaseCommand):
         for m in collection.distinct('manufacturer'):
             other = printer_model.serialize(
                 {'manufacturer': m, 'model': 'Other'})
-            collection.update({'manufacturer': m},{'$set': other})
+            collection.insert_one(other)
 
-        removed = collection.remove({'model': {'$nin': models}})
-        print('Removed %d printers.\n\n' % removed['n'])
+        removed = collection.delete_many({'model': {'$nin': models}})
+        print('Removed %d printers.\n\n' % removed.deleted_count)
 
     def parse_model_xml(self, xml):
         manufacturer = ''
