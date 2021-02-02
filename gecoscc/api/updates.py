@@ -55,17 +55,21 @@ class UpdateResource(ResourcePaginatedReadOnly):
     def get_oid_filter(self, oid):
         return {self.key: oid}
 
-    def tail_f(self, fileobj):
+    def tail_f(self, filename):
+        fileobj = open(filename)
         while True:
             where = fileobj.tell()
             line = fileobj.readline()
             if not line:
                 fileobj.seek(where)
-                lsof = subprocess.check_output(['lsof', fileobj.name])
+                lsof = subprocess.check_output(['lsof', fileobj.name]).decode(
+                    "utf-8")
                 if len(lsof.split("\n")) <= 3:
                     break
             else:
                 yield line
+                
+        fileobj.close()
 
     def simple_logparser(self, line):
         regex = '(.*(INFO|ERROR|DEBUG|WARNING).*)'
@@ -85,7 +89,7 @@ class UpdateResource(ResourcePaginatedReadOnly):
 
     def reader(self, filename, pyramid_thread_locals):
         pyramid.threadlocal.manager.push(pyramid_thread_locals)
-        for line in self.tail_f(open(filename)):
+        for line in self.tail_f(filename):
             socktail(self.simple_logparser(line))
 
     def get(self):

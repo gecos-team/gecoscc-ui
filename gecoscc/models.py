@@ -479,11 +479,11 @@ class UpdateSequenceValidator(UpdateBaseValidator):
                 err_msg = _(self.err_msg, mapping={'val': nextseq})
                 node.raise_invalid(err_msg)
             else:
-                if mongodb.updates.find({'name':self.filename}).count() > 0:
+                if mongodb.updates.count_documents({'name':self.filename}) > 0:
                     node.raise_invalid(_('This name already exists'))
                     
                 sequence = re.match(BASE_UPDATE_PATTERN, self.filename).group(1)
-                if mongodb.updates.find({'_id': sequence}).count() > 0:
+                if mongodb.updates.count_documents({'_id': sequence}) > 0:
                     node.raise_invalid(_('This sequence already exists'))
             
 
@@ -632,6 +632,8 @@ class UrlFile(object):
             raise colander.Invalid(node, '{0} is not a string'.format(
                 pstruct))
 
+    def cstruct_children(self, node, cstruct):
+        return []
 
 
 class UpdateModel(colander.MappingSchema):

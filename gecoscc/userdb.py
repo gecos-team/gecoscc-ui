@@ -137,6 +137,9 @@ class MongoUserDB:
             }
         })
 
+    def count_users(self, filters=None):
+        return self.collection.count_documents(filters)
+
     def list_users(self, filters=None):
         return self.collection.find(filters)
 

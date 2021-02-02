@@ -2618,7 +2618,7 @@ def script_runner(user, sequence, rollback=False):
     self.log("debug", "tasks.py ::: script_runner - logname = {0}".format(logname))
 
     bufsize =0 
-    logfile = open(logname,'a+', bufsize)
+    logfile = open(logname,'ab+', bufsize)
 
     env = os.environ.copy()
     env['CLI_REQUEST'] = 'True'
@@ -2633,7 +2633,7 @@ def script_runner(user, sequence, rollback=False):
          
         header = 'SCRIPT %s' % os.path.basename(script)
         header = header.center(150,'*')
-        logfile.write('\n\n ' + header + ' \n\n')
+        logfile.write(('\n\n ' + header + ' \n\n').encode('utf-8'))
         self.log("debug", "tasks.py ::: script_runner - script = {0}".format(script))
         os.chmod(script, 0o755)
 
@@ -2646,7 +2646,7 @@ def script_runner(user, sequence, rollback=False):
             break
 
     if not rollback:
-        self.db.updates.update({'_id': sequence},{'$set':
+        self.db.updates.update_one({'_id': sequence},{'$set':
             {'state': returncode, 'timestamp_end': int(time.time()) }})
 
     logfile.close()

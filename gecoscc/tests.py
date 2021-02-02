@@ -14,6 +14,9 @@ from six import string_types, text_type
 import json
 import unittest
 import sys
+import requests
+import io
+
 
 import mock
 
@@ -39,13 +42,15 @@ from gecoscc.api.register_computer import RegisterComputerResource
 from gecoscc.commands.import_policies import Command as ImportPoliciesCommand
 from gecoscc.commands.synchronize_repositories import Command as SyncRepCommand
 from gecoscc.commands.update_printers import Command as UpdatePrintersCommand
+from gecoscc.commands.mobile_broadband_providers import Command as \
+    UpdateISPCommand
 from gecoscc.commands.recalc_nodes_policies import Command as \
     RecalcNodePoliciesCommand
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
-from gecoscc.views.admins import admin_add
+from gecoscc.views.admins import admin_add, updates, updates_add
 from pkg_resources import parse_version
 from gecoscc.api.admin_users import AdminUserResource
 from gecoscc.api.archive_jobs import ArchiveJobsResource
@@ -63,10 +68,18 @@ from gecoscc.api.my_jobs_statistics import MyJobStatistics
 from gecoscc.api.nodes import NodesResource
 from gecoscc.api.public_computers import ComputerPublicResource
 from gecoscc.api.public_ous import OuPublicResource
-from gecoscc.api.register_chef_node import RegisterChefNode
 from gecoscc.api.packages import PackagesResource
 from gecoscc.api.policies import PoliciesResource
 from gecoscc.api.printer_models import PrinterModelsResource
+from gecoscc.api.serviceproviders import ServiceProvidersResource
+from gecoscc.api.session import session_get
+from gecoscc.api.updates import UpdateResource
+from gecoscc.version import __VERSION__ as GCCUI_VERSION
+
+from cgi import FieldStorage
+import pyramid
+import shutil
+import time
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -99,6 +112,29 @@ def get_cookbook_mock(api, cookbook_name):
         cbmock = json.loads(cook_book_json) 
     return cbmock
 
+class MockResponse(requests.models.Response):
+    def __init__(self, status_code, content):
+        super(MockResponse, self).__init__()
+        self.status_code = status_code
+        self.raw = io.BytesIO(content)
+
+def request_get_mock(url, params=None, **kwargs):
+    print("REQUEST MOCK: %s"%(url))
+    data = False
+
+    # Look for the URL in the cookbook
+    with open('gecoscc/test_resources/cookbook.json') as cook_book_file:
+        cook_book_json = cook_book_file.read().replace('%(chef_url)s', CHEF_URL)
+        cbmock = json.loads(cook_book_json)
+        for f in cbmock['files']:
+            if f['url'] == url:
+                print('Mock file: %s'%(f['name'])) 
+                with open('gecoscc/test_resources/%s'%(f['name'])) as mock_file:
+                    data = mock_file.read().encode('UTF-8')
+                    
+    resp = MockResponse(200, data)
+    
+    return resp
 
 def _check_if_user_belongs_to_admin_group_mock(request, organization, username):
     return True
@@ -145,6 +181,9 @@ class ChefApiMock(object):
             
         return data
     
+
+def get_chef_api_mock(settings, user):
+    return ChefApiMock()
     
 def _get_chef_api_mock(chef_url, username, chef_pem, chef_ssl_verify,
                        chef_version = '11.0.0'):
@@ -644,6 +683,26 @@ class BaseGecosTestCase(unittest.TestCase):
         sys.argv = ['pmanage', 'config-templates/test.ini',
                     'update_printers']
         command = UpdatePrintersCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    @mock.patch('gecoscc.commands.mobile_broadband_providers.get_cookbook')
+    @mock.patch('gecoscc.commands.mobile_broadband_providers._get_chef_api')
+    @mock.patch('gecoscc.commands.mobile_broadband_providers.requests.get')
+    def update_ISP(self, request_get_method, get_chef_api_method,
+                   get_cookbook_method):
+        '''
+        Useful method, update ISP data
+        '''
+        request_get_method.side_effect = request_get_mock
+        get_cookbook_method.side_effect = get_cookbook_mock
+        get_chef_api_method.side_effect = _get_chef_api_mock
+        
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'mobile_broadband_providers', '-a', 'test', '-k',
+                    'gecoscc/test_resources/media/users/test/chef_client.pem']
+        command = UpdateISPCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
 
@@ -1891,6 +1950,58 @@ class BasicTests(BaseGecosTestCase):
         self.assertTrue('B2860' in response['printer_models'][0]['model'])
         self.assertEqual(response['printer_models'][0]['manufacturer'],
                          "Lexmark")
+
+
+    def test_24_service_providers_tests(self):
+        '''
+        Test 24: test the API to retrieve the list of broadband
+        internet connection service providers.
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Update the ISP list
+        self.update_ISP()
+
+        # 2 - Get the service providers list
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/serviceproviders/'
+        request.GET = data
+        isp_api = ServiceProvidersResource(request)
+        response = isp_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+
+        # 3 - Get the list of countries
+        data = { 'country_list': 1 }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/serviceproviders/'
+        request.GET = data
+        isp_api = ServiceProvidersResource(request)
+        response = isp_api.collection_get()
+        self.assertTrue(response['total'] > 0)
+
+
+    def test_25_session_tests(self):
+        '''
+        Test 25: test the API to retrieve the information about
+        the user session
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Get information about the user session
+        data = { }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/session/'
+        request.GET = data
+        response = session_get(request)
+        self.assertEqual(response['username'], request.user['username'])
+
 
 
 class AdvancedTests(BaseGecosTestCase):
@@ -5449,3 +5560,115 @@ class SuperadminTests(BaseGecosTestCase):
                          '["image/jpeg", "image/png", "text/html"]')
         
 
+    @mock.patch('gecoscc.models.get_chef_api')    
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    @mock.patch('gecoscc.views.admins._')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.i18n.gettext')
+    def test_02_updates(self, gettext, gettext_forms, gettext_models,
+                        gettext_i18n, get_chef_api_method,
+                        get_chef_api_models_method):
+        '''
+        Test 2: Check that the updates view works
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext.side_effect = gettext_mock
+        gettext_forms.side_effect = gettext_mock
+        gettext_models.side_effect = gettext_mock
+        gettext_i18n.side_effect = gettext_mock
+        get_chef_api_method.side_effect = _get_chef_api_mock
+        get_chef_api_models_method.side_effect = get_chef_api_mock
+        
+        db = self.get_db()
+        db.updates.drop()
+        shutil.rmtree('/tmp/updates/')
+
+        # 1 - Create request access to updates view's
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = updates(context, request)
+
+        # Check the response (there is no updates yet)
+        self.assertEqual(response['latest'], '-001')
+
+
+        # 2 - Check the view to add a new update
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = updates_add(context, request)
+        self.assertTrue(response['update_form'].startswith('<form'))
+
+
+        # 3 - Create a new update
+        fp = open('gecoscc/test_resources/update-test.zip')
+        headers = {
+            'content-type': 'application/zip',
+            'content-disposition': 'form-data; name="upload"; '\
+                'filename="update-test.zip"'
+        }
+        environ = {
+            'REQUEST_METHOD': 'POST'
+        }
+        data = {
+            '_charset_': 'UTF-8',
+            '__formid__': 'deform',
+            '_submit': '_submit',
+            'remote_file': '',
+            '__start__': 'local_file:mapping',
+            'upload': FieldStorage(fp, headers, environ=environ),  
+            '__end__': 'local_file:mapping',
+        }
+        
+        request = self.get_dummy_request()
+        request.POST = data
+        pyramid.threadlocal.get_current_request().VERSION = GCCUI_VERSION
+
+        context = LoggedFactory(request)
+        response = updates_add(context, request)
+        fp.close()
+        self.assertTrue(isinstance(response, HTTPFound))
+         
+         
+        # 4 - Check that the update was created
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = updates(context, request)
+
+        # Check the response (there is no updates yet)
+        self.assertEqual(list(response['updates'])[0]['name'], 'update-test.zip')
+         
+
+        # 5 - Get the update information
+        data = {}
+        matchdict = { 'oid': 'test' }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/updates/'
+        request.GET = data
+        request.matchdict = matchdict
+        update_api = UpdateResource(request)
+        response = update_api.get()
+ 
+        self.assertEqual(response['_id'], 'test')
+        
+        # 6 - Launch the update tail thread
+        data = { 'tail': True }
+        matchdict = { 'oid': 'test' }
+        request = self.get_dummy_request()
+        request.method = 'GET'
+        request.errors = Errors()
+        request.path = '/api/updates/'
+        request.GET = data
+        request.matchdict = matchdict
+        update_api = UpdateResource(request)
+        response = update_api.get()
+ 
+        self.assertEqual(response, None)
+        
+        # Wait and see the console for errors
+        time.sleep(1)
+        
+        

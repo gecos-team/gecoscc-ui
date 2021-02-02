@@ -42,6 +42,7 @@ from pymongo.collation import Collation, CollationStrength
 
 import requests
 import urllib3
+import pymongo
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
@@ -2503,12 +2504,15 @@ def getNextUpdateSeq(db):
       db (object):    database connection
     '''
 
-    cursor = db.updates.find({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
-                             {'_id':1}).sort('_id',-1).limit(1)
+    count = db.updates.count_documents({'name':{
+        '$regex':SERIALIZED_UPDATE_PATTERN}})
 
-    if cursor.count() == 0:
+    if count == 0:
         nseq = '0000'
     else:
+        cursor = db.updates.find_one({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
+                                 {'_id':1}, sort=[('_id', pymongo.DESCENDING)])
+
         latest = int(cursor.next().get('_id'))
         nseq = "%04d" % (latest+1)
 

@@ -58,8 +58,9 @@ def admins(context, request):
     if q:
         filters = {'username': {'$regex': '.*%s.*' % q,
                                 '$options': '-i'}}
+    count = request.userdb.count_users(filters)
     admin_users = request.userdb.list_users(filters).sort('username')
-    page = create_pagination_mongo_collection(request, admin_users)
+    page = create_pagination_mongo_collection(request, admin_users, count)
     return {'admin_users': admin_users,
             'page': page}
 
@@ -93,6 +94,7 @@ def updates(context, request):
             sorting = ('timestamp', ordering)
 
     logger.debug("admins.py ::: updates - sorting = {}".format(sorting))
+    count = request.db.updates.count_documents(filters)
     updates = request.db.updates.find(filters).sort([sorting])
     
     # "format" filter in jinja2 only admits "%s", not "{0}"
@@ -100,7 +102,7 @@ def updates(context, request):
     controlfile = settings['updates.control'].replace('{0}','%s')
 
     latest =  "%04d" % (int(getNextUpdateSeq(request.db))-1)
-    page = create_pagination_mongo_collection(request, updates)
+    page = create_pagination_mongo_collection(request, updates, count)
     
     return {'updates': updates,
             'latest': latest,
@@ -317,6 +319,7 @@ def updates_add(context, request):
             form.save(params)
             return HTTPFound(location='')
         except ValidationFailure as e:
+            logger.error('admin_updates - form validation error = {}'.format(e))
             form = e
 
     if instance and not controls:
@@ -500,8 +503,9 @@ def admin_maintenance(_context, request):
     logger.info("admin_maintenance ::: active_users = %s" % active_users)
 
     filters = {'username':{'$in': active_users }}
+    count = request.userdb.count_users(filters)
     admin_users = request.userdb.list_users(filters).sort('username')
-    page = create_pagination_mongo_collection(request, admin_users)
+    page = create_pagination_mongo_collection(request, admin_users, count)
 
     return {
        'admin_users': admin_users,

@@ -329,7 +329,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
 
         try:
-            obj_id = self.collection.insert(obj)
+            obj_id = self.collection.insert_one(obj).inserted_id
         except DuplicateKeyError as e:
             raise HTTPBadRequest('The Object already exists: '
                                  '{0}'.format(e.message))

@@ -93,7 +93,9 @@ class BootStrapPage(paginate.Page):
 
 
 
-def create_pagination_mongo_collection(request, collection, items_per_page=10):
+def create_pagination_mongo_collection(request, cursor, cursor_size,
+    items_per_page=10):
+    
     def page_url(page):
         if page is None:
             return '#'
@@ -102,14 +104,16 @@ def create_pagination_mongo_collection(request, collection, items_per_page=10):
                 indexOf = request.query_string.index('&page')
             except ValueError:
                 indexOf = len(request.query_string)
-            return '%s?%s&page=%s' % (request.path, request.query_string[:indexOf], page)
+            return '%s?%s&page=%s' % (request.path,
+                request.query_string[:indexOf], page)
         else:
             return '%s?page=%s' % (request.path, page)
     
     current_page = int(request.GET.get('page', 1))
-    page = BootStrapPage(range(collection.count()),
+    page = BootStrapPage(range(cursor_size),
                          current_page,
                          url_maker=page_url,
                          items_per_page=items_per_page)
-    collection[(current_page - 1) * items_per_page:current_page * items_per_page]
+    # Limits the records to the page
+    cursor[(current_page - 1) * items_per_page:current_page * items_per_page]
     return page
