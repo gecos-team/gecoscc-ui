@@ -52,7 +52,8 @@ from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
 from gecoscc.views.admins import admin_add, updates, updates_add, updates_log,\
     updates_download, updates_repeat, updates_tail, admins, admin_edit,\
-    admins_ou_manage, admins_set_variables, admin_delete
+    admins_ou_manage, admins_set_variables, admin_delete, admin_maintenance,\
+    statistics
 from pkg_resources import parse_version
 from gecoscc.api.admin_users import AdminUserResource
 from gecoscc.api.archive_jobs import ArchiveJobsResource
@@ -6002,3 +6003,119 @@ class SuperadminTests(BaseGecosTestCase):
         response = admins(context, request)
         admin_users = list(response['admin_users'])
         self.assertEqual(len(admin_users), 0)
+
+
+
+    @mock.patch('gecoscc.models.get_chef_api')    
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    @mock.patch('gecoscc.views.admins._')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.i18n.gettext')
+    def test_04_maintenance_mode(self, gettext, gettext_forms, gettext_models,
+                        gettext_i18n, get_chef_api_method,
+                        get_chef_api_models_method):
+        '''
+        Test 4: Enable and distable the maintenance mode
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext.side_effect = gettext_mock
+        gettext_forms.side_effect = gettext_mock
+        gettext_models.side_effect = gettext_mock
+        gettext_i18n.side_effect = gettext_mock
+        get_chef_api_method.side_effect = _get_chef_api_mock
+        get_chef_api_models_method.side_effect = get_chef_api_mock
+        
+        db = self.get_db()
+
+        # 1 - Create request check the maintenance mode
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+
+        # Check the response
+        self.assertEqual(response['maintenance'], False)
+
+        
+        # 2 - Enable the maintenance mode
+        data = {
+            'mode': 'true',
+        }
+        
+        request = self.get_dummy_request()
+        request.GET = data
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+
+        # Check if is enabled
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+        self.assertEqual(response['maintenance'], True)
+
+        # Change the message        
+        request = self.get_dummy_request()
+        request.POST = {
+            '_submit': '_submit',
+            'maintenance_message': 'Because is a test!'
+        }
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+        
+        # Check if is enabled
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+        self.assertEqual(response['maintenance'], True)
+
+
+        # 2 - Enable the maintenance mode
+        data = {
+            'mode': 'false'
+        }
+        
+        request = self.get_dummy_request()
+        request.GET = data
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+        
+        # Check if is disabled
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admin_maintenance(context, request)
+        self.assertEqual(response['maintenance'], False)
+
+
+
+    @mock.patch('gecoscc.models.get_chef_api')    
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    @mock.patch('gecoscc.views.admins._')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.i18n.gettext')
+    def test_05_statistics(self, gettext, gettext_forms, gettext_models,
+                        gettext_i18n, get_chef_api_method,
+                        get_chef_api_models_method):
+        '''
+        Test 5: Get system statistics
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext.side_effect = gettext_mock
+        gettext_forms.side_effect = gettext_mock
+        gettext_models.side_effect = gettext_mock
+        gettext_i18n.side_effect = gettext_mock
+        get_chef_api_method.side_effect = _get_chef_api_mock
+        get_chef_api_models_method.side_effect = get_chef_api_mock
+        
+        # 1 - Create request check the maintenance mode
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = statistics(context, request)
+
+        object_counters = list(response['object_counters'])
+
+        # Check the response
+        self.assertEqual(object_counters[0]['_id'], 'user')
+        self.assertEqual(object_counters[0]['count'], 1)

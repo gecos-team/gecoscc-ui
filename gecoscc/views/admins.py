@@ -492,14 +492,15 @@ def admin_maintenance(_context, request):
     obj = request.db.settings.find_one({'key':'maintenance_mode'})
     if obj is None:
         obj = {'key':'maintenance_mode', 'value': mode == 'true', 'type':'string'}
-        request.db.settings.insert(obj)
+        request.db.settings.insert_one(obj)
 
     else:
         if mode is not None:
-            request.db.settings.update({'key':'maintenance_mode'},{'$set':{ 'value': mode == 'true' }})
+            request.db.settings.update_one(
+                {'key':'maintenance_mode'},{'$set':{ 'value': mode == 'true' }})
             logger.info("admin_maintenance ::: obj = %s" % (obj))
             if mode == 'false':
-                request.db.settings.remove({'key':'maintenance_message'})
+                request.db.settings.delete_one({'key':'maintenance_message'})
 
     # Active users
     sessions = [pickle.loads(session['value']) for session in request.db.backer_cache.find({},{'_id':0, 'value':1})]
@@ -572,10 +573,10 @@ def statistics(context, request):
 
     # Policies
     for pol in request.db.policies.find().sort("name"):
-        c = request.db.nodes.find({
+        c = request.db.nodes.count_documents({
             "$or": [{"path": get_filter_nodes_belonging_ou(ou_id)}, {"_id":ObjectId(ou_id)}],
             "policies." + str(pol['_id']): {'$exists': True}
-        }).count()
+        })
         try:
             policy_counters.append([pol[policyname],c])
         except KeyError:

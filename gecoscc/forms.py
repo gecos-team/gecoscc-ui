@@ -321,9 +321,10 @@ class MaintenanceForm(GecosForm):
             msg = self.request.db.settings.find_one({'key':'maintenance_message'})
             if msg is None:
                 msg = {'key':'maintenance_message', 'value': compose, 'type':'string'}
-                self.request.db.settings.insert(msg)
+                self.request.db.settings.insert_one(msg)
             else:
-                self.request.db.settings.update({'key':'maintenance_message'},{'$set':{ 'value': compose}})
+                self.request.db.settings.update_one(
+                    {'key':'maintenance_message'},{'$set':{ 'value': compose}})
 
             self.request.session['maintenance_message'] = compose
             self.created_msg(_('Maintenance settings saved successfully.'))
