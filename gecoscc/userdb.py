@@ -143,8 +143,8 @@ class MongoUserDB:
     def list_users(self, filters=None):
         return self.collection.find(filters)
 
-    def delete_users(self, filters=None):
-        return self.collection.remove(filters)
+    def delete_user(self, filters=None):
+        return self.collection.delete_one(filters)
 
 
 def get_userdb(request):

@@ -50,7 +50,9 @@ from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
 from gecoscc.views.portal import home
-from gecoscc.views.admins import admin_add, updates, updates_add
+from gecoscc.views.admins import admin_add, updates, updates_add, updates_log,\
+    updates_download, updates_repeat, updates_tail, admins, admin_edit,\
+    admins_ou_manage, admins_set_variables, admin_delete
 from pkg_resources import parse_version
 from gecoscc.api.admin_users import AdminUserResource
 from gecoscc.api.archive_jobs import ArchiveJobsResource
@@ -80,6 +82,8 @@ from cgi import FieldStorage
 import pyramid
 import shutil
 import time
+import os
+from errno import ENOBUFS
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -111,6 +115,46 @@ def get_cookbook_mock(api, cookbook_name):
         cook_book_json = cook_book_file.read().replace('%(chef_url)s', CHEF_URL)
         cbmock = json.loads(cook_book_json) 
     return cbmock
+
+class MockDeformData(object):
+    
+    def __init__(self, data):
+        self.data = data
+        
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            # Get item by number
+            n = 0
+            for elm in self.data.split('\n'):
+                if elm.strip() == '':
+                    continue
+                
+                _, value = elm.split('::')
+                if n == item:
+                    return value
+                n = n + 1
+            
+        else: 
+            # Get item by key
+            for elm in self.data.split('\n'):
+                if elm.strip() == '':
+                    continue
+                
+                key, value = elm.split('::')
+                if key == item:
+                    return value
+        raise KeyError('No value for: %s'%(item))       
+        
+    def items(self):
+        r = []
+        
+        for elm in self.data.split('\n'):
+            if elm.strip() == '':
+                continue
+            key, value = elm.split('::')
+            r.append((key, value))
+        
+        return r
 
 class MockResponse(requests.models.Response):
     def __init__(self, status_code, content):
@@ -178,9 +222,44 @@ class ChefApiMock(object):
                         '%s(node_name)s', CHEF_NODE_ID)
                 data = json.loads(client_json)
 
+        if item == '/organizations/default/groups/admins':
+            data = {
+              "actors": [
+                "pivotal",
+                "test"
+              ],
+              "users": [
+                "pivotal",
+                "test"
+              ],
+              "clients": [
+            
+              ],
+              "groups": [
+                "000000000000ad94b5ddde157c070f0c"
+              ],
+              "orgname": "inbetweens",
+              "name": "admins",
+              "groupname": "admins"
+            }
+
+        if item == '/organizations/default/association_requests':
+            data = [{ 'username': 'newuser' ,'id': 'default' }]
             
         return data
     
+    def api_request(self, method, path, headers={}, data=None):
+        print("%s: %s"%(method, path))
+        resp = {}
+        if path.endswith('/association_requests'):
+            resp = { 'username': 'newuser'}
+        
+        if path.endswith('/clients'):
+            # Client creation
+            resp = { 'private_key': 'TEST private key!',
+                     'public_key': 'TEST public key'}
+            
+        return resp
 
 def get_chef_api_mock(settings, user):
     return ChefApiMock()
@@ -5583,7 +5662,8 @@ class SuperadminTests(BaseGecosTestCase):
         
         db = self.get_db()
         db.updates.drop()
-        shutil.rmtree('/tmp/updates/')
+        if os.path.isdir('/tmp/updates/'):
+            shutil.rmtree('/tmp/updates/')
 
         # 1 - Create request access to updates view's
         request = self.get_dummy_request()
@@ -5671,4 +5751,254 @@ class SuperadminTests(BaseGecosTestCase):
         # Wait and see the console for errors
         time.sleep(1)
         
+        # 7 - Check the update log
+        request = self.get_dummy_request()
+        matchdict = { 'sequence': 'test', 'rollback': '' }
+        request.path = '/updates/log/test/'
+        request.matchdict = matchdict
+        context = LoggedFactory(request)
+        response = updates_log(context, request)
+
+        # Check the response
+        self.assertTrue('This is just a test' in response.body.decode('utf-8'))
         
+        
+        # 8 - Download the update file
+        request = self.get_dummy_request()
+        matchdict = { 'id': 'test' }
+        request.path = '/updates/download/test/'
+        request.matchdict = matchdict
+        context = LoggedFactory(request)
+        response = updates_download(context, request)
+
+        # Check that the response is a ZIP file
+        self.assertEqual(response.body[0:2].decode('UTF-8'), 'PK')
+        
+        # 9- Repeat the update
+        request = self.get_dummy_request()
+        matchdict = { 'sequence': 'test' }
+        request.path = '/updates/repeat/test/'
+        request.matchdict = matchdict
+        context = LoggedFactory(request)
+        response = updates_repeat(context, request)
+
+        # Check the response
+        self.assertTrue(isinstance(response, HTTPFound))
+
+        
+        # 10 - Launch the operation to get the rollback log while being
+        # generated
+        matchdict = { 'sequence': 'test', 'rollback': 'rollback' }
+        request.path = '/updates/tail/test/'
+        request.matchdict = matchdict
+        context = LoggedFactory(request)
+        response = updates_tail(context, request)
+
+        # Check the response
+        self.assertEqual(response['rollback'], 'rollback')
+        
+
+
+    @mock.patch('gecoscc.models.get_chef_api')    
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    @mock.patch('gecoscc.views.admins._')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.i18n.gettext')
+    def test_03_admins(self, gettext, gettext_forms, gettext_models,
+                        gettext_i18n, get_chef_api_method,
+                        get_chef_api_models_method):
+        '''
+        Test 3: Check that the administrator users views works
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext.side_effect = gettext_mock
+        gettext_forms.side_effect = gettext_mock
+        gettext_models.side_effect = gettext_mock
+        gettext_i18n.side_effect = gettext_mock
+        get_chef_api_method.side_effect = _get_chef_api_mock
+        get_chef_api_models_method.side_effect = get_chef_api_mock
+        
+        db = self.get_db()
+
+        # 1 - Create request access to updates view's
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admins(context, request)
+
+        # Check the response
+        admin_users = list(response['admin_users'])
+        self.assertEqual(len(admin_users), 1)
+        self.assertEqual(admin_users[0]['username'], 'test')
+
+        
+        # 2 - Check the view to add a new user
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = admin_add(context, request)
+        self.assertTrue(response['admin_user_form'].startswith('<form'))
+
+        # 3 - Create a new user
+        data = {
+            '_charset_': 'UTF-8',
+            '__formid__': 'deform',
+            '_submit': '_submit',
+            'email': 'new@user.com',
+            'password': 'newuser',
+            'repeat_password': 'newuser',
+            'first_name': 'New',
+            'last_name': 'User',
+            'username': 'newuser'
+        }
+        
+        request = self.get_dummy_request()
+        request.POST = data
+        context = LoggedFactory(request)
+        response = admin_add(context, request)
+        self.assertTrue(isinstance(response, HTTPFound))
+
+        # Check the user list
+        request = self.get_dummy_request()
+        request.GET = { 'q': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins(context, request)
+        admin_users = list(response['admin_users'])
+        self.assertEqual(len(admin_users), 1)
+        self.assertEqual(admin_users[0]['username'], 'newuser')
+        
+
+        # 4 - Check the view to edit a new user
+        request = self.get_dummy_request()
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admin_edit(context, request)
+        self.assertTrue(response['admin_user_form'].startswith('<form'))
+
+        # 5 - Edit user
+        data = {
+            '_charset_': 'UTF-8',
+            '__formid__': 'deform',
+            '_submit': '_submit',
+            'email': 'new@user.com',
+            'password': 'newuser',
+            'repeat_password': 'newuser',
+            'first_name': 'New New',
+            'last_name': 'User'
+        }
+        
+        request = self.get_dummy_request()
+        request.POST = data
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admin_edit(context, request)
+        
+        self.assertTrue(response['admin_user_form'].startswith('<form'))
+
+        # Check the user list
+        request = self.get_dummy_request()
+        request.GET = { 'q': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins(context, request)
+        admin_users = list(response['admin_users'])
+        self.assertEqual(len(admin_users), 1)
+        self.assertEqual(admin_users[0]['first_name'], 'New New')
+
+        
+
+        # 6 - Check the view to change the OUs that the administrator
+        # user can manage
+        request = self.get_dummy_request()
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins_ou_manage(context, request)
+        self.assertTrue(response['ou_manage_form'].startswith('<form'))
+
+        # 7 - Edit user OUs
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        data = ('_charset_::UTF-8\n'
+            + '__formid__::deform\n'
+            + '_submit::_submit\n'
+            + '__start__::perms:sequence\n'
+            + '__start__::permissions:mapping\n'
+            + 'ou_selected::' + str(domain_1['_id']) +'\n'
+            + '__start__::permission:sequence\n'
+            + 'checkbox::MANAGE\n'
+            + '__end__::permission:sequence\n'
+            + '__end__::permissions:mapping\n'
+            + '__end__::perms:sequence\n'
+        )
+        
+        request = self.get_dummy_request()
+        request.POST = MockDeformData(data)
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins_ou_manage(context, request)
+        
+        self.assertTrue(isinstance(response, HTTPFound))
+
+        newuser = db.adminusers.find_one({'username': 'newuser'})
+        self.assertEqual(newuser['ou_managed'], [str(domain_1['_id'])])
+
+
+        # 8 - Check the view to change the administrator user settings
+        request = self.get_dummy_request()
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins_set_variables(context, request)
+        self.assertTrue(response['variables_form'].startswith('<form'))
+
+
+        # 9 - Edit user settings
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        data = ('_charset_::UTF-8\n'
+            + '__formid__::deform\n'
+            + '_submit::_submit\n'
+            + 'nav_tree_pagesize::10\n'
+            + 'policies_pagesize::8\n'
+            + 'jobs_pagesize::30\n'
+            + 'group_nodes_pagesize::10\n'
+            + 'uri_ntp::hora.roa.es\n'
+            + 'auth_type::LDAP\n'
+            + '__start__::auth_ldap:mapping\n'
+            + 'uri::URL_LDAP\n'
+            + 'base::OU_BASE_USER\n'
+            + 'basegroup::OU_BASE_GROUP\n'
+            + 'binddn::USER_WITH_BIND_PRIVILEGES\n'
+            + 'bindpwd::PASSWORD_USER_BIND\n'
+            + '__end__::auth_ldap:mapping\n'
+            + '__start__::auth_ad:mapping\n'
+            + 'fqdn::\n'
+            + 'workgroup::\n'
+            + '__end__::auth_ad:mapping\n'
+            + '__start__::gem_repos:sequence\n'
+            + '__end__::gem_repos:sequence\n'
+        )
+        
+        request = self.get_dummy_request()
+        request.POST = MockDeformData(data)
+        request.matchdict = { 'username': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins_set_variables(context, request)
+        
+        self.assertTrue(isinstance(response, HTTPFound))
+
+        newuser = db.adminusers.find_one({'username': 'newuser'})
+        self.assertEqual(newuser['variables']['uri_ntp'], 'hora.roa.es')
+
+        # 10 - Borrado del administrador
+        request = self.get_dummy_request()
+        request.GET = { 'username': 'newuser' }
+        request.method = 'DELETE'
+        request.session = {'auth.userid': 'test'}
+        context = LoggedFactory(request)
+        response = admin_delete(context, request)
+        self.assertEqual(response['ok'], 'ok')
+        
+        # Check the user list
+        request = self.get_dummy_request()
+        request.GET = { 'q': 'newuser' }
+        context = LoggedFactory(request)
+        response = admins(context, request)
+        admin_users = list(response['admin_users'])
+        self.assertEqual(len(admin_users), 0)

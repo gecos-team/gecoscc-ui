@@ -178,7 +178,7 @@ class PermissionsForm(GecosForm):
         logger.debug("PermissionsForm ::: save - ou_remote = {}".format(ou_remote))
         logger.debug("PermissionsForm ::: save - ou_readonly = {}".format(ou_readonly))
 
-        self.collection.update(
+        self.collection.update_one(
             {'username': self.username},
             {'$set': {
                 'ou_managed': list(ou_managed),
@@ -226,7 +226,8 @@ class AdminUserVariablesForm(GecosForm):
                 filein.close()
                 fileout.close()
         del variables['auth_ad_spec']
-        self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
+        self.collection.update_one({'username': self.username}, {'$set': {
+            'variables': variables}})
         self.created_msg(_('Variables updated successfully'))
 
 

@@ -53,7 +53,7 @@ from bson import ObjectId
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='is_superuser')
 def admins(context, request):
-    filters = None
+    filters = {}
     q = request.GET.get('q', None)
     if q:
         filters = {'username': {'$regex': '.*%s.*' % q,
@@ -131,7 +131,7 @@ def updates_log(_context, request):
     headers['Content-Type'] = 'application/download'
     headers['Content-Disposition'] = "attachment; filename=\"" + \
         os.path.basename(logfile) + "\"; filename*=UTF-8''"+ \
-        str(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+        str(sequence + "_" + os.path.basename(logfile))
 
     return response
 
@@ -276,6 +276,8 @@ def admins_set_variables(context, request):
             form.save(variables)
             return HTTPFound(location=get_url_redirect(request))
         except ValidationFailure as e:
+            logger.error('admins_set_variables - form validation error = '
+                         + '{}'.format(e.error))
             form = e
     if instance and not data:
         form_render = form.render(instance)
@@ -297,7 +299,7 @@ def admin_delete(context, request):
     success_remove_chef = delete_chef_admin_user(api, username)
     if not success_remove_chef:
         messages.created_msg(request, _('User deleted unsuccessfully from chef'), 'danger')
-    request.userdb.delete_users({'username': username})
+    request.userdb.delete_user({'username': username})
     messages.created_msg(request, _('User deleted successfully'), 'success')
     return {'ok': 'ok'}
 
@@ -364,12 +366,15 @@ def updates_repeat(_context, request):
 
     try:
         # Calculate the next repetition number for this update
-        cursor = request.db.updates.find(
-            {'name': to_repeat['name'], 'repetition': {'$exists': True}},
-            {'_id':1, 'repetition': 1}).sort('repetition',-1).limit(1)
+        count = request.db.updates.count_documents(
+            {'name': to_repeat['name'], 'repetition': {'$exists': True}})
     
         nrep = 0
-        if cursor.count() > 0:
+        if count > 0:
+            cursor = request.db.updates.find(
+                {'name': to_repeat['name'], 'repetition': {'$exists': True}},
+                {'_id':1, 'repetition': 1}).sort('repetition',-1).limit(1)
+            
             latest = int(cursor.next().get('repetition'))
             nrep = (latest+1)
             
@@ -406,7 +411,7 @@ def updates_repeat(_context, request):
                 zip_ref.close()    
         
         # Insert update register
-        request.db.updates.insert({
+        request.db.updates.insert_one({
             '_id': rsequence,
             'name': to_repeat['name'],
             'path': updatesdir,
@@ -440,7 +445,9 @@ def updates_tail(_context, request):
 
     if rollback == 'rollback' and request.db.updates.find_one({'_id': sequence}).get('rollback', 0) == 0:
         # Update mongo document
-        request.db.updates.update({'_id':sequence},{'$set':{'rollback':1, 'timestamp_rollback': int(time.time()), 'rolluser': request.user['username']}})
+        request.db.updates.update_one({'_id':sequence},{'$set':{
+            'rollback':1, 'timestamp_rollback': int(time.time()),
+            'rolluser': request.user['username']}})
 
         # Celery task
         script_runner.delay(request.user, sequence, rollback=True)
