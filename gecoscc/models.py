@@ -214,9 +214,6 @@ class StringList(colander.SequenceSchema):
 
 class Group(Node):
 
-    # Group object members
-    # groupmembers = ObjectIdList(missing=[], default=[])
-
     # Node objects
     type = colander.SchemaNode(colander.String(),
                                default='group',

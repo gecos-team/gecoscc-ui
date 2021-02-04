@@ -56,22 +56,6 @@ class GroupResource(TreeLeafResourcePaginated):
             }
         })
 
-        # Remove group link from other groups
-        self.collection.update_many({
-            'type': 'group',
-            'groupmembers': obj[self.key]
-        }, {
-            '$pull': {
-                'groupmembers': obj[self.key]
-            }
-        })
-
-        # Remove children groups
-        for group_id in obj.get('groupmembers', []):
-            group = self.collection.find_one({self.key: group_id})
-            self.remove_relations(group)
-            self.collection.remove({self.key: group_id})
-
     def modify_group_relations(self, obj, old_obj):
         if old_obj is None:
             return
