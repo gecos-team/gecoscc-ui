@@ -61,7 +61,7 @@ class Command(BaseCommand):
                          'lock': False,
                          'policies': {},
                          'source': SOURCE_DEFAULT})
-            ou_id = self.db.nodes.insert(data)
+            ou_id = self.db.nodes.insert_one(data).inserted_id
             print("OU with name 'ou_0' created in mongo")
             ou = self.db.nodes.find_one({'_id': ou_id})
         return ou

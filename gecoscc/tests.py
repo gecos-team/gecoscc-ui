@@ -46,6 +46,12 @@ from gecoscc.commands.mobile_broadband_providers import Command as \
     UpdateISPCommand
 from gecoscc.commands.recalc_nodes_policies import Command as \
     RecalcNodePoliciesCommand
+from gecoscc.commands.change_password import Command as \
+    ChangePasswordCommand
+from gecoscc.commands.create_adminuser import Command as CreateAdminUserCommand
+from gecoscc.commands.debug_mode_expiration import Command as \
+    DebugModeExpirationCommand
+    
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
@@ -749,7 +755,7 @@ class BaseGecosTestCase(unittest.TestCase):
         argv_bc = sys.argv
         sys.argv = ['pmanage', 'config-templates/test.ini', 'import_policies',
                     '-a', 'test', '-k', 'gecoscc/test_resources/media/users/'
-                    'test/chef_client.pem']
+                    'test/chef_client.pem', '-d']
         command = ImportPoliciesCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
@@ -794,6 +800,40 @@ class BaseGecosTestCase(unittest.TestCase):
                     'mobile_broadband_providers', '-a', 'test', '-k',
                     'gecoscc/test_resources/media/users/test/chef_client.pem']
         command = UpdateISPCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    def change_password_command(self):
+        '''
+        Useful method, change password.
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'change_password', '--username', 'test', '-n']
+        command = ChangePasswordCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+
+    def create_admin_user(self, username, mail):
+        '''
+        Useful method, create an administrator user.
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'create_adminuser', '--username', username, '--email',
+                    mail, '-n']
+        command = CreateAdminUserCommand('config-templates/test.ini')
+        command.command()
+        sys.argv = argv_bc
+        
+    def debug_mode_expiration_command(self, username):
+        '''
+        Useful method, debug mode expiration command.
+        '''
+        argv_bc = sys.argv
+        sys.argv = ['pmanage', 'config-templates/test.ini',
+                    'debug_mode_expiration', '--administrator', username]
+        command = DebugModeExpirationCommand('config-templates/test.ini')
         command.command()
         sys.argv = argv_bc
 
@@ -2125,6 +2165,128 @@ class BasicTests(BaseGecosTestCase):
         response = session_get(request)
         self.assertEqual(response['username'], request.user['username'])
 
+
+    def test_26_change_password_command(self):
+        '''
+        Test 26: test the command to change password
+        '''
+        if DISABLE_TESTS: return
+
+        # Get previous password
+        db = self.get_db()
+        before = db.adminusers.find_one({'username': 'test'})
+        
+        # 1 - Change the password
+        self.change_password_command()
+
+        after = db.adminusers.find_one({'username': 'test'})
+        
+        self.assertNotEqual(before['password'], after['password'])
+
+
+
+    def test_27_create_admin_user_command(self):
+        '''
+        Test 27: create admin user command test
+        '''
+        if DISABLE_TESTS: return
+
+        # Check that the user doesn't exists
+        db = self.get_db()
+        before = db.adminusers.count_documents({'username': 'myuser'})
+        self.assertEqual(before, 0)
+        
+        # 1 - Create the admin user
+        self.create_admin_user('myuser', 'myuser@example.com')
+
+        after = db.adminusers.count_documents({'username': 'myuser'})
+        
+        self.assertEqual(after, 1)
+
+
+
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_28_debug_mode_expiration_command(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks,
+        NodeClass, ChefNodeClass, isinstance_method):
+        '''
+        Test 28: debug mode expiration command test
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method)
+        self.cleanErrorJobs()
+
+        # 1 - Register workstation
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        computer = db.nodes.find_one({'name': 'testing'})
+        
+        policy = db.policies.find_one({'slug': 'debug_mode_res'})
+        
+        # 2 - Add policy in Computer
+        computer['policies'] = { str(policy['_id']): {
+            'enable_debug': True,
+            'expire_datetime': '2012-01-19 17:21:00'
+        }}
+        node_policy = self.add_and_get_policy(node=computer,
+            chef_node_id=chef_node_id, api_class=ComputerResource,
+            policy_path=policy['path'])
+        #print(node_policy.to_dict())
+
+        # 3 - Verification if this policy is applied in chef node
+        self.assertEqual(node_policy.to_dict()['enable_debug'], True)
+
+        # 4 - Run the command
+        self.debug_mode_expiration_command('test')
+
+        # 5 - Verify that after the expiration period the debug mode is set to
+        # false
+        computer = db.nodes.find_one({'name': 'testing'})
+        self.assertEqual(computer['policies'][str(policy['_id'])][
+            'enable_debug'], False)
+
+
+
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')
+    def test_29_delete_old_policies(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks,
+        NodeClass, ChefNodeClass, isinstance_method):
+        '''
+        Test 29: delete policies that doesn't exists in the cookbook
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method)
+        self.cleanErrorJobs()
+
+        # 1 - Create a policy
+        db = self.get_db()
+        db.policies.insert_one({"slug": "mypolicy"})
+        
+        # 2 - import policies
+        self.import_policies()
+        
+        # 3 - verify that the policy was deleted
+        c = db.policies.count_documents({"slug": "mypolicy"})
+        self.assertEqual(c, 0)
 
 
 class AdvancedTests(BaseGecosTestCase):

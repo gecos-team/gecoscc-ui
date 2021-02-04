@@ -164,7 +164,7 @@ class Command(BaseCommand):
             self.db.policies.insert_one(new_policy)
             print("Imported policy: %s" % policy_slug)
         else:
-            self.db.policies.update_one({'slug': policy_slug}, new_policy)
+            self.db.policies.replace_one({'slug': policy_slug}, new_policy)
             print("Updated policy: %s" % policy_slug)
 
     def command(self):
@@ -311,13 +311,14 @@ class Command(BaseCommand):
                 found = True
                 if self.options.delete:
                     # Delete deprecated policy
-                    self.db.policies.remove({'slug': policy['slug']})
+                    self.db.policies.delete_one({'slug': policy['slug']})
                     print("Policy '%s' deleted!" % (policy['slug']))
                     if policy['slug'] == 'package_profile_res':
                         # Also delete software_profiles collection
                         print("Drop software profiles collection!")
                         self.db.software_profiles.drop()
-                        self.db.settings.remove({'key' : 'software_profiles'})
+                        self.db.settings.delete_one(
+                            {'key' : 'software_profiles'})
                         
         if not found:
             print("There are no deprecated policies")

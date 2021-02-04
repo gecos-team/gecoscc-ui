@@ -88,6 +88,18 @@
         "caching_server": false
     }, 
     "gecos_ws_mgmt": {
+        "single_node": {
+            "debug_mode_res": {
+                "enable_debug": false, 
+                "expire_datetime": "", 
+                "support_os": [
+                    "GECOS V2", 
+                    "Gecos V2 Lite"
+                ], 
+                "job_ids": [], 
+                "updated_by": {}
+            }
+        }, 
         "printers_mgmt": {
             "printers_res": {
                 "printers_list": [], 

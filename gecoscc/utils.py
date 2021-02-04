@@ -2802,7 +2802,7 @@ def auditlog(request, action=None):
             agent = request.user_agent
             logger.debug("utils.py ::: auditlog - agent = {}".format(agent))
 
-            request.db.auditlog.insert({
+            request.db.auditlog.insert_one({
                 'username': username, 
                 'action': action,
                 'ipaddr': ipaddr, 

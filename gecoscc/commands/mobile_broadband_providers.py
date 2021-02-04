@@ -80,7 +80,7 @@ class Command(BaseCommand):
                     try:
                         new_sp=sp_model.serialize({'name': country.get('code').lower(), 'provider': providername.text})
                         print(new_sp)
-                        collection.insert(new_sp)
+                        collection.insert_one(new_sp)
                     except:
                         print("ERROR:" + providername.text)
                   

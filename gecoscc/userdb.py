@@ -90,7 +90,7 @@ class MongoUserDB:
     def change_password(self, username, password):
         user = self.get_user(username)
         password_hash = create_password(password)
-        self.collection.update({
+        self.collection.update_one({
             '_id': user['_id']
         }, {
             '$set': {
