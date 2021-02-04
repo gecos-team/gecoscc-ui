@@ -85,6 +85,17 @@ import shutil
 import time
 import os
 from errno import ENOBUFS
+from gecoscc.views import computer_logs
+from gecoscc.views.reports import reports
+from gecoscc.views.report_audit import report_audit_html
+from gecoscc.views.report_computer import report_computer_html
+from gecoscc.views.report_no_computer_users import report_no_computer_users_html
+from gecoscc.views.report_no_user_computers import report_no_user_computers_html
+from gecoscc.views.report_permission import report_permission_html
+from gecoscc.views.report_printers import report_printers_html
+from gecoscc.views.report_status import report_status_html
+from gecoscc.views.report_user import report_user_html
+from gevent.libev.corecext import NONE
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -1567,6 +1578,38 @@ class BasicTests(BaseGecosTestCase):
         self.assertEqual('test.log', computer['logs']['files'][0]['filename'])
         
         self.assertNoErrorJobs()
+        
+        # 7 - Get the log file
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        request.matchdict = {
+            'node_id': str(computer['_id']),
+            'filename': 'test.log'
+        }
+        response = computer_logs.get_log_file(context, request)
+        self.assertEqual(response['data']['content'], 'Hello world!')
+        
+        
+        # 8 - Download the log file
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        request.matchdict = {
+            'node_id': str(computer['_id']),
+            'filename': 'test.log'
+        }
+        response = computer_logs.download_log_file(context, request)
+        self.assertEqual(response['data']['content'], 'Hello world!')
+        
+        # 9 - Delete the log file
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        request.matchdict = {
+            'node_id': str(computer['_id']),
+            'filename': 'test.log'
+        }
+        response = computer_logs.delete_log_file(context, request)
+        self.assertEqual(response['ok'], True)
+        
 
 
     @mock.patch('gecoscc.forms.create_chef_admin_user')
@@ -6115,7 +6158,220 @@ class SuperadminTests(BaseGecosTestCase):
         response = statistics(context, request)
 
         object_counters = list(response['object_counters'])
+        user_count = None
+        for c in object_counters:
+            if c['_id'] == 'user':
+                user_count = c
 
         # Check the response
-        self.assertEqual(object_counters[0]['_id'], 'user')
-        self.assertEqual(object_counters[0]['count'], 1)
+        self.assertEqual(user_count['count'], 1)
+
+
+    def test_06_resports_main(self):
+        '''
+        Test 6: Main reports page
+        '''
+        if DISABLE_TESTS: return
+        
+        # 1 - Create request to get the data to print the main
+        # reports page (a menu to other reports)
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = reports(context, request)
+
+        # Check the response
+        self.assertEqual(response['is_superuser'], True)
+
+
+    @mock.patch('gecoscc.views.report_audit._')
+    def test_07_resports_audit(self, gettext_method):
+        '''
+        Test 7: Audit log
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        context = LoggedFactory(request)
+        response = report_audit_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+    @mock.patch('gecoscc.views.report_computer._')
+    def test_08_resports_computers(self, gettext_method):
+        '''
+        Test 8: Computers report
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_computer_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+    @mock.patch('gecoscc.views.report_no_computer_users._')
+    def test_09_resports_no_computers_users(self, gettext_method):
+        '''
+        Test 9: Users without computers
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_no_computer_users_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+    @mock.patch('gecoscc.views.report_no_user_computers._')
+    def test_10_resports_no_user_computers(self, gettext_method):
+        '''
+        Test 10: Computers without users 
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_no_user_computers_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+    @mock.patch('gecoscc.views.report_permission._')
+    def test_11_resports_permissions(self, gettext_method):
+        '''
+        Test 11: Permissions report 
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_permission_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.views.report_printers._')
+    def test_12_resports_printers(self, gettext_method,
+        get_cookbook_method, get_cookbook_method_tasks):
+        '''
+        Test 12: Printers report 
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_cookbook_method=get_cookbook_method,
+            get_cookbook_method_tasks=get_cookbook_method_tasks)
+        gettext_method.side_effect = gettext_mock
+
+        data, new_printer = self.create_printer('Testprinter')
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_printers_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+    @mock.patch('gecoscc.views.report_status._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_13_resports_status(self, get_chef_api_method, get_cookbook_method,
+        get_cookbook_method_tasks, NodeClass, ChefNodeClass, TaskNodeClass,
+        ClientClass, isinstance_method, gettext_method):
+        '''
+        Test 13: Status report 
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, TaskNodeClass=TaskNodeClass,
+            ClientClass=ClientClass, gettext=gettext_method)
+        self.cleanErrorJobs()
+                                
+        self.register_computer()
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_status_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+    @mock.patch('gecoscc.views.report_user._')
+    def test_14_resports_user(self, gettext_method):
+        '''
+        Test 14: User report 
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_user_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')

@@ -231,7 +231,7 @@ def treatment_string_to_csv(item, key):
     if value is None:
         return none
     
-    return value.decode('utf-8') or none
+    return value
 
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)
