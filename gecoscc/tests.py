@@ -102,6 +102,7 @@ from gecoscc.views.report_printers import report_printers_html
 from gecoscc.views.report_status import report_status_html
 from gecoscc.views.report_user import report_user_html
 from gevent.libev.corecext import NONE
+from pip._internal.vcs.bazaar import Bazaar
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -447,7 +448,10 @@ class NodeMock(object):
         return node_attributes_json
 
     def get(self, key, default=None):
-        return self.attributes.get(key, default)
+        val = self.attributes.get(key, default)
+        if val is None:
+            val = self.default.get(key, default)
+        return val
 
     def save(self):
         NODES[self.name] = copy(self.attributes.data)
@@ -2287,6 +2291,89 @@ class BasicTests(BaseGecosTestCase):
         # 3 - verify that the policy was deleted
         c = db.policies.count_documents({"slug": "mypolicy"})
         self.assertEqual(c, 0)
+
+
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_30_test_error_generation(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 30: Test errors generated in tasks.py
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        db = self.get_db()
+        
+        # 1 - Register workstation in OU and user
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+        
+        # Register admin
+        admin_username = 'superuser'
+        self.add_admin_user(admin_username)
+
+        # Create and register user in chef node
+        username = 'usertest'
+        self.assign_user_to_node(gcc_superusername=admin_username,
+            chef_node_id=chef_node_id, username=username)
+        
+        # 2 - Add a non-existent policy top the Computer
+        computer = db.nodes.find_one({'name': 'testing'})
+        computer['policies'] = { '000000000000000000000000': {}}
+        request_put = self.get_dummy_json_put_request(computer,
+            ComputerResource.schema_detail)
+        node_api = ComputerResource(request_put)
+        node_update = node_api.put()
+
+        # Check that there are errors
+        self.assertEqual(db.jobs.count_documents({'status': 'errors'}), 2)
+        
+        self.cleanErrorJobs()
+        self.assertNoErrorJobs()
+        
+        # 3 - register the computer without policies
+        # (it must fail because of the previous error)
+        computer['policies'] = { }
+        request_put = self.get_dummy_json_put_request(computer,
+            ComputerResource.schema_detail)
+        node_api = ComputerResource(request_put)
+        node_update = node_api.put()
+        self.assertEqual(db.jobs.count_documents({'status': 'errors'}), 2)
+        
+        self.cleanErrorJobs()
+        self.assertNoErrorJobs()
+        
+        # 4 - register the computer with an actual policy
+        # (it must work)
+        computer = db.nodes.find_one({'name': 'testing'})
+        policy = db.policies.find_one({'slug': 'debug_mode_res'})
+        computer['policies'] = { str(policy['_id']): {
+            'enable_debug': True,
+            'expire_datetime': '2012-01-19 17:21:00'
+        }}
+        request_put = self.get_dummy_json_put_request(computer,
+            ComputerResource.schema_detail)
+        node_api = ComputerResource(request_put)
+        node_update = node_api.put()
+        
+        self.assertNoErrorJobs()
+        
+        
+
 
 
 class AdvancedTests(BaseGecosTestCase):
@@ -5062,6 +5149,74 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
 
 
+    @mock.patch('gecoscc.tasks.Client')
+    @mock.patch('gecoscc.tasks.Node')
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_32_refresh_policies(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method, TaskNodeClass, TaskClientClass):
+
+        if DISABLE_TESTS: return
+
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext, create_chef_admin_user_method,
+            None, TaskNodeClass, TaskClientClass)
+        self.cleanErrorJobs()
+
+        # 1 - 7
+        self.test_29_cert_policy()
+
+        node = NodeMock(CHEF_NODE_ID, None)
+
+        # 8 - Modify the data in chef node
+        policy_path = 'gecos_ws_mgmt.misc_mgmt.cert_res.ca_root_certs'
+        node.attributes.set_dotted(policy_path, [
+            {u'name': u'cert_ou_fake', u'uri': u'uri_ou'},
+            {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
+        node.save()
+
+        # 9 - Check if the data has beed modified in chef node
+        node_policy = node.attributes.get_dotted(policy_path)
+        self.assertEqual(node_policy, [
+            {u'name': u'cert_ou_fake', u'uri': u'uri_ou'}, 
+            {u'name': u'cert_ws', u'uri': u'uri_ws_fake'}])
+
+        # 10 - Refresh policies
+        computer = self.get_db().nodes.find_one({'name': 'testing'})
+        request = self.dummy_get_request(computer,
+            ComputerResource.schema_detail)
+        node_api = ComputerResource(request)
+        computer = node_api.get()
+
+
+        request_put = self.get_dummy_json_put_request(computer,
+            path='/api/computers/')
+        request_put.matchdict['oid'] = computer['_id']
+        request_put.POST = computer
+        request_put.GET = { 'action': 'refresh_policies'}
+        request_put.validated = computer
+        node_api = ComputerResource(request_put)
+        response = node_api.put()
+        
+        self.assertEqual(response['name'], 'testing')
+        
+        # 11 - Check if the data applied in chef node is correct
+        node = NodeMock(CHEF_NODE_ID, None)
+        node_policy = node.attributes.get_dotted(policy_path)
+        self.assertEqual(node_policy, [
+            {u'name': u'cert_ou', u'uri': u'uri_ou'},
+            {u'name': u'cert_ws', u'uri': u'uri_ws'}])
+
+        self.assertNoErrorJobs()
 
 
 

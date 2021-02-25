@@ -119,7 +119,7 @@ class AdminUserAddForm(BaseAdminUserForm):
             return True
         except ChefServerError as e:
             self.created_msg(e.message, 'danger')
-            self.collection.remove({'username': admin_user['username']})
+            self.collection.delete_one({'username': admin_user['username']})
             raise e
 
 
@@ -312,7 +312,7 @@ class MaintenanceForm(GecosForm):
 
         if postvars['maintenance_message'] == "":
             logger.debug("forms.py ::: MaintenanceForm - Deleting maintenance message")
-            self.request.db.settings.remove({'key':'maintenance_message'})
+            self.request.db.settings.delete_one({'key':'maintenance_message'})
             self.created_msg(_('Maintenance message was deleted successfully.'))
         else:
             logger.debug("forms.py ::: MaintenanceForm - Creating maintenance message")

@@ -607,13 +607,13 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
 
         for group_id in removes:
             group = self.request.db.nodes.find_one({'_id': group_id})
-            self.request.db.nodes.update({
+            self.request.db.nodes.update_one({
                 '_id': group_id
             }, {
                 '$pull': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)

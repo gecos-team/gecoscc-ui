@@ -403,7 +403,7 @@ def server_status(context, request):
     # Delete a non existent server?
     server_name = request.GET.get('delete', None)
     if server_name:
-        request.db.servers.remove({"name": server_name})
+        request.db.servers.delete_one({"name": server_name})
     
     
     # Calculate server status list

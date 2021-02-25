@@ -1449,13 +1449,13 @@ class ChefTask(Task):
         self.log("error","tasks.py ::: report_error - message = {0}".format(message))
         self.log("error",traceback.format_exc())
         for job_id in job_ids:
-            self.db.jobs.update(
+            self.db.jobs.update_one(
                 {'_id': job_id},
                 {'$set': {'status': 'errors',
                           'message': message,
                           'last_update': datetime.datetime.utcnow()}})
         if not computer.get('error_last_saved', False):
-            self.db.nodes.update({'_id': computer['_id']},
+            self.db.nodes.update_one({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
     def report_node_not_linked(self, computer, user, obj, action):
@@ -1551,7 +1551,7 @@ class ChefTask(Task):
                 self.validate_data(node, cookbook, api, validator=validator)
                 save_node_and_free(node)
                 if error_last_saved:
-                    self.db.nodes.update({'_id': computer['_id']},
+                    self.db.nodes.update_one({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
             except NodeNotLinked as e:
                 self.report_node_not_linked(computer, user, obj, action)
@@ -1894,13 +1894,13 @@ class ChefTask(Task):
         users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
         for u in users:
             self.log('debug', 'tasks.py ::: computer_refresh_policies - remove computer from user: {0}'.format(u['name']))
-            self.db.nodes.update({
+            self.db.nodes.update_one({
                 '_id': u['_id']
             }, {
                 '$pull': {
                     'computers': obj['_id']
                 }
-            }, multi=False)
+            })
             
             
         # 2 - Associate computer to its users
@@ -1941,7 +1941,7 @@ class ChefTask(Task):
                     comptrs = usr.get('computers', [])
                     if obj['_id'] not in comptrs:
                         comptrs.append(obj['_id'])
-                        self.db.nodes.update({'_id': usr['_id']}, {'$set': {'computers': comptrs}})
+                        self.db.nodes.update_one({'_id': usr['_id']}, {'$set': {'computers': comptrs}})
                         add_computer_to_user(obj['_id'], usr['_id'])
     
                 # Sudoers
@@ -1968,10 +1968,10 @@ class ChefTask(Task):
                 
             # Set sudoers information
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
-            self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+            self.db.nodes.update_one({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
             
             # Clean inheritance information
-            self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
+            self.db.nodes.update_one({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
     
             # Set processing jobs as finished
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
@@ -1979,14 +1979,14 @@ class ChefTask(Task):
             for job in processing_jobs:
                 macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'finished',
                                               'last_update': datetime.datetime.utcnow()}})
                 
                 # Decrement number of children in parent
                 if macrojob and 'counter' in macrojob:
                     macrojob['counter'] -= 1
-                    self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                    self.db.jobs.update_one({'_id': macrojob['_id']},                                                                
                                         {'$set': {'counter': macrojob['counter'],
                                                   'message': self._("Pending: %d") % macrojob['counter'],
                                                   'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
@@ -1994,10 +1994,14 @@ class ChefTask(Task):
                     
                 # 3 - Clean policies information
                 ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list', 'gecos_info']
+                to_delete = []
                 for attr in node.normal:
                     if not attr in ATTRIBUTES_WHITE_LIST:
-                        self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
-                        del node.normal[attr]
+                        to_delete.append(attr)
+                        
+                for attr in to_delete:
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
+                    del node.normal[attr]
         
             save_node_and_free(node)
             
