@@ -664,11 +664,12 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
                     return True
                 return False
 
-            policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
-            nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
-                                                                % str(policy_id): {'$in': [str(obj['_id'])]}})
-
-            if nodes_related_with_obj.count() == 0:
+            policy_id = self.request.db.policies.find_one({'slug': slug}).get(
+                '_id')
+            nodes_related_with_obj = self.request.db.nodes.count_documents(
+                {"policies.%s.object_related_list" % str(policy_id): {
+                    '$in': [str(obj['_id'])]}})
+            if nodes_related_with_obj == 0:
                 return True
 
             return False

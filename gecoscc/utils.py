@@ -110,7 +110,7 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
     removes = [n for n in oldmembers if n not in newmembers]
 
     for group_id in removes:
-        collection.update({
+        collection.update_many({
             keyname: group_id
         }, {
             '$pull': {
@@ -121,7 +121,7 @@ def merge_lists(collection, obj, old_obj, attribute, remote_attribute, keyname='
     for group_id in adds:
 
         # Add newmember to new group
-        collection.update({
+        collection.update_many({
             keyname: group_id
         }, {
             '$push': {
@@ -999,7 +999,9 @@ def update_node(api, node_id, ou, collection_nodes):
                                              'source': ou.get('source', SOURCE_DEFAULT),
                                              'node_chef_id': node_id})
             del computer['_id']
-            ret = collection_nodes.update({'node_chef_id': node_id}, computer)
+            ret = collection_nodes.update_one({'node_chef_id': node_id},
+                    {'$set': computer})
+            ret = ret.acknowledged
 
         except setPathAttrsToNodeException:
             logger.error('utils.py ::: update_node - Exception adding gecos_path info to chef node')

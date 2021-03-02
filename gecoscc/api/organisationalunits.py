@@ -47,7 +47,8 @@ class OrganisationalUnitResource(TreeResourcePaginated):
         '''
         Check if the Ou contains any object
         '''
-        ou_children = self.collection.find({'path': {'$regex': '.*' + str(obj['_id']) + '.*'}}).count()
+        ou_children = self.collection.count_documents(
+            {'path': {'$regex': '.*' + str(obj['_id']) + '.*'}})
 
         if ou_children == 0:
             return True

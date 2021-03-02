@@ -103,6 +103,7 @@ from gecoscc.views.report_status import report_status_html
 from gecoscc.views.report_user import report_user_html
 from gevent.libev.corecext import NONE
 from pip._internal.vcs.bazaar import Bazaar
+from gecoscc.utils import update_node
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -2373,6 +2374,160 @@ class BasicTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
         
         
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_31_check_obj_is_related(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 31: Create a printer and check if there is any related object
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        self.assertIsPaginatedCollection(api_class=PrinterResource)
+
+        # 1 - Create printer
+        data, new_printer = self.create_printer('Testprinter')
+
+        # 2 - Verification that the printers has been created successfully
+        self.assertEqualObjects(data, new_printer)
+
+        # 3 - Check that there is no related object
+        request = self.dummy_get_request(new_printer)
+        api = PrinterResource(request)
+        self.assertEqual(api.check_obj_is_related(new_printer), True)
+        
+        # 4 - Create a computer and add the printer policy
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        computer = db.nodes.find_one({'name': 'testing'})
+        
+        policy = db.policies.find_one({'slug': 'printer_can_view'})
+        
+        computer['policies'] = { str(policy['_id']): {
+            'object_related_list': [ new_printer['_id'] ]
+        }}
+        node_policy = self.add_and_get_policy(node=computer,
+            chef_node_id=chef_node_id, api_class=ComputerResource,
+            policy_path=policy['path'])
+        
+        # 5 - Check that there is one related object
+        self.assertEqual(api.check_obj_is_related(new_printer), False)
+        
+
+        self.assertNoErrorJobs()
+
+
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_32_check_is_ou_empty(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 32: Create an ou and check if is empty
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        self.assertIsPaginatedCollection(api_class=PrinterResource)
+
+        # 1 - Create an OU
+        data, ou = self.create_ou('OU 2')
+
+        # 2 - Check that the OU is empty
+        request = self.dummy_get_request(ou)
+        api = OrganisationalUnitResource(request)
+        self.assertEqual(api.is_ou_empty(ou), True)
+
+        # 3 - Create a printer inside the OU
+        data, new_printer = self.create_printer('Testprinter', 'OU 2')
+        
+        # 4 - Check that the OU is not empty
+        self.assertEqual(api.is_ou_empty(ou), False)
+        
+
+        self.assertNoErrorJobs()
+
+
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_33_check_update_node(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 33: Register a computer and uses update_node method
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext_mock, create_chef_admin_user_method)
+        self.cleanErrorJobs()
+        
+        self.assertIsPaginatedCollection(api_class=PrinterResource)
+
+        # 1 - Create a computer
+        db = self.get_db()
+        ou_1 = db.nodes.find_one({'name': 'OU 1'})
+        chef_node_id = CHEF_NODE_ID
+        self.register_computer()
+
+        # 2 - Change the name in MongoDB
+        computer = db.nodes.find_one({'node_chef_id': chef_node_id})
+        self.assertEqual(computer['name'], 'testing' )
+        
+        computer['name'] = 'changed'
+        db.nodes.replace_one({'node_chef_id': chef_node_id}, computer)
+        computer = db.nodes.find_one({'node_chef_id': chef_node_id})
+        self.assertEqual(computer['name'], 'changed' )
+        
+        # 3 - call the update node method
+        api = ChefApiMock()
+        update_node(api, chef_node_id, ou_1, db.nodes)
+        
+        # 4 - Check that the node name has been updated with Chef pclabel
+        computer = db.nodes.find_one({'node_chef_id': chef_node_id})
+        self.assertEqual(computer['name'], 'testing' )
+        
+
+        self.assertNoErrorJobs()
+
 
 
 

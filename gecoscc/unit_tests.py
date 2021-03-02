@@ -10,6 +10,8 @@
 #
 
 import unittest
+from future.backports.datetime import datetime
+import json
 
 class TestUtils(unittest.TestCase):
 
@@ -46,4 +48,50 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(dict_merge(a, b), c, "Error in dict merge function!")
 
         
+class TestFilters(unittest.TestCase):
+
+    def test_datetime_filter(self):
+        from gecoscc.filters import datetime as datetime_filter
+        
+        dt = datetime(2007, 4, 1, 15, 30)
+        
+        self.assertEqual(datetime_filter(dt), '01/04/2007 17:30')
+        self.assertEqual(datetime_filter(dt, 'full'),
+                         'domingo 1/abr./2007 17:30')
+
+
+    def test_admin_serialize(self):
+        from gecoscc.filters import admin_serialize
+        
+        admin = { 
+            "_id" : "603e091ad3bbc033d81b3a02",
+            "is_superuser" : True,
+            "username" : "test",
+            "email" : "test@example.com",
+            "password" : "xxxxx",
+        }
+
+        self.assertEqual(json.loads(admin_serialize(admin))['username'],
+                         admin['username'])
+
+
+    def test_timediff(self):
+        from gecoscc.filters import timediff
+
+        diff = {
+            'timestamp': 1612167143,
+            'timestamp_end': 1614676404
+        }
+
+        self.assertEqual(timediff(diff), '(29.0d 1.0h 1.0m 1s)')
+
+
+    def test_regex_match(self):
+        from gecoscc.filters import regex_match
+
+        self.assertEqual(regex_match("Hola", "^[a-z]+$", True), True)
+        self.assertEqual(regex_match("Hola", "^[a-z]+$", False), False)
+        self.assertEqual(regex_match("Hola1", "^[a-z]+$", True), False)
+
+
 
