@@ -55,7 +55,7 @@ from gecoscc.commands.debug_mode_expiration import Command as \
 from gecoscc.db import get_db
 from gecoscc.userdb import get_userdb
 from gecoscc.permissions import LoggedFactory, SuperUserFactory
-from gecoscc.views.portal import home
+from gecoscc.views.portal import home, LoginViews, forbidden_view
 from gecoscc.views.admins import admin_add, updates, updates_add, updates_log,\
     updates_download, updates_repeat, updates_tail, admins, admin_edit,\
     admins_ou_manage, admins_set_variables, admin_delete, admin_maintenance,\
@@ -104,6 +104,8 @@ from gecoscc.views.report_user import report_user_html
 from gevent.libev.corecext import NONE
 from pip._internal.vcs.bazaar import Bazaar
 from gecoscc.utils import update_node
+from gecoscc.views.report_storages import report_storages_html
+from gecoscc.views.server import internal_server_status
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -2529,6 +2531,87 @@ class BasicTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
 
 
+
+    @mock.patch('gecoscc.forms.create_chef_admin_user')
+    @mock.patch('gecoscc.forms._')
+    @mock.patch('gecoscc.views.portal._')
+    @mock.patch('gecoscc.utils.isinstance')
+    @mock.patch('chef.Node')
+    @mock.patch('gecoscc.utils.ChefNode')
+    @mock.patch('gecoscc.tasks.get_cookbook')
+    @mock.patch('gecoscc.utils.get_cookbook')
+    @mock.patch('gecoscc.utils._get_chef_api')    
+    def test_34_login_view(self, get_chef_api_method,
+        get_cookbook_method, get_cookbook_method_tasks, NodeClass,
+        ChefNodeClass, isinstance_method, gettext, portal_gettext,
+        create_chef_admin_user_method):
+        '''
+        Test 34: Checks the login view
+        '''
+        if DISABLE_TESTS: return
+        
+        self.apply_mocks(get_chef_api_method, get_cookbook_method,
+            get_cookbook_method_tasks, NodeClass, ChefNodeClass,
+            isinstance_method, gettext, create_chef_admin_user_method)
+        
+        portal_gettext.side_effect = gettext_mock
+        
+        self.cleanErrorJobs()
+        
+        self.assertIsPaginatedCollection(api_class=PrinterResource)
+
+        # 1 - Register an admin user
+        admin_username = 'test'
+
+        # 2 - Try to log with a bad password
+        context = None
+        data = {'username': admin_username, 'password': 'bad pwd' }
+        request = self.get_dummy_request(True)
+        request.POST = data
+        request.remote_addr = '127.0.0.1'
+        request.user_agent = 'Mozilla/5.0'
+        request.is_xhr = False
+        view = LoginViews(context, request)
+        ret = view.login()
+        self.assertFalse(isinstance(ret, HTTPFound))
+
+        # Check that the user is redirected to login
+        ret = forbidden_view(context, request)
+        self.assertTrue(isinstance(ret, HTTPFound))
+
+
+        # 3 - Log in an admin user
+        db = self.get_db()
+        db.adminusers.update_one({'username': admin_username},
+            {'$set': {"password" :
+                "$2a$12$op45f9PEMyyRxi5iMH6/JOAJ/aIFRIR73S6CtgbXrxD/cLpnq8KRC"}}
+        )
+        data = {'username': admin_username, 'password': '123123' }
+        request = self.get_dummy_request()
+        request.POST = data
+        request.remote_addr = '127.0.0.1'
+        request.user_agent = 'Mozilla/5.0'
+        request.is_xhr = False
+        request.VERSION = '1.0.0'
+        view = LoginViews(context, request)
+        ret = view.login()
+        self.assertTrue(isinstance(ret, HTTPFound))
+
+        self.assertEqual(1, db.auditlog.count_documents({
+            'username': admin_username,
+            'action': 'login'}))
+
+        # Check that the user is not redirected to login
+        context = { 'explanation': '' }
+        ret = forbidden_view(context, request)
+        self.assertFalse(isinstance(ret, HTTPFound))
+
+        # 4 - Logout
+        ret = view.logout()
+        self.assertTrue(isinstance(ret, HTTPFound))
+        self.assertEqual(1, db.auditlog.count_documents({
+            'username': admin_username,
+            'action': 'logout'}))
 
 
 class AdvancedTests(BaseGecosTestCase):
@@ -6847,3 +6930,47 @@ class SuperadminTests(BaseGecosTestCase):
 
         # Check the response
         self.assertEqual(response['report_type'], 'html')
+
+
+
+    @mock.patch('gecoscc.views.report_storages._')
+    def test_15_reports_storages(self, gettext_method):
+        '''
+        Test 15: Storages reports 
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        db = self.get_db()
+        domain_1 = db.nodes.find_one({'name': 'Domain 1'})
+        
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = { 'ou_id': str(domain_1['_id'])}
+        context = LoggedFactory(request)
+        response = report_storages_html(context, request)
+
+        # Check the response
+        self.assertEqual(response['report_type'], 'html')
+
+
+
+    @mock.patch('gecoscc.views.report_storages._')
+    def test_16_server_status(self, gettext_method):
+        '''
+        Test 16: Server status 
+        '''
+        if DISABLE_TESTS: return
+        
+        gettext_method.side_effect = gettext_mock
+
+        # 1 - Create request to get the report in HTML format
+        request = self.get_dummy_request()
+        request.GET = {}
+        context = LoggedFactory(request)
+        response = internal_server_status(context, request)
+
+        # Check the response
+        self.assertTrue('cpu' in response)
+

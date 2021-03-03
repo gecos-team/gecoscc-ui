@@ -47,6 +47,19 @@ class TestUtils(unittest.TestCase):
         
         self.assertEqual(dict_merge(a, b), c, "Error in dict merge function!")
 
+
+
+    def test_getURLComponents(self):
+        from gecoscc.utils import getURLComponents
+
+        components = getURLComponents('https://www.google.es')
+        
+        self.assertEqual(components['protocol'], 'https')
+        self.assertEqual(components['port'], '443')
+        self.assertEqual(components['host_name'], 'www.google.es')
+
+
+
         
 class TestFilters(unittest.TestCase):
 

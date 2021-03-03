@@ -17,7 +17,7 @@ from past.utils import old_div
 import logging
 import time
 import http.client
-import urllib.request, urllib.error, urllib.parse
+import urllib.request
 import json
 import sys
 import traceback
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 def _getCPULoad():
     try:
-        fd = file("/proc/stat", "r")
+        fd = open("/proc/stat", "r")
         line = fd.readline()
         fd.close()
     except Exception as e:
@@ -66,7 +66,7 @@ def getCPULoad():
     
 def parseProcFile(filename_):
     try:
-        fd = file(filename_, "r")
+        fd = open(filename_, "r")
         lines = fd.readlines()
         fd.close()
     except Exception as e:
@@ -99,7 +99,7 @@ def getCPUInfos():
 
 def _getMeminfo():
     try:
-        fd = file("/proc/meminfo", "r")
+        fd = open("/proc/meminfo", "r")
         lines = fd.readlines()
         fd.close()
     except Exception as e:
@@ -132,7 +132,7 @@ def getRAMUsed():
         cached = int(infos["Cached"])
         buffers = int(infos["Buffers"])
     except Exception as e:
-        logger.warn("getRAMUsed: %s"%(str(e)))
+        logger.warning("getRAMUsed: %s"%(str(e)))
         return 0.0
     
     return total - (free + cached + buffers)
@@ -146,7 +146,7 @@ def getRAMTotal():
         total = int(infos["MemTotal"])
     
     except Exception as e:
-        logger.warn("getRAMTotal: %s"%(str(e)))
+        logger.warning("getRAMTotal: %s"%(str(e)))
         return 0.0
     
     return total
@@ -214,7 +214,7 @@ def get_supervisord_url(ip_address):
 
 def get_mountpoints():
     try:
-        fd = file("/proc/mounts", "r")
+        fd = open("/proc/mounts", "r")
         lines = fd.readlines()
         fd.close()
     except Exception as e:
@@ -360,7 +360,7 @@ def internal_server_connections(context, request):
     server_connections = []
     
     try:
-        fd = file("/proc/net/tcp", "r")
+        fd = open("/proc/net/tcp", "r")
         line = fd.readline() # Skip the first line
         line = fd.readline()
         while line is not None:
