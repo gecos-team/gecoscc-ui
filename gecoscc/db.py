@@ -113,7 +113,7 @@ class MongoDB(object):
 
         command = [
             'mongodump',
-            '-host', '%s' % urlparse(self.db_uri).hostname,
+            '--host', '%s' % urlparse(self.db_uri).hostname,
             '-d', '%s' % self.database_name,
             '--port', '%s' % urlparse(self.db_uri).port,
             '-o', '%s' % path
@@ -132,7 +132,7 @@ class MongoDB(object):
                 dump_output = subprocess.check_output(command)
                 logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             else:
-                allcolls = self.get_database().collection_names()
+                allcolls = self.get_database().list_collection_names()
                 includes = list(set(allcolls) - set(excludes))
 
                 # dump each collection individually
@@ -142,8 +142,8 @@ class MongoDB(object):
                 logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             logger.info("mongodump ended.")
         except subprocess.CalledProcessError as msg:
-            logger.error(msg.cmd)
-            logger.error(msg.output)
+            logger.error('COMMAND: %s'%(msg.cmd))
+            logger.error('OUTPUT: %s'%(msg.output.decode('utf-8')))
             exitstatus = msg.returncode
 
         return exitstatus
@@ -162,7 +162,7 @@ class MongoDB(object):
 
         command = [
             'mongorestore',
-            '-host', '%s' % urlparse(self.db_uri).hostname,
+            '--host', '%s' % urlparse(self.db_uri).hostname,
             '-d', '%s' % self.database_name,
             '--port', '%s' % urlparse(self.db_uri).port,
             '--drop'

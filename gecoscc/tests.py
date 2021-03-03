@@ -105,7 +105,8 @@ from gevent.libev.corecext import NONE
 from pip._internal.vcs.bazaar import Bazaar
 from gecoscc.utils import update_node
 from gecoscc.views.report_storages import report_storages_html
-from gecoscc.views.server import internal_server_status
+from gecoscc.views.server import internal_server_status,\
+    internal_server_connections
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -5457,6 +5458,38 @@ class AdvancedTests(BaseGecosTestCase):
         self.assertNoErrorJobs()
 
 
+    def test_33_mongo_dump_restore(self):
+
+        '''
+        33. Test the mongo dump and restore capabilities
+        '''
+
+        if DISABLE_TESTS: return
+
+        self.cleanErrorJobs()
+
+        db = self.registry.settings['mongodb']
+
+        # 1 - Create a backup
+        db.dump('/tmp/test_dump')
+        
+        # 2 - Remove the data and check that is empty
+        self.drop_database()
+        
+        ou1 = db.get_database().nodes.find_one({'name': 'OU 1'})
+        self.assertTrue(ou1 is None)
+        
+        
+        # 3 - Restore the database and check that the data is back
+        db.restore('/tmp/test_dump')
+       
+        ou1 = db.get_database().nodes.find_one({'name': 'OU 1'})
+        self.assertFalse(ou1 is None)
+
+        
+        
+
+
 
 class MovementsTests(BaseGecosTestCase):
 
@@ -6956,16 +6989,15 @@ class SuperadminTests(BaseGecosTestCase):
 
 
 
-    @mock.patch('gecoscc.views.report_storages._')
-    def test_16_server_status(self, gettext_method):
+    @mock.patch('socket.gethostbyname')
+    def test_16_server_status(self, gethostbyname_method):
         '''
         Test 16: Server status 
         '''
         if DISABLE_TESTS: return
         
-        gettext_method.side_effect = gettext_mock
 
-        # 1 - Create request to get the report in HTML format
+        # 1 - Get the server status
         request = self.get_dummy_request()
         request.GET = {}
         context = LoggedFactory(request)
@@ -6974,3 +7006,12 @@ class SuperadminTests(BaseGecosTestCase):
         # Check the response
         self.assertTrue('cpu' in response)
 
+
+        # 2 - Get server connections
+        request = self.get_dummy_request()
+        request.GET = {}
+        context = LoggedFactory(request)
+        response = internal_server_connections(context, request)
+
+        # Check the response
+        self.assertEqual(response, [])
