@@ -129,7 +129,7 @@ class MongoUserDB:
                 return new_apikey
 
     def add_apikey(self, username, _apikey):
-        self.collection.update({
+        self.collection.update_one({
             'username': username
         }, {
             '$push': {
