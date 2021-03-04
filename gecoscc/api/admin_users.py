@@ -38,7 +38,6 @@ class AdminUserResource(BaseAPI):
         chef = {}
         chef['chef_server_uri'] = settings.get('chef.url')
         chef['chef_link'] = True
-        chef['chef_validation'] = get_pem_for_username(settings, user['username'], 'chef_client.pem')
 
         gcc = {}
         gcc['gcc_link'] = True

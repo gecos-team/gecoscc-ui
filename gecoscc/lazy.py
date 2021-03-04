@@ -11,15 +11,13 @@
 
 import copy
 import operator
-import six
 import sys
-
-
 from functools import wraps
+import six
 from six.moves import copyreg
 
 
-class cached_property(object):
+class cached_property:
     """
     Decorator that converts a method with a single self argument into a
     property cached on the instance.
@@ -38,7 +36,7 @@ class cached_property(object):
         return res
 
 
-class Promise(object):
+class Promise:
     """
     This is just a base class for the proxy class created in
     the closure of the lazy function. It can be used to recognize
@@ -132,10 +130,11 @@ def lazy(func, *resultclasses):
         def __cast(self):
             if self._delegate_bytes:
                 return self.__bytes_cast()
-            elif self._delegate_text:
+            
+            if self._delegate_text:
                 return self.__text_cast()
-            else:
-                return func(*self.__args, **self.__kw)
+            
+            return func(*self.__args, **self.__kw)
 
         def __ne__(self, other):
             if isinstance(other, Promise):
@@ -158,8 +157,10 @@ def lazy(func, *resultclasses):
         def __mod__(self, rhs):
             if self._delegate_bytes and six.PY2:
                 return bytes(self) % rhs
-            elif self._delegate_text:
+            
+            if self._delegate_text:
                 return six.text_type(self) % rhs
+            
             return self.__cast() % rhs
 
         def __deepcopy__(self, memo):
@@ -209,7 +210,7 @@ def new_method_proxy(func):
     return inner
 
 
-class LazyObject(object):
+class LazyObject:
     """
     A wrapper for another class that can be used to delay instantiation of the
     wrapped class.
@@ -246,7 +247,8 @@ class LazyObject(object):
         """
         Must be implemented by subclasses to initialize the wrapped object.
         """
-        raise NotImplementedError('subclasses of LazyObject must provide a _setup() method')
+        raise NotImplementedError('subclasses of LazyObject must provide a'\
+                                  ' _setup() method')
 
     # Because we have messed with __class__ below, we confuse pickle as to what
     # class we are pickling. It also appears to stop __reduce__ from being
@@ -269,12 +271,13 @@ class LazyObject(object):
             # On Py3, since the default protocol is 3, pickle uses the
             # ``__newobj__`` method (& more efficient opcodes) for writing.
             return (self.__newobj__, (self.__class__,), self.__getstate__())
-        else:
-            # On Py2, the default protocol is 0 (for back-compat) & the above
-            # code fails miserably (see regression test). Instead, we return
-            # exactly what's returned if there's no ``__reduce__`` method at
-            # all.
-            return (copyreg._reconstructor, (self.__class__, object, None), self.__getstate__())
+
+        # On Py2, the default protocol is 0 (for back-compat) & the above
+        # code fails miserably (see regression test). Instead, we return
+        # exactly what's returned if there's no ``__reduce__`` method at
+        # all.
+        return (copyreg._reconstructor, (self.__class__, object, None),
+                self.__getstate__())
 
     def __deepcopy__(self, memo):
         if self._wrapped is empty:
@@ -291,7 +294,7 @@ class LazyObject(object):
         __bool__ = new_method_proxy(bool)
     else:
         __str__ = new_method_proxy(str)
-        __unicode__ = new_method_proxy(unicode)
+        __unicode__ = new_method_proxy(six.text_type)
         __nonzero__ = new_method_proxy(bool)
 
     # Introspection support
@@ -401,22 +404,31 @@ else:
     def total_ordering(cls):
         """Class decorator that fills in missing ordering methods"""
         convert = {
-            '__lt__': [('__gt__', lambda self, other: not (self < other or self == other)),
-                       ('__le__', lambda self, other: self < other or self == other),
+            '__lt__': [('__gt__', lambda self, other: not (self < other or 
+                                                           self == other)),
+                       ('__le__', lambda self, other: (self < other or 
+                                                       self == other)),
                        ('__ge__', lambda self, other: not self < other)],
-            '__le__': [('__ge__', lambda self, other: not self <= other or self == other),
-                       ('__lt__', lambda self, other: self <= other and not self == other),
+            '__le__': [('__ge__', lambda self, other: (not self <= other or 
+                                                       self == other)),
+                       ('__lt__', lambda self, other: (self <= other and
+                                                       not self == other)),
                        ('__gt__', lambda self, other: not self <= other)],
-            '__gt__': [('__lt__', lambda self, other: not (self > other or self == other)),
-                       ('__ge__', lambda self, other: self > other or self == other),
+            '__gt__': [('__lt__', lambda self, other: not (self > other or 
+                                                           self == other)),
+                       ('__ge__', lambda self, other: (self > other or
+                                                       self == other)),
                        ('__le__', lambda self, other: not self > other)],
-            '__ge__': [('__le__', lambda self, other: (not self >= other) or self == other),
-                       ('__gt__', lambda self, other: self >= other and not self == other),
+            '__ge__': [('__le__', lambda self, other: ((not self >= other) or 
+                                                       self == other)),
+                       ('__gt__', lambda self, other: (self >= other and 
+                                                       not self == other)),
                        ('__lt__', lambda self, other: not self >= other)]
         }
         roots = set(dir(cls)) & set(convert)
         if not roots:
-            raise ValueError('must define at least one ordering operation: < > <= >=')
+            raise ValueError('must define at least one ordering operation:'\
+                             ' < > <= >=')
         root = max(roots)       # prefer __lt__ to __le__ to __gt__ to __ge__
         for opname, opfunc in convert[root]:
             if opname not in roots:

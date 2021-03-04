@@ -1,67 +1,67 @@
 {
   "recipes": [
     {
-      "name": "required_packages.rb",
-      "path": "recipes/required_packages.rb",
-      "checksum": "2b5970d265c5f5f2177108d988e15fc2",
+      "name": "broadband_mgmt.rb",
+      "path": "recipes/broadband_mgmt.rb",
+      "checksum": "37ba5142c710a39f9941a8df5a5b7880",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2b5970d265c5f5f2177108d988e15fc2?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=DEu3alTmJHk37fEkp1lf80bynUg%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-37ba5142c710a39f9941a8df5a5b7880?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=ndeAUOn7WbH4Q3R1EwtzzBc3JAc%3D"
+    },
+    {
+      "name": "default.rb",
+      "path": "recipes/default.rb",
+      "checksum": "cdba2dee87809ac5815967a238906e87",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-cdba2dee87809ac5815967a238906e87?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=XCHqjM2xm65I2pMO4vB9hvSjYGk%3D"
+    },
+    {
+      "name": "misc_mgmt.rb",
+      "path": "recipes/misc_mgmt.rb",
+      "checksum": "484ead0b3bcb970e4399e30e1a882719",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-484ead0b3bcb970e4399e30e1a882719?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Dzsoqebp/%2BqZFHN42oEd1O1LzAc%3D"
     },
     {
       "name": "network_mgmt.rb",
       "path": "recipes/network_mgmt.rb",
       "checksum": "15fc0915695e21775327d48e98fc4d94",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-15fc0915695e21775327d48e98fc4d94?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=TUi1pOicKiExOPI/yf7AU4fDrtc%3D"
-    },
-    {
-      "name": "users_mgmt.rb",
-      "path": "recipes/users_mgmt.rb",
-      "checksum": "8326c60620aeb6e6681d2b3706b34786",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-8326c60620aeb6e6681d2b3706b34786?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=yYfFMecSVgvTgAqa0HGKODOP52o%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-15fc0915695e21775327d48e98fc4d94?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=DhKxGgKtOTATvCLA2iDqDWXIoLc%3D"
     },
     {
       "name": "printers_mgmt.rb",
       "path": "recipes/printers_mgmt.rb",
       "checksum": "951035b67a6ea924dd438b2c849cc7a6",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-951035b67a6ea924dd438b2c849cc7a6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=wMNr/Ex/gjXklTIPMZD9z5CJ8Z0%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-951035b67a6ea924dd438b2c849cc7a6?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=vxAqNzMNXKfWrtYfbQJwTOog6d4%3D"
+    },
+    {
+      "name": "required_packages.rb",
+      "path": "recipes/required_packages.rb",
+      "checksum": "4a8b4f9958a538509cc729f59a28e491",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4a8b4f9958a538509cc729f59a28e491?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=54qCh7gwcEhskKwfVlzavvJC4TY%3D"
     },
     {
       "name": "single_node.rb",
       "path": "recipes/single_node.rb",
       "checksum": "b70c6df73c386ca9b39d579e34e4d621",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b70c6df73c386ca9b39d579e34e4d621?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=XzQvvnJca3XfaA0cnKNOUtrNWTU%3D"
-    },
-    {
-      "name": "default.rb",
-      "path": "recipes/default.rb",
-      "checksum": "b71a9487489bcd85e71b264bf84eb1e7",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b71a9487489bcd85e71b264bf84eb1e7?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=tSUF8JcM/7N5Z1TvOktceisu2fM%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b70c6df73c386ca9b39d579e34e4d621?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=aG0ekJORuiMqwEfYh07zZRCIOok%3D"
     },
     {
       "name": "software_mgmt.rb",
       "path": "recipes/software_mgmt.rb",
-      "checksum": "9525fd48ce7814c3f898c6ccd5e22ad2",
+      "checksum": "25fba0b5f86f9c1c41d178660b94a156",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-9525fd48ce7814c3f898c6ccd5e22ad2?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=DpnbP%2BVP5uQ8Z/GH%2BWK6Tnm4F%2BE%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-25fba0b5f86f9c1c41d178660b94a156?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=1/7KRcV3aVGz9ZOpPOyyxQqylt0%3D"
     },
     {
-      "name": "broadband_mgmt.rb",
-      "path": "recipes/broadband_mgmt.rb",
-      "checksum": "37ba5142c710a39f9941a8df5a5b7880",
+      "name": "users_mgmt.rb",
+      "path": "recipes/users_mgmt.rb",
+      "checksum": "8326c60620aeb6e6681d2b3706b34786",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-37ba5142c710a39f9941a8df5a5b7880?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=w6KTFs1lLOljezzzKatNLh5JroE%3D"
-    },
-    {
-      "name": "misc_mgmt.rb",
-      "path": "recipes/misc_mgmt.rb",
-      "checksum": "2b866fead3b5efd592f7af0acf3496d0",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2b866fead3b5efd592f7af0acf3496d0?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=m7P3pnn97VjW7duKJOJcxkym3m4%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-8326c60620aeb6e6681d2b3706b34786?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=GkwUc/Vl/JRZjGJn7Z2bAUGQSw4%3D"
     }
   ],
   "definitions": [
@@ -71,970 +71,1033 @@
     {
       "name": "MozillaPluginManager.rb",
       "path": "libraries/MozillaPluginManager.rb",
-      "checksum": "d2db68f1049b92d837dc2dfa65cee3b2",
+      "checksum": "d18bc6fb9f01a78d87cd3e50535ac93e",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-d2db68f1049b92d837dc2dfa65cee3b2?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=RHXfi3xmAn2huhX/1AEr9lpPrwk%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-d18bc6fb9f01a78d87cd3e50535ac93e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=hrq8ohS/9VJf95v4b5gmqUjUfLo%3D"
+    },
+    {
+      "name": "Runnable.rb",
+      "path": "libraries/Runnable.rb",
+      "checksum": "47e43c7232781403738cc06c3e23f1a1",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-47e43c7232781403738cc06c3e23f1a1?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=JHiT21%2Bo8Yys41DmsXWiQmmAOec%3D"
+    },
+    {
+      "name": "ShellUtil.rb",
+      "path": "libraries/ShellUtil.rb",
+      "checksum": "bf96c42d47805960c61e927b0c22c8f1",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-bf96c42d47805960c61e927b0c22c8f1?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=1HMBJPXYW1OU57UwdOcoBhbkurs%3D"
+    },
+    {
+      "name": "UserUtil.rb",
+      "path": "libraries/UserUtil.rb",
+      "checksum": "0c9f6b9802219f9490fb03a79c1a2d2f",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0c9f6b9802219f9490fb03a79c1a2d2f?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=1j4u3xLVR6ecSreQKD4Yd1JyiYY%3D"
     },
     {
       "name": "VariableManager.rb",
       "path": "libraries/VariableManager.rb",
       "checksum": "e0fe957f77923367e4159665dd033d7c",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-e0fe957f77923367e4159665dd033d7c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=tKE0ODdhQs5DJYmI5uiYCOctTg0%3D"
-    },
-    {
-      "name": "ShellUtil.rb",
-      "path": "libraries/ShellUtil.rb",
-      "checksum": "f7856c692f519adc61701576da5dd615",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f7856c692f519adc61701576da5dd615?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=q1k4gcLomwAwhy%2BkfjdUeolU8nM%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-e0fe957f77923367e4159665dd033d7c?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=FsEM8i1jibop/ljJ5bvKlOuAhus%3D"
     },
     {
       "name": "XMLUtil.rb",
       "path": "libraries/XMLUtil.rb",
-      "checksum": "3bf153ebf6b9c5a2d623c3238130a77f",
+      "checksum": "eb6806c41325ab797c2f71ba90e53304",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-3bf153ebf6b9c5a2d623c3238130a77f?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=aPDI8eC049MmUl1ZCQJNioOSGDI%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-eb6806c41325ab797c2f71ba90e53304?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=E7rDocGno645DdKVwSA8QZp2AeY%3D"
+    },
+    {
+      "name": "autoupdates.rb",
+      "path": "libraries/autoupdates.rb",
+      "checksum": "6742c41de316e14d1605fd31ef6b3c6e",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-6742c41de316e14d1605fd31ef6b3c6e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=T4oHzprT6GWOU5pikg1WBPrMWy4%3D"
     }
   ],
   "attributes": [
     {
       "name": "default.rb",
       "path": "attributes/default.rb",
-      "checksum": "30dd17ece6aad976d01c4b8cd9fc7b29",
+      "checksum": "f643321796070dbc61be7e5e3a33805e",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-30dd17ece6aad976d01c4b8cd9fc7b29?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=l/qbuxlbLMz72%2BqTOyh4gVAjyiI%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f643321796070dbc61be7e5e3a33805e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=EDsxbhNEje0kyqbbO9Hd6QUDcKg%3D"
     }
   ],
   "files": [
     {
-      "name": "serviceproviders.xml",
-      "path": "files/default/serviceproviders.xml",
-      "checksum": "473686b408b0f59661955d2791d389d0",
+      "name": "auto_updates.sh",
+      "path": "files/default/auto_updates.sh",
+      "checksum": "a4231bae246d7b99bcef62b631952674",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-473686b408b0f59661955d2791d389d0?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=9OYPoB98bNj6JuwxcjCNSgh8Y18%3D"
-    },
-    {
-      "name": "gecos-chef-client-wrapper",
-      "path": "files/default/gecos-chef-client-wrapper",
-      "checksum": "14bc8adb3fe99937ceef340846063e43",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-14bc8adb3fe99937ceef340846063e43?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=GjQtPShEv8dlYlvAczwStayGgGI%3D"
-    },
-    {
-      "name": "udisks.policy",
-      "path": "files/default/udisks.policy",
-      "checksum": "20c678be9acf6b77625b8d1a3db17211",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-20c678be9acf6b77625b8d1a3db17211?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=7M0sIcauhg08MTSppotzHsNaoVs%3D"
-    },
-    {
-      "name": "my_mkhomedir",
-      "path": "files/default/my_mkhomedir",
-      "checksum": "343772c8dfac2ed0b294769d15afb9d7",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-343772c8dfac2ed0b294769d15afb9d7?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=a4ErBqkoevF4tSd921jnBXXz0WE%3D"
-    },
-    {
-      "name": "deployment.config",
-      "path": "files/default/deployment.config",
-      "checksum": "a2eec4e5347b0d264b25b61743551467",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a2eec4e5347b0d264b25b61743551467?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=kVqm4he7ER5Geasift2ttVh6ljs%3D"
-    },
-    {
-      "name": "nmapplet.policy",
-      "path": "files/default/nmapplet.policy",
-      "checksum": "374f5b1c5917d72b5439f985a0d0d9d1",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-374f5b1c5917d72b5439f985a0d0d9d1?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=P7FDuEcJaxN94o9uhgu%2BNvfnX30%3D"
-    },
-    {
-      "name": "lightdm.service",
-      "path": "files/default/lightdm.service",
-      "checksum": "3c18699ad19577fff465d7513800d88c",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-3c18699ad19577fff465d7513800d88c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=MAbnu8XJ43gdMohcpAQntYlXdTU%3D"
-    },
-    {
-      "name": "owncloud.desktop",
-      "path": "files/default/owncloud.desktop",
-      "checksum": "4b17216fb9159a39a325b72c82f61296",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4b17216fb9159a39a325b72c82f61296?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=gGQephlCqwJ7DX9ZNOYqtcrp7/I%3D"
-    },
-    {
-      "name": "autolock.sh",
-      "path": "files/default/autolock.sh",
-      "checksum": "c7d56c2918bedf11d5d1d6993bc5dcc4",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c7d56c2918bedf11d5d1d6993bc5dcc4?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=KVU1owkgD2DPlpJNEFUL7EKc2ME%3D"
-    },
-    {
-      "name": "restrict-login-powermgmt.pkla",
-      "path": "files/default/restrict-login-powermgmt.pkla",
-      "checksum": "2858e007a3b887a4939768cbef1c6464",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2858e007a3b887a4939768cbef1c6464?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=6FqzGNC4kOI7NnlnVXfiecEX4GM%3D"
-    },
-    {
-      "name": "udisks2.policy",
-      "path": "files/default/udisks2.policy",
-      "checksum": "539152eef97a2ff99950d7151e7955a6",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-539152eef97a2ff99950d7151e7955a6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=aDNAkrGlGHlHxwkzwkRUcpmwanc%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a4231bae246d7b99bcef62b631952674?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=v9FRCdubZVpfjia81tXqr4q%2BMi0%3D"
     },
     {
       "name": "autolock.desktop",
       "path": "files/default/autolock.desktop",
       "checksum": "1803d22cf96541a5aff8c23a4eae2466",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1803d22cf96541a5aff8c23a4eae2466?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=eEeZaMyiNjtEZrV5rsng4pG%2BTQM%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-1803d22cf96541a5aff8c23a4eae2466?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=N8cPPrOF0iVobeFNDiiuvqcFz4A%3D"
+    },
+    {
+      "name": "autolock.sh",
+      "path": "files/default/autolock.sh",
+      "checksum": "c7d56c2918bedf11d5d1d6993bc5dcc4",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c7d56c2918bedf11d5d1d6993bc5dcc4?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=xAVdYX4bQ8JOx8xBfQ4fU3Bm2D4%3D"
+    },
+    {
+      "name": "deployment.config",
+      "path": "files/default/deployment.config",
+      "checksum": "a2eec4e5347b0d264b25b61743551467",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a2eec4e5347b0d264b25b61743551467?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=4yWm5dqndqrq40jKpX1ennwbtgM%3D"
     },
     {
       "name": "gecos-nm.conf",
       "path": "files/default/gecos-nm.conf",
       "checksum": "24983c79f04a5d9aa93e9491bb2ebec3",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-24983c79f04a5d9aa93e9491bb2ebec3?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=709hgMwgxfK9FuR7vxkBHZZASKM%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-24983c79f04a5d9aa93e9491bb2ebec3?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Hjsv2FjnVvA78r35bSk4vMd13KI%3D"
+    },
+    {
+      "name": "lightdm.service",
+      "path": "files/default/lightdm.service",
+      "checksum": "3c18699ad19577fff465d7513800d88c",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-3c18699ad19577fff465d7513800d88c?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=%2BWzDlj4sCxAeXbTsorJWoe30tB8%3D"
+    },
+    {
+      "name": "my_mkhomedir",
+      "path": "files/default/my_mkhomedir",
+      "checksum": "343772c8dfac2ed0b294769d15afb9d7",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-343772c8dfac2ed0b294769d15afb9d7?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=am2vDS1NFjTvXMlwLrxwx0hHGmw%3D"
+    },
+    {
+      "name": "nmapplet.policy",
+      "path": "files/default/nmapplet.policy",
+      "checksum": "374f5b1c5917d72b5439f985a0d0d9d1",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-374f5b1c5917d72b5439f985a0d0d9d1?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=WZOmSKf52uCEBABW0x9mBKHAAOY%3D"
+    },
+    {
+      "name": "owncloud.desktop",
+      "path": "files/default/owncloud.desktop",
+      "checksum": "4b17216fb9159a39a325b72c82f61296",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4b17216fb9159a39a325b72c82f61296?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=cbOulW9n2QcdlPH/X1Bd/77W3tQ%3D"
+    },
+    {
+      "name": "restrict-login-powermgmt.pkla",
+      "path": "files/default/restrict-login-powermgmt.pkla",
+      "checksum": "2858e007a3b887a4939768cbef1c6464",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2858e007a3b887a4939768cbef1c6464?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=%2BB3EYg15XruhWHjb4uZkKI0u5dg%3D"
+    },
+    {
+      "name": "serviceproviders.xml",
+      "path": "files/default/serviceproviders.xml",
+      "checksum": "473686b408b0f59661955d2791d389d0",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-473686b408b0f59661955d2791d389d0?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=bSqmpUTySPzlDrIGIewDt09yOwE%3D"
+    },
+    {
+      "name": "udisks.policy",
+      "path": "files/default/udisks.policy",
+      "checksum": "20c678be9acf6b77625b8d1a3db17211",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-20c678be9acf6b77625b8d1a3db17211?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=829e1B3BFLnIPwYTalgmQutFEXE%3D"
+    },
+    {
+      "name": "udisks2.policy",
+      "path": "files/default/udisks2.policy",
+      "checksum": "539152eef97a2ff99950d7151e7955a6",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-539152eef97a2ff99950d7151e7955a6?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=OHNuzxBIx04Pm8/XkDegF8iWKVg%3D"
     }
   ],
   "templates": [
     {
-      "name": "scripts_onstartup.erb",
-      "path": "templates/default/scripts_onstartup.erb",
-      "checksum": "41c141ba3a46db0bb80923077e116d0a",
+      "name": "apt_cron.erb",
+      "path": "templates/default/apt_cron.erb",
+      "checksum": "877706ad58d62dbf40ee2673e89e9f20",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-41c141ba3a46db0bb80923077e116d0a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=iIV6CAFK9gIWSrPY/U61Rv/rceo%3D"
-    },
-    {
-      "name": "nm_mobile_broadband.erb",
-      "path": "templates/default/nm_mobile_broadband.erb",
-      "checksum": "c6df74486bdbce9b8d5300d3bb255117",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c6df74486bdbce9b8d5300d3bb255117?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=bGcwMSlmMtFF4vfzBMMKxFKkbFQ%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-877706ad58d62dbf40ee2673e89e9f20?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Fdh1ZgUgUu6y/jmuIjMCqYtalLw%3D"
     },
     {
       "name": "apt_proxy.erb",
       "path": "templates/default/apt_proxy.erb",
       "checksum": "0ec69ab1143e82221833f5c1d30ddc07",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0ec69ab1143e82221833f5c1d30ddc07?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=8B0F7KTrYRdRgNWdwdcADM0HYEg%3D"
-    },
-    {
-      "name": "web_browser_scope.js.erb",
-      "path": "templates/default/web_browser_scope.js.erb",
-      "checksum": "4c973b93e9ba67acdc9839bec09d9e51",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4c973b93e9ba67acdc9839bec09d9e51?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=0wt2XgQttp6JUsQWXYaqkSF%2Btik%3D"
-    },
-    {
-      "name": "web_browser_user.js.erb",
-      "path": "templates/default/web_browser_user.js.erb",
-      "checksum": "1b5f6124c8e827d2912134e0026964bd",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1b5f6124c8e827d2912134e0026964bd?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=FQILfNc4nmsL3rJrvjQvalemJqk%3D"
-    },
-    {
-      "name": "lightdm.conf.erb",
-      "path": "templates/default/lightdm.conf.erb",
-      "checksum": "2e543dae7964d2eb3fd55acc7660f47d",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2e543dae7964d2eb3fd55acc7660f47d?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jMyks7B%2Bssn9z9PI4sBTVkgHfzQ%3D"
-    },
-    {
-      "name": "autolock.erb",
-      "path": "templates/default/autolock.erb",
-      "checksum": "9dc43fd16721321de681ae0021f1be37",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-9dc43fd16721321de681ae0021f1be37?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=Z4LfE7RVgrDJa%2BDIut7leaiQJfI%3D"
-    },
-    {
-      "name": "debug_mode.erb",
-      "path": "templates/default/debug_mode.erb",
-      "checksum": "8173f130a06d340b03635eeac47ffc3d",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-8173f130a06d340b03635eeac47ffc3d?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=nh6mkrh6zbUnNUSHbvh6%2BdaoO/s%3D"
-    },
-    {
-      "name": "deployment.properties.erb",
-      "path": "templates/default/deployment.properties.erb",
-      "checksum": "b6260b8ffc5a0b67f7c1b0ccfe38367b",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b6260b8ffc5a0b67f7c1b0ccfe38367b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=%2BbQgzcSx2Ldb4qhF1/hCpT6AuFY%3D"
-    },
-    {
-      "name": "ntpdate.erb",
-      "path": "templates/default/ntpdate.erb",
-      "checksum": "a24df1adfedfe612677b0fe723869501",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a24df1adfedfe612677b0fe723869501?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=I%2B7nCx7dddSduo%2B9lgORWhMHb0k%3D"
-    },
-    {
-      "name": "connection.erb",
-      "path": "templates/default/connection.erb",
-      "checksum": "0c8a57f6cb3c49e76fb589ddc0a86882",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0c8a57f6cb3c49e76fb589ddc0a86882?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=Ccf8qch4bB1%2BEbZcAK%2B4i8VStYY%3D"
-    },
-    {
-      "name": "owncloud.cfg.erb",
-      "path": "templates/default/owncloud.cfg.erb",
-      "checksum": "ab0e72a3f05623319d96ce11d0959880",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-ab0e72a3f05623319d96ce11d0959880?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=JaXSKnWuIrYczB43owI%2BcsEYB3U%3D"
-    },
-    {
-      "name": "owncloud_folders.erb",
-      "path": "templates/default/owncloud_folders.erb",
-      "checksum": "68f3e287c1a8fa72ccd0c09e33f1393a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-68f3e287c1a8fa72ccd0c09e33f1393a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=PtV7lZJtHZZu1D3HNpaX4Dj34oE%3D"
-    },
-    {
-      "name": "grubconf_custom.erb",
-      "path": "templates/default/grubconf_custom.erb",
-      "checksum": "2fd06b6a892fea7c9639aa51a84a04d6",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2fd06b6a892fea7c9639aa51a84a04d6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=TlEg1K0sxChmDoPGcR%2BuLR%2BTsvc%3D"
-    },
-    {
-      "name": "mozilla_proxy.erb",
-      "path": "templates/default/mozilla_proxy.erb",
-      "checksum": "c885266e96bf3dbc78e73ccfbd7c964b",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c885266e96bf3dbc78e73ccfbd7c964b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=wWmp18KZuykVjfaVWWeJdoJdKXQ%3D"
-    },
-    {
-      "name": "mdm.conf.erb",
-      "path": "templates/default/mdm.conf.erb",
-      "checksum": "a461d735f46b61573ec70de6152263f8",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a461d735f46b61573ec70de6152263f8?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=DUKYYp3rPyyDimRVRZHOV32vcZM%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0ec69ab1143e82221833f5c1d30ddc07?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=p/NFqo4XFa0KQr1OnrWpAnr%2BlG4%3D"
     },
     {
       "name": "auto_shutdown.erb",
       "path": "templates/default/auto_shutdown.erb",
       "checksum": "aa56e72867cfd021fb532801d4090b23",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-aa56e72867cfd021fb532801d4090b23?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=ZHwKsF/sz%2BQGEithzpcNk%2BYngdc%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-aa56e72867cfd021fb532801d4090b23?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=np9d/Ir7jlDH4u20mw1Ur5Z6ebg%3D"
+    },
+    {
+      "name": "auto_updates.erb",
+      "path": "templates/default/auto_updates.erb",
+      "checksum": "07a24fd847985dce7918bf03594c297a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-07a24fd847985dce7918bf03594c297a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=M4bPd/14eQpcfgBoOe3tTnfPG%2Bw%3D"
+    },
+    {
+      "name": "auto_updates.service.erb",
+      "path": "templates/default/auto_updates.service.erb",
+      "checksum": "96b7b2086bf6efad9a507d79c3bdcd9b",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-96b7b2086bf6efad9a507d79c3bdcd9b?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NUdCwb5LnR/I5kjpncBSWCelB%2Bs%3D"
+    },
+    {
+      "name": "autolock.erb",
+      "path": "templates/default/autolock.erb",
+      "checksum": "9dc43fd16721321de681ae0021f1be37",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-9dc43fd16721321de681ae0021f1be37?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=UsEOn27AjrSIZnQQS5EHPIGpnHQ%3D"
     },
     {
       "name": "com.ubuntu.desktop.pkla.erb",
       "path": "templates/default/com.ubuntu.desktop.pkla.erb",
       "checksum": "89f7b060ae1acf093f4f2e672db528ac",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-89f7b060ae1acf093f4f2e672db528ac?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=EGbWNtmaTzhUkJzGsODKzorKUgs%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-89f7b060ae1acf093f4f2e672db528ac?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NmZnFqo7GpMpp9MtPnjHSPqEHyA%3D"
+    },
+    {
+      "name": "connection.erb",
+      "path": "templates/default/connection.erb",
+      "checksum": "0c8a57f6cb3c49e76fb589ddc0a86882",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0c8a57f6cb3c49e76fb589ddc0a86882?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=J9BDHmaGYNM9teDQJaUtrgdayTM%3D"
+    },
+    {
+      "name": "debug_mode.erb",
+      "path": "templates/default/debug_mode.erb",
+      "checksum": "8173f130a06d340b03635eeac47ffc3d",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-8173f130a06d340b03635eeac47ffc3d?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=3icawJc9stdPgbwrINEAvK2kims%3D"
+    },
+    {
+      "name": "deployment.properties.erb",
+      "path": "templates/default/deployment.properties.erb",
+      "checksum": "b6260b8ffc5a0b67f7c1b0ccfe38367b",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b6260b8ffc5a0b67f7c1b0ccfe38367b?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=pIKi1CzN2sXizl4b0wZjRSO6HU0%3D"
+    },
+    {
+      "name": "environment.erb",
+      "path": "templates/default/environment.erb",
+      "checksum": "884dfe241c483b4e3c916d445f7990a7",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-884dfe241c483b4e3c916d445f7990a7?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=8UI7mc8Cd1W59XBz%2Bf9%2BKkeLI0k%3D"
     },
     {
       "name": "fctlsslvpnhistory.erb",
       "path": "templates/default/fctlsslvpnhistory.erb",
-      "checksum": "ecf36453394f6a469c857edaf64df05c",
+      "checksum": "4e8141e49574568602d8ba404c29becd",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-ecf36453394f6a469c857edaf64df05c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=pxTNlyPqDhiWyqg/QWgO34ZDavo%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4e8141e49574568602d8ba404c29becd?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=rDmvFl8nwDDN/DGzuNU1GwlgOrY%3D"
     },
     {
-      "name": "apt_cron.erb",
-      "path": "templates/default/apt_cron.erb",
-      "checksum": "357049dcca2cd50f90c1eb2d4847309e",
+      "name": "grubconf_custom.erb",
+      "path": "templates/default/grubconf_custom.erb",
+      "checksum": "1c15edd9168d8ab34acba740c53a0087",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-357049dcca2cd50f90c1eb2d4847309e?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=sFgQUCr24L%2BRWVyGlmO%2BcdxU5nA%3D"
-    },
-    {
-      "name": "update.js.erb",
-      "path": "templates/default/update.js.erb",
-      "checksum": "e28bef3c53a904c6b9fb904c1a86a079",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-e28bef3c53a904c6b9fb904c1a86a079?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=BhVTtVngzM0iPZE8jCiwGQP81jo%3D"
-    },
-    {
-      "name": "auto_updates.erb",
-      "path": "templates/default/auto_updates.erb",
-      "checksum": "11c75eb4bdc728fc33c269ccf0c740a3",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-11c75eb4bdc728fc33c269ccf0c740a3?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=DJMYltTvvRCW6%2Bil62S/ZAwCdgk%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-1c15edd9168d8ab34acba740c53a0087?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=nO86%2BtM%2Bse1aRtUT/CwpLBFQT5s%3D"
     },
     {
       "name": "grubconf_unrestricted.erb",
       "path": "templates/default/grubconf_unrestricted.erb",
       "checksum": "4017295d5fcbec743ab131d35e3bb060",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4017295d5fcbec743ab131d35e3bb060?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=p/le8Zj4ST0oph2OuXyLkP3aIoE%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4017295d5fcbec743ab131d35e3bb060?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=uER0kgsJFqQzNTJp5elF2IX5aIQ%3D"
+    },
+    {
+      "name": "helpchannel.erb",
+      "path": "templates/default/helpchannel.erb",
+      "checksum": "d9214f5337184a222031ce15792a3659",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-d9214f5337184a222031ce15792a3659?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=mjVg0fbvxvQi3xzuBBmydcr0WXI%3D"
+    },
+    {
+      "name": "lightdm.conf.erb",
+      "path": "templates/default/lightdm.conf.erb",
+      "checksum": "401e43a7e9f0b0342ec1baa347893c16",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-401e43a7e9f0b0342ec1baa347893c16?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=mltKrmQowRZKqnaDNs%2BKjdS8ssk%3D"
+    },
+    {
+      "name": "mdm.conf.erb",
+      "path": "templates/default/mdm.conf.erb",
+      "checksum": "a461d735f46b61573ec70de6152263f8",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a461d735f46b61573ec70de6152263f8?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=lemUChCOoOMwWiZ8lMDs1t75aH4%3D"
+    },
+    {
+      "name": "mozilla_proxy.erb",
+      "path": "templates/default/mozilla_proxy.erb",
+      "checksum": "c885266e96bf3dbc78e73ccfbd7c964b",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c885266e96bf3dbc78e73ccfbd7c964b?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=o0JcZvOPmObVOkAlzTmiRE6FvyU%3D"
+    },
+    {
+      "name": "nm_mobile_broadband.erb",
+      "path": "templates/default/nm_mobile_broadband.erb",
+      "checksum": "c6df74486bdbce9b8d5300d3bb255117",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c6df74486bdbce9b8d5300d3bb255117?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=fzZfto9oUHbJ99Li7uTNatS8Wqk%3D"
+    },
+    {
+      "name": "ntpdate.erb",
+      "path": "templates/default/ntpdate.erb",
+      "checksum": "a24df1adfedfe612677b0fe723869501",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a24df1adfedfe612677b0fe723869501?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=n52Mhs3icD3FH7BN/zhFktrXVck%3D"
+    },
+    {
+      "name": "owncloud.cfg.erb",
+      "path": "templates/default/owncloud.cfg.erb",
+      "checksum": "ab0e72a3f05623319d96ce11d0959880",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-ab0e72a3f05623319d96ce11d0959880?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=XOXBjgJ1OM6wMNYW/p9SmI4bLbU%3D"
+    },
+    {
+      "name": "owncloud_folders.erb",
+      "path": "templates/default/owncloud_folders.erb",
+      "checksum": "68f3e287c1a8fa72ccd0c09e33f1393a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-68f3e287c1a8fa72ccd0c09e33f1393a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=IcT0DrznHv9W975wE3D/DsD7on0%3D"
     },
     {
       "name": "scripts_onshutdown.erb",
       "path": "templates/default/scripts_onshutdown.erb",
       "checksum": "cd205a0379a281c035c4f4e71a179556",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-cd205a0379a281c035c4f4e71a179556?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=IsHpgIgjNqzUid44W/7DSbj8b/4%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-cd205a0379a281c035c4f4e71a179556?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=u3hhfNRyQup3SoVeahAz6jZ2Wxg%3D"
+    },
+    {
+      "name": "scripts_onstartup.erb",
+      "path": "templates/default/scripts_onstartup.erb",
+      "checksum": "41c141ba3a46db0bb80923077e116d0a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-41c141ba3a46db0bb80923077e116d0a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=BhCnf80nh%2B5L8R29KD8xcerbdnQ%3D"
+    },
+    {
+      "name": "timesyncd.conf.erb",
+      "path": "templates/default/timesyncd.conf.erb",
+      "checksum": "6ab4b636815e6a70b2beda39312cfe25",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-6ab4b636815e6a70b2beda39312cfe25?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Cl9bVUAUr75xdXN974fUXd1RJ1o%3D"
+    },
+    {
+      "name": "update.js.erb",
+      "path": "templates/default/update.js.erb",
+      "checksum": "30cfa7a2645535aefefdfe5992a31298",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-30cfa7a2645535aefefdfe5992a31298?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=kQq/GVnSa2Ml%2BEXJVIu%2BfwyWhmY%3D"
+    },
+    {
+      "name": "web_browser_scope.js.erb",
+      "path": "templates/default/web_browser_scope.js.erb",
+      "checksum": "4c973b93e9ba67acdc9839bec09d9e51",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4c973b93e9ba67acdc9839bec09d9e51?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=/s77RW/XaaBz4v9tNopuxHDZqBA%3D"
+    },
+    {
+      "name": "web_browser_user.js.erb",
+      "path": "templates/default/web_browser_user.js.erb",
+      "checksum": "1b5f6124c8e827d2912134e0026964bd",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-1b5f6124c8e827d2912134e0026964bd?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=MwjfydyL1p1dMrfPB9W8BOf/UmA%3D"
     }
   ],
   "resources": [
     {
-      "name": "tz_date.rb",
-      "path": "resources/tz_date.rb",
-      "checksum": "a02ab45fae7f5e65c8d80beb03815b43",
+      "name": "appconfig_firefox.rb",
+      "path": "resources/appconfig_firefox.rb",
+      "checksum": "2cb8737459b84eb68c327ab34013f6e1",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a02ab45fae7f5e65c8d80beb03815b43?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=g2SojxfZRgnDRRPxLul13y%2B/E34%3D"
-    },
-    {
-      "name": "email_setup.rb",
-      "path": "resources/email_setup.rb",
-      "checksum": "5d6ff6f82e8b19d4edcb7e065eb4d910",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5d6ff6f82e8b19d4edcb7e065eb4d910?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=njDiNgagvkY90z7Wle6IyViPZ/s%3D"
-    },
-    {
-      "name": "local_groups.rb",
-      "path": "resources/local_groups.rb",
-      "checksum": "b68e368663b3f84184690623f02c64cb",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b68e368663b3f84184690623f02c64cb?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=gBMeKVHu0EzcCrnCv5iIGUEVLyo%3D"
-    },
-    {
-      "name": "jobids.rb",
-      "path": "resources/jobids.rb",
-      "checksum": "5b35b6f9f3dcbfd30465af069623f415",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5b35b6f9f3dcbfd30465af069623f415?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=oQkMsfyVC3YoeQxmPPJHie681rY%3D"
-    },
-    {
-      "name": "user_alerts.rb",
-      "path": "resources/user_alerts.rb",
-      "checksum": "0960e53f1446a0e1f8b1e6ccc730ea4b",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0960e53f1446a0e1f8b1e6ccc730ea4b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=LUjBIoy79kxcnpBXHW2KpXmcPEw%3D"
-    },
-    {
-      "name": "user_apps_autostart.rb",
-      "path": "resources/user_apps_autostart.rb",
-      "checksum": "5bc6cdcd2017b73970dd452a8a723ad6",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5bc6cdcd2017b73970dd452a8a723ad6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=5AyeuuA/GuPIuwRNLs/qCQPCSp0%3D"
-    },
-    {
-      "name": "local_admin_users.rb",
-      "path": "resources/local_admin_users.rb",
-      "checksum": "5f5ca829cf51169ce592ec435ed4c9ae",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5f5ca829cf51169ce592ec435ed4c9ae?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=IIHDpIdQohRLlvqbuvIxwWA/%2Bys%3D"
-    },
-    {
-      "name": "user_shared_folders.rb",
-      "path": "resources/user_shared_folders.rb",
-      "checksum": "5f27fb81cd42502fec104672983eff3c",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5f27fb81cd42502fec104672983eff3c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=bRnPGSbIDgUjEjngzYNRkzx12xc%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2cb8737459b84eb68c327ab34013f6e1?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=%2BRPnGnF%2BKxq0VDsSiBhm/JxQuiM%3D"
     },
     {
       "name": "appconfig_java.rb",
       "path": "resources/appconfig_java.rb",
       "checksum": "f96bdd9df74ad15724560c3970c31abb",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f96bdd9df74ad15724560c3970c31abb?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=GfoACdxCrEIoVSEykDmRaiv%2Bpy4%3D"
-    },
-    {
-      "name": "desktop_background.rb",
-      "path": "resources/desktop_background.rb",
-      "checksum": "656696c547df2de3a5dc29242eff22b2",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-656696c547df2de3a5dc29242eff22b2?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=3rU2HeeRR19LzkBXsPIUSxeNt/g%3D"
-    },
-    {
-      "name": "folder_sharing.rb",
-      "path": "resources/folder_sharing.rb",
-      "checksum": "b5bb9f18665fd40b04746c2c11fad737",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b5bb9f18665fd40b04746c2c11fad737?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=8OQPZJjMsnAh3BIFZVx/AMzpHQU%3D"
-    },
-    {
-      "name": "file_browser.rb",
-      "path": "resources/file_browser.rb",
-      "checksum": "bb52d9b44dfb81578abe750358775a5f",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-bb52d9b44dfb81578abe750358775a5f?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=XH7IAq0Ojsia8uB%2B3YEOsg4G0Kg%3D"
-    },
-    {
-      "name": "screensaver.rb",
-      "path": "resources/screensaver.rb",
-      "checksum": "4e4edf326e5c7774916cc4a15c7adfd6",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4e4edf326e5c7774916cc4a15c7adfd6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=1XL7tlnGDaq%2BYjtF8UBGkNghL6Q%3D"
-    },
-    {
-      "name": "system_settings.rb",
-      "path": "resources/system_settings.rb",
-      "checksum": "c0e4e366353e36087217be9c157d6320",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c0e4e366353e36087217be9c157d6320?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=L6wSqJjbSj8jCtVzwKZkIIq/Dcw%3D"
-    },
-    {
-      "name": "printers.rb",
-      "path": "resources/printers.rb",
-      "checksum": "25160f1ec77905ce3b5edbb722c3965a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-25160f1ec77905ce3b5edbb722c3965a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=3s8an/bDonGJlwcmKl9VW4fIm%2Bs%3D"
-    },
-    {
-      "name": "user_modify_nm.rb",
-      "path": "resources/user_modify_nm.rb",
-      "checksum": "df811a726e9d0c2ec9a9bcf8057c7aff",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-df811a726e9d0c2ec9a9bcf8057c7aff?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=mfeeU8sAJj1TeTu/qFgaq%2BvnDtE%3D"
-    },
-    {
-      "name": "mimetypes.rb",
-      "path": "resources/mimetypes.rb",
-      "checksum": "57e8f9bfa19f019901258a6e3de0a786",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-57e8f9bfa19f019901258a6e3de0a786?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=QCxJJDoezjGMqEFJ7Td545VUdHk%3D"
-    },
-    {
-      "name": "forticlientvpn.rb",
-      "path": "resources/forticlientvpn.rb",
-      "checksum": "f876317bb200e1af021f501ab2fe549e",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f876317bb200e1af021f501ab2fe549e?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jNhR3Nv7J77ja5UWyeqEbQYuv/I%3D"
-    },
-    {
-      "name": "network.rb",
-      "path": "resources/network.rb",
-      "checksum": "cc643da5f54b50768d2e7b14f827438a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-cc643da5f54b50768d2e7b14f827438a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=6rVySfnF1fu2kvz0wWGkgHfnly8%3D"
-    },
-    {
-      "name": "display_manager.rb",
-      "path": "resources/display_manager.rb",
-      "checksum": "8d7ca9dbd65c77a0822e07304f6453f1",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-8d7ca9dbd65c77a0822e07304f6453f1?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jnqjr3DyUjsDVQ9jK9JxiW0/uTI%3D"
-    },
-    {
-      "name": "user_launchers.rb",
-      "path": "resources/user_launchers.rb",
-      "checksum": "009fb122d241f99b0d4ae3d12d62daa1",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-009fb122d241f99b0d4ae3d12d62daa1?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=OhzadeUkZ3q3Rld5GZH2Dg2wLOY%3D"
-    },
-    {
-      "name": "cert.rb",
-      "path": "resources/cert.rb",
-      "checksum": "cb067ad835558762241d8f4ba9d920bb",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-cb067ad835558762241d8f4ba9d920bb?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=gNNgcylToNeffNQ9QO%2B7FWXQuuc%3D"
-    },
-    {
-      "name": "folder_sync.rb",
-      "path": "resources/folder_sync.rb",
-      "checksum": "c137bb8a39db746cb36676c28a3b1507",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c137bb8a39db746cb36676c28a3b1507?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=gQfKXDkeukfy76TIWmZj2Afa8tk%3D"
-    },
-    {
-      "name": "package.rb",
-      "path": "resources/package.rb",
-      "checksum": "bc14bc9dda505b83026ca33d2944f580",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-bc14bc9dda505b83026ca33d2944f580?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=l/GbYAE%2BIHUgPsoHFAug3RcZSJI%3D"
-    },
-    {
-      "name": "web_browser.rb",
-      "path": "resources/web_browser.rb",
-      "checksum": "5b8b77c76785763ee61439b48b7dba69",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5b8b77c76785763ee61439b48b7dba69?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=BVLINWAacLjC4qB1bC3pm0y7md0%3D"
-    },
-    {
-      "name": "shutdown_options.rb",
-      "path": "resources/shutdown_options.rb",
-      "checksum": "ece532dbd7a3085f264e217fe558e269",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-ece532dbd7a3085f264e217fe558e269?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=f94OWgAD3uTWes82sSllbAFiWWo%3D"
-    },
-    {
-      "name": "idle_timeout.rb",
-      "path": "resources/idle_timeout.rb",
-      "checksum": "515e89f67e17029db97b274046e09456",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-515e89f67e17029db97b274046e09456?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=bX19pjLz39d/mLmBJ1A7p3PMR0I%3D"
-    },
-    {
-      "name": "boot_lock.rb",
-      "path": "resources/boot_lock.rb",
-      "checksum": "20a219faebf10457e7c2b36f79c5a215",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-20a219faebf10457e7c2b36f79c5a215?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=BsRV5Ce7egHW4IYb2azg9Q0j6pk%3D"
-    },
-    {
-      "name": "connectivity.rb",
-      "path": "resources/connectivity.rb",
-      "checksum": "024638b97f3f094e9a743404a93b65ed",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-024638b97f3f094e9a743404a93b65ed?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=TSXMA35ew8iBQBCjoaCkyRXIqBk%3D"
-    },
-    {
-      "name": "appconfig_firefox.rb",
-      "path": "resources/appconfig_firefox.rb",
-      "checksum": "2cb8737459b84eb68c327ab34013f6e1",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2cb8737459b84eb68c327ab34013f6e1?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=u1Ma/c/5ezmKwpyoaZBNWBIt2uM%3D"
-    },
-    {
-      "name": "remote_shutdown.rb",
-      "path": "resources/remote_shutdown.rb",
-      "checksum": "0092c3542b442684b4979dc4f818b39a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0092c3542b442684b4979dc4f818b39a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=orQ69m0CSogA1sHLwk%2BxLZYK8D4%3D"
-    },
-    {
-      "name": "local_file.rb",
-      "path": "resources/local_file.rb",
-      "checksum": "993ddfe6841311c03a94c0f4315c393a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-993ddfe6841311c03a94c0f4315c393a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jTb2YOlText2DP78DqwTaxA9r%2Bg%3D"
-    },
-    {
-      "name": "im_client.rb",
-      "path": "resources/im_client.rb",
-      "checksum": "0e9af60004d2e4597d46e8626de31931",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0e9af60004d2e4597d46e8626de31931?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=E3A59DM8nM00uG5hSDfuUiSes1o%3D"
-    },
-    {
-      "name": "desktop_gsettings.rb",
-      "path": "resources/desktop_gsettings.rb",
-      "checksum": "d97a42d0caf368dd1668bbd665f44eed",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-d97a42d0caf368dd1668bbd665f44eed?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=ryfG45XqOl3C0s6/SV8oGjb9xNw%3D"
-    },
-    {
-      "name": "power_conf.rb",
-      "path": "resources/power_conf.rb",
-      "checksum": "bdc301851f23ad84af3d0f17153ccd66",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-bdc301851f23ad84af3d0f17153ccd66?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=l9Y6nrLgQUTh7UmURxkQk%2BTgNQU%3D"
-    },
-    {
-      "name": "appconfig_thunderbird.rb",
-      "path": "resources/appconfig_thunderbird.rb",
-      "checksum": "e4ceb4bc2abd7c3d90a4b4c57f144748",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-e4ceb4bc2abd7c3d90a4b4c57f144748?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=T0BwDJbLcIUKsZ3o2I/giltmnlM%3D"
-    },
-    {
-      "name": "system_proxy.rb",
-      "path": "resources/system_proxy.rb",
-      "checksum": "9e7dc3072724fb95dcd83ff56f50a035",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-9e7dc3072724fb95dcd83ff56f50a035?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=wBrvxw9PIzmpuyPblpx49DkRlNA%3D"
-    },
-    {
-      "name": "auto_updates.rb",
-      "path": "resources/auto_updates.rb",
-      "checksum": "b07d8a94e62eb8bf9ed0ca9569e35a83",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b07d8a94e62eb8bf9ed0ca9569e35a83?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=2ur7wfMsqFG4CuHVj7I8vMMm2Gk%3D"
-    },
-    {
-      "name": "software_sources.rb",
-      "path": "resources/software_sources.rb",
-      "checksum": "2294cbc9ed1c05bc3bb4a55ddeb69ef4",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2294cbc9ed1c05bc3bb4a55ddeb69ef4?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=4Z7%2BM8dcR0audKXRDy/UOwPRnTs%3D"
-    },
-    {
-      "name": "debug_mode.rb",
-      "path": "resources/debug_mode.rb",
-      "checksum": "a6ed6ec539b289fbbf30825345579dba",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a6ed6ec539b289fbbf30825345579dba?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=KcQxzvGYiqPL9A/eLuHqPtWYJ/U%3D"
-    },
-    {
-      "name": "user_mount.rb",
-      "path": "resources/user_mount.rb",
-      "checksum": "388a81f25124c73970bb647880b55511",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-388a81f25124c73970bb647880b55511?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=4%2B5N0bnYWKUtAFIdbstwq0KhVQY%3D"
-    },
-    {
-      "name": "local_users.rb",
-      "path": "resources/local_users.rb",
-      "checksum": "f6f8e80fb9a90038dd6b4581165d5b9e",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f6f8e80fb9a90038dd6b4581165d5b9e?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=7MqX0BleHrdepWitZFe3WMdMMK8%3D"
-    },
-    {
-      "name": "ttys.rb",
-      "path": "resources/ttys.rb",
-      "checksum": "1346a6dd748b2645d5ece8d7da78da66",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1346a6dd748b2645d5ece8d7da78da66?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=OuPzzvagowZGal6lGHYa/Qpn0T0%3D"
-    },
-    {
-      "name": "scripts_launch.rb",
-      "path": "resources/scripts_launch.rb",
-      "checksum": "b3f9e5e57b1176ed8c5ae828982cef22",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b3f9e5e57b1176ed8c5ae828982cef22?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=93QobxrLC%2BasHgrDKxoStyPztAA%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f96bdd9df74ad15724560c3970c31abb?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=5Ojai9/0Fn08/Y6XOyzN06q7GTY%3D"
     },
     {
       "name": "appconfig_libreoffice.rb",
       "path": "resources/appconfig_libreoffice.rb",
       "checksum": "91881d079ea5b381e3f3d9c3cbe170f7",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-91881d079ea5b381e3f3d9c3cbe170f7?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=LJsTIsYMyga8IxnVIZ0u30rq2jc%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-91881d079ea5b381e3f3d9c3cbe170f7?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=W3NwNn7AaCLhCwDUfBnXcHjzOdY%3D"
+    },
+    {
+      "name": "appconfig_thunderbird.rb",
+      "path": "resources/appconfig_thunderbird.rb",
+      "checksum": "e4ceb4bc2abd7c3d90a4b4c57f144748",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-e4ceb4bc2abd7c3d90a4b4c57f144748?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=GDLp1kj7OVrH00qlQq1My9l/QVk%3D"
+    },
+    {
+      "name": "auto_updates.rb",
+      "path": "resources/auto_updates.rb",
+      "checksum": "b07d8a94e62eb8bf9ed0ca9569e35a83",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b07d8a94e62eb8bf9ed0ca9569e35a83?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=tw8xpUyOchUu80TzpikuMtQLJ3Y%3D"
+    },
+    {
+      "name": "boot_lock.rb",
+      "path": "resources/boot_lock.rb",
+      "checksum": "20a219faebf10457e7c2b36f79c5a215",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-20a219faebf10457e7c2b36f79c5a215?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=7tvpgg0yqv34vHcCjW1yLXpD0Uc%3D"
+    },
+    {
+      "name": "cert.rb",
+      "path": "resources/cert.rb",
+      "checksum": "cb067ad835558762241d8f4ba9d920bb",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-cb067ad835558762241d8f4ba9d920bb?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=x1IYuScPZKcavVQwbJW0VJQQvmk%3D"
+    },
+    {
+      "name": "connectivity.rb",
+      "path": "resources/connectivity.rb",
+      "checksum": "024638b97f3f094e9a743404a93b65ed",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-024638b97f3f094e9a743404a93b65ed?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=BTwcC1r6uWwFVV5O5maPmJdGp6s%3D"
+    },
+    {
+      "name": "debug_mode.rb",
+      "path": "resources/debug_mode.rb",
+      "checksum": "a6ed6ec539b289fbbf30825345579dba",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a6ed6ec539b289fbbf30825345579dba?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=3g6Zft%2BuynJ3ro41YegoNzYy8bo%3D"
+    },
+    {
+      "name": "desktop_background.rb",
+      "path": "resources/desktop_background.rb",
+      "checksum": "656696c547df2de3a5dc29242eff22b2",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-656696c547df2de3a5dc29242eff22b2?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=IeAU0lQZSo7I46xNziXU8cp/0pc%3D"
+    },
+    {
+      "name": "desktop_gsettings.rb",
+      "path": "resources/desktop_gsettings.rb",
+      "checksum": "87d70a9943007e490647ad6d92cbfa63",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-87d70a9943007e490647ad6d92cbfa63?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NlqX5uX%2BDht7axK2YiEHbRM8clo%3D"
+    },
+    {
+      "name": "display_manager.rb",
+      "path": "resources/display_manager.rb",
+      "checksum": "2bdd4a2b759ab9b02b9568f918ac3fec",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2bdd4a2b759ab9b02b9568f918ac3fec?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NjgCAOxwQEYebHrHGIzAmrriPFA%3D"
+    },
+    {
+      "name": "email_setup.rb",
+      "path": "resources/email_setup.rb",
+      "checksum": "5d6ff6f82e8b19d4edcb7e065eb4d910",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5d6ff6f82e8b19d4edcb7e065eb4d910?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=qnMBcoiyLGIaFfZbwWRZwb6w74w%3D"
+    },
+    {
+      "name": "file_browser.rb",
+      "path": "resources/file_browser.rb",
+      "checksum": "bb52d9b44dfb81578abe750358775a5f",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-bb52d9b44dfb81578abe750358775a5f?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=mGiNDwdf85WN8zlPdFM7rErs6sY%3D"
+    },
+    {
+      "name": "folder_sharing.rb",
+      "path": "resources/folder_sharing.rb",
+      "checksum": "b5bb9f18665fd40b04746c2c11fad737",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b5bb9f18665fd40b04746c2c11fad737?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=bI4NC87xBAJ2T7hZdZxA%2BDC9jqc%3D"
+    },
+    {
+      "name": "folder_sync.rb",
+      "path": "resources/folder_sync.rb",
+      "checksum": "c137bb8a39db746cb36676c28a3b1507",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c137bb8a39db746cb36676c28a3b1507?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=SFVZnyS7uzCB3KnLhNTwJhSHR1c%3D"
+    },
+    {
+      "name": "forticlientvpn.rb",
+      "path": "resources/forticlientvpn.rb",
+      "checksum": "f876317bb200e1af021f501ab2fe549e",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f876317bb200e1af021f501ab2fe549e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=i7GishUwlVhIBAORJtP%2B63IdP9c%3D"
+    },
+    {
+      "name": "idle_timeout.rb",
+      "path": "resources/idle_timeout.rb",
+      "checksum": "515e89f67e17029db97b274046e09456",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-515e89f67e17029db97b274046e09456?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NFkBZXRWdEcOEr1LBsExCBCngNM%3D"
+    },
+    {
+      "name": "im_client.rb",
+      "path": "resources/im_client.rb",
+      "checksum": "0e9af60004d2e4597d46e8626de31931",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0e9af60004d2e4597d46e8626de31931?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=DW8pn7%2B5nxf8SjZTIbV0wWHnuPg%3D"
+    },
+    {
+      "name": "jobids.rb",
+      "path": "resources/jobids.rb",
+      "checksum": "5b35b6f9f3dcbfd30465af069623f415",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5b35b6f9f3dcbfd30465af069623f415?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=a46XiJ9owuo94/0RVh6zNnzjzi4%3D"
+    },
+    {
+      "name": "local_admin_users.rb",
+      "path": "resources/local_admin_users.rb",
+      "checksum": "5f5ca829cf51169ce592ec435ed4c9ae",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5f5ca829cf51169ce592ec435ed4c9ae?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=ubKJS5To2PpFTy8gQEj%2BrjODeC0%3D"
+    },
+    {
+      "name": "local_file.rb",
+      "path": "resources/local_file.rb",
+      "checksum": "993ddfe6841311c03a94c0f4315c393a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-993ddfe6841311c03a94c0f4315c393a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=WXKCY7NVmx6gzGAPzuc5Ak7W%2BDk%3D"
+    },
+    {
+      "name": "local_groups.rb",
+      "path": "resources/local_groups.rb",
+      "checksum": "b68e368663b3f84184690623f02c64cb",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b68e368663b3f84184690623f02c64cb?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=5gdbz2HqGsz7t1hnNY/SX/T0H8w%3D"
+    },
+    {
+      "name": "local_users.rb",
+      "path": "resources/local_users.rb",
+      "checksum": "f6f8e80fb9a90038dd6b4581165d5b9e",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f6f8e80fb9a90038dd6b4581165d5b9e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=RAv/a4u1VfO3rTaou3yefHiPmls%3D"
+    },
+    {
+      "name": "mimetypes.rb",
+      "path": "resources/mimetypes.rb",
+      "checksum": "57e8f9bfa19f019901258a6e3de0a786",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-57e8f9bfa19f019901258a6e3de0a786?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=sYDl9j1UDKr8tL7VZEAn5uy/%2Bu0%3D"
     },
     {
       "name": "mobile_broadband.rb",
       "path": "resources/mobile_broadband.rb",
       "checksum": "732a15b0e0c92ae8aef7d8a6c728f413",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-732a15b0e0c92ae8aef7d8a6c728f413?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=a10NZIzljxER/VvHy6o8H60o4rY%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-732a15b0e0c92ae8aef7d8a6c728f413?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=UkXFXKxxk9iPNETlkeX0HvYSmXk%3D"
+    },
+    {
+      "name": "network.rb",
+      "path": "resources/network.rb",
+      "checksum": "cc643da5f54b50768d2e7b14f827438a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-cc643da5f54b50768d2e7b14f827438a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=lUQ1N0ET2o9nZHcjf4zelBGnh6E%3D"
+    },
+    {
+      "name": "package.rb",
+      "path": "resources/package.rb",
+      "checksum": "bc14bc9dda505b83026ca33d2944f580",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-bc14bc9dda505b83026ca33d2944f580?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=w5egh5jdh62B8K%2BDQ8C25TvydCo%3D"
+    },
+    {
+      "name": "power_conf.rb",
+      "path": "resources/power_conf.rb",
+      "checksum": "bdc301851f23ad84af3d0f17153ccd66",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-bdc301851f23ad84af3d0f17153ccd66?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=8fzYaWKeL8/TBH9/0RoNRI7Z5mk%3D"
+    },
+    {
+      "name": "printers.rb",
+      "path": "resources/printers.rb",
+      "checksum": "25160f1ec77905ce3b5edbb722c3965a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-25160f1ec77905ce3b5edbb722c3965a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Z0crGtA9cwkWt0i2dGAgB6tegdY%3D"
+    },
+    {
+      "name": "remote_control.rb",
+      "path": "resources/remote_control.rb",
+      "checksum": "5255880686220bd9c1063f5e2a0e1ae0",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5255880686220bd9c1063f5e2a0e1ae0?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=A%2Bx8cPWUjLdRty25SKz5wBk7yT0%3D"
+    },
+    {
+      "name": "remote_shutdown.rb",
+      "path": "resources/remote_shutdown.rb",
+      "checksum": "0092c3542b442684b4979dc4f818b39a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0092c3542b442684b4979dc4f818b39a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=b3nM/7WMNi0A8YcB5smHVgaAmoY%3D"
+    },
+    {
+      "name": "screensaver.rb",
+      "path": "resources/screensaver.rb",
+      "checksum": "4e4edf326e5c7774916cc4a15c7adfd6",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4e4edf326e5c7774916cc4a15c7adfd6?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=fbCgY0Jyts87O0LrUk44O5dIGys%3D"
+    },
+    {
+      "name": "scripts_launch.rb",
+      "path": "resources/scripts_launch.rb",
+      "checksum": "b3f9e5e57b1176ed8c5ae828982cef22",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b3f9e5e57b1176ed8c5ae828982cef22?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=sPk3LXwmdAgMshTldPeP58IIck0%3D"
+    },
+    {
+      "name": "shutdown_options.rb",
+      "path": "resources/shutdown_options.rb",
+      "checksum": "ece532dbd7a3085f264e217fe558e269",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-ece532dbd7a3085f264e217fe558e269?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=lbY8MglBs0IX6tsJD0FYr4U0J3M%3D"
+    },
+    {
+      "name": "software_sources.rb",
+      "path": "resources/software_sources.rb",
+      "checksum": "2294cbc9ed1c05bc3bb4a55ddeb69ef4",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2294cbc9ed1c05bc3bb4a55ddeb69ef4?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=P37dLnpgSYH5xrtjX6MAP4AabXs%3D"
+    },
+    {
+      "name": "system_proxy.rb",
+      "path": "resources/system_proxy.rb",
+      "checksum": "9e7dc3072724fb95dcd83ff56f50a035",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-9e7dc3072724fb95dcd83ff56f50a035?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=sf6FSVR/wjDsUe1skW6IaF2rjvk%3D"
+    },
+    {
+      "name": "system_settings.rb",
+      "path": "resources/system_settings.rb",
+      "checksum": "c0e4e366353e36087217be9c157d6320",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c0e4e366353e36087217be9c157d6320?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=fiRdr8Q7KD6%2BPt5HNNRLbG7RcQU%3D"
+    },
+    {
+      "name": "ttys.rb",
+      "path": "resources/ttys.rb",
+      "checksum": "1346a6dd748b2645d5ece8d7da78da66",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-1346a6dd748b2645d5ece8d7da78da66?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=j0tbOmaHaQkDVYOpQBnroAahKpI%3D"
+    },
+    {
+      "name": "tz_date.rb",
+      "path": "resources/tz_date.rb",
+      "checksum": "a02ab45fae7f5e65c8d80beb03815b43",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a02ab45fae7f5e65c8d80beb03815b43?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=2P9Sp6ohvqHgf4mj7P4Kj4HmUqU%3D"
+    },
+    {
+      "name": "user_alerts.rb",
+      "path": "resources/user_alerts.rb",
+      "checksum": "0960e53f1446a0e1f8b1e6ccc730ea4b",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0960e53f1446a0e1f8b1e6ccc730ea4b?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=BJ2wvWTDPs3h/utiP4szx6nEyd8%3D"
+    },
+    {
+      "name": "user_apps_autostart.rb",
+      "path": "resources/user_apps_autostart.rb",
+      "checksum": "5bc6cdcd2017b73970dd452a8a723ad6",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5bc6cdcd2017b73970dd452a8a723ad6?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=QxOpWtlEmzP2Ut5P5cnySv61DUY%3D"
+    },
+    {
+      "name": "user_launchers.rb",
+      "path": "resources/user_launchers.rb",
+      "checksum": "009fb122d241f99b0d4ae3d12d62daa1",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-009fb122d241f99b0d4ae3d12d62daa1?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=oSVfRBAQWesnmC8wwgF52GJKhZw%3D"
+    },
+    {
+      "name": "user_modify_nm.rb",
+      "path": "resources/user_modify_nm.rb",
+      "checksum": "df811a726e9d0c2ec9a9bcf8057c7aff",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-df811a726e9d0c2ec9a9bcf8057c7aff?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=fdvCRh3r6on%2B7GH4TUwgmY/kUCM%3D"
+    },
+    {
+      "name": "user_mount.rb",
+      "path": "resources/user_mount.rb",
+      "checksum": "388a81f25124c73970bb647880b55511",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-388a81f25124c73970bb647880b55511?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=QYUfv0vxl30b3h7oXu7oRbsGy/A%3D"
+    },
+    {
+      "name": "user_shared_folders.rb",
+      "path": "resources/user_shared_folders.rb",
+      "checksum": "5f27fb81cd42502fec104672983eff3c",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5f27fb81cd42502fec104672983eff3c?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=5clY6cQ2XIUdK/PIFVkz/TGToMg%3D"
+    },
+    {
+      "name": "web_browser.rb",
+      "path": "resources/web_browser.rb",
+      "checksum": "5b8b77c76785763ee61439b48b7dba69",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5b8b77c76785763ee61439b48b7dba69?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=DOS%2B1%2BeTdv0GGHhf3ZlvGcMKLls%3D"
     }
   ],
   "providers": [
     {
-      "name": "tz_date.rb",
-      "path": "providers/tz_date.rb",
-      "checksum": "6e9bc66fdcb6ffbfa584dba600c6bdba",
+      "name": "appconfig_firefox.rb",
+      "path": "providers/appconfig_firefox.rb",
+      "checksum": "5f076f1b77bde1211fc4895e2d8053db",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-6e9bc66fdcb6ffbfa584dba600c6bdba?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=q8H2v25JiUuA5DgaQaxBFVhQRKk%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5f076f1b77bde1211fc4895e2d8053db?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=ExgDm8ykmbFLGUGRGyAeFp9WdOo%3D"
+    },
+    {
+      "name": "appconfig_java.rb",
+      "path": "providers/appconfig_java.rb",
+      "checksum": "338dd16ab17116bc9494ed53172cf257",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-338dd16ab17116bc9494ed53172cf257?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=kgkZke4YXG6dQEt0lq304BE%2Bna4%3D"
+    },
+    {
+      "name": "appconfig_libreoffice.rb",
+      "path": "providers/appconfig_libreoffice.rb",
+      "checksum": "5cb63ec8e4347793fc673439d2835b88",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5cb63ec8e4347793fc673439d2835b88?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=QggdzUyMpICee%2B7Pk%2BX8unITofw%3D"
+    },
+    {
+      "name": "appconfig_thunderbird.rb",
+      "path": "providers/appconfig_thunderbird.rb",
+      "checksum": "05366253f2d77c37664ee8418ab74e96",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-05366253f2d77c37664ee8418ab74e96?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=oIMciCCKFfleC5jkKLC6fqihNlM%3D"
+    },
+    {
+      "name": "auto_updates.rb",
+      "path": "providers/auto_updates.rb",
+      "checksum": "a7d0a1d36d4af7dfadc6d6c4259d34e5",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a7d0a1d36d4af7dfadc6d6c4259d34e5?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=YNhQeMFmPSZ1x/eNNLsFJIj1HZE%3D"
+    },
+    {
+      "name": "boot_lock.rb",
+      "path": "providers/boot_lock.rb",
+      "checksum": "9733f2e73063301e7f1e18eb4d6b8402",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-9733f2e73063301e7f1e18eb4d6b8402?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=7nWDGbDHhQyFC0JhdSoXcSs/d2I%3D"
+    },
+    {
+      "name": "cert.rb",
+      "path": "providers/cert.rb",
+      "checksum": "9cc23906dfbc93ee2fe22d846b69fba9",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-9cc23906dfbc93ee2fe22d846b69fba9?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=ntOw1b7ysNwwTptfn6ormQH9ggQ%3D"
+    },
+    {
+      "name": "connectivity.rb",
+      "path": "providers/connectivity.rb",
+      "checksum": "52db24be248a0ad3a94f99ebd162f6aa",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-52db24be248a0ad3a94f99ebd162f6aa?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=3Ckm/rNetuyHn2hq5d3Su3V7LBM%3D"
+    },
+    {
+      "name": "debug_mode.rb",
+      "path": "providers/debug_mode.rb",
+      "checksum": "83fd206edc7b90de26a4cfdbb9add3e3",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-83fd206edc7b90de26a4cfdbb9add3e3?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=3N%2B/Kd212tJizLcLDras%2BImiRcA%3D"
+    },
+    {
+      "name": "desktop_background.rb",
+      "path": "providers/desktop_background.rb",
+      "checksum": "2ecab6267bc20832e7e274c6c82f1956",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2ecab6267bc20832e7e274c6c82f1956?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=S1k/CGzXeSP8EdQ6l6jzM09gyQ4%3D"
+    },
+    {
+      "name": "display_manager.rb",
+      "path": "providers/display_manager.rb",
+      "checksum": "19989fa650cab8684ef2558101037b7a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-19989fa650cab8684ef2558101037b7a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=SGm6DQbkyadFzjYypbo1NeUdz18%3D"
     },
     {
       "name": "email_setup.rb",
       "path": "providers/email_setup.rb",
-      "checksum": "6a0ae4793fbb4e2e2e731104584f772f",
+      "checksum": "c2645786364f488f307e08ad4e75a9d4",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-6a0ae4793fbb4e2e2e731104584f772f?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=xNO/P35txiOO/32SxlhwU6OczMQ%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c2645786364f488f307e08ad4e75a9d4?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=wCSOIUYxRU/vO4p9sSbWWyprVns%3D"
     },
     {
-      "name": "local_groups.rb",
-      "path": "providers/local_groups.rb",
-      "checksum": "1d825f9e77a2cb90c829185cb057ee4b",
+      "name": "file_browser.rb",
+      "path": "providers/file_browser.rb",
+      "checksum": "a41f369a8c8628d8318fbc7d9e9bccca",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1d825f9e77a2cb90c829185cb057ee4b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=P2xq/khG1GR%2BfOjp5LkTodd6VSI%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a41f369a8c8628d8318fbc7d9e9bccca?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=rCPSb9Fdvu4hDM8m2TJ5iUdIIzw%3D"
+    },
+    {
+      "name": "folder_sharing.rb",
+      "path": "providers/folder_sharing.rb",
+      "checksum": "56b027e330b1e829126a71c9dbc87044",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-56b027e330b1e829126a71c9dbc87044?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=97sj0AX1SHedf5NQS/4QXilBJ/Q%3D"
+    },
+    {
+      "name": "folder_sync.rb",
+      "path": "providers/folder_sync.rb",
+      "checksum": "974dd5a8926d34a19c6e34ec7417e630",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-974dd5a8926d34a19c6e34ec7417e630?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=NTbLDdBJ9DUWS%2BLzRCz9%2Bz7halc%3D"
+    },
+    {
+      "name": "forticlientvpn.rb",
+      "path": "providers/forticlientvpn.rb",
+      "checksum": "804ad7c60a5b4bf8194b33b583e7f512",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-804ad7c60a5b4bf8194b33b583e7f512?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=/BHopIoyGORwjp3o50RfvExYQks%3D"
+    },
+    {
+      "name": "idle_timeout.rb",
+      "path": "providers/idle_timeout.rb",
+      "checksum": "02574ae6279c28c06418b137202ebd57",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-02574ae6279c28c06418b137202ebd57?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=yRD3YFubHbIgPqnjwy3iBy/fKts%3D"
+    },
+    {
+      "name": "im_client.rb",
+      "path": "providers/im_client.rb",
+      "checksum": "3be164f64bd17d3dde2e2d1ce580f704",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-3be164f64bd17d3dde2e2d1ce580f704?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=SGYucd7kEEo2oNSFVCeZlxO1WtU%3D"
     },
     {
       "name": "jobids.rb",
       "path": "providers/jobids.rb",
       "checksum": "c06170a50c2d14e5ab3d7b44c66b7221",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c06170a50c2d14e5ab3d7b44c66b7221?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jtUdXpNVc2sa7JZ5NyhXEnHosjw%3D"
-    },
-    {
-      "name": "user_alerts.rb",
-      "path": "providers/user_alerts.rb",
-      "checksum": "e4c017cfaadac3d520966865d24792a2",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-e4c017cfaadac3d520966865d24792a2?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=9xFMPmSrCm41BGxHNvphjRpMIZY%3D"
-    },
-    {
-      "name": "user_apps_autostart.rb",
-      "path": "providers/user_apps_autostart.rb",
-      "checksum": "3e6d9397d2e90448544b3efbf65e2583",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-3e6d9397d2e90448544b3efbf65e2583?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=I6bFaD5xlNDJybKhk84459zM4rk%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-c06170a50c2d14e5ab3d7b44c66b7221?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=EEdvb0sG6ntVIL3OZXRACWWoamM%3D"
     },
     {
       "name": "local_admin_users.rb",
       "path": "providers/local_admin_users.rb",
-      "checksum": "ef1293cedf6afe4525500d46dd5c2fb9",
+      "checksum": "d43ecc2cc32c2855c3c866455b95503b",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-ef1293cedf6afe4525500d46dd5c2fb9?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=PA19FwGpq0TrVOhWoeyt%2Bido0Jk%3D"
-    },
-    {
-      "name": "user_shared_folders.rb",
-      "path": "providers/user_shared_folders.rb",
-      "checksum": "81e6c228e268f82c4381e2f05ecdfe70",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-81e6c228e268f82c4381e2f05ecdfe70?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=YfAtH/THZRKqPIgdWWZ6YGOuBBs%3D"
-    },
-    {
-      "name": "appconfig_java.rb",
-      "path": "providers/appconfig_java.rb",
-      "checksum": "889d2e3c40776b2de433f548fa817468",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-889d2e3c40776b2de433f548fa817468?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=SyxOOBrC1FCECa0Dzg3QM5JpGuQ%3D"
-    },
-    {
-      "name": "desktop_background.rb",
-      "path": "providers/desktop_background.rb",
-      "checksum": "b2026762990e6e2d381fcadb74404485",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b2026762990e6e2d381fcadb74404485?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=Tc9GvidV0rRUYBxBfXSAm8O5vRA%3D"
-    },
-    {
-      "name": "folder_sharing.rb",
-      "path": "providers/folder_sharing.rb",
-      "checksum": "1f49cf877abdf640f68a3ba447ad147e",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1f49cf877abdf640f68a3ba447ad147e?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=zspXqHR2SBA6VYO/AXqgDYffpCg%3D"
-    },
-    {
-      "name": "file_browser.rb",
-      "path": "providers/file_browser.rb",
-      "checksum": "35aedf234c359e6bb701b34170ce9a49",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-35aedf234c359e6bb701b34170ce9a49?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=6aDnAFwZ54nJuKMJsp/FMHzWLfM%3D"
-    },
-    {
-      "name": "screensaver.rb",
-      "path": "providers/screensaver.rb",
-      "checksum": "1b6481f858bf104d63e3249459179c1c",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1b6481f858bf104d63e3249459179c1c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=a80klsHdwgFSKWtqjcMWJtMSTlY%3D"
-    },
-    {
-      "name": "system_settings.rb",
-      "path": "providers/system_settings.rb",
-      "checksum": "3e70472553464c7c32d45e1b781c1b7d",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-3e70472553464c7c32d45e1b781c1b7d?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=C6iu9Y3wN/ANW7bDZVSzzT8LoRs%3D"
-    },
-    {
-      "name": "printers.rb",
-      "path": "providers/printers.rb",
-      "checksum": "ec67e1ce676ef4d8e69e5785ceae2f54",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-ec67e1ce676ef4d8e69e5785ceae2f54?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=iMLxvSZNYW1qME/ct4nFtRLgycU%3D"
-    },
-    {
-      "name": "user_modify_nm.rb",
-      "path": "providers/user_modify_nm.rb",
-      "checksum": "110db22dc3abbb99e69b60865cdfab35",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-110db22dc3abbb99e69b60865cdfab35?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=PqlPPBvOlbnrCN7v2MNaCh4XNf4%3D"
-    },
-    {
-      "name": "mimetypes.rb",
-      "path": "providers/mimetypes.rb",
-      "checksum": "d507e530c887fdd0d19689e13f2db755",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-d507e530c887fdd0d19689e13f2db755?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=zC1b8MTWAJC4DtMnQscYsKCZZ/Q%3D"
-    },
-    {
-      "name": "forticlientvpn.rb",
-      "path": "providers/forticlientvpn.rb",
-      "checksum": "1991613706d74bb3feb79b6c59fd74dc",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-1991613706d74bb3feb79b6c59fd74dc?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=xdqBpeqyllBs2cb65aqHT8GVoUs%3D"
-    },
-    {
-      "name": "network.rb",
-      "path": "providers/network.rb",
-      "checksum": "a5f4d90748b6d54cb75bcdb7fca9cba4",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-a5f4d90748b6d54cb75bcdb7fca9cba4?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=rqF6HlscyRkR1COrmwbZUdsnQmI%3D"
-    },
-    {
-      "name": "display_manager.rb",
-      "path": "providers/display_manager.rb",
-      "checksum": "0340c1ce7f089807e532a205b5031023",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0340c1ce7f089807e532a205b5031023?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=VSfMqXtKG8FTXXitKmS46rjI%2Bi8%3D"
-    },
-    {
-      "name": "user_launchers.rb",
-      "path": "providers/user_launchers.rb",
-      "checksum": "c1d693d196280728c05f5bc9b1a70532",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-c1d693d196280728c05f5bc9b1a70532?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=84aSNiKWmUyqBjWEgvX0Hpxadzo%3D"
-    },
-    {
-      "name": "cert.rb",
-      "path": "providers/cert.rb",
-      "checksum": "89b083397ef9682f6a10acd5dee29541",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-89b083397ef9682f6a10acd5dee29541?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=CMWJm/QaxMatuJcLPQFrLgkAK4k%3D"
-    },
-    {
-      "name": "folder_sync.rb",
-      "path": "providers/folder_sync.rb",
-      "checksum": "560ed31e6a89e80a989ded20edf379d6",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-560ed31e6a89e80a989ded20edf379d6?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=DURP0i6ryBMc5Qle8X9ulLVLoDc%3D"
-    },
-    {
-      "name": "package.rb",
-      "path": "providers/package.rb",
-      "checksum": "22484c37067af1a41c0b70088c1f78fb",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-22484c37067af1a41c0b70088c1f78fb?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=vCUGFjqB%2Bilf5jnJHbAgPkiq37I%3D"
-    },
-    {
-      "name": "web_browser.rb",
-      "path": "providers/web_browser.rb",
-      "checksum": "08f11e705c76c088ff3bcadc0e55e62a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-08f11e705c76c088ff3bcadc0e55e62a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=X9GKwDt/NiwEpDHLcYVZSa5bANw%3D"
-    },
-    {
-      "name": "shutdown_options.rb",
-      "path": "providers/shutdown_options.rb",
-      "checksum": "aa9bcd425ba0cec179dbcd2a941425d7",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-aa9bcd425ba0cec179dbcd2a941425d7?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=YpbdXQxoW8x33rINoYdzAcGqbQM%3D"
-    },
-    {
-      "name": "idle_timeout.rb",
-      "path": "providers/idle_timeout.rb",
-      "checksum": "374ed5af6a669cfd510f17aa29c2973d",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-374ed5af6a669cfd510f17aa29c2973d?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=JshJnHXEIFIaUU/0Lsq6UD5mVg4%3D"
-    },
-    {
-      "name": "boot_lock.rb",
-      "path": "providers/boot_lock.rb",
-      "checksum": "319579b79012df0726947a935b64f40c",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-319579b79012df0726947a935b64f40c?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=JwZ34DGjCsfAopPtkGx25WDY1cQ%3D"
-    },
-    {
-      "name": "connectivity.rb",
-      "path": "providers/connectivity.rb",
-      "checksum": "2d1ce53499fc9cda731ffa779f544399",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-2d1ce53499fc9cda731ffa779f544399?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=AMFb8gAj0LWinrXSVNA%2BqPni%2BQ4%3D"
-    },
-    {
-      "name": "appconfig_firefox.rb",
-      "path": "providers/appconfig_firefox.rb",
-      "checksum": "f2b17464a0e341586a1c18716cc3c62e",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f2b17464a0e341586a1c18716cc3c62e?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=%2BrrEhpRYdiQ5dS6EC/MSxkueq3g%3D"
-    },
-    {
-      "name": "remote_shutdown.rb",
-      "path": "providers/remote_shutdown.rb",
-      "checksum": "5066b1186318ce51fa06d131af49a776",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-5066b1186318ce51fa06d131af49a776?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=3/mdeI1lrUtXtxa8F0L4TXprTUE%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-d43ecc2cc32c2855c3c866455b95503b?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=F079ARwI77Pxab2GdAuA9lYDfEI%3D"
     },
     {
       "name": "local_file.rb",
       "path": "providers/local_file.rb",
-      "checksum": "93a35382f7041eec7ecfb0e088026346",
+      "checksum": "3ca2bcc3abcead6892ecda22058a28a3",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-93a35382f7041eec7ecfb0e088026346?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=vJzxkBLQALrmIeeDPjeBcLbCGSc%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-3ca2bcc3abcead6892ecda22058a28a3?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=MgIu9xPHOugb9viD9LfssYbciII%3D"
     },
     {
-      "name": "im_client.rb",
-      "path": "providers/im_client.rb",
-      "checksum": "6f05de06ba91126087539255ba6a0813",
+      "name": "local_groups.rb",
+      "path": "providers/local_groups.rb",
+      "checksum": "f08043772da586395d4d1304db4117bd",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-6f05de06ba91126087539255ba6a0813?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=8Rn2yfKcH/LCfzBfIJAa4ob18jY%3D"
-    },
-    {
-      "name": "power_conf.rb",
-      "path": "providers/power_conf.rb",
-      "checksum": "b81150ac8858c5c8db47b2977647e317",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b81150ac8858c5c8db47b2977647e317?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=xV/n/sayIhLeKoqYfWIixjbYduc%3D"
-    },
-    {
-      "name": "appconfig_thunderbird.rb",
-      "path": "providers/appconfig_thunderbird.rb",
-      "checksum": "0e07994e0337c6272906721c7c60b3ba",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-0e07994e0337c6272906721c7c60b3ba?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=1qYR0YMSNI8NR8i/3zNSG8aCuRg%3D"
-    },
-    {
-      "name": "system_proxy.rb",
-      "path": "providers/system_proxy.rb",
-      "checksum": "56fb851d95a524f2e6a19d960564f1a0",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-56fb851d95a524f2e6a19d960564f1a0?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=5rtLEsuK4DMKPA3vZnkjc14b59c%3D"
-    },
-    {
-      "name": "auto_updates.rb",
-      "path": "providers/auto_updates.rb",
-      "checksum": "716a49a80412862f9bac2036b618e04a",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-716a49a80412862f9bac2036b618e04a?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jyMPdChf1sMlDIwW5QsYqb4OWd4%3D"
-    },
-    {
-      "name": "software_sources.rb",
-      "path": "providers/software_sources.rb",
-      "checksum": "4feae561d8471c7bf124b67c50f80216",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4feae561d8471c7bf124b67c50f80216?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=jhTBG0zQIHwvfUvlqwdGVgKJ89Y%3D"
-    },
-    {
-      "name": "debug_mode.rb",
-      "path": "providers/debug_mode.rb",
-      "checksum": "93741175f22953e6fb925d94a8479263",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-93741175f22953e6fb925d94a8479263?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=wjgIg0X7sYWi8TL6Um3eK%2BoJbOg%3D"
-    },
-    {
-      "name": "user_mount.rb",
-      "path": "providers/user_mount.rb",
-      "checksum": "6aedc8ba98933bfa70f1a278892ab8cf",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-6aedc8ba98933bfa70f1a278892ab8cf?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=3nf3B0ADlMjtNru6XBbn4FR%2BDME%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f08043772da586395d4d1304db4117bd?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=uvfkkGgMyVFxgiCN5hHrMwZHda8%3D"
     },
     {
       "name": "local_users.rb",
       "path": "providers/local_users.rb",
-      "checksum": "74d7b20ded44f437f8510a3cc49b5aea",
+      "checksum": "169792e2db660792e340c23a1b4ea32d",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-74d7b20ded44f437f8510a3cc49b5aea?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=4O1DNhcuwTLLZq5RZ7zbEBNgbGk%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-169792e2db660792e340c23a1b4ea32d?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=UsBq%2B4mjyj3XbtQIeXt3WSvEbjU%3D"
     },
     {
-      "name": "ttys.rb",
-      "path": "providers/ttys.rb",
-      "checksum": "e41fdab28102edc9a87933e01f85d8eb",
+      "name": "mimetypes.rb",
+      "path": "providers/mimetypes.rb",
+      "checksum": "2e47398ed713d6c98865927e901106ff",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-e41fdab28102edc9a87933e01f85d8eb?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=QKimIyoPZRrBuxsRAeLFyHzkCIQ%3D"
-    },
-    {
-      "name": "scripts_launch.rb",
-      "path": "providers/scripts_launch.rb",
-      "checksum": "55496d857816f0946e63434a47f85471",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-55496d857816f0946e63434a47f85471?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=pZKMyJq0UgDq3QEpiIaVKCNGG7I%3D"
-    },
-    {
-      "name": "appconfig_libreoffice.rb",
-      "path": "providers/appconfig_libreoffice.rb",
-      "checksum": "7860ed127b139de6492d9b84a4ca967b",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-7860ed127b139de6492d9b84a4ca967b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=QYX6Kb3ckkb31bC7SUrjUjg2k80%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2e47398ed713d6c98865927e901106ff?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=w2kvdZv/reSv0e%2BV5YnBLEBBUyw%3D"
     },
     {
       "name": "mobile_broadband.rb",
       "path": "providers/mobile_broadband.rb",
-      "checksum": "b993f798e52fff6805e18d2f924ec1fc",
+      "checksum": "8aeb13c5bbf946a5b0592a61a23db121",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-b993f798e52fff6805e18d2f924ec1fc?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=woAtV8eqXsLCHTSVrgN8qrV67f4%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-8aeb13c5bbf946a5b0592a61a23db121?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=FNbFcKvdB1t%2BlzuV1w0yMUgig9k%3D"
+    },
+    {
+      "name": "network.rb",
+      "path": "providers/network.rb",
+      "checksum": "2eaac6d662c1893c9e46f4b43d28c7ef",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-2eaac6d662c1893c9e46f4b43d28c7ef?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=hNmzA8NKzNeojMrP0ywSZ7QhytE%3D"
+    },
+    {
+      "name": "package.rb",
+      "path": "providers/package.rb",
+      "checksum": "3e5870435c5934adb6a8e959bee97a0e",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-3e5870435c5934adb6a8e959bee97a0e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=MZKs%2BRPdYXEN9IFVRIG3Sx/%2BOaQ%3D"
+    },
+    {
+      "name": "power_conf.rb",
+      "path": "providers/power_conf.rb",
+      "checksum": "7d9a90238097e49388fbdf39a496a57d",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-7d9a90238097e49388fbdf39a496a57d?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=9z1zffHwWK7WHTuJPfFcIP6wOtQ%3D"
+    },
+    {
+      "name": "printers.rb",
+      "path": "providers/printers.rb",
+      "checksum": "14b2123e7fb2843da1e44eb017f5d3b0",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-14b2123e7fb2843da1e44eb017f5d3b0?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=U/0u3aQ%2Bq2WkeAPcN/RZhRHXTEE%3D"
+    },
+    {
+      "name": "remote_control.rb",
+      "path": "providers/remote_control.rb",
+      "checksum": "22cccdbb358deaebc850c554e6ba7cf3",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-22cccdbb358deaebc850c554e6ba7cf3?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=94QydiIztHBFx1B4mLT2idSbl1c%3D"
+    },
+    {
+      "name": "remote_shutdown.rb",
+      "path": "providers/remote_shutdown.rb",
+      "checksum": "6afdafcc3d13ea862a4beae55017cb5e",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-6afdafcc3d13ea862a4beae55017cb5e?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=3zB8jYasvtXhAL75G8y9HbWVd8I%3D"
+    },
+    {
+      "name": "screensaver.rb",
+      "path": "providers/screensaver.rb",
+      "checksum": "4a5d63c3fc12e4ca7c3fc2f8214ef25d",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-4a5d63c3fc12e4ca7c3fc2f8214ef25d?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=6ySG0p2d0MFKHrH0tdXmPAsOm3s%3D"
+    },
+    {
+      "name": "scripts_launch.rb",
+      "path": "providers/scripts_launch.rb",
+      "checksum": "73603e837b3d6679c0bc0ed4bf805995",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-73603e837b3d6679c0bc0ed4bf805995?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=FWpxII7Uxp7l73eXmfQ5uEJamSU%3D"
+    },
+    {
+      "name": "shutdown_options.rb",
+      "path": "providers/shutdown_options.rb",
+      "checksum": "f4b9ebee1cba96bfae5cb351518c9b47",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-f4b9ebee1cba96bfae5cb351518c9b47?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=QxhNGRRXZyrqQQjxA6Y4XQZHqIg%3D"
+    },
+    {
+      "name": "software_sources.rb",
+      "path": "providers/software_sources.rb",
+      "checksum": "0d5b88a1c75fe0d379b67d3b27d94cb9",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-0d5b88a1c75fe0d379b67d3b27d94cb9?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=J891OrGVFPFHymF15gUJ98kgMJQ%3D"
+    },
+    {
+      "name": "system_proxy.rb",
+      "path": "providers/system_proxy.rb",
+      "checksum": "e7f285c7caeb6be3de433cda7d7d768a",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-e7f285c7caeb6be3de433cda7d7d768a?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=HBmWFNNkPdUBI%2BlfIGmYGelohTk%3D"
+    },
+    {
+      "name": "system_settings.rb",
+      "path": "providers/system_settings.rb",
+      "checksum": "fe715b920b13c1315a07f0f4ba1f2e48",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-fe715b920b13c1315a07f0f4ba1f2e48?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=eCbtu8GRAf%2BxzQf%2By94qp9NhJjc%3D"
+    },
+    {
+      "name": "ttys.rb",
+      "path": "providers/ttys.rb",
+      "checksum": "5a007ff448b0eae503599a50dbe917fb",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5a007ff448b0eae503599a50dbe917fb?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=f47DKsG7Y6BxIMpm6qrlLFhvYnE%3D"
+    },
+    {
+      "name": "tz_date.rb",
+      "path": "providers/tz_date.rb",
+      "checksum": "5bfae51978f7d98958861e99992856db",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5bfae51978f7d98958861e99992856db?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=Es7jpvCQQgiYP7B0rO3dc%2BTvHqc%3D"
+    },
+    {
+      "name": "user_alerts.rb",
+      "path": "providers/user_alerts.rb",
+      "checksum": "bf23d40652abedefba45e9c934b87d9c",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-bf23d40652abedefba45e9c934b87d9c?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=bwshFh8oUHXW8plZbT%2B7X6GMK2o%3D"
+    },
+    {
+      "name": "user_apps_autostart.rb",
+      "path": "providers/user_apps_autostart.rb",
+      "checksum": "6f7b2954cf8bf37d3704ead566ffbe80",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-6f7b2954cf8bf37d3704ead566ffbe80?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=X9qWCEqRBrPPRl%2B1W64QQ89bDew%3D"
+    },
+    {
+      "name": "user_launchers.rb",
+      "path": "providers/user_launchers.rb",
+      "checksum": "3b7412a515cda1501078823428f55a90",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-3b7412a515cda1501078823428f55a90?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=rsX73TNIyIp5iRgalJU2FHfoavc%3D"
+    },
+    {
+      "name": "user_modify_nm.rb",
+      "path": "providers/user_modify_nm.rb",
+      "checksum": "5c022049211fd66cf78c15b796f7a826",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-5c022049211fd66cf78c15b796f7a826?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=ZKrqaH9cyRVdvxxCvHnMjEmZqYo%3D"
+    },
+    {
+      "name": "user_mount.rb",
+      "path": "providers/user_mount.rb",
+      "checksum": "b253c7a5053384c5ed8050885190c0ce",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-b253c7a5053384c5ed8050885190c0ce?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=OGDGcAVtf9u%2BkaQaCbp6fQCeEkE%3D"
+    },
+    {
+      "name": "user_shared_folders.rb",
+      "path": "providers/user_shared_folders.rb",
+      "checksum": "d23fc8150884c0545d1168b70aab6437",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-d23fc8150884c0545d1168b70aab6437?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=QjN2GL9ANyYsAvG7ynpwXTxjgqY%3D"
+    },
+    {
+      "name": "web_browser.rb",
+      "path": "providers/web_browser.rb",
+      "checksum": "a905675582b2274680d799058f9d63ed",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-a905675582b2274680d799058f9d63ed?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=j6LhRb12IeKSm6WIvCIH8AzqAwo%3D"
     }
   ],
   "root_files": [
+    {
+      "name": ".rubocop.yml",
+      "path": ".rubocop.yml",
+      "checksum": "7ec9a5b5650dceebc4c258d23545e04d",
+      "specificity": "default",
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-7ec9a5b5650dceebc4c258d23545e04d?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=KhGJxvXNCO9OzOoLcFrVCdumeF8%3D"
+    },
     {
       "name": "README.md",
       "path": "README.md",
       "checksum": "d9f1870a507336a4aa276d2ccebd8841",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-d9f1870a507336a4aa276d2ccebd8841?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=4sSlnb2xNdDB0nzr9E9ZfyJZw8o%3D"
-    },
-    {
-      "name": ".rubocop.yml",
-      "path": ".rubocop.yml",
-      "checksum": "4c4fb50d682a186572fad70e24f7b332",
-      "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-4c4fb50d682a186572fad70e24f7b332?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=zPlrg6JQqG69iWv7pikE58KfHBQ%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-d9f1870a507336a4aa276d2ccebd8841?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=crxP2xNZ927%2BF9PJpPkwvFnqJqI%3D"
     },
     {
       "name": "metadata.rb",
       "path": "metadata.rb",
-      "checksum": "f61a97144d855e2f21d83deb9adbc57b",
+      "checksum": "e0c0b5fd17383d596bd0f22fe1c04018",
       "specificity": "default",
-      "url": "https://ampgecos.evaos.local:443/bookshelf/organization-7f8711370ec5659587bf531340b8d46a/checksum-f61a97144d855e2f21d83deb9adbc57b?AWSAccessKeyId=660ad6cc52c1197d5d39e36c3c82789d93d58f52&Expires=1536941087&Signature=0AwHfpLdbEsBo298CZU7FjWm78w%3D"
+      "url": "https://10.240.243.60:443/bookshelf/organization-8eb3393742d290182945db30a04d20da/checksum-e0c0b5fd17383d596bd0f22fe1c04018?AWSAccessKeyId=f1c6abe5771427ea4ee5e4812b12c0eb58781ae4&Expires=1610482596&Signature=vJHkyaMv0Aw%2Bim66zj2en71e8M0%3D"
     }
   ],
-  "version": "0.6.3",
-  "name": "gecos_ws_mgmt-0.6.3",
+  "version": "0.11.3",
+  "name": "gecos_ws_mgmt-0.11.3",
   "cookbook_name": "gecos_ws_mgmt",
   "frozen?": false,
   "chef_type": "cookbook_version",
@@ -1059,15 +1122,15 @@
 
     },
     "providing": {
-      "gecos_ws_mgmt::required_packages": ">= 0.0.0",
-      "gecos_ws_mgmt::network_mgmt": ">= 0.0.0",
-      "gecos_ws_mgmt::users_mgmt": ">= 0.0.0",
-      "gecos_ws_mgmt::printers_mgmt": ">= 0.0.0",
-      "gecos_ws_mgmt::single_node": ">= 0.0.0",
-      "gecos_ws_mgmt": ">= 0.0.0",
-      "gecos_ws_mgmt::software_mgmt": ">= 0.0.0",
       "gecos_ws_mgmt::broadband_mgmt": ">= 0.0.0",
-      "gecos_ws_mgmt::misc_mgmt": ">= 0.0.0"
+      "gecos_ws_mgmt": ">= 0.0.0",
+      "gecos_ws_mgmt::misc_mgmt": ">= 0.0.0",
+      "gecos_ws_mgmt::network_mgmt": ">= 0.0.0",
+      "gecos_ws_mgmt::printers_mgmt": ">= 0.0.0",
+      "gecos_ws_mgmt::required_packages": ">= 0.0.0",
+      "gecos_ws_mgmt::single_node": ">= 0.0.0",
+      "gecos_ws_mgmt::software_mgmt": ">= 0.0.0",
+      "gecos_ws_mgmt::users_mgmt": ">= 0.0.0"
     },
     "replacing": {
 
@@ -1076,17 +1139,17 @@
 
     },
     "recipes": {
-      "gecos_ws_mgmt::required_packages": "",
-      "gecos_ws_mgmt::network_mgmt": "",
-      "gecos_ws_mgmt::users_mgmt": "",
-      "gecos_ws_mgmt::printers_mgmt": "",
-      "gecos_ws_mgmt::single_node": "",
-      "gecos_ws_mgmt": "",
-      "gecos_ws_mgmt::software_mgmt": "",
       "gecos_ws_mgmt::broadband_mgmt": "",
-      "gecos_ws_mgmt::misc_mgmt": ""
+      "gecos_ws_mgmt": "",
+      "gecos_ws_mgmt::misc_mgmt": "",
+      "gecos_ws_mgmt::network_mgmt": "",
+      "gecos_ws_mgmt::printers_mgmt": "",
+      "gecos_ws_mgmt::required_packages": "",
+      "gecos_ws_mgmt::single_node": "",
+      "gecos_ws_mgmt::software_mgmt": "",
+      "gecos_ws_mgmt::users_mgmt": ""
     },
-    "version": "0.6.3",
+    "version": "0.11.3",
     "source_url": "",
     "issues_url": "",
     "privacy": false,
@@ -1107,7 +1170,7 @@
         "object": {
           "description": "GECOS workstation management LWRPs json-schema",
           "description_es": "Estación de trabajo de gestión GECOS LWRPs json-schema",
-          "id": "http://gecos-server/cookbooks/gecos_ws_mgmt/0.6.3/network-schema#",
+          "id": "http://gecos-server/cookbooks/gecos_ws_mgmt/0.11.3/network-schema#",
           "required": [
             "gecos_ws_mgmt"
           ],
@@ -1175,9 +1238,11 @@
                                 "title_es": "Servidor"
                               },
                               "port": {
-                                "type": "string",
+                                "type": "integer",
                                 "title": "Port",
-                                "title_es": "Puerto"
+                                "title_es": "Puerto",
+                                "maximum": 65535,
+                                "minimum": 0
                               },
                               "name": {
                                 "type": "string",
@@ -1193,9 +1258,11 @@
                           "title_es": "Servidor Proxy"
                         },
                         "proxyport": {
-                          "type": "string",
+                          "type": "integer",
                           "title": "Proxy Port",
-                          "title_es": "Puerto del Proxy"
+                          "title_es": "Puerto del Proxy",
+                          "maximum": 65535,
+                          "minimum": 0
                         },
                         "proxyuser": {
                           "type": "string",
@@ -1252,6 +1319,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -1349,6 +1417,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -1401,8 +1470,10 @@
                             "http_proxy_port": {
                               "title": "HTTP Proxy Port",
                               "title_es": "Puerto del Proxy HTTP",
-                              "type": "number",
-                              "default": 80
+                              "type": "integer",
+                              "default": 80,
+                              "maximum": 65535,
+                              "minimum": 0
                             },
                             "https_proxy": {
                               "title": "HTTPS Proxy",
@@ -1412,8 +1483,10 @@
                             "https_proxy_port": {
                               "title": "HTTPS Proxy Port",
                               "title_es": "Puerto del Proxy HTTPS",
-                              "type": "number",
-                              "default": 443
+                              "type": "integer",
+                              "default": 443,
+                              "maximum": 65535,
+                              "minimum": 0
                             },
                             "proxy_autoconfig_url": {
                               "title": "Proxy Autoconfiguration URL",
@@ -1463,8 +1536,10 @@
                             "http_proxy_port": {
                               "title": "HTTP Proxy Port",
                               "title_es": "Puerto del Proxy HTTP",
-                              "type": "number",
-                              "default": 80
+                              "type": "integer",
+                              "default": 80,
+                              "maximum": 65535,
+                              "minimum": 0
                             },
                             "https_proxy": {
                               "title": "HTTPS Proxy",
@@ -1474,8 +1549,10 @@
                             "https_proxy_port": {
                               "title": "HTTPS Proxy Port",
                               "title_es": "Puerto del Proxy HTTPS",
-                              "type": "number",
-                              "default": 443
+                              "type": "integer",
+                              "default": 443,
+                              "maximum": 65535,
+                              "minimum": 0
                             },
                             "proxy_autoconfig_url": {
                               "title": "Proxy Autoconfiguration URL",
@@ -1507,6 +1584,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -1765,6 +1843,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -1807,7 +1886,6 @@
                       "title": "Debug mode",
                       "title_es": "Modo diagnóstico",
                       "required": [
-                        "enable_debug",
                         "expire_datetime"
                       ],
                       "is_mergeable": false,
@@ -1844,6 +1922,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -1897,7 +1976,8 @@
                     "remote_shutdown_res",
                     "cert_res",
                     "boot_lock_res",
-                    "ttys_res"
+                    "ttys_res",
+                    "remote_control_res"
                   ],
                   "properties": {
                     "tz_date_res": {
@@ -1927,6 +2007,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2021,6 +2102,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2111,7 +2193,8 @@
                               "user": {
                                 "title": "User",
                                 "title_es": "Usuario",
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "^([0-9A-Za-z\\._@][0-9A-Za-z\\._\\-@]*)(\\$?)$"
                               },
                               "name": {
                                 "title": "Full Name",
@@ -2144,6 +2227,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2317,6 +2401,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2426,13 +2511,15 @@
                                     "title": "Hour",
                                     "title_es": "Hora",
                                     "type": "integer",
-                                    "maximum": 23
+                                    "maximum": 23,
+                                    "minimum": 0
                                   },
                                   "minute": {
                                     "title": "Minute",
                                     "title_es": "Minuto",
                                     "type": "integer",
-                                    "maximum": 59
+                                    "maximum": 59,
+                                    "minimum": 0
                                   }
                                 }
                               }
@@ -2452,25 +2539,25 @@
                                   "title": "Day",
                                   "title_es": "Día",
                                   "type": "string",
-                                  "pattern": "^([0-9]|[0-2][0-9]|3[0-1]|\\\\*)$"
+                                  "pattern": "^([0-9]|[0-2][0-9]|3[0-1]|\\*)$"
                                 },
                                 "month": {
                                   "title": "Month",
                                   "title_es": "Mes",
                                   "type": "string",
-                                  "pattern": "^(0?[1-9]|1[0-2]|\\\\*)$"
+                                  "pattern": "^(0?[1-9]|1[0-2]|\\*)$"
                                 },
                                 "hour": {
                                   "title": "Hour",
                                   "title_es": "Hora",
                                   "type": "string",
-                                  "pattern": "^((([0-1][0-9])|[0-2][0-3])|\\\\*)$"
+                                  "pattern": "^((([0-1][0-9])|[0-2][0-3])|\\*)$"
                                 },
                                 "minute": {
                                   "title": "Minute",
                                   "title_es": "Minuto",
                                   "type": "string",
-                                  "pattern": "^([0-5][0-9]|\\\\*)$"
+                                  "pattern": "^([0-5][0-9]|\\*)$"
                                 }
                               }
                             }
@@ -2486,6 +2573,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2568,6 +2656,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2650,11 +2739,13 @@
                             "properties": {
                               "group": {
                                 "type": "string",
+                                "pattern": "^([^: ]+)$",
                                 "title": "Group",
                                 "title_es": "Grupo"
                               },
                               "user": {
                                 "type": "string",
+                                "pattern": "^([0-9A-Za-z\\._@][0-9A-Za-z\\._\\-@]*)(\\$?)$",
                                 "title": "User",
                                 "title_es": "Usuario"
                               },
@@ -2688,6 +2779,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2795,6 +2887,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2877,7 +2970,8 @@
                               "name": {
                                 "title": "Name",
                                 "title_es": "Nombre",
-                                "type": "string"
+                                "type": "string",
+                                "pattern": "^([0-9A-Za-z\\._@][0-9A-Za-z\\._\\-@]*)(\\$?)$"
                               },
                               "action": {
                                 "title": "Action",
@@ -2909,6 +3003,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -2979,6 +3074,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3046,6 +3142,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3125,6 +3222,125 @@
                           },
                           "default": [
                             "GECOS Kiosk"
+                          ]
+                        },
+                        "updated_by": {
+                          "title": "Updated by",
+                          "title_es": "Actualizado por",
+                          "type": "object",
+                          "properties": {
+                            "group": {
+                              "title": "Groups",
+                              "title_es": "Grupos",
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "user": {
+                              "type": "string"
+                            },
+                            "computer": {
+                              "type": "string"
+                            },
+                            "ou": {
+                              "title": "Ous",
+                              "title_es": "Ous",
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "remote_control_res": {
+                      "title": "Remote Control",
+                      "title_es": "Control Remoto",
+                      "type": "object",
+                      "is_mergeable": false,
+                      "autoreversible": false,
+                      "form": {
+                        "type": "section",
+                        "items": [
+                          {
+                            "type": "fieldset",
+                            "title": "Basics",
+                            "title_es": "Básicos",
+                            "items": [
+                              "enable_helpchannel",
+                              "enable_ssh"
+                            ]
+                          },
+                          {
+                            "type": "fieldset",
+                            "title": "Advanced (experts only)",
+                            "title_es": "Avanzados (sólo para expertos)",
+                            "items": [
+                              {
+                                "key": "ssl_verify",
+                                "value": true
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "properties": {
+                        "enable_helpchannel": {
+                          "type": "boolean",
+                          "title": "Enable HelpChannel",
+                          "title_es": "Habilitar HelpChannel",
+                          "description": "Checking the box will enable remote control",
+                          "description_es": "Si activa la casilla, habilitará HelpChannel",
+                          "default": false
+                        },
+                        "enable_ssh": {
+                          "type": "boolean",
+                          "title": "Enable SSH",
+                          "title_es": "Habilitar SSH",
+                          "description": "Checking the box will enable SSH",
+                          "description_es": "Si activa la casilla, habilitará SSH",
+                          "default": false
+                        },
+                        "tunnel_url": {
+                          "type": "string",
+                          "title": "Tunnel URL",
+                          "title_es": "URL del túnel",
+                          "description": "Tunnel server URL",
+                          "description_es": "URL del servidor de túneles"
+                        },
+                        "ssl_verify": {
+                          "type": "boolean",
+                          "title": "SSL verification",
+                          "title_es": "Verificación SSL",
+                          "description": "Verify server certificate",
+                          "description_es": "Verificar certificado de servidor",
+                          "default": true
+                        },
+                        "job_ids": {
+                          "type": "array",
+                          "minItems": 0,
+                          "uniqueItems": true,
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "support_os": {
+                          "title": "Supported OS",
+                          "title_es": "Sistemas operativos compatibles",
+                          "type": "array",
+                          "minItems": 0,
+                          "uniqueItems": true,
+                          "items": {
+                            "type": "string"
+                          },
+                          "default": [
+                            "GECOS V4",
+                            "GECOS V3",
+                            "GECOS V2",
+                            "GECOS V3 Lite",
+                            "Gecos V2 Lite"
                           ]
                         },
                         "updated_by": {
@@ -3256,6 +3472,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3366,6 +3583,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3449,6 +3667,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3531,6 +3750,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3613,6 +3833,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3800,6 +4021,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -3858,7 +4080,8 @@
                               {
                                 "key": "autologin_options.timeout",
                                 "value": 0
-                              }
+                              },
+                              "session_script"
                             ]
                           }
                         ]
@@ -3900,6 +4123,11 @@
                               "default": 15
                             }
                           }
+                        },
+                        "session_script": {
+                          "type": "string",
+                          "title": "Script will run before a user session starts.",
+                          "title_es": "Script que se ejecutará antes de que arranquela sesión de usuario"
                         },
                         "support_os": {
                           "title": "Supported OS",
@@ -4051,6 +4279,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -4203,6 +4432,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -4264,7 +4494,8 @@
                                       "uri": {
                                         "title": "Uri",
                                         "title_es": "Uri",
-                                        "type": "string"
+                                        "type": "string",
+                                        "pattern": "(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"
                                       },
                                       "action": {
                                         "title": "Action",
@@ -4303,7 +4534,8 @@
                                       "uri": {
                                         "title": "Uri",
                                         "title_es": "Uri",
-                                        "type": "string"
+                                        "type": "string",
+                                        "pattern": "(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]"
                                       }
                                     }
                                   }
@@ -4411,6 +4643,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -4559,6 +4792,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -4697,6 +4931,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -4841,6 +5076,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -4954,6 +5190,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5076,6 +5313,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5165,6 +5403,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -5286,6 +5525,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5375,6 +5615,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -5425,11 +5666,12 @@
                                   "title_es": "Oscurecer pantalla"
                                 },
                                 "idle_delay": {
-                                  "type": "string",
+                                  "type": "integer",
                                   "description": "Time to dim screen in seconds",
                                   "description_es": "Tiempo hasta el oscurecimiento en segundos",
                                   "title": "Idle delay",
-                                  "title_es": "Retraso de inactividad"
+                                  "title_es": "Retraso de inactividad",
+                                  "minimum": 0
                                 },
                                 "lock_enabled": {
                                   "type": "boolean",
@@ -5437,11 +5679,12 @@
                                   "title_es": "Permitir bloqueo de pantalla"
                                 },
                                 "lock_delay": {
-                                  "type": "string",
+                                  "type": "integer",
                                   "description": "Time to lock the screen in seconds",
                                   "description_es": " Tiempo hasta el bloqueo de la pantalla en segundos",
                                   "title": "Time to lock",
-                                  "title_es": "Tiempo hasta el bloqueo"
+                                  "title_es": "Tiempo hasta el bloqueo",
+                                  "minimum": 0
                                 },
                                 "updated_by": {
                                   "title": "Updated by",
@@ -5486,6 +5729,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -5578,8 +5822,6 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 500,
-                                  "exclusiveMinimum": false,
-                                  "exclusiveMaximum": false,
                                   "description": "Between 0 and 500 KB/s"
                                 },
                                 "owncloud_download_bandwith": {
@@ -5588,8 +5830,6 @@
                                   "type": "integer",
                                   "minimum": 0,
                                   "maximum": 500,
-                                  "exclusiveMinimum": false,
-                                  "exclusiveMaximum": false,
                                   "description": "Between 0 and 500 KB/s"
                                 },
                                 "owncloud_folders": {
@@ -5645,6 +5885,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2"
                           ]
@@ -5732,6 +5973,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5824,6 +6066,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5914,6 +6157,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -5990,6 +6234,7 @@
                             "type": "string"
                           },
                           "default": [
+                            "GECOS V4",
                             "GECOS V3",
                             "GECOS V2",
                             "GECOS V3 Lite",
@@ -6174,7 +6419,7 @@
       }
     },
     "dependencies": {
-      "compat_resource": ">= 0.0.0"
+
     },
     "long_description": ""
   }

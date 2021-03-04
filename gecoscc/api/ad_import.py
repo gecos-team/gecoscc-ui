@@ -12,15 +12,18 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import json
 import logging
 import re
 import random
 
-from ordereddict import OrderedDict
+from collections import OrderedDict
 from gzip import GzipFile
 from xml.dom import minidom
-from StringIO import StringIO
+from io import StringIO
 
 from bson import ObjectId
 from chef import Client
@@ -373,7 +376,7 @@ class ADImport(BaseAPI):
         Fix duplicate name append an _counter to the name
         """
         contador = 0
-        m = re.match(ur'^(.+)(_\d+)$', newObj['name'])
+        m = re.match(r'^(.+)(_\d+)$', newObj['name'])
         if m:
             nombreBase = m.group(1)
         else:
@@ -381,8 +384,8 @@ class ADImport(BaseAPI):
 
         # Each object to import
         if mongoObjects is not None:
-            for mongoObject in mongoObjects.values():
-                m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
+            for mongoObject in list(mongoObjects.values()):
+                m = re.match(r'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
                 if m and m.group(2):
                     nuevoContador = int(m.group(2)[1:]) + 1
                     if (nuevoContador > contador):
@@ -400,7 +403,7 @@ class ADImport(BaseAPI):
             'name': 1
         })
         for mongoObject in collection:
-            m = re.match(ur'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
+            m = re.match(r'({0})(_\d+)?'.format(nombreBase), mongoObject['name'])
             if m and m.group(2):
                 nuevoContador = int(m.group(2)[1:]) + 1
                 if (nuevoContador > contador):
@@ -541,7 +544,7 @@ class ADImport(BaseAPI):
         return domain
 
     def _saveMongoObject(self, mongoObject):
-        if '_id' not in mongoObject.keys():
+        if '_id' not in list(mongoObject.keys()):
             # Insert object
             return self.collection.insert(mongoObject)
         else:
@@ -553,20 +556,20 @@ class ADImport(BaseAPI):
         # Order by size
         orderedBySize = {}
         er = re.compile(r'([^, ]+=(?:(?:\\,)|[^,])+)')
-        for _index, mongoObject in mongoObjects.items():
+        for _index, mongoObject in list(mongoObjects.items()):
             if mongoObject['adDistinguishedName'] == domain['adDistinguishedName']:  # Jump root domain
                 mongoObjectRoot = mongoObject
                 continue
             subADDN = er.findall(mongoObject['adDistinguishedName'])
             size = len(subADDN)
-            if size not in orderedBySize.keys():
+            if size not in list(orderedBySize.keys()):
                 orderedBySize[size] = []
             orderedBySize[size].append(mongoObject)
 
         # Merge results in one dimensional dict
         mongoObjects = OrderedDict()
         mongoObjects[mongoObjectRoot['adDistinguishedName']] = mongoObjectRoot
-        for size, listMongoObjects in orderedBySize.items():
+        for size, listMongoObjects in list(orderedBySize.items()):
             for mongoObject in listMongoObjects:
                 mongoObjects[mongoObject['adDistinguishedName']] = mongoObject
         return mongoObjects
@@ -621,11 +624,11 @@ class ADImport(BaseAPI):
 
             # Save each MongoDB objects
             properRootDomainADDN = domain['adDistinguishedName']
-            for index, mongoObject in mongoObjects.items():
+            for index, mongoObject in list(mongoObjects.items()):
                 if index == properRootDomainADDN:
                     continue
                 # Get the proper path ("root,{0}._id,{1}._id,{2}._id...")
-                listPath = re.findall(ur'([^, ]+=(?:(?:\\,)|[^,])+)', index)
+                listPath = re.findall(r'([^, ]+=(?:(?:\\,)|[^,])+)', index)
                 nodePath = ','.join(listPath[1:])
 
                 # Find parent
@@ -640,13 +643,13 @@ class ADImport(BaseAPI):
             admin_user = self.request.user
             chef_server_api = get_chef_api(get_current_registry().settings, admin_user)
             if is_ad_master:
-                for index, mongoObject in mongoObjects.items():
+                for index, mongoObject in list(mongoObjects.items()):
                     if mongoObject['type'] == 'group':
                         if mongoObject['members'] != []:
                             mongoObject['members'] = []
                             self._saveMongoObject(mongoObject)
 
-            for index, mongoObject in mongoObjects.items():
+            for index, mongoObject in list(mongoObjects.items()):
                 updateMongoObject = False
                 # MemberOf
                 if mongoObject['type'] in ('user', 'computer'):
@@ -709,7 +712,7 @@ class ADImport(BaseAPI):
                     self._saveMongoObject(mongoObject)
 
             # apply policies to new objects
-            for node_type, node_names in objects_apply_policy.items():
+            for node_type, node_names in list(objects_apply_policy.items()):
                 nodes = self.collection.find({'name': {'$in': node_names},
                                               'path': get_filter_this_domain(domain),
                                               'type': node_type})

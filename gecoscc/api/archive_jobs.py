@@ -24,5 +24,6 @@ class ArchiveJobsResource(BaseAPI):
 
     def put(self):
         user_name = self.request.user['username']
-        self.collection.update({'administrator_username': user_name, 'archived': False}, {'$set': {'archived': True}}, multi=True)
+        self.collection.update_many({'administrator_username': user_name,
+            'archived': False}, {'$set': {'archived': True}})
         return {'ok': self.request.user['username']}

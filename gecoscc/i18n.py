@@ -49,7 +49,8 @@ def gettext(string, *args, **kwargs):
     return get_current_request().translate(string, *args, **kwargs)
 
 
-gettext_lazy = lazy(gettext, six.text_type)
+def gettext_lazy(string, *args, **kwargs):
+    return lazy(gettext, six.text_type)
 
 
 def is_default_language():

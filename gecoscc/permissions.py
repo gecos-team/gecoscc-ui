@@ -53,7 +53,7 @@ def api_login_required(request, **kwargs):
 def http_basic_login_required(request, **kwargs):
     try:
         api_login_required(request)
-    except HTTPForbidden, e:
+    except HTTPForbidden as e:
         authorization = request.headers.get('Authorization')
         if not authorization:
             raise e

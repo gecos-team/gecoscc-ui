@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 from bson import ObjectId
 
 from cornice.resource import resource
@@ -82,6 +83,10 @@ class RegisterComputerResource(BaseAPI):
 
     def delete(self):
         node_id = self.request.GET.get('node_id')
+        if node_id is None:
+            return {'ok': False,
+                    'message': 'Required parameter: node_id'}
+            
         logger.info("/register/computer: Deleting computer for node_id = %s" % (str(node_id)))
         # Find the computer node
         computer = self.collection.find_one({'node_chef_id': node_id})
@@ -90,11 +95,13 @@ class RegisterComputerResource(BaseAPI):
         users = self.collection.find({'computers': computer['_id'], 'type': 'user'})
         for user in users:
             logger.info("/register/computer: Removing computer %s relationship from user %s" % (str(computer['_id']), str(user['_id'])))
-            self.collection.update({'_id': user['_id']}, {'$pull': { 'computers': computer['_id'] }})
+            self.collection.update_one({'_id': user['_id']},
+                {'$pull': { 'computers': computer['_id'] }})
         
         # Delete the computer node
-        node_deleted = self.collection.remove({'node_chef_id': node_id, 'type': 'computer'})
-        num_node_deleted = node_deleted['n']
+        node_deleted = self.collection.delete_one({'node_chef_id': node_id,
+            'type': 'computer'})
+        num_node_deleted = node_deleted.deleted_count
         if num_node_deleted >= 1:
             # Create a job so the administrator can see the 'detached' action
             job_storage = JobStorage(self.request.db.jobs, self.request.user)

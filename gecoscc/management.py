@@ -29,14 +29,14 @@ def main():
     usage = "usage: %prog development.ini help"
 
     if len(sys.argv) < 3:
-        print usage
+        print(usage)
         return 2
 
     if sys.argv[2] == "help":
         # List all scripts
-        print "help"
+        print("help")
         for _, name, _ in pkgutil.iter_modules([COMMANDS_PATH]):
-            print name
+            print(name)
     else:
         config_uri = sys.argv[1]
         command_name = sys.argv[2]
@@ -83,7 +83,7 @@ class BaseCommand(object):
             if getattr(self.options, option, None) is None:
                 errors.append("{0} is a required option".format(option))
         if errors:
-            print '\n'.join(errors)
+            print('\n'.join(errors))
             self.parser.print_help()
             sys.exit(1)
 

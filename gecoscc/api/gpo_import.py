@@ -12,12 +12,15 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import logging
 import xmltodict
 
 from gzip import GzipFile
 from bson import ObjectId
-from StringIO import StringIO
+from io import StringIO
 
 from cornice.resource import resource
 
@@ -45,7 +48,7 @@ class GPOImport(BaseAPI):
 
     def _cleanPrefixNamespaces(self, xml):
         if isinstance(xml, dict):
-            for old_key in xml.keys():
+            for old_key in list(xml.keys()):
                 old_key_splitted = old_key.split(':')  # namespace prefix separator
                 new_key = ':'.join(old_key_splitted[1:]) if len(old_key_splitted) > 1 else old_key
                 xml[new_key] = self._cleanPrefixNamespaces(xml.pop(old_key))

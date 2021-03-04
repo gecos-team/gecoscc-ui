@@ -10,6 +10,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import range
 import sys
 from optparse import make_option
 from getpass import getpass
@@ -28,7 +29,8 @@ class Command(BaseCommand):
         shell
     """
 
-    usage = "usage: %prog config_uri create_adminuser --username user --email user@example.com"
+    usage = ("usage: %prog config_uri create_adminuser --username user "
+            " --email user@example.com")
 
     option_list = [
         make_option(
@@ -68,21 +70,22 @@ class Command(BaseCommand):
         if not self.options.noinput:
             password = None
             for _n in range(3):
-                print "Insert the new password, the spaces will be stripped"
+                print("Insert the new password, the spaces will be stripped")
                 password_1 = getpass("password [1]: ").strip()
                 password_2 = getpass("password [2]: ").strip()
                 if password_1 and password_2 and password_1 == password_2:
                     password = password_1
                     break
                 else:
-                    print "Both passwords doesn't match or any of them is empty\n"
+                    print("Both passwords doesn't match or any of them is "
+                          "empty\n")
             if not password:
-                print "You can't set the password, please retry later"
+                print("You can't set the password, please retry later")
                 sys.exit(1)
 
         else:
             password = password_generator()
-            print "The generated password is \n{0}\n".format(password)
+            print("The generated password is \n{0}\n".format(password))
 
         try:
             self.pyramid.userdb.create_user(
@@ -92,6 +95,6 @@ class Command(BaseCommand):
                 {'is_superuser': self.options.is_superuser}
             )
         except UserAlreadyExists:
-            print "The user already exists"
+            print("The user already exists")
         else:
-            print "\nThe user was created"
+            print("\nThe user was created")

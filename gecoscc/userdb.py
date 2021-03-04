@@ -36,7 +36,7 @@ def create_password(password):
 def validate_password(password_hash, password):
     hashval = bcrypt.hashpw(password,
                          password_hash)
-    return (hashval == password_hash)
+    return hashval == password_hash
 
 
 class UserDoesNotExist(Exception):
@@ -47,7 +47,7 @@ class UserAlreadyExists(Exception):
     pass
 
 
-class MongoUserDB(object):
+class MongoUserDB:
 
     def __init__(self, mongo_connection, collection_name):
         self.db = mongo_connection.get_database()
@@ -56,11 +56,11 @@ class MongoUserDB(object):
 
     def indexes(self):
 
-        self.db.adminusers.ensure_index([
+        self.db.adminusers.create_index([
             ('username', pymongo.DESCENDING),
         ], unique=True)
 
-        self.db.adminusers.ensure_index([
+        self.db.adminusers.create_index([
             ('email', pymongo.DESCENDING),
         ], unique=True)
 
@@ -81,15 +81,16 @@ class MongoUserDB(object):
         password_dict = user.get('password', None)
         if password_dict is None:
             return False
+        
         if validate_password(password_dict, password):
             return user
-        else:
-            return False
+        
+        return False
 
     def change_password(self, username, password):
         user = self.get_user(username)
         password_hash = create_password(password)
-        self.collection.update({
+        self.collection.update_one({
             '_id': user['_id']
         }, {
             '$set': {
@@ -117,7 +118,7 @@ class MongoUserDB(object):
             'apikey': [self.create_unique_apikey()],
         })
 
-        self.collection.save(user)
+        self.collection.insert_one(user)
 
     def create_unique_apikey(self):
         while True:
@@ -127,8 +128,8 @@ class MongoUserDB(object):
             except UserDoesNotExist:
                 return new_apikey
 
-    def add_apikey(self, username, apikey):
-        self.collection.update({
+    def add_apikey(self, username, _apikey):
+        self.collection.update_one({
             'username': username
         }, {
             '$push': {
@@ -136,11 +137,14 @@ class MongoUserDB(object):
             }
         })
 
+    def count_users(self, filters=None):
+        return self.collection.count_documents(filters)
+
     def list_users(self, filters=None):
         return self.collection.find(filters)
 
-    def delete_users(self, filters=None):
-        return self.collection.remove(filters)
+    def delete_user(self, filters=None):
+        return self.collection.delete_one(filters)
 
 
 def get_userdb(request):
@@ -151,16 +155,16 @@ def get_user(request):
     userid = request.authenticated_userid
     if userid is not None:
         return request.userdb.get_user(userid)
-    else:
-        if request.POST:
-            apikey = request.POST.get('apikey')
-        elif request.GET:
-            apikey = request.GET.get('apikey')
-        else:
-            return None
 
-        if apikey:
-            return request.userdb.get_user_by_apikey(apikey)
+    if request.POST:
+        apikey = request.POST.get('apikey')
+    elif request.GET:
+        apikey = request.GET.get('apikey')
+    else:
+        return None
+
+    if apikey:
+        return request.userdb.get_user_by_apikey(apikey)
 
     return None
 

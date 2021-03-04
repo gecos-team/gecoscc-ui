@@ -7,7 +7,8 @@ README = open(os.path.join(here, 'README.rst')).read()
 #CHANGES = open(os.path.join(here, 'CHANGES.txt')).read()
 
 requires = open(os.path.join(here, 'requirements.txt')).read().splitlines()
-test_requires = open(os.path.join(here, 'test_requirements.txt')).read().splitlines()
+test_requires = open(os.path.join(here, 'test_requirements.txt')
+    ).read().splitlines()
 
 def get_version():
     with open('gecoscc/version.py') as f:

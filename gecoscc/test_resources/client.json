@@ -1,0 +1,9 @@
+{
+  "name": "%(node_name)s",
+  "clientname": "%(node_name)s",
+  "validator": false,
+  "orgname": "default",
+  "json_class": "Chef::ApiClient",
+  "chef_type": "client",
+  "public_key": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2L1GlMtGBpDdS65YSEoU\neMQDDI1R3gSW167X1zy0TeE3nHfcegXS65LKqYKLYN/l5W80hL673xvl3kvaexnL\nOwa73LNyeC1EyuDCZhL/qpyJc0xQ8/saH/9zaTfzSgKMUCWKdXKOX5wPmn+WUsjg\nQXbVHfUethtdsEw8YlUgDraRJ6fpObkrqso2bSpbCvNvTylWXA7Lfmk906RJ2wW+\nXVu2edYPjHEwj/kIr9MZckI29n/1ZFzKncqcmhxNWdq6NZfidmQNTmeSuJ+CkHTt\n9FaPYOJX1lPFyANrLqHUJ89HtuuRfKnz3Nh40OHTWM9CskBP1OspB+Hz5TTBSUC0\njQIDAQAB\n-----END PUBLIC KEY-----\n\n"
+}

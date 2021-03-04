@@ -10,10 +10,11 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import string_types
 import re
 import zipfile
 import tempfile
-import urllib2
+from urllib.request import urlopen
 import colander
 import deform
 import os
@@ -71,7 +72,7 @@ class ObjectIdField(object):
         if not isinstance(appstruct, ObjectId):
             raise colander.Invalid(node, '{0} is not a ObjectId'.format(
                 appstruct))
-        return unicode(appstruct)
+        return str(appstruct)
 
     def deserialize(self, node, cstruct):
         if not cstruct or cstruct is colander.null:
@@ -118,7 +119,7 @@ class Unique(object):
         request = pyramid.threadlocal.get_current_request()
         from gecoscc.db import get_db
         mongodb = get_db(request)
-        if mongodb.adminusers.find({node.name: value}).count() > 0:
+        if mongodb.adminusers.count_documents({node.name: value}) > 0:
             err_msg = _(self.err_msg, mapping={'val': value})
             node.raise_invalid(err_msg)
 
@@ -213,9 +214,6 @@ class StringList(colander.SequenceSchema):
 
 class Group(Node):
 
-    # Group object members
-    # groupmembers = ObjectIdList(missing=[], default=[])
-
     # Node objects
     type = colander.SchemaNode(colander.String(),
                                default='group',
@@ -238,7 +236,7 @@ class Setting(colander.MappingSchema):
                               title=_('Key'),
                               default='',
                               missing='')
-    value = colander.SchemaNode(colander.String('UTF-8'),
+    value = colander.SchemaNode(colander.String(),
                                 title=_('Value'),
                                 default='',
                                 missing='')
@@ -478,11 +476,11 @@ class UpdateSequenceValidator(UpdateBaseValidator):
                 err_msg = _(self.err_msg, mapping={'val': nextseq})
                 node.raise_invalid(err_msg)
             else:
-                if mongodb.updates.find({'name':self.filename}).count() > 0:
+                if mongodb.updates.count_documents({'name':self.filename}) > 0:
                     node.raise_invalid(_('This name already exists'))
                     
                 sequence = re.match(BASE_UPDATE_PATTERN, self.filename).group(1)
-                if mongodb.updates.find({'_id': sequence}).count() > 0:
+                if mongodb.updates.count_documents({'_id': sequence}) > 0:
                     node.raise_invalid(_('This sequence already exists'))
             
 
@@ -588,7 +586,7 @@ def unzip_preparer(value):
                     zipped.write(value['fp'].read())
             else: 
                 # remote_file
-                f = urllib2.urlopen(value['url'])
+                f = urlopen(value['url'])
                 with open(settings['updates.tmp'] + os.path.basename(value['url']), "wb") as zipped:
                     zipped.write(f.read())
 
@@ -615,10 +613,10 @@ class UrlFile(object):
             if isinstance(node.missing, colander._drop):
                 return colander.drop
             return colander.null
-        if not isinstance(appstruct, basestring):
+        if not isinstance(appstruct, string_types):
             raise colander.Invalid(node, '{0} is not a url'.format(
                 appstruct))
-        return unicode(appstruct)
+        return str(appstruct)
 
     def deserialize(self, node, pstruct):
         if not pstruct or pstruct is colander.null:
@@ -631,6 +629,8 @@ class UrlFile(object):
             raise colander.Invalid(node, '{0} is not a string'.format(
                 pstruct))
 
+    def cstruct_children(self, node, cstruct):
+        return []
 
 
 class UpdateModel(colander.MappingSchema):
