@@ -179,7 +179,7 @@ def check_database_indexes(config):
     
     languages = settings.get("pyramid.locales")
     for lang in languages:
-        logger.debug('Creating indexes for "%s" locale'%(lang))
+        # logger.debug('Creating indexes for "%s" locale'%(lang))
         db.nodes.create_index('name', name=('name_%s'%(lang)),
             collation=pymongo.collation.Collation(lang, caseLevel=True,
                 strength=pymongo.collation.CollationStrength.PRIMARY) )
