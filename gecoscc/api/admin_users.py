@@ -36,7 +36,7 @@ class AdminUserResource(BaseAPI):
         settings = get_current_registry().settings
 
         chef = {}
-        chef['chef_server_uri'] = settings.get('chef.url')
+        chef['chef_server_uri'] = settings.get('chef.externalUrl')
         chef['chef_link'] = True
 
         gcc = {}

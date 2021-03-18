@@ -10,6 +10,9 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import json
 import os
 import pymongo
