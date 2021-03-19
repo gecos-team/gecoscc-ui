@@ -2813,7 +2813,7 @@ def auditlog(request, action=None):
             })
 
         except (KeyError, Exception):
-             logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
 
 

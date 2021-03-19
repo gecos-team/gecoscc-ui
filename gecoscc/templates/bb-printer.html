@@ -32,7 +32,7 @@
                     <div class="form-group">
 						<label for="type">{{ gettext('Type') }}</label>
 						<select id="type" class="form-control">
-							{% for key, value in printer_type.iteritems() %}
+							{% for key, value in printer_type.items() %}
 								<option value="{{ key }}" <% if (printtype === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
 							{% endfor %}
 						</select>
@@ -70,7 +70,7 @@
                     <div class="form-group">
 						<label>{{ gettext('Connection type') }}</label>
 						<select id="connection" class="form-control" required>
-							{% for key, value in printer_conn_type.iteritems() %}
+							{% for key, value in printer_conn_type.items() %}
 								<option value="{{ key }}" <% if (connection === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
 							{% endfor %}
 						</select>
@@ -88,7 +88,7 @@
                     <div class="form-group">
 						<label>{{ gettext('Operation Policy') }}</label>
 						<select id="oppolicy" class="form-control" required>
-							{% for key, value in printer_oppolicy_type.iteritems() %}
+							{% for key, value in printer_oppolicy_type.items() %}
 								<option value="{{ key }}" <% if (oppolicy === "{{ key }}") { print("selected"); } %>>{{ gettext(value) }}</option>
 							{% endfor %}
 						</select>
