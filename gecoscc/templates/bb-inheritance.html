@@ -35,9 +35,7 @@
 <% } else { %>
     <div class="alert alert-info alert-dismissable">
         <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
-        <% if (typeof resource.id !== 'undefined') { %>
-            <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no inheritance assigned to this resource yet.') }}
-        <% } %>
+        <strong>{{ gettext('Empty!') }}</strong> {{ gettext('There are no inheritance assigned to this resource yet.') }}
     </div>
 <% } %>
 

@@ -43,6 +43,17 @@
     font-size: 20px;
 }
 
+/* This seems to be missing in deform's bootstrap */ 
+.navbar-nav.pull-right > li > .dropdown-menu, .navbar-nav > li > .dropdown-menu.pull-right {
+    right: 0;
+    left: auto;
+}
+
+.navbar-nav {
+    margin-right: 15px;
+}
+
+
 body {
     background-color: #FAFAFA;
 }
@@ -161,7 +172,7 @@ footer {
 }
 
 .tree-dropdown label {
-    padding-left: 0px;
+    display: inline;
 }
 
 .dropdown .btn {
