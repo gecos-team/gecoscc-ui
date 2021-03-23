@@ -68,6 +68,8 @@ class MongoDB(object):
                 self.parsed_uri.get("username", None),
                 self.parsed_uri.get("password", None)
             )
+        # Patch a strange Python 3 error by getting the collection names
+        db.collection_names()
         self.indexes(db)
         return db
 
