@@ -45,10 +45,9 @@ class MongoDB(object):
         elif connection_factory is None:
             connection_factory = pymongo.MongoClient
 
-        self.connection = connection_factory(
-            host=self.db_uri,
-            tz_aware=True,
-            **kwargs)
+        self.factory = connection_factory
+        self.factory_args = kwargs
+        self.connection = None
 
         if self.parsed_uri.get("database", None):
             self.database_name = self.parsed_uri["database"]
@@ -56,13 +55,19 @@ class MongoDB(object):
             self.database_name = DEFAULT_MONGODB_NAME
 
     def get_connection(self):
+        if self.connection is None:
+            self.connection = self.factory(
+                host=self.db_uri,
+                tz_aware=True,
+                **self.factory_args)
+            
         return self.connection
 
     def get_database(self, database_name=None):
         if database_name is None:
-            db = self.connection[self.database_name]
+            db = self.get_connection()[self.database_name]
         else:
-            db = self.connection[database_name]
+            db = self.get_connection()[database_name]
         if self.parsed_uri.get("username", None):
             db.authenticate(
                 self.parsed_uri.get("username", None),
@@ -97,6 +102,15 @@ class MongoDB(object):
         db.jobs.create_index([
             ('userid', pymongo.DESCENDING),
         ])
+        
+        languages = ['en_US', 'es']
+        for lang in languages:
+            # logger.debug('Creating indexes for "%s" locale'%(lang))
+            db.nodes.create_index('name', name=('name_%s'%(lang)),
+                collation=pymongo.collation.Collation(lang, caseLevel=True,
+                    strength=pymongo.collation.CollationStrength.PRIMARY) )
+       
+        
 
     def dump(self, path, collection=None, excludes=DEFAULT_EXCLUDE_COLLECTIONS):
         '''
