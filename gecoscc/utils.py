@@ -287,10 +287,11 @@ def remove_chef_computer_data(computer, api, policies=None):
                     except KeyError:
                         continue
             else:
-                for mgmt in list(cookbook.keys()):
-                    if mgmt == USER_MGMT:
-                        continue
-                    cookbook.pop(mgmt)
+                if cookbook is not None:
+                    for mgmt in list(cookbook.keys()):
+                        if mgmt == USER_MGMT:
+                            continue
+                        cookbook.pop(mgmt)
             save_node_and_free(node)
 
 
