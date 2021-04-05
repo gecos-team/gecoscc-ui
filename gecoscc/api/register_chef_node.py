@@ -54,7 +54,7 @@ class RegisterChefNode(object):
         chef_ssl_verify = settings.get('chef.ssl.verify')
         if chef_ssl_verify == 'False' or chef_ssl_verify == 'True':
             chef_ssl_verify = bool(chef_ssl_verify)
-        api = ChefAPI(chef_url, str(chef_client.private_key), node_id, chef_version, ssl_verify = False)
+        api = ChefAPI(chef_url, chef_client.private_key.encode(), node_id, chef_version, ssl_verify = False)
 
  
         # create chef node
