@@ -11,6 +11,7 @@
 
 import logging
 import socket
+import base64
 from bson import ObjectId
 
 from cornice.validators import colander_body_validator
@@ -57,7 +58,10 @@ def http_basic_login_required(request, **kwargs):
         authorization = request.headers.get('Authorization')
         if not authorization:
             raise e
-        username, password = authorization.replace('Basic ', '').decode('base64').split(':')
+        b64_string = authorization.replace('Basic ', '')
+        b64_string += '=' * ((4 - len(b64_string) % 4) % 4)
+        decoded_data = base64.b64decode(b64_string)
+        username, password = decoded_data.decode('utf-8').split(':')
         try:
             user = request.userdb.login(username, password)
             if not user:
