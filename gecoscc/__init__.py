@@ -207,6 +207,10 @@ def jinja2_config(config):
     settings.setdefault('jinja2.directories', 'gecoscc:templates')
     settings.setdefault('jinja2.undefined', 'strict')
     settings.setdefault('jinja2.filters', """
+        admin_jsonify = gecoscc.filters.admin_serialize
+        datetime = gecoscc.filters.datetime
+        regex_match = gecoscc.filters.regex_match
+        timediff = gecoscc.filters.timediff
         route_url = pyramid_jinja2.filters:route_url_filter
         static_url = pyramid_jinja2.filters:static_url_filter
     """)
