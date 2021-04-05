@@ -142,21 +142,21 @@ def report_permission(context, request, file_ext):
         rows.append(row)
                 
     if file_ext == 'pdf':
-        header = (_(u'Username and Email').encode('utf-8'),
-                  _(u'Organizational Unit').encode('utf-8'),
-                  _(u'Read Only').encode('utf-8'),
-                  _(u'Link').encode('utf-8'),
-                  _(u'Remote').encode('utf-8'),
-                  _(u'Manage').encode('utf-8'))
+        header = (_(u'Username and Email'),
+                  _(u'Organizational Unit'),
+                  _(u'Read Only'),
+                  _(u'Link'),
+                  _(u'Remote'),
+                  _(u'Manage'))
     else:
-        header = (_(u'Username').encode('utf-8'),
-                  _(u'Email').encode('utf-8'),
-                  _(u'Name').encode('utf-8'),
-                  _(u'Organizational Unit').encode('utf-8'),
-                  _(u'Read Only').encode('utf-8'),
-                  _(u'Link').encode('utf-8'),
-                  _(u'Remote').encode('utf-8'),
-                  _(u'Manage').encode('utf-8'))
+        header = (_(u'Username'),
+                  _(u'Email'),
+                  _(u'Name'),
+                  _(u'Organizational Unit'),
+                  _(u'Read Only'),
+                  _(u'Link'),
+                  _(u'Remote'),
+                  _(u'Manage'))
 
     # Column widths in percentage
     if file_ext == 'pdf':

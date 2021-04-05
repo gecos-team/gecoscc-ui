@@ -102,13 +102,13 @@ def report_user(context, request, file_ext):
                   u'Address',
                   u'ID')
     else:
-        header = (_(u'Username').encode('utf-8'),
-                  _(u'First name').encode('utf-8'),
-                  _(u'Last name').encode('utf-8'),
-                  _(u'Email').encode('utf-8'),
-                  _(u'Phone').encode('utf-8'),
-                  _(u'Address').encode('utf-8'),
-                  _(u'Id').encode('utf-8'))
+        header = (_(u'Username'),
+                  _(u'First name'),
+                  _(u'Last name'),
+                  _(u'Email'),
+                  _(u'Phone'),
+                  _(u'Address'),
+                  _(u'Id'))
     
     # Column widths in percentage
     if file_ext == 'pdf':
@@ -129,7 +129,7 @@ def report_user(context, request, file_ext):
             'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

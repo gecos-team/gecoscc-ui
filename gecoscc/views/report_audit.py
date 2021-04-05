@@ -102,11 +102,11 @@ def report_audit(context, request, file_ext):
         orders.append(order)
                 
     
-    header = (_(u'Action').encode('utf-8'),
-              _(u'Username').encode('utf-8'),
-              _(u'IP Address').encode('utf-8'),
-              _(u'User Agent').encode('utf-8'),
-              _(u'Date').encode('utf-8'))
+    header = (_(u'Action'),
+              _(u'Username'),
+              _(u'IP Address'),
+              _(u'User Agent'),
+              _(u'Date'))
     
     # Column widths in percentage
     widths = (10, 15, 20, 40, 15)
@@ -120,7 +120,7 @@ def report_audit(context, request, file_ext):
             'default_order': [[ 4, 'desc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

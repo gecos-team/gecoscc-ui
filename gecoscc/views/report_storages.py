@@ -165,11 +165,11 @@ def report_storages(context, request, file_ext):
                     rows.append(user_row)
         
     
-    header = (_(u'Path').encode('utf-8'),
-              _(u'Name').encode('utf-8'),
-              _(u'Uri').encode('utf-8'),
-              _(u'Id').encode('utf-8'),
-              _(u'User').encode('utf-8'))
+    header = (_(u'Path'),
+              _(u'Name'),
+              _(u'Uri'),
+              _(u'Id'),
+              _(u'User'))
     
     # Column widths in percentage
     widths = (0, 20, 45, 15, 20, 0)
@@ -185,7 +185,7 @@ def report_storages(context, request, file_ext):
             'default_order': [[ 0, 'asc' ], [ 1, 'asc' ], [ 4, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}
