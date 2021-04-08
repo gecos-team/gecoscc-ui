@@ -178,7 +178,7 @@ def report_permission(context, request, file_ext):
             'default_order': [[ 0, 'asc' ]],            
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}
