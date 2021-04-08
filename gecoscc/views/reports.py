@@ -51,7 +51,7 @@ class CSVRenderer(object):
             if ct == response.default_content_type:
                 response.content_type = 'text/csv'
 
-        fout = StringIO()
+        fout = io.StringIO()
         writer = csv.writer(fout, delimiter=',', quotechar='"',
             quoting=csv.QUOTE_MINIMAL)
         writer.writerow(value.get('headers', []))
