@@ -2516,7 +2516,7 @@ def getNextUpdateSeq(db):
         cursor = db.updates.find_one({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
                                  {'_id':1}, sort=[('_id', pymongo.DESCENDING)])
 
-        latest = int(cursor.next().get('_id'))
+        latest = int(cursor.get('_id'))
         nseq = "%04d" % (latest+1)
 
     logger.debug("utils.py ::: getNextUpdateSeq - nseq = %s" % nseq)

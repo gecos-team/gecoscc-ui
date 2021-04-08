@@ -20,6 +20,7 @@ pyramid_celery==3.0.0
 cornice==4.0.1
 jsonschema==3.2.0
 python-socketio==4.6.0
+python-engineio==3.13.2
 redis==3.5.3
 WebHelpers2==2.0
 paginate==0.5.6
