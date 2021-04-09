@@ -741,7 +741,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
-    policies = group['policies'].keys()
+    policies = list(group['policies'].keys())
     members_group = copy(group['members'])
     if not members_group:
         return
@@ -2684,7 +2684,7 @@ def chefserver_backup(backupdir=None):
 
     except subprocess.CalledProcessError as msg:
         logger.error(msg.cmd)
-        logger.error(msg.output)
+        logger.error(msg.output.decode('utf-8'))
         exitstatus = msg.returncode
 
     return exitstatus
