@@ -107,6 +107,15 @@ from gecoscc.utils import update_node
 from gecoscc.views.report_storages import report_storages_html
 from gecoscc.views.server import internal_server_status,\
     internal_server_connections
+import colander
+import deform
+from deform.widget import FileUploadWidget
+from gecoscc.models import unzip_preparer, UpdateNamingValidator,\
+    UpdateSequenceValidator, UpdateFileStructureValidator,\
+    UpdateControlFileValidator, UpdateScriptRangeValidator, UrlFile,\
+    MemoryTmpStore, AdminUserValidator, Unique, LowerAlphaNumeric,\
+    deferred_choices_widget, PermissionValidator, UniqueDomainValidator,\
+    AUTH_TYPE_CHOICES, GemRepositories
 
 # This url is not used, every time the code should use it, the code is patched
 # and the code use de NodeMock class
@@ -464,6 +473,207 @@ class NodeMock(object):
     def delete(self):
         del NODES[self.name]
 
+# -------------------------------------------------------------------
+# Model classes mocks:
+#  These classes must be a copy-paste from model classes but without
+#  i18 gettext method for the titles
+# -------------------------------------------------------------------
+class UpdateModelMock(colander.MappingSchema):
+    '''
+    Schema for representing an update in form 
+    '''
+    local_file = colander.SchemaNode(deform.FileData(),
+                                     widget=FileUploadWidget(MemoryTmpStore()),
+                                     preparer=unzip_preparer,
+                                     validator = colander.All(
+                                         UpdateNamingValidator(), 
+                                         UpdateSequenceValidator(),
+                                         UpdateFileStructureValidator(), 
+                                         UpdateControlFileValidator(),
+                                         UpdateScriptRangeValidator()),
+                                     missing=colander.null,
+                                     title='Update ZIP')
+    remote_file = colander.SchemaNode(UrlFile(),
+                                      preparer=unzip_preparer,
+                                      validator = colander.All(
+                                          UpdateNamingValidator(), 
+                                          UpdateSequenceValidator(),
+                                          UpdateFileStructureValidator(), 
+                                          UpdateControlFileValidator()),
+                                      missing=colander.null,
+                                      title='URL download')
+
+
+class BaseUserMock(colander.MappingSchema):
+    first_name = colander.SchemaNode(colander.String(),
+                                     title='First name',
+                                     default='',
+                                     missing='')
+    last_name = colander.SchemaNode(colander.String(),
+                                    title='Last name',
+                                    default='',
+                                    missing='')
+
+
+class AdminUserMock(BaseUserMock):
+    validator = AdminUserValidator()
+    username = colander.SchemaNode(colander.String(),
+        title='Username',
+        validator=colander.All(
+            Unique('adminusers',
+             'There is a user with this username: ${val}'),
+            LowerAlphaNumeric()))
+    password = colander.SchemaNode(colander.String(),
+        title='Password',
+        widget=deform.widget.PasswordWidget(),
+        validator=colander.Length(min=6))
+    repeat_password = colander.SchemaNode(colander.String(),
+        default='',
+        title='Repeat the password',
+        widget=deform.widget.PasswordWidget(),
+        validator=colander.Length(min=6))
+    email = colander.SchemaNode(colander.String(),
+        title='Email',
+        validator=colander.All(
+            colander.Email(),
+            Unique('adminusers',
+                   'There is a user with this email: ${val}')))
+
+PERMISSIONS = (('READONLY', 'read'),
+               ('MANAGE', 'manage'),
+               ('LINK', 'link'),
+               ('REMOTE', 'remote'))
+
+
+class AdminUserOUPermMock(colander.MappingSchema):
+    ou_selected = colander.SchemaNode(colander.List(),
+                                      title='Select an Organization Unit',
+                                      widget=deferred_choices_widget)
+
+
+    permission = colander.SchemaNode(colander.Set(),
+                                     title='Permissions',
+                                     validator=colander.All(
+                                         colander.Length(min=1),
+                                         PermissionValidator()),
+                                     widget=deform.widget.CheckboxChoiceWidget(
+                                         values=PERMISSIONS, inline=True))
+
+
+class AdminUserOUPermsMock(colander.SequenceSchema):
+    permissions = AdminUserOUPermMock(
+        title='Collapse/Expand',
+        widget=deform.widget.MappingWidget(
+        template='mapping_accordion',
+        item_template="mapping_item_two_columns"))
+
+
+class PermissionsMock(colander.MappingSchema):
+    perms = AdminUserOUPermsMock(
+        title='Permission List',
+        widget=deform.widget.SequenceWidget(template='custom_sequence')
+    )
+
+
+class AuthLDAPVariableMock(colander.MappingSchema):
+    uri = colander.SchemaNode(colander.String(),
+                              title='uri',
+                              default='URL_LDAP')
+    base = colander.SchemaNode(colander.String(),
+                               title='base',
+                               default='OU_BASE_USER')
+    basegroup = colander.SchemaNode(colander.String(),
+                                    title='base group',
+                                    default='OU_BASE_GROUP')
+    binddn = colander.SchemaNode(colander.String(),
+                                 title='binddn',
+                                 default='USER_WITH_BIND_PRIVILEGES')
+    bindpwd = colander.SchemaNode(colander.String(),
+                                  title='bindpwd',
+                                  default='PASSWORD_USER_BIND')
+
+
+class ActiveDirectoryVariableNoSpecificMock(colander.MappingSchema):
+    fqdn = colander.SchemaNode(colander.String(),
+                               title='FQDN')
+    workgroup = colander.SchemaNode(colander.String(),
+                                    title='WORKGROUP')
+
+
+class ActiveDirectoryVariableSpecificMock(colander.MappingSchema):
+    sssd_conf = colander.SchemaNode(deform.FileData(),
+                                    widget=FileUploadWidget(MemoryTmpStore()),
+                                    title='SSSD conf')
+    krb5_conf = colander.SchemaNode(deform.FileData(),
+                                    widget=FileUploadWidget(MemoryTmpStore()),
+                                    title='KRB5 conf')
+    smb_conf = colander.SchemaNode(deform.FileData(),
+                                   widget=FileUploadWidget(MemoryTmpStore()),
+                                   title='SMB conf')
+    pam_conf = colander.SchemaNode(deform.FileData(),
+                                   widget=FileUploadWidget(MemoryTmpStore()),
+                                   title='PAM conf')
+
+
+class AdminUserVariablesMock(colander.MappingSchema):
+    nav_tree_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title='Navigation tree page size:',
+                                  validator=colander.Range(1, 200))
+    policies_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=8,
+                                  missing=8,
+                                  title='Policies list page size:',
+                                  validator=colander.Range(1, 200))
+    jobs_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=30,
+                                  missing=30,
+                                  title='Actions list page size:',
+                                  validator=colander.Range(1, 200))
+    group_nodes_pagesize = colander.SchemaNode(colander.Integer(),
+                                  default=10,
+                                  missing=10,
+                                  title='Group nodes list page size:',
+                                  validator=colander.Range(1, 200))
+    uri_ntp = colander.SchemaNode(colander.String(),
+                                  default='URI_NTP_SERVER.EX',
+                                  title='URI ntp')
+    auth_type = colander.SchemaNode(colander.String(),
+                                    title='Auth type',
+                                    default='LDAP',
+                                    widget=deform.widget.SelectWidget(
+                                        values=AUTH_TYPE_CHOICES))
+    specific_conf = colander.SchemaNode(colander.Boolean(),
+                                        title='Specific conf',
+                                        default=False)
+    auth_ldap = AuthLDAPVariableMock(title='Auth LDAP')
+    auth_ad = ActiveDirectoryVariableNoSpecificMock(title='Auth Active directory')
+    auth_ad_spec = ActiveDirectoryVariableSpecificMock(title='Auth Active directory')
+    gem_repos = GemRepositories(title='Gem Repositories',
+                                missing=[],
+                                default=[],
+                                validator=UniqueDomainValidator())
+
+    def get_config_files(self, mode, username):
+        return None
+
+    def get_files(self, mode, username, file_name):
+        return None
+
+class MaintenanceMock(colander.MappingSchema):
+    maintenance_message = colander.SchemaNode(colander.String(),
+      validator=colander.Length(max=500),
+      widget=deform.widget.TextAreaWidget(rows=10, cols=80, maxlength=500,
+        css_class='deform-widget-textarea-maintenance'),
+      title='Users will be warned with this message',
+      default='',
+      missing='')
+
+
+# -----------------------------------------------------------
+# GECOS test base class
+# -----------------------------------------------------------
 
 class BaseGecosTestCase(unittest.TestCase):
 
@@ -6274,17 +6484,19 @@ class SuperadminTests(BaseGecosTestCase):
     @mock.patch('gecoscc.models.get_chef_api')    
     @mock.patch('gecoscc.utils._get_chef_api')    
     @mock.patch('gecoscc.views.admins._')
+    @mock.patch('gecoscc.models.gettext')
     @mock.patch('gecoscc.forms._')
-    @mock.patch('gecoscc.models._')
     @mock.patch('gecoscc.i18n.gettext')
-    def test_02_updates(self, gettext, gettext_forms, gettext_models,
+    @mock.patch('gecoscc.views.admins.UpdateModel')
+    def test_02_updates(self, update_model, gettext, gettext_forms, gettext_models,
                         gettext_i18n, get_chef_api_method,
                         get_chef_api_models_method):
         '''
         Test 2: Check that the updates view works
         '''
         if DISABLE_TESTS: return
-        
+
+        update_model.side_effect = UpdateModelMock        
         gettext.side_effect = gettext_mock
         gettext_forms.side_effect = gettext_mock
         gettext_models.side_effect = gettext_mock
@@ -6435,16 +6647,23 @@ class SuperadminTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils._get_chef_api')    
     @mock.patch('gecoscc.views.admins._')
     @mock.patch('gecoscc.forms._')
-    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.models.gettext')
     @mock.patch('gecoscc.i18n.gettext')
-    def test_03_admins(self, gettext, gettext_forms, gettext_models,
-                        gettext_i18n, get_chef_api_method,
-                        get_chef_api_models_method):
+    @mock.patch('gecoscc.views.admins.AdminUser')
+    @mock.patch('gecoscc.views.admins.Permissions')    
+    @mock.patch('gecoscc.views.admins.AdminUserVariables')
+    def test_03_admins(self, adminuservariablesmodel,
+                       permissionsmodel, adminusermodel, gettext,
+                       gettext_forms, gettext_models, gettext_i18n,
+                       get_chef_api_method, get_chef_api_models_method):
         '''
         Test 3: Check that the administrator users views works
         '''
         if DISABLE_TESTS: return
         
+        adminuservariablesmodel.side_effect = AdminUserVariablesMock
+        permissionsmodel.side_effect = PermissionsMock
+        adminusermodel.side_effect = AdminUserMock
         gettext.side_effect = gettext_mock
         gettext_forms.side_effect = gettext_mock
         gettext_models.side_effect = gettext_mock
@@ -6641,9 +6860,11 @@ class SuperadminTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils._get_chef_api')    
     @mock.patch('gecoscc.views.admins._')
     @mock.patch('gecoscc.forms._')
-    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.models.gettext')
     @mock.patch('gecoscc.i18n.gettext')
-    def test_04_maintenance_mode(self, gettext, gettext_forms, gettext_models,
+    @mock.patch('gecoscc.views.admins.Maintenance')
+    def test_04_maintenance_mode(self, maintenancemodel,
+                         gettext, gettext_forms, gettext_models,
                         gettext_i18n, get_chef_api_method,
                         get_chef_api_models_method):
         '''
@@ -6651,6 +6872,7 @@ class SuperadminTests(BaseGecosTestCase):
         '''
         if DISABLE_TESTS: return
         
+        maintenancemodel.side_effect = MaintenanceMock
         gettext.side_effect = gettext_mock
         gettext_forms.side_effect = gettext_mock
         gettext_models.side_effect = gettext_mock
@@ -6723,7 +6945,7 @@ class SuperadminTests(BaseGecosTestCase):
     @mock.patch('gecoscc.utils._get_chef_api')    
     @mock.patch('gecoscc.views.admins._')
     @mock.patch('gecoscc.forms._')
-    @mock.patch('gecoscc.models._')
+    @mock.patch('gecoscc.models.gettext')
     @mock.patch('gecoscc.i18n.gettext')
     def test_05_statistics(self, gettext, gettext_forms, gettext_models,
                         gettext_i18n, get_chef_api_method,
