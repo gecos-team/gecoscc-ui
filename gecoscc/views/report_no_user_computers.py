@@ -111,12 +111,12 @@ def report_no_user_computers(context, request, file_ext):
                  treatment_string_to_csv(item, 'node_chef_id'),
                  item['_id']) for item in computers]
 
-    header = (_(u'Name').encode('utf-8'),
-              _(u'Type').encode('utf-8'),
-              _(u'Registry number').encode('utf-8'),
-              _(u'Serial number').encode('utf-8'),
-              _(u'Node chef id').encode('utf-8'),
-              _(u'Id').encode('utf-8'))
+    header = (_(u'Name'),
+              _(u'Type'),
+              _(u'Registry number'),
+              _(u'Serial number'),
+              _(u'Node chef id'),
+              _(u'Id'))
     
     # Column widths in percentage
     widths = (25, 10, 15, 15, 20, 15)
@@ -133,7 +133,7 @@ def report_no_user_computers(context, request, file_ext):
             'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

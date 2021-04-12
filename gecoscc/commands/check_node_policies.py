@@ -229,9 +229,10 @@ class Command(BaseCommand):
                     exec(code)                    
                 
         data = header + data
-        default = None
         code = compile(data, '<string>', 'exec')
-        exec(code)
+        loc = locals()
+        exec(code, globals(), loc)
+        default = loc['default']
         return default
     
     

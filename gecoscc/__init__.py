@@ -10,12 +10,16 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import json
 import os
 import pymongo
 import sys
 import subprocess
 import jinja2
+from multiprocessing import Process
 
 from configparser import ConfigParser
 
@@ -145,7 +149,6 @@ def database_config(config):
     else:
         mongodb = MongoDB(settings['mongo_uri'])
     config.registry.settings['mongodb'] = mongodb
-    config.registry.settings['db_conn'] = mongodb.get_connection()
 
     config.add_request_method(get_db, 'db', reify=True)
 
@@ -172,18 +175,6 @@ def check_server_list(config):
     db.servers.update_one({'name': server_name.strip()}, {'$set': server},
                           upsert=True)
         
-        
-def check_database_indexes(config):
-    settings = config.registry.settings
-    db = settings['mongodb'].get_database()
-    
-    languages = settings.get("pyramid.locales")
-    for lang in languages:
-        logger.debug('Creating indexes for "%s" locale'%(lang))
-        db.nodes.create_index('name', name=('name_%s'%(lang)),
-            collation=pymongo.collation.Collation(lang, caseLevel=True,
-                strength=pymongo.collation.CollationStrength.PRIMARY) )
-          
     
 def userdb_config(config):
     # TODO
@@ -216,6 +207,10 @@ def jinja2_config(config):
     settings.setdefault('jinja2.directories', 'gecoscc:templates')
     settings.setdefault('jinja2.undefined', 'strict')
     settings.setdefault('jinja2.filters', """
+        admin_jsonify = gecoscc.filters.admin_serialize
+        datetime = gecoscc.filters.datetime
+        regex_match = gecoscc.filters.regex_match
+        timediff = gecoscc.filters.timediff
         route_url = pyramid_jinja2.filters:route_url_filter
         static_url = pyramid_jinja2.filters:static_url_filter
     """)
@@ -282,12 +277,14 @@ def main(global_config, **settings):
     celery_config(config)
     locale_config(config)
 
-    check_database_indexes(config)
-    
     session_factory = session_factory_from_settings(settings)
     config.set_session_factory(session_factory)
 
-    check_server_list(config)
+    # check_server_list must be in a separate process because it uses MongoDB
+    # and MongoDB connections shouldn't be used before fork
+    p = Process(target=check_server_list, args=(config, ))
+    p.start()
+    p.join()
 
     config.add_translation_dirs('gecoscc:locale/')
 

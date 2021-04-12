@@ -2158,6 +2158,9 @@ class ChefTask(Task):
             for node in nodes_by_type:
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
                 node_deleted_function(user, node, computers=computers, direct_deleted=False)
+            
+            nodes_by_type.close()
+            
         self.db.nodes.delete_many({'path': ou_path})
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])

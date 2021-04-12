@@ -96,19 +96,19 @@ def report_no_computer_users(context, request, file_ext):
                       
                 
     
-    header = (_(u'Username').encode('utf-8'),
-              _(u'Name').encode('utf-8'),
-              _(u'Email').encode('utf-8'),
-              _(u'Phone').encode('utf-8'),
-              _(u'Address').encode('utf-8'),
-              _(u'Id').encode('utf-8'))
+    header = (_(u'Username'),
+              _(u'Name'),
+              _(u'Email'),
+              _(u'Phone'),
+              _(u'Address'),
+              _(u'Id'))
     
     # Column widths in percentage
     if file_ext == 'pdf':
         widths = (25, 25, 15, 10, 20, 15)
     else:
         widths = (15, 15, 10, 15, 10, 20, 15)
-        header = header[ : 2] + (_(u'Last name').encode('utf-8'),) + \
+        header = header[ : 2] + (_(u'Last name'),) + \
             header[ 2 : ]
 
     title =  _(u'No-computer users report')
@@ -124,7 +124,7 @@ def report_no_computer_users(context, request, file_ext):
             'default_order': [[ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

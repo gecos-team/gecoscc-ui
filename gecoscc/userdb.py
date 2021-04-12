@@ -50,12 +50,18 @@ class UserAlreadyExists(Exception):
 class MongoUserDB:
 
     def __init__(self, mongo_connection, collection_name):
-        self.db = mongo_connection.get_database()
-        self.collection = self.db[collection_name]
-        self.indexes()
+        self.mongo_connection = mongo_connection
+        self.collection_name = collection_name
+        self.db = None        
+
+    def ensure_connection(self):
+        if self.db is None:
+            self.db = self.mongo_connection.get_database()
+            self.collection = self.db[self.collection_name]
+            self.indexes()
+            
 
     def indexes(self):
-
         self.db.adminusers.create_index([
             ('username', pymongo.DESCENDING),
         ], unique=True)
@@ -65,18 +71,21 @@ class MongoUserDB:
         ], unique=True)
 
     def get_user(self, username):
+        self.ensure_connection()
         user = self.collection.find_one({'username': username})
         if not user:
             raise UserDoesNotExist()
         return user
 
     def get_user_by_apikey(self, apikey):
+        self.ensure_connection()
         user = self.collection.find_one({'apikey': apikey})
         if not user:
             raise UserDoesNotExist()
         return user
 
     def login(self, username, password):
+        self.ensure_connection()
         user = self.get_user(username)
         password_dict = user.get('password', None)
         if password_dict is None:
@@ -88,6 +97,7 @@ class MongoUserDB:
         return False
 
     def change_password(self, username, password):
+        self.ensure_connection()
         user = self.get_user(username)
         password_hash = create_password(password)
         self.collection.update_one({
@@ -99,6 +109,7 @@ class MongoUserDB:
         })
 
     def create_user(self, username, password, email, extradata={}):
+        self.ensure_connection()
         # Test if the username was not registered before
         user = self.collection.find_one({'username': username})
         if user is not None:
@@ -121,6 +132,7 @@ class MongoUserDB:
         self.collection.insert_one(user)
 
     def create_unique_apikey(self):
+        self.ensure_connection()
         while True:
             new_apikey = generate_apikey()
             try:
@@ -129,6 +141,7 @@ class MongoUserDB:
                 return new_apikey
 
     def add_apikey(self, username, _apikey):
+        self.ensure_connection()
         self.collection.update_one({
             'username': username
         }, {
@@ -138,12 +151,15 @@ class MongoUserDB:
         })
 
     def count_users(self, filters=None):
+        self.ensure_connection()
         return self.collection.count_documents(filters)
 
     def list_users(self, filters=None):
+        self.ensure_connection()
         return self.collection.find(filters)
 
     def delete_user(self, filters=None):
+        self.ensure_connection()
         return self.collection.delete_one(filters)
 
 

@@ -9,14 +9,10 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import six
-
 from pyramid.events import NewRequest
 from pyramid.events import subscriber
 from pyramid.i18n import TranslationStringFactory, get_localizer
 from pyramid.threadlocal import get_current_registry, get_current_request
-
-from gecoscc.lazy import lazy
 
 TranslationString = TranslationStringFactory('gecoscc')
 
@@ -47,11 +43,6 @@ def add_localizer(event):
 
 def gettext(string, *args, **kwargs):
     return get_current_request().translate(string, *args, **kwargs)
-
-
-def gettext_lazy(string, *args, **kwargs):
-    return lazy(gettext, six.text_type)
-
 
 def is_default_language():
     request = get_current_request()

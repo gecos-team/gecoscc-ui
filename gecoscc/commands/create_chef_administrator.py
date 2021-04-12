@@ -193,11 +193,11 @@ class Command(BaseCommand):
                     })                 
                 
             except ChefServerError as e:
-                print("User not added to default organization's admins group",
+                print("User not added to default organization's admins group"\
                       " in chef, error was: %s" % e)
                 sys.exit(1)                
             
-            print("User %s set as administrator in the default organization",
+            print("User %s set as administrator in the default organization"\
                   " chef server" % toChefUsername(self.options.username))
             
 

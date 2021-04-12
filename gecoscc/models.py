@@ -11,6 +11,7 @@
 #
 
 from six import string_types
+from six import text_type
 import re
 import zipfile
 import tempfile
@@ -26,8 +27,9 @@ from colander import null
 from copy import copy
 
 from deform.widget import FileUploadWidget, _normalize_choices, SelectWidget
-from gecoscc.i18n import gettext_lazy as _
-from gecoscc.i18n import gettext                                
+from gecoscc.i18n import gettext
+from gecoscc.lazy import lazy
+                 
 from gecoscc.utils import get_items_ou_children, getNextUpdateSeq, get_chef_api, get_cookbook,\
     BASE_UPDATE_PATTERN, SERIALIZED_UPDATE_PATTERN
 from pyramid.threadlocal import get_current_registry
@@ -35,6 +37,8 @@ from pyramid.threadlocal import get_current_registry
 import sys
 import logging
 import traceback
+
+_ = lazy(gettext, text_type)
 logger = logging.getLogger(__name__)
 
 OU_ORDER = 1

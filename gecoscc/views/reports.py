@@ -27,12 +27,7 @@ import os
 import gecoscc
 import collections
 import re
-
-try:
-    from io import StringIO
-except ImportError:
-    from io import StringIO
-
+import io
 
 from pyramid.view import view_config
 
@@ -56,7 +51,7 @@ class CSVRenderer(object):
             if ct == response.default_content_type:
                 response.content_type = 'text/csv'
 
-        fout = StringIO()
+        fout = io.StringIO()
         writer = csv.writer(fout, delimiter=',', quotechar='"',
             quoting=csv.QUOTE_MINIMAL)
         writer.writerow(value.get('headers', []))
@@ -125,7 +120,7 @@ class PDFRenderer(object):
 
         #logger.info("HTML=%s"%(html))
         
-        fout = StringIO()
+        fout = io.BytesIO()
         pisa.CreatePDF(html, dest=fout, link_callback=link_callback)          
 
         return fout.getvalue()

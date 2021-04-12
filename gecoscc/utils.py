@@ -287,10 +287,11 @@ def remove_chef_computer_data(computer, api, policies=None):
                     except KeyError:
                         continue
             else:
-                for mgmt in list(cookbook.keys()):
-                    if mgmt == USER_MGMT:
-                        continue
-                    cookbook.pop(mgmt)
+                if cookbook is not None:
+                    for mgmt in list(cookbook.keys()):
+                        if mgmt == USER_MGMT:
+                            continue
+                        cookbook.pop(mgmt)
             save_node_and_free(node)
 
 
@@ -740,7 +741,7 @@ def apply_policies_to_group(nodes_collection, group, auth_user, api=None, initia
     if use_celery:
         object_created = object_created.delay
         object_changed = object_changed.delay
-    policies = group['policies'].keys()
+    policies = list(group['policies'].keys())
     members_group = copy(group['members'])
     if not members_group:
         return
@@ -2515,7 +2516,7 @@ def getNextUpdateSeq(db):
         cursor = db.updates.find_one({'name':{'$regex':SERIALIZED_UPDATE_PATTERN}},
                                  {'_id':1}, sort=[('_id', pymongo.DESCENDING)])
 
-        latest = int(cursor.next().get('_id'))
+        latest = int(cursor.get('_id'))
         nseq = "%04d" % (latest+1)
 
     logger.debug("utils.py ::: getNextUpdateSeq - nseq = %s" % nseq)
@@ -2683,7 +2684,7 @@ def chefserver_backup(backupdir=None):
 
     except subprocess.CalledProcessError as msg:
         logger.error(msg.cmd)
-        logger.error(msg.output)
+        logger.error(msg.output.decode('utf-8'))
         exitstatus = msg.returncode
 
     return exitstatus
@@ -2813,7 +2814,7 @@ def auditlog(request, action=None):
             })
 
         except (KeyError, Exception):
-             logger.error(traceback.format_exc())
+            logger.error(traceback.format_exc())
 
 
 
