@@ -13,7 +13,7 @@
 import os
 import pymongo
 import subprocess
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 
 DEFAULT_MONGODB_HOST = 'localhost'
@@ -45,10 +45,9 @@ class MongoDB(object):
         elif connection_factory is None:
             connection_factory = pymongo.MongoClient
 
-        self.connection = connection_factory(
-            host=self.db_uri,
-            tz_aware=True,
-            **kwargs)
+        self.factory = connection_factory
+        self.factory_args = kwargs
+        self.connection = None
 
         if self.parsed_uri.get("database", None):
             self.database_name = self.parsed_uri["database"]
@@ -56,45 +55,62 @@ class MongoDB(object):
             self.database_name = DEFAULT_MONGODB_NAME
 
     def get_connection(self):
+        if self.connection is None:
+            self.connection = self.factory(
+                host=self.db_uri,
+                tz_aware=True,
+                **self.factory_args)
+            
         return self.connection
 
     def get_database(self, database_name=None):
         if database_name is None:
-            db = self.connection[self.database_name]
+            db = self.get_connection()[self.database_name]
         else:
-            db = self.connection[database_name]
+            db = self.get_connection()[database_name]
         if self.parsed_uri.get("username", None):
             db.authenticate(
                 self.parsed_uri.get("username", None),
                 self.parsed_uri.get("password", None)
             )
+        # Patch a strange Python 3 error by getting the collection names
+        db.collection_names()
         self.indexes(db)
         return db
 
     def indexes(self, db):
-        db.nodes.ensure_index([
+        db.nodes.create_index([
             ('node_chef_id', pymongo.DESCENDING),
         ])
-        db.nodes.ensure_index([
+        db.nodes.create_index([
             ('path', pymongo.DESCENDING),
             ('type', pymongo.DESCENDING),
         ])
         # TODO: this try/except will be removed in review release
         try:
-            db.nodes.ensure_index([
+            db.nodes.create_index([
                 ('name', pymongo.DESCENDING),
                 ('type', pymongo.DESCENDING),
             ])
         except pymongo.errors.OperationFailure:
             db.nodes.drop_index('name_-1_type_-1')
-            db.nodes.ensure_index([
+            db.nodes.create_index([
                 ('name', pymongo.DESCENDING),
                 ('type', pymongo.DESCENDING),
             ])
 
-        db.jobs.ensure_index([
+        db.jobs.create_index([
             ('userid', pymongo.DESCENDING),
         ])
+        
+        languages = ['en_US', 'es']
+        for lang in languages:
+            # logger.debug('Creating indexes for "%s" locale'%(lang))
+            db.nodes.create_index('name', name=('name_%s'%(lang)),
+                collation=pymongo.collation.Collation(lang, caseLevel=True,
+                    strength=pymongo.collation.CollationStrength.PRIMARY) )
+       
+        
 
     def dump(self, path, collection=None, excludes=DEFAULT_EXCLUDE_COLLECTIONS):
         '''
@@ -113,7 +129,7 @@ class MongoDB(object):
 
         command = [
             'mongodump',
-            '-host', '%s' % urlparse(self.db_uri).hostname,
+            '--host', '%s' % urlparse(self.db_uri).hostname,
             '-d', '%s' % self.database_name,
             '--port', '%s' % urlparse(self.db_uri).port,
             '-o', '%s' % path
@@ -132,7 +148,7 @@ class MongoDB(object):
                 dump_output = subprocess.check_output(command)
                 logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             else:
-                allcolls = self.get_database().collection_names()
+                allcolls = self.get_database().list_collection_names()
                 includes = list(set(allcolls) - set(excludes))
 
                 # dump each collection individually
@@ -141,9 +157,9 @@ class MongoDB(object):
                     dump_output = subprocess.check_output(cmd)
                 logger.debug("db.py ::: dump - dump_output = %s" % dump_output)
             logger.info("mongodump ended.")
-        except subprocess.CalledProcessError, msg:
-            logger.error(msg.cmd)
-            logger.error(msg.output)
+        except subprocess.CalledProcessError as msg:
+            logger.error('COMMAND: %s'%(msg.cmd))
+            logger.error('OUTPUT: %s'%(msg.output.decode('utf-8')))
             exitstatus = msg.returncode
 
         return exitstatus
@@ -162,7 +178,7 @@ class MongoDB(object):
 
         command = [
             'mongorestore',
-            '-host', '%s' % urlparse(self.db_uri).hostname,
+            '--host', '%s' % urlparse(self.db_uri).hostname,
             '-d', '%s' % self.database_name,
             '--port', '%s' % urlparse(self.db_uri).port,
             '--drop'
@@ -185,7 +201,7 @@ class MongoDB(object):
             restore_output = subprocess.check_output(command)
             logger.debug("db.py ::: restore - restore_output = %s" % restore_output)
             logger.info("mongorestore ended")
-        except subprocess.CalledProcessError, msg:
+        except subprocess.CalledProcessError as msg:
             logger.error(msg.cmd)
             logger.error(msg.output)
             exitstatus = msg.returncode

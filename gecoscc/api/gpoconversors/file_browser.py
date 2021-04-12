@@ -62,7 +62,7 @@ class FileBrowser(GPOConversor):
         nodes = self.getNodesFromPath(xmlgpo, ['User', 'ExtensionData', 'Extension', 'FolderOptions', 'GlobalFolderOptions', 'Properties'])
         for node in nodes:
             if '@hidden' in node:
-                show_hidden_files = True if node['@hidden'] is 'SHOW' else False
+                show_hidden_files = True if node['@hidden'] == 'SHOW' else False
         nodes = self.getNodesFromPath(xmlgpo, ['Computer', 'ExtensionData', 'Extension', 'RegistrySettings', 'Registry', 'Properties'])
         for node in nodes:
             if '@name' in node and node['@name'] == 'Hidden' and node['@value'] is not None:

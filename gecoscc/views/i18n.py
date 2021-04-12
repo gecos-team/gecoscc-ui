@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
+from builtins import range
 import os
 
 import gettext as gettext_module
@@ -44,7 +46,7 @@ def i18n_catalog(context, request):
 
     pdict = {}
     maxcnts = {}
-    for k, v in t.items():
+    for k, v in list(t.items()):
         if k == '':
             continue
         if isinstance(k, six.string_types):
@@ -56,8 +58,9 @@ def i18n_catalog(context, request):
             pdict.setdefault(msgid, {})[cnt] = v
         else:
             raise TypeError(k)
-    for k, v in pdict.items():
+    for k, v in list(pdict.items()):
         catalog[k] = [v.get(i, '') for i in range(maxcnts[msgid] + 1)]
 
+    request.response.headers['Content-Type'] = 'text/javascript'
     return {'catalog': json.dumps(catalog),
             'plural': json.dumps(plural)}

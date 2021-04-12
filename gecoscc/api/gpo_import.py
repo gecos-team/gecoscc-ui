@@ -12,12 +12,15 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
 import logging
 import xmltodict
 
 from gzip import GzipFile
 from bson import ObjectId
-from StringIO import StringIO
+from io import StringIO
 
 from cornice.resource import resource
 
@@ -33,19 +36,19 @@ logger = logging.getLogger(__name__)
 
 @resource(path='/api/gpo_import/',
           description='GroupPolicy import',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class GPOImport(BaseAPI):
 
     collection_name = 'nodes'
     collection_policies_name = 'policies'
 
-    def __init__(self, request):
-        super(GPOImport, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(GPOImport, self).__init__(request, context=context)
         self.collection_policies = self.request.db[self.collection_policies_name]
 
     def _cleanPrefixNamespaces(self, xml):
         if isinstance(xml, dict):
-            for old_key in xml.keys():
+            for old_key in list(xml.keys()):
                 old_key_splitted = old_key.split(':')  # namespace prefix separator
                 new_key = ':'.join(old_key_splitted[1:]) if len(old_key_splitted) > 1 else old_key
                 xml[new_key] = self._cleanPrefixNamespaces(xml.pop(old_key))

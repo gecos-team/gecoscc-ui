@@ -47,10 +47,10 @@ class MyJobStatistics(BaseAPI):
         errors_filter = base_filter.copy()
         errors_filter['status'] = 'errors'
 
-        nprocessing = self.collection.find(processing_filter).count()
-        nfinished = self.collection.find(finished_filter).count()
-        nerrors = self.collection.find(errors_filter).count()
-        ntotal = self.collection.find(base_filter).count()
+        nprocessing = self.collection.count_documents(processing_filter)
+        nfinished = self.collection.count_documents(finished_filter)
+        nerrors = self.collection.count_documents(errors_filter)
+        ntotal = self.collection.count_documents(base_filter)
         
         return {'processing': nprocessing,
                 'finished': nfinished,

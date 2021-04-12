@@ -33,7 +33,15 @@ class JobStatistics(BaseAPI):
         return {self.key: oid}
 
     def get(self):
-        return {'processing': self.collection.find({'status': 'processing', 'parent': {'$exists': True, '$ne': None}}).count(),
-                'finished': self.collection.find({'status': 'finished', 'parent': {'$exists': True, '$ne': None}}).count(),
-                'errors': self.collection.find({'status': 'errors', 'parent': {'$exists': True, '$ne': None}}).count(),
-                'total': self.collection.find({'parent': {'$exists': True, '$ne': None}}).count()}
+        return {
+            'processing': self.collection.count_documents(
+                {'status': 'processing',
+                 'parent': {'$exists': True, '$ne': None}}),
+            'finished': self.collection.count_documents(
+                {'status': 'finished',
+                 'parent': {'$exists': True, '$ne': None}}),
+            'errors': self.collection.count_documents(
+                {'status': 'errors',
+                 'parent': {'$exists': True, '$ne': None}}),
+            'total': self.collection.count_documents(
+                {'parent': {'$exists': True, '$ne': None}})}

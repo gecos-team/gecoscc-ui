@@ -91,12 +91,12 @@ def report_computer(context, request, file_ext):
                  #treatment_string_to_csv(item, 'node_chef_id'),
                  item['_id']) for item in query]
     
-    header = (_(u'Name').encode('utf-8'),
-              _(u'Type').encode('utf-8'),
-              _(u'Registry number').encode('utf-8'),
-              _(u'Serial number').encode('utf-8'),
-              #_(u'Node chef id').encode('utf-8'),
-              _(u'Id').encode('utf-8'))
+    header = (_(u'Name'),
+              _(u'Type'),
+              _(u'Registry number'),
+              _(u'Serial number'),
+              #_(u'Node chef id'),
+              _(u'Id'))
     
     # Column widths in percentage
     widths = (20, 20, 20, 20, 20)
@@ -113,7 +113,7 @@ def report_computer(context, request, file_ext):
             'widths': widths,
             'default_order': [[ 0, 'asc' ]],
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

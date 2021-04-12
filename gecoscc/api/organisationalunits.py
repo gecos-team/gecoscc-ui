@@ -10,6 +10,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 from cornice.resource import resource
 
 from gecoscc.api import TreeResourcePaginated
@@ -46,7 +47,8 @@ class OrganisationalUnitResource(TreeResourcePaginated):
         '''
         Check if the Ou contains any object
         '''
-        ou_children = self.collection.find({'path': {'$regex': '.*' + unicode(obj['_id']) + '.*'}}).count()
+        ou_children = self.collection.count_documents(
+            {'path': {'$regex': '.*' + str(obj['_id']) + '.*'}})
 
         if ou_children == 0:
             return True
@@ -70,7 +72,7 @@ class OrganisationalUnitResource(TreeResourcePaginated):
                 old_child_path = child['path']
                 new_child_path = str(old_child_path).replace(old_path,
                                                              new_path)
-                self.collection.update({
+                self.collection.update_one({
                     self.key: child[self.key]
                 }, {
                     '$set': {

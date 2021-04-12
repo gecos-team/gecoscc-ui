@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import text_type
 import json
 import time
 
@@ -27,9 +28,9 @@ from gecoscc.utils import get_chef_api
 
 
 def waiting_to_celery(db):
-    print 'waiting to celery'
+    print('waiting to celery')
     current_jobs_count = db.jobs.count()
-    print 'Current jobs: %s' % current_jobs_count
+    print('Current jobs: %s' % current_jobs_count)
     time.sleep(10)
     current_jobs_count2 = db.jobs.count()
     if current_jobs_count2 > current_jobs_count:
@@ -77,7 +78,7 @@ class PolicyAddCommand(BaseCommand):
         ou, admin, policy = self.check_input()
         if not ou:
             return
-        ou['policies'][unicode(policy['_id'])] = self.policy_data
+        ou['policies'][text_type(policy['_id'])] = self.policy_data
         if not self.save_ou(ou, admin):
             return
         waiting_to_celery(db)
@@ -91,22 +92,23 @@ class PolicyAddCommand(BaseCommand):
         db = self.pyramid.db
         ou = db.nodes.find_one({'_id': ObjectId(self.options.ou_id)})
         if not ou:
-            print 'Error OU does not exists'
+            print('Error OU does not exists')
             return (None, None, None)
         admin = db.adminusers.find_one({'username': self.options.gcc_username})
         if not admin:
-            print 'Error this admin does not exists'
+            print('Error this admin does not exists')
             return (None, None, None)
         elif not admin.get('is_superuser', None):
-            print 'You need a super admin'
+            print('You need a super admin')
             return (None, None, None)
         policy = db.policies.find_one({"slug": self.policy_slug})
         if not policy:
-            print 'Does not exists the package policy'
+            print('Does not exists the package policy')
             return (None, None, None)
-        policy_instance = ou['policies'].get(unicode(policy['_id']), None)
+        policy_instance = ou['policies'].get(text_type(policy['_id']), None)
         if policy_instance:
-            print 'Please remove package policy from the ou: %s' % self.options.ou_id
+            print('Please remove package policy from the ou: %s'%(
+                self.options.ou_id))
             return (None, None, None)
         return (ou, admin, policy)
 
@@ -121,15 +123,15 @@ class PolicyAddCommand(BaseCommand):
                                  self.options.gcc_password),
                            headers=headers)
         if res.ok and res.json() == json.loads(ou_json):
-            print 'Saving ou sucessfully'
+            print('Saving ou sucessfully')
             return True
         else:
-            print 'Unknow error saving ou'
+            print('Unknow error saving ou')
             return False
 
     def check_users(self, ou, admin, policy):
         db = self.pyramid.db
-        ou_path = '%s,%s' % (ou['path'], unicode(ou['_id']))
+        ou_path = '%s,%s' % (ou['path'], text_type(ou['_id']))
         users = db.nodes.find({'path': ou_path,
                                'type': 'user'})
         computers_error = {}
@@ -145,14 +147,15 @@ class PolicyAddCommand(BaseCommand):
                     computers_error[computer['name']] = 'does not node_chef_id'
                 node = ChefNode(node_id, api)
                 if self.check_node(policy_attr_to_check, node):
-                    print '%s ok' % computer['name']
+                    print('%s ok' % computer['name'])
                 else:
-                    computers_error[computer['name']] = self.error % user['name']
+                    computers_error[computer['name']] = self.error %(
+                        user['name'])
         return computers_error
 
     def check_computers(self, ou, admin, policy):
         db = self.pyramid.db
-        ou_path = '%s,%s' % (ou['path'], unicode(ou['_id']))
+        ou_path = '%s,%s' % (ou['path'], text_type(ou['_id']))
         computers = db.nodes.find({'path': ou_path,
                                    'type': 'computer'})
         api = get_chef_api(self.settings,
@@ -165,15 +168,15 @@ class PolicyAddCommand(BaseCommand):
                 computers_error[computer['name']] = 'does not node_chef_id'
             node = ChefNode(node_id, api)
             if self.check_node(policy_attr_to_check, node):
-                print '%s ok' % computer['name']
+                print('%s ok' % computer['name'])
             else:
                 computers_error[computer['name']] = self.error
         return computers_error
 
     def print_error(self, computers_error):
         if not computers_error:
-            print 'Test succesfully'
+            print('Test succesfully')
         else:
-            print 'The test is not completed succesfully'
+            print('The test is not completed succesfully')
             for computer_name, computer_error in computers_error.items():
-                print 'Error at %s: %s' % (computer_name, computer_error)
+                print('Error at %s: %s' % (computer_name, computer_error))

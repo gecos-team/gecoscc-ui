@@ -38,15 +38,15 @@ class AutomaticUpdates(GPOConversor):
 
         nodes = self.getNodesFromPath(xmlgpo, ['Computer', 'ExtensionData', 'Extension', 'Policy'])  # Get value from policy
         for node in nodes:
-            if 'Name' in node and node['Name'] is 'Configurar Actualizaciones automáticas' and node['State'] is 'Enabled':
+            if 'Name' in node and node['Name'] == 'Configurar Actualizaciones automáticas' and node['State'] == 'Enabled':
                 for dropDownList in node['DropDownList']:
                     if 'Name' not in dropDownList:
                         continue
-                    if dropDownList['Name'] is 'Día de instalación programado: ' and dropDownList['State'] is 'Enabled':
+                    if dropDownList['Name'] == 'Día de instalación programado: ' and dropDownList['State'] == 'Enabled':
                         day = dropDownList['Value']['Name'][0:1]
-                        if day is '0':
+                        if day == '0':
                             day = '*'
-                    if dropDownList['Name'] is 'Hora de instalación programada:' and dropDownList['State'] is 'Enabled':
+                    if dropDownList['Name'] == 'Hora de instalación programada:' and dropDownList['State'] == 'Enabled':
                         hour = dropDownList['Value']['Name'][0:2]
                         minute = dropDownList['Value']['Name'][2:2]
                 break

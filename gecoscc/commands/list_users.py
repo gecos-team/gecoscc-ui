@@ -24,6 +24,6 @@ class Command(BaseCommand):
     def command(self):
         users = self.pyramid.userdb.list_users()
 
-        print "\n"
+        print("\n")
         for user in users:
-            print "User: {username} email: {email}".format(**user)
+            print("User: {username} email: {email}".format(**user))

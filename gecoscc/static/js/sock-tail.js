@@ -18,14 +18,15 @@ var MessageManager = function () {
     "use strict";
     var manager_handlers = {};
 
-    // Handled by TailNamespace
-    var tail = io.connect("/tail");
-    //var tail = io.connect("http://localhost/tail", {'force new connection': true});
+    // Handled by Tail Namespace
+    var tail = io("/tail", {transports:['websocket'], upgrade: false,
+        forceNew: true});    
 
     // "sendlog" event will fire on "tail" socket
     tail.emit('sendlog');
 
     tail.on('connect', function (result) {
+        console.log("/tail connect!");
         startLogging();
     });
 
@@ -34,12 +35,8 @@ var MessageManager = function () {
             handler,
             i;
 
-        if (result.hasOwnProperty('redis')) {
-            if (result.redis === 'error') {
-                $("#redis-modal").modal({backdrop: 'static'});
-            }
-        }
         if (result.hasOwnProperty('action')) {
+            console.log("/tail action="+result.action);
             handlers = manager_handlers[result.action] || [];
             for (i = 0; i < handlers.length; i += 1) {
                 handler = handlers[i];
@@ -49,6 +46,7 @@ var MessageManager = function () {
     });
 
     tail.on('disconnect', function (reason) {
+        console.log("/tail disconnect!");
         if (socket_io_silent_disconnect)
             return;
 

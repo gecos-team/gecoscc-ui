@@ -11,6 +11,8 @@
 #
 
 
+from builtins import str
+from builtins import object
 from cornice.resource import resource
 
 from pyramid.threadlocal import get_current_registry
@@ -25,10 +27,10 @@ from gecoscc.utils import get_chef_api
 
 @resource(path='/register/node/',
           description='Register a chef node',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class RegisterChefNode(object):
 
-    def __init__(self, request):
+    def __init__(self, request,context=None):
         self.request = request
 
     def post(self):
@@ -52,7 +54,7 @@ class RegisterChefNode(object):
         chef_ssl_verify = settings.get('chef.ssl.verify')
         if chef_ssl_verify == 'False' or chef_ssl_verify == 'True':
             chef_ssl_verify = bool(chef_ssl_verify)
-        api = ChefAPI(chef_url, str(chef_client.private_key), node_id, chef_version, ssl_verify = False)
+        api = ChefAPI(chef_url, chef_client.private_key.encode(), node_id, chef_version, ssl_verify = False)
 
  
         # create chef node

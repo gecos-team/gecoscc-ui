@@ -9,6 +9,8 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
+from builtins import map
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPFound, HTTPMethodNotAllowed, HTTPNotFound,\
     HTTPBadRequest
@@ -51,13 +53,14 @@ from bson import ObjectId
 @view_config(route_name='admins', renderer='templates/admins/list.jinja2',
              permission='is_superuser')
 def admins(context, request):
-    filters = None
+    filters = {}
     q = request.GET.get('q', None)
     if q:
         filters = {'username': {'$regex': '.*%s.*' % q,
                                 '$options': '-i'}}
+    count = request.userdb.count_users(filters)
     admin_users = request.userdb.list_users(filters).sort('username')
-    page = create_pagination_mongo_collection(request, admin_users)
+    page = create_pagination_mongo_collection(request, admin_users, count)
     return {'admin_users': admin_users,
             'page': page}
 
@@ -91,6 +94,7 @@ def updates(context, request):
             sorting = ('timestamp', ordering)
 
     logger.debug("admins.py ::: updates - sorting = {}".format(sorting))
+    count = request.db.updates.count_documents(filters)
     updates = request.db.updates.find(filters).sort([sorting])
     
     # "format" filter in jinja2 only admits "%s", not "{0}"
@@ -98,7 +102,7 @@ def updates(context, request):
     controlfile = settings['updates.control'].replace('{0}','%s')
 
     latest =  "%04d" % (int(getNextUpdateSeq(request.db))-1)
-    page = create_pagination_mongo_collection(request, updates)
+    page = create_pagination_mongo_collection(request, updates, count)
     
     return {'updates': updates,
             'latest': latest,
@@ -127,7 +131,7 @@ def updates_log(_context, request):
     headers['Content-Type'] = 'application/download'
     headers['Content-Disposition'] = "attachment; filename=\"" + \
         os.path.basename(logfile) + "\"; filename*=UTF-8''"+ \
-        unicode(sequence + "_" + os.path.basename(logfile)).encode('utf-8')
+        str(sequence + "_" + os.path.basename(logfile))
 
     return response
 
@@ -173,7 +177,7 @@ def admins_ou_manage(context, request):
     controls = {}
     instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-        controls = request.POST.items()
+        controls = list(request.POST.items())
         # Removing blanks OUs (not filling up by user)
         data = [tup for tup in controls if not (tup[0] == 'ou_selected' and tup[1] == '')]
         logger.debug("admins_ou_manage ::: data = {}".format(data))
@@ -249,7 +253,7 @@ def admins_set_variables(context, request):
     # Ous managed by admin (user)
     if not user.get('is_superuser'):
         if 'ou_managed' in user:
-            admin_ous = map(ObjectId, user['ou_managed'])
+            admin_ous = list(map(ObjectId, user['ou_managed']))
             ou_managed = [(ou['_id'], ou['name']) for ou in request.db.nodes.find({'_id': {'$in': admin_ous}})]
         else: # Recently new admin created
             ou_managed = []
@@ -266,12 +270,14 @@ def admins_set_variables(context, request):
     data = {}
     instance = request.userdb.get_user(username).get('variables', None)
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         try:
             variables = form.validate(data)
             form.save(variables)
             return HTTPFound(location=get_url_redirect(request))
-        except ValidationFailure, e:
+        except ValidationFailure as e:
+            logger.error('admins_set_variables - form validation error = '
+                         + '{}'.format(e.error))
             form = e
     if instance and not data:
         form_render = form.render(instance)
@@ -293,7 +299,7 @@ def admin_delete(context, request):
     success_remove_chef = delete_chef_admin_user(api, username)
     if not success_remove_chef:
         messages.created_msg(request, _('User deleted unsuccessfully from chef'), 'danger')
-    request.userdb.delete_users({'username': username})
+    request.userdb.delete_user({'username': username})
     messages.created_msg(request, _('User deleted successfully'), 'success')
     return {'ok': 'ok'}
 
@@ -307,14 +313,15 @@ def updates_add(context, request):
 
     instance = controls = {}
     if '_submit' in request.POST:
-        controls = request.POST.items()
+        controls = list(request.POST.items())
         logger.info('admin_updates - controls = %s' % controls)
         try:
             params = form.validate(controls)
             logger.info('admin_updates - params = %s' % params)
             form.save(params)
             return HTTPFound(location='')
-        except ValidationFailure, e:
+        except ValidationFailure as e:
+            logger.error('admin_updates - form validation error = {}'.format(e))
             form = e
 
     if instance and not controls:
@@ -359,12 +366,15 @@ def updates_repeat(_context, request):
 
     try:
         # Calculate the next repetition number for this update
-        cursor = request.db.updates.find(
-            {'name': to_repeat['name'], 'repetition': {'$exists': True}},
-            {'_id':1, 'repetition': 1}).sort('repetition',-1).limit(1)
+        count = request.db.updates.count_documents(
+            {'name': to_repeat['name'], 'repetition': {'$exists': True}})
     
         nrep = 0
-        if cursor.count() > 0:
+        if count > 0:
+            cursor = request.db.updates.find(
+                {'name': to_repeat['name'], 'repetition': {'$exists': True}},
+                {'_id':1, 'repetition': 1}).sort('repetition',-1).limit(1)
+            
             latest = int(cursor.next().get('repetition'))
             nrep = (latest+1)
             
@@ -401,7 +411,7 @@ def updates_repeat(_context, request):
                 zip_ref.close()    
         
         # Insert update register
-        request.db.updates.insert({
+        request.db.updates.insert_one({
             '_id': rsequence,
             'name': to_repeat['name'],
             'path': updatesdir,
@@ -435,7 +445,9 @@ def updates_tail(_context, request):
 
     if rollback == 'rollback' and request.db.updates.find_one({'_id': sequence}).get('rollback', 0) == 0:
         # Update mongo document
-        request.db.updates.update({'_id':sequence},{'$set':{'rollback':1, 'timestamp_rollback': int(time.time()), 'rolluser': request.user['username']}})
+        request.db.updates.update_one({'_id':sequence},{'$set':{
+            'rollback':1, 'timestamp_rollback': int(time.time()),
+            'rolluser': request.user['username']}})
 
         # Celery task
         script_runner.delay(request.user, sequence, rollback=True)
@@ -459,13 +471,13 @@ def admin_maintenance(_context, request):
     settings = get_current_registry().settings
     instance = request.db.settings.find_one({'key':'maintenance_message'})
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         try:
             postdata = form.validate(data)
             logger.debug("admins_log ::: admin_maintenance  = %s" % (postdata))
             form.save(postdata)
             return HTTPFound(location='')
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             form = e
 
     if instance and not data:
@@ -480,14 +492,15 @@ def admin_maintenance(_context, request):
     obj = request.db.settings.find_one({'key':'maintenance_mode'})
     if obj is None:
         obj = {'key':'maintenance_mode', 'value': mode == 'true', 'type':'string'}
-        request.db.settings.insert(obj)
+        request.db.settings.insert_one(obj)
 
     else:
         if mode is not None:
-            request.db.settings.update({'key':'maintenance_mode'},{'$set':{ 'value': mode == 'true' }})
+            request.db.settings.update_one(
+                {'key':'maintenance_mode'},{'$set':{ 'value': mode == 'true' }})
             logger.info("admin_maintenance ::: obj = %s" % (obj))
             if mode == 'false':
-                request.db.settings.remove({'key':'maintenance_message'})
+                request.db.settings.delete_one({'key':'maintenance_message'})
 
     # Active users
     sessions = [pickle.loads(session['value']) for session in request.db.backer_cache.find({},{'_id':0, 'value':1})]
@@ -498,8 +511,9 @@ def admin_maintenance(_context, request):
     logger.info("admin_maintenance ::: active_users = %s" % active_users)
 
     filters = {'username':{'$in': active_users }}
+    count = request.userdb.count_users(filters)
     admin_users = request.userdb.list_users(filters).sort('username')
-    page = create_pagination_mongo_collection(request, admin_users)
+    page = create_pagination_mongo_collection(request, admin_users, count)
 
     return {
        'admin_users': admin_users,
@@ -533,19 +547,19 @@ def statistics(context, request):
         # Get managed ous for admin
         oids = request.user.get('ou_managed', []) + request.user.get('ou_readonly', [])
         ous_visibles = request.db.nodes.find(
-            {"_id": { "$in": map(ObjectId, oids) }},
+            {"_id": { "$in": list(map(ObjectId, oids)) }},
             {"_id": 1, "name": 1, "path": 1}
         )
     for ou in ous_visibles:
         path = ou['path'] + ',' + str(ou['_id'])
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
-    sorted_ous = collections.OrderedDict(sorted(ous.items(), key=lambda kv: len(kv[1])))
+    sorted_ous = collections.OrderedDict(sorted(list(ous.items()), key=lambda kv: len(kv[1])))
     logger.debug("admins.py ::: statistics - sorted_ous = {}".format(sorted_ous))
 
     # Defaults
-    if not ou_id and sorted_ous.items() is not None and len(sorted_ous.items())>0:
-        ou_id = str(sorted_ous.items()[0][0])
+    if not ou_id and list(sorted_ous.items()) is not None and len(list(sorted_ous.items()))>0:
+        ou_id = str(list(sorted_ous.items())[0][0])
 
     logger.debug("admins.py ::: statistics - ou_id = {}".format(ou_id))
 
@@ -559,10 +573,10 @@ def statistics(context, request):
 
     # Policies
     for pol in request.db.policies.find().sort("name"):
-        c = request.db.nodes.find({
+        c = request.db.nodes.count_documents({
             "$or": [{"path": get_filter_nodes_belonging_ou(ou_id)}, {"_id":ObjectId(ou_id)}],
             "policies." + str(pol['_id']): {'$exists': True}
-        }).count()
+        })
         try:
             policy_counters.append([pol[policyname],c])
         except KeyError:
@@ -636,7 +650,7 @@ def _admin_edit(request, form_class, username=None):
     if username:
         instance = request.userdb.get_user(username)
     if '_submit' in request.POST:
-        data = request.POST.items()
+        data = list(request.POST.items())
         if username:
             data.append(('username', username))
         try:
@@ -652,7 +666,7 @@ def _admin_edit(request, form_class, username=None):
                     _check_if_user_belongs_to_admin_group(request, 'default', username)
             
                 return HTTPFound(location=get_url_redirect(request))
-        except ValidationFailure, e:
+        except ValidationFailure as e:
             admin_user_form = e
     if instance and not data:
         form_render = admin_user_form.render(instance)

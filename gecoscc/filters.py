@@ -27,7 +27,7 @@ def admin_serialize(admin):
     json_data = ''
     try:
         json_data = json.dumps(serialized)
-    except TypeError, e:
+    except TypeError as e:
         json_data = 'Error serializing user: %s' % (str(e))
     
     return json_data

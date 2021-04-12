@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2015, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -9,10 +10,14 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from past.utils import old_div
 import logging
 import time
-import httplib
-import urllib2
+import http.client
+import urllib.request
 import json
 import sys
 import traceback
@@ -26,17 +31,17 @@ from pyramid.threadlocal import get_current_registry
 
 from gecoscc.utils import getURLComponents, get_chef_api
 
-from xmlrpclib import ServerProxy, ProtocolError
+from xmlrpc.client import ServerProxy, ProtocolError
 
 
 logger = logging.getLogger(__name__)
 
 def _getCPULoad():
     try:
-        fd = file("/proc/stat", "r")
+        fd = open("/proc/stat", "r")
         line = fd.readline()
         fd.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("getCPULoad %s"%(str(e)))
         return (0.0, 0.0)
     
@@ -56,15 +61,15 @@ def getCPULoad():
     if total2 - total1 == 0:
         return 0.0
         
-    return ((load2 - load1) / (total2 - total1))
+    return (old_div((load2 - load1), (total2 - total1)))
     
     
 def parseProcFile(filename_):
     try:
-        fd = file(filename_, "r")
+        fd = open(filename_, "r")
         lines = fd.readlines()
         fd.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("parseProcFile %s"%(str(e)))
         return {}
     
@@ -86,7 +91,7 @@ def getCPUInfos():
         name = infos["model name"]
         nb = int(infos["processor"]) + 1
         
-    except Exception, e:
+    except Exception as e:
         logger.error("getCPUInfos %s"%(str(e)))
         return (1, "Unknown")
     
@@ -94,10 +99,10 @@ def getCPUInfos():
 
 def _getMeminfo():
     try:
-        fd = file("/proc/meminfo", "r")
+        fd = open("/proc/meminfo", "r")
         lines = fd.readlines()
         fd.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("_getMeminfo %s"%(str(e)))
         return {}
     
@@ -126,8 +131,8 @@ def getRAMUsed():
         free = int(infos["MemFree"])
         cached = int(infos["Cached"])
         buffers = int(infos["Buffers"])
-    except Exception, e:
-        logger.warn("getRAMUsed: %s"%(str(e)))
+    except Exception as e:
+        logger.warning("getRAMUsed: %s"%(str(e)))
         return 0.0
     
     return total - (free + cached + buffers)
@@ -140,8 +145,8 @@ def getRAMTotal():
     try:
         total = int(infos["MemTotal"])
     
-    except Exception, e:
-        logger.warn("getRAMTotal: %s"%(str(e)))
+    except Exception as e:
+        logger.warning("getRAMTotal: %s"%(str(e)))
         return 0.0
     
     return total
@@ -149,11 +154,11 @@ def getRAMTotal():
     
 def getJSON(url):
     obj = None
-    req = urllib2.Request(url)
+    req = urllib.request.Request(url)
     try:
-        stream = urllib2.urlopen(req, timeout=5, context=ssl._create_unverified_context())
+        stream = urllib.request.urlopen(req, timeout=5, context=ssl._create_unverified_context())
         
-        if not stream.headers.has_key("Content-Type"):
+        if "Content-Type" not in stream.headers:
             return None
         
         contentType = stream.headers["Content-Type"]
@@ -167,10 +172,10 @@ def getJSON(url):
         # logger.debug('getJSON: content: %s'%(content))
         obj = json.loads(content)
         
-    except IOError, e:
+    except IOError as e:
         logger.warning("getJSON: error: "+str(e)+" getting data from: "+str(url))
         return None
-    except httplib.BadStatusLine, err:
+    except http.client.BadStatusLine as err:
         logger.warning("getJSON: not receive HTTP response: "+str(err)+" getting data from: "+str(url))
         return None
     
@@ -209,10 +214,10 @@ def get_supervisord_url(ip_address):
 
 def get_mountpoints():
     try:
-        fd = file("/proc/mounts", "r")
+        fd = open("/proc/mounts", "r")
         lines = fd.readlines()
         fd.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("get_mountpoints %s"%(str(e)))
         return {}
     
@@ -355,7 +360,7 @@ def internal_server_connections(context, request):
     server_connections = []
     
     try:
-        fd = file("/proc/net/tcp", "r")
+        fd = open("/proc/net/tcp", "r")
         line = fd.readline() # Skip the first line
         line = fd.readline()
         while line is not None:
@@ -384,7 +389,7 @@ def internal_server_connections(context, request):
             line = fd.readline()
             
         fd.close()
-    except Exception, e:
+    except Exception as e:
         logger.error("internal_server_connections %s"%(str(e)))
         logger.error("Traceback: %s"%(traceback.format_exc()))
         return (0.0, 0.0)
@@ -398,7 +403,7 @@ def server_status(context, request):
     # Delete a non existent server?
     server_name = request.GET.get('delete', None)
     if server_name:
-        request.db.servers.remove({"name": server_name})
+        request.db.servers.delete_one({"name": server_name})
     
     
     # Calculate server status list

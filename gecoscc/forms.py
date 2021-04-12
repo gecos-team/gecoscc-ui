@@ -107,7 +107,7 @@ class AdminUserAddForm(BaseAdminUserForm):
     ignore_unique = False
 
     def save(self, admin_user):
-        self.collection.insert(admin_user)
+        self.collection.insert_one(admin_user)
         admin_user['plain_password'] = self.cstruct['password']
         settings = get_current_registry().settings
         user = self.request.user
@@ -119,7 +119,7 @@ class AdminUserAddForm(BaseAdminUserForm):
             return True
         except ChefServerError as e:
             self.created_msg(e.message, 'danger')
-            self.collection.remove({'username': admin_user['username']})
+            self.collection.delete_one({'username': admin_user['username']})
             raise e
 
 
@@ -145,7 +145,7 @@ class AdminUserEditForm(BaseAdminUserForm):
     def save(self, admin_user):
         if admin_user['password'] == '':
             del admin_user['password']
-        self.collection.update({'username': self.username},
+        self.collection.update_one({'username': self.username},
                                {'$set': admin_user})
         if admin_user['username'] != self.username and self.request.session['auth.userid'] == self.username:
             self.request.session['auth.userid'] = admin_user['username']
@@ -178,7 +178,7 @@ class PermissionsForm(GecosForm):
         logger.debug("PermissionsForm ::: save - ou_remote = {}".format(ou_remote))
         logger.debug("PermissionsForm ::: save - ou_readonly = {}".format(ou_readonly))
 
-        self.collection.update(
+        self.collection.update_one(
             {'username': self.username},
             {'$set': {
                 'ou_managed': list(ou_managed),
@@ -226,7 +226,8 @@ class AdminUserVariablesForm(GecosForm):
                 filein.close()
                 fileout.close()
         del variables['auth_ad_spec']
-        self.collection.update({'username': self.username}, {'$set': {'variables': variables}})
+        self.collection.update_one({'username': self.username}, {'$set': {
+            'variables': variables}})
         self.created_msg(_('Variables updated successfully'))
 
 
@@ -269,7 +270,10 @@ class UpdateForm(GecosForm):
                     zip_ref.extractall(cookbookdir + os.sep + settings['chef.cookbook_name'])
                     zip_ref.close()
             # Insert update register
-            self.request.db.updates.insert({'_id': sequence, 'name': update['filename'], 'path': updatesdir, 'timestamp': int(time.time()), 'rollback':0, 'user': self.request.user['username']})
+            self.request.db.updates.insert_one({'_id': sequence,
+                'name': update['filename'], 'path': updatesdir,
+                'timestamp': int(time.time()), 'rollback':0,
+                'user': self.request.user['username']})
             # Launching task for script execution
             script_runner.delay(self.request.user, sequence)
             link = '<a href="' +  self.request.route_url('updates_tail',sequence=sequence) + '">' + _("here") + '</a>'
@@ -308,7 +312,7 @@ class MaintenanceForm(GecosForm):
 
         if postvars['maintenance_message'] == "":
             logger.debug("forms.py ::: MaintenanceForm - Deleting maintenance message")
-            self.request.db.settings.remove({'key':'maintenance_message'})
+            self.request.db.settings.delete_one({'key':'maintenance_message'})
             self.created_msg(_('Maintenance message was deleted successfully.'))
         else:
             logger.debug("forms.py ::: MaintenanceForm - Creating maintenance message")
@@ -317,9 +321,10 @@ class MaintenanceForm(GecosForm):
             msg = self.request.db.settings.find_one({'key':'maintenance_message'})
             if msg is None:
                 msg = {'key':'maintenance_message', 'value': compose, 'type':'string'}
-                self.request.db.settings.insert(msg)
+                self.request.db.settings.insert_one(msg)
             else:
-                self.request.db.settings.update({'key':'maintenance_message'},{'$set':{ 'value': compose}})
+                self.request.db.settings.update_one(
+                    {'key':'maintenance_message'},{'$set':{ 'value': compose}})
 
             self.request.session['maintenance_message'] = compose
             self.created_msg(_('Maintenance settings saved successfully.'))

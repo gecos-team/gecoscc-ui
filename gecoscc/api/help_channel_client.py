@@ -11,7 +11,12 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import urllib2
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from builtins import object
+import urllib.request, urllib.error, urllib.parse
 import datetime
 import os
 import string
@@ -36,9 +41,9 @@ logger = logging.getLogger(__name__)
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/login',
           description='Help Channel client login')
-class HelpChannelClientLogin():
+class HelpChannelClientLogin(object):
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def post(self):
@@ -123,7 +128,9 @@ class HelpChannelClientLogin():
             
             client_certificate = chef_client.certificate
             public_key = RSA.importKey(client_certificate)
-            decrypted = public_key.encrypt(secret.decode('hex'), 0)[0]
+            
+            decrypted = public_key.encrypt(bytes.fromhex(secret), 0)[0]
+            decrypted = decrypted.decode("utf-8")
             
             known_message_setting = self.request.registry.settings.get('helpchannel.known_message')
             if known_message_setting is not None:
@@ -149,7 +156,7 @@ class HelpChannelClientLogin():
             token = ''.join(choice(allchar) for _ in range(
                 randint(min_char, max_char)))        
                 
-            self.request.db.helpchannel.insert(
+            self.request.db.helpchannel.insert_one(
                 {
                     'last_modified': datetime.datetime.utcnow(),
                     'action': 'request',
@@ -169,7 +176,7 @@ class HelpChannelClientLogin():
             logger.info('/help-channel-client/login - token: %s'%(token)) 
             return {'ok': True, 'token': token}
                 
-        except (urllib2.URLError, ChefError, ChefServerError):
+        except (urllib.error.URLError, ChefError, ChefServerError):
             pass
 
         logger.error('/help-channel-client/login - UNKNOWN') 
@@ -180,9 +187,9 @@ class HelpChannelClientLogin():
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/fetch',
           description='Help Channel client fetch technician')
-class HelpChannelClientFetch():
+class HelpChannelClientFetch(object):
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -225,9 +232,9 @@ class HelpChannelClientFetch():
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/accept',
           description='Help Channel client accept technician')
-class HelpChannelClientAccept():
+class HelpChannelClientAccept(object):
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -250,13 +257,13 @@ class HelpChannelClientAccept():
 
         logger.debug('/help-channel-client/accept token=%s'%(token)) 
 
-        self.request.db.helpchannel.update({
+        self.request.db.helpchannel.update_one({
             '_id': hc_data['_id']
         }, {
             '$set': {
                 'action': 'accepted'
             }
-        }, multi=True)
+        })
             
             
         return {'ok': True}
@@ -265,9 +272,9 @@ class HelpChannelClientAccept():
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/finish',
           description='Help Channel client end connection')
-class HelpChannelClientFinish():
+class HelpChannelClientFinish(object):
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -297,13 +304,13 @@ class HelpChannelClientFinish():
         logger.debug('/help-channel-client/finish token=%s'%(token)) 
         logger.debug('/help-channel-client/finish finisher=%s'%(finisher)) 
 
-        self.request.db.helpchannel.update({
+        self.request.db.helpchannel.update_one({
             '_id': hc_data['_id']
         }, {
             '$set': {
                 'action': 'finished ' + finisher
             }
-        }, multi=True)
+        })
             
             
         return {'ok': True}
@@ -313,9 +320,9 @@ class HelpChannelClientFinish():
 @resource(collection_path='/help-channel-client/',
           path='/help-channel-client/check',
           description='Help Channel client - check a token')
-class HelpChannelClientCheck():
+class HelpChannelClientCheck(object):
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
 
     def get(self):
@@ -350,7 +357,7 @@ class HelpChannelClientCheck():
             remote_addr = self.request.headers['X-Forwarded-For']
             header = 'X-Forwarded-For'
         
-        logger.debug('/help-channel-client/check token: remote_addr=%s header=%s (%s)'%(remote_addr, header, str(self.request.headers.items())))        
+        logger.debug('/help-channel-client/check token: remote_addr=%s header=%s (%s)'%(remote_addr, header, str(list(self.request.headers.items()))))        
         
         ip_address = re.compile('^[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}$')
         

@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -8,6 +9,7 @@
 # All rights reserved - EUPL License V 1.1
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
+from past.utils import old_div
 import math
 import sys
 
@@ -63,7 +65,7 @@ class Command(BaseCommand):
         elif self.options.computer:
             filters['$or'] = [{'_id': ObjectId(c)} for c in self.options.computer]
         computers = db.nodes.find(filters)
-        return computers
+        return computers, db.nodes.count_documents(filters)  
 
     def command(self):
         '''
@@ -71,7 +73,7 @@ class Command(BaseCommand):
         These nodes are receiving as command arguments
         '''
         db = self.pyramid.db
-        computers = self.get_computers()
+        computers, num_computers = self.get_computers()
         admin_user = db.adminusers.find_one({'username': self.options.administrator})
         if not admin_user:
             sys.stdout.write('Administrator does not exists\n')
@@ -81,7 +83,6 @@ class Command(BaseCommand):
             sys.exit(1)
         api = get_chef_api(self.settings, admin_user)
         cookbook_name = self.settings['chef.cookbook_name']
-        num_computers = computers.count()
         # It is not really the max dots, because the integer division.
         max_optimal_dots = 80
         total_dots = min(num_computers, max_optimal_dots)
@@ -89,7 +90,7 @@ class Command(BaseCommand):
         if total_dots == num_computers:
             step = 1
         else:
-            step = num_computers / total_dots
+            step = old_div(num_computers, total_dots)
             total_dots = int(math.ceil(float(num_computers) / step))
 
         sys.stdout.write('%s 100%%\n' % ('.' * total_dots))
@@ -120,12 +121,12 @@ class Command(BaseCommand):
 
         sys.stdout.write('\n\n\n*********** Success ********** \n')
 
-        for name, reason in results_succes.items():
+        for name, reason in list(results_succes.items()):
             sys.stdout.write('%s: %s \n' % (name, reason))
 
         sys.stdout.write('\n\n\n*********** Errors ********** \n')
 
-        for name, reason in results_error.items():
+        for name, reason in list(results_error.items()):
             sys.stdout.write('%s: %s \n' % (name, reason))
 
         sys.stdout.flush()

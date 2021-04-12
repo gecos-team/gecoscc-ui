@@ -10,6 +10,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from six import text_type
 import datetime
 import random
 import os
@@ -66,7 +67,9 @@ USERS_OHAI = 'ohai_gecos.users'
 
 class ChefTask(Task):
     abstract = True
-
+    # Since Celery 4 the default serializer is "json", but we need "pickle"
+    serializer = 'pickle'
+    
     def __init__(self):
         self.init_jobid()
         self.logger = self.get_logger()
@@ -75,23 +78,28 @@ class ChefTask(Task):
         gettext.textdomain('gecoscc')
         self._ = gettext.gettext
         
-        
     @property
     def db(self):
         if hasattr(self, '_db'):
             return self._db
-        return self.app.conf.get('mongodb').get_database()
+        return get_current_registry().settings.get(
+            'mongodb').get_database()
 
     def log(self, messagetype, message):
         assert messagetype in ('debug', 'info', 'warning', 'error', 'critical')
         op = getattr(self.logger, messagetype)
         op('[{0}] {1}'.format(self.jid, message))
 
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        self.log('error', ''.join(traceback.format_exception(
+            etype=type(exc), value=exc, tb=einfo.tb)))
+        super(ChefTask, self).on_failure(exc, task_id, args, kwargs, einfo)
+
     def init_jobid(self):
         if getattr(self, 'request', None) is not None:
             self.jid = self.request.id
         else:
-            self.jid = unicode(ObjectId())
+            self.jid = text_type(ObjectId())
 
     def walking_here(self, obj, related_objects):
         '''
@@ -223,7 +231,7 @@ class ChefTask(Task):
             self.log("info","tasks:::get_object_ui obj['type']=%s"%(obj['type']))
             return obj
         elif rule_type == 'policies':
-            policy_id = unicode(policy['_id'])
+            policy_id = text_type(policy['_id'])
             if policy.get('is_emitter_policy', False):
                 if not obj.get(rule_type, None):
                     object_related_id_list = []
@@ -268,8 +276,8 @@ class ChefTask(Task):
         updater_nodes = self.db.nodes.find({"$or": [{'_id': {"$in": nodes_ids}}]})
 
         for updater_node in updater_nodes:
-            if unicode(policy['_id']) in updater_node['policies']:
-                new_field_chef_value += updater_node['policies'][unicode(policy['_id'])]['object_related_list']
+            if text_type(policy['_id']) in updater_node['policies']:
+                new_field_chef_value += updater_node['policies'][text_type(policy['_id'])]['object_related_list']
 
         new_field_chef_value = list(set(new_field_chef_value))
         self.log("debug","tasks.py:::get_related_objects -> new_field_chef_value = {0}".format(new_field_chef_value))
@@ -618,11 +626,11 @@ class ChefTask(Task):
 
                 self.log("debug","tasks.py ::: update_ws_mergeable_policy - updater_node = {0}".format(updater_node['name']))
                 try:
-                    updater_node_ui = updater_node['policies'][unicode(policy['_id'])]
+                    updater_node_ui = updater_node['policies'][text_type(policy['_id'])]
                 except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    self.log("error","tasks.py ::: has_changed_ws_policy - Integrity violation: updated_by points attribute in chef node (id:{0}) to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],text_type(policy['_id'])))
                     continue
 
                 if callable(field_ui): # encrypt_password
@@ -699,11 +707,11 @@ class ChefTask(Task):
 
             for updater_node in updater_nodes:
                 try:
-                    node_policy = updater_node['policies'][unicode(policy['_id'])]
+                    node_policy = updater_node['policies'][text_type(policy['_id'])]
                 except KeyError:
                     # Bugfix: updated_by contains mongo nodes in which the policy (policy_id) has been removed 
                     # but this attribute was not updated correctly in chef. In this case, node_policy = {}
-                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],unicode(policy['_id'])))
+                    self.log("error","tasks.py ::: has_changed_user_policy - Integrity violation: updated_by attribute in chef node (id:{0}) points to mongo node (id:{1}) without policy (id:{2})".format(node.name, updater_node['_id'],text_type(policy['_id'])))
                     continue
 
                 for policy_field in node_policy.keys():
@@ -1070,7 +1078,7 @@ class ChefTask(Task):
         for mongo_id in ids:
             node = self.db.nodes.find_one({'_id': ObjectId(mongo_id)})
             if node:
-                if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != mongo_id:
+                if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != mongo_id:
                     return node
         return {}
 
@@ -1106,10 +1114,10 @@ class ChefTask(Task):
         priority_object = {}
 
         if updated_by.get('computer', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['computer']:
+            if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != updated_by['computer']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['computer'])})
         if not priority_object and updated_by.get('user', None):
-            if action != DELETED_POLICY_ACTION or unicode(obj.get('_id')) != updated_by['user']:
+            if action != DELETED_POLICY_ACTION or text_type(obj.get('_id')) != updated_by['user']:
                 priority_object = self.db.nodes.find_one({'_id': ObjectId(updated_by['user'])})
         if not priority_object and updated_by.get('group', None):
             priority_object = self.get_first_exists_node(updated_by.get('group', None), obj, action)
@@ -1126,7 +1134,7 @@ class ChefTask(Task):
             updated_by = node.attributes.get_dotted(attr).to_dict()
         except KeyError:
             updated_by = {}
-        obj_id = unicode(obj['_id'])
+        obj_id = text_type(obj['_id'])
         obj_type = obj['type']
         if obj_type in ['computer', 'user']:
             if action == DELETED_POLICY_ACTION:
@@ -1190,7 +1198,7 @@ class ChefTask(Task):
                                     policy=policy,
                                     parent=parent_id,
                                     administrator_username=user['username'])
-        job_ids.append(unicode(job_id))
+        job_ids.append(text_type(job_id))
         job_ids_by_computer.append(job_id)
         attributes_updated.append(attr)
         node.attributes.set_dotted(attr, job_ids)
@@ -1201,13 +1209,13 @@ class ChefTask(Task):
         '''
         groups = self.db.nodes.find({'type': 'group', 'members': obj['_id']})
         for g in groups:
-            self.db.nodes.update({
+            self.db.nodes.update_one({
                 '_id': g['_id']
             }, {
                 '$pull': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
 
     def get_policies(self, rule_type, action, obj, objold):
         '''
@@ -1286,7 +1294,8 @@ class ChefTask(Task):
         
         
     def has_changed_user_data(self, obj, objold):
-        if objold is None:
+        if (objold is None or not bool(objold)):
+            # objold is None or an empty dictionary
             return True
         
         if (obj['email'] != objold['email'] 
@@ -1436,17 +1445,17 @@ class ChefTask(Task):
         message = 'No save in chef server.'
         if prefix:
             message = "%s %s" % (prefix, message)
-        message = "%s %s" % (message, unicode(exception))
+        message = "%s %s" % (message, text_type(exception))
         self.log("error","tasks.py ::: report_error - message = {0}".format(message))
         self.log("error",traceback.format_exc())
         for job_id in job_ids:
-            self.db.jobs.update(
+            self.db.jobs.update_one(
                 {'_id': job_id},
                 {'$set': {'status': 'errors',
                           'message': message,
                           'last_update': datetime.datetime.utcnow()}})
         if not computer.get('error_last_saved', False):
-            self.db.nodes.update({'_id': computer['_id']},
+            self.db.nodes.update_one({'_id': computer['_id']},
                                  {'$set': {'error_last_saved': True}})
 
     def report_node_not_linked(self, computer, user, obj, action):
@@ -1467,7 +1476,7 @@ class ChefTask(Task):
         '''
         Report unknown error
         '''
-        message = 'No save in chef server. %s' % unicode(exception)
+        message = 'No save in chef server. %s' % text_type(exception)
         self.report_generic_error(user, obj, action, message, computer)
 
     def report_generic_error(self, user, obj, action, message, computer=None, status='errors'):
@@ -1495,10 +1504,11 @@ class ChefTask(Task):
         Theses changes are called actions and can be: changed, created, moved and deleted.
         if the node is free, the method can get the node, it reserves the node and runs the action, later the node is saved and released.
         '''
-                                                                   
-        api = api or get_chef_api(self.app.conf, user)
+           
+        settings = get_current_registry().settings                                                        
+        api = api or get_chef_api(settings, user)
         cookbook = cookbook or get_cookbook(api,
-                    self.app.conf.get('chef.cookbook_name'))
+                    settings.get('chef.cookbook_name'))
         computers = computers or self.get_related_computers(obj)
                                                                                           
         # MacroJob
@@ -1526,7 +1536,7 @@ class ChefTask(Task):
                 job_ids_by_computer = []
                 node_chef_id = computer.get('node_chef_id', None)
                 node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
-                if not node.get(self.app.conf.get('chef.cookbook_name')):
+                if not node.get(settings.get('chef.cookbook_name')):
                     raise NodeNotLinked("Node %s is not linked" % node_chef_id)
                 error_last_saved = computer.get('error_last_saved', False)
                 error_last_chef_client = computer.get('error_last_chef_client', False)
@@ -1541,7 +1551,7 @@ class ChefTask(Task):
                 self.validate_data(node, cookbook, api, validator=validator)
                 save_node_and_free(node)
                 if error_last_saved:
-                    self.db.nodes.update({'_id': computer['_id']},
+                    self.db.nodes.update_one({'_id': computer['_id']},
                                          {'$set': {'error_last_saved': False}})
             except NodeNotLinked as e:
                 self.report_node_not_linked(computer, user, obj, action)
@@ -1566,7 +1576,7 @@ class ChefTask(Task):
                     pass
                 are_new_jobs = True
         job_status = 'processing' if job_ids_by_order else 'finished'
-        self.db.jobs.update({'_id': macrojob_id},
+        self.db.jobs.update_one({'_id': macrojob_id},
                             {'$set': {'status': job_status,
                                       'childs':  len(job_ids_by_order),
                                       'counter': len(job_ids_by_order),
@@ -1622,21 +1632,28 @@ class ChefTask(Task):
                     obj['inheritance'] = updated_obj['inheritance']
                 
                 
-            if action == 'deleted' and obj['type'] == 'group' and ('members' in obj):
+            if (action == 'deleted' and obj['type'] == 'group' 
+                and ('members' in obj)):
                 # When a group is deleted we must remove it from all its members
                 self.log("debug","object_action - Deleting a group!")
                 for object_id in obj['members']:
                     member = self.db.nodes.find_one({'_id': object_id})
                     if not member:
-                        self.log("error","object_action - Node not found  %s (%s,%s)" %(str(object_id), sys._getframe().f_code.co_filename, sys._getframe().f_lineno))
+                        self.log("error", "object_action - Node not found  "
+                            "%s (%s,%s)" %(str(object_id),
+                                sys._getframe().f_code.co_filename,
+                                sys._getframe().f_lineno))
                         return False  
 
                     if not 'inheritance' in member:
                         continue                        
                         
-                    remove_group_from_inheritance_tree(self.logger, self.db, obj, member['inheritance'])
-                    self.db.nodes.update({'_id': member['_id']}, {'$set':{'inheritance': member['inheritance']}})
-                    recalculate_inherited_field(self.logger, self.db, str(object_id))
+                    remove_group_from_inheritance_tree(self.logger, self.db,
+                        obj, member['inheritance'])
+                    self.db.nodes.update_one({'_id': member['_id']},
+                        {'$set':{'inheritance': member['inheritance']}})
+                    recalculate_inherited_field(self.logger, self.db,
+                        str(object_id))
                     
             else:
             
@@ -1660,7 +1677,8 @@ class ChefTask(Task):
                 if groups_changed:
                     self.log("debug","object_action - groups changed!")
                     # Update node in mongo db
-                    self.db.nodes.update({'_id': obj['_id']}, {'$set':{'inheritance': obj['inheritance']}})
+                    self.db.nodes.update_one({'_id': obj['_id']},
+                        {'$set':{'inheritance': obj['inheritance']}})
                     
                     # Refresh all policies of the added groups in the inheritance field
                     for group_id, group_action in self.get_groups(obj, objold):
@@ -1718,7 +1736,8 @@ class ChefTask(Task):
         object_changed(user, obj_without_policies, obj, action='deleted', computers=computers)
 
     def object_moved(self, user, objnew, objold):
-        api = get_chef_api(self.app.conf, user)
+        settings = get_current_registry().settings
+        api = get_chef_api(settings, user)
         try:
             func = globals()['apply_policies_to_%s' % objnew['type']]
 
@@ -1757,8 +1776,8 @@ class ChefTask(Task):
                                 administrator_username=user['username'])
         invalidate_jobs(self.request, user)
         
-        obj_id = unicode(obj['_id'])
-        policy_id = unicode(get_policy_emiter_id(self.db, obj))
+        obj_id = text_type(obj['_id'])
+        policy_id = text_type(get_policy_emiter_id(self.db, obj))
         object_related_list = get_object_related_list(self.db, obj)
         for obj_related in object_related_list:
             obj_old_related = deepcopy(obj_related)
@@ -1766,9 +1785,12 @@ class ChefTask(Task):
             if obj_id in object_related_list:
                 object_related_list.remove(obj_id)
                 if object_related_list:
-                    self.db.nodes.update({'_id': obj_related['_id']}, {'$set': {'policies.%s.object_related_list' % policy_id: object_related_list}})
+                    self.db.nodes.update_one({'_id': obj_related['_id']}, 
+                        {'$set': {'policies.%s.object_related_list'% policy_id:
+                                  object_related_list}})
                 else:
-                    self.db.nodes.update({'_id': obj_related['_id']}, {'$unset': {'policies.%s' % policy_id: ""}})
+                    self.db.nodes.update_one({'_id': obj_related['_id']},
+                        {'$unset': {'policies.%s' % policy_id: ""}})
                     obj_related = self.db.nodes.find_one({'_id': obj_related['_id']})
                 node_changed_function = getattr(self, '%s_changed' % obj_related['type'])
                 node_changed_function(user, obj_related, obj_old_related)
@@ -1814,10 +1836,11 @@ class ChefTask(Task):
         if calculate_inheritance:
             # If we are not calculating the inheritance information
             # probably is because this is some kind of automated task
-            # and we don't want to update the computers of the user 
-            api = api or get_chef_api(self.app.conf, user)
+            # and we don't want to update the computers of the user
+            settings = get_current_registry().settings
+            api = api or get_chef_api(settings, user)
             objnew = update_computers_of_user(self.db, objnew, api)
-            self.db.nodes.update({'_id': objnew['_id']},
+            self.db.nodes.update_one({'_id': objnew['_id']},
                                  {'$set': {
                                       'computers': objnew['computers'] }})
 
@@ -1863,6 +1886,7 @@ class ChefTask(Task):
     def computer_refresh_policies(self, user, obj, computers=None):
         # Refresh policies of a computer
         self.log_action('refresh_policies BEGIN', 'Computer', obj)
+        settings = get_current_registry().settings
 
         self.log('debug', 'tasks.py ::: computer_refresh_policies - Recreate user-computer relashionship --------------')
         self.log('debug', 'tasks.py ::: computer_refresh_policies - obj={0}'.format(obj))
@@ -1870,20 +1894,20 @@ class ChefTask(Task):
         users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
         for u in users:
             self.log('debug', 'tasks.py ::: computer_refresh_policies - remove computer from user: {0}'.format(u['name']))
-            self.db.nodes.update({
+            self.db.nodes.update_one({
                 '_id': u['_id']
             }, {
                 '$pull': {
                     'computers': obj['_id']
                 }
-            }, multi=False)
+            })
             
             
         # 2 - Associate computer to its users
         node_chef_id = obj.get('node_chef_id', None)
         gcc_sudoers  = set()
         if node_chef_id:
-            api = get_chef_api(self.app.conf, user)
+            api = get_chef_api(settings, user)
             node = reserve_node_or_raise(node_chef_id, api, 'gcc-tasks-%s-%s' % (obj['_id'], random.random()), 10)
 
             # Remove variables data
@@ -1909,7 +1933,7 @@ class ChefTask(Task):
                     usr = update_computers_of_user(self.db, usr, api)
         
                     del usr['_id']
-                    usr_id = self.db.nodes.insert(usr)
+                    usr_id = self.db.nodes.insert_one(usr).inserted_id
                     usr = self.db.nodes.find_one({'_id': usr_id})
     
                 else:
@@ -1917,7 +1941,7 @@ class ChefTask(Task):
                     comptrs = usr.get('computers', [])
                     if obj['_id'] not in comptrs:
                         comptrs.append(obj['_id'])
-                        self.db.nodes.update({'_id': usr['_id']}, {'$set': {'computers': comptrs}})
+                        self.db.nodes.update_one({'_id': usr['_id']}, {'$set': {'computers': comptrs}})
                         add_computer_to_user(obj['_id'], usr['_id'])
     
                 # Sudoers
@@ -1944,10 +1968,10 @@ class ChefTask(Task):
                 
             # Set sudoers information
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Update sudoers: {0}'.format(gcc_sudoers))
-            self.db.nodes.update({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+            self.db.nodes.update_one({'_id': obj['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
             
             # Clean inheritance information
-            self.db.nodes.update({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
+            self.db.nodes.update_one({'_id': obj['_id']}, { '$unset': { "inheritance": {'$exist': True } }})
     
             # Set processing jobs as finished
             self.log('debug', 'tasks.py ::: computer_refresh_policies - Set processing jobs as finished!')
@@ -1955,14 +1979,14 @@ class ChefTask(Task):
             for job in processing_jobs:
                 macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
                 
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'finished',
                                               'last_update': datetime.datetime.utcnow()}})
                 
                 # Decrement number of children in parent
                 if macrojob and 'counter' in macrojob:
                     macrojob['counter'] -= 1
-                    self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                    self.db.jobs.update_one({'_id': macrojob['_id']},                                                                
                                         {'$set': {'counter': macrojob['counter'],
                                                   'message': self._("Pending: %d") % macrojob['counter'],
                                                   'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})                
@@ -1970,10 +1994,14 @@ class ChefTask(Task):
                     
                 # 3 - Clean policies information
                 ATTRIBUTES_WHITE_LIST = ['use_node', 'job_status', 'tags', 'gcc_link', 'run_list', 'gecos_info']
+                to_delete = []
                 for attr in node.normal:
                     if not attr in ATTRIBUTES_WHITE_LIST:
-                        self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
-                        del node.normal[attr]
+                        to_delete.append(attr)
+                        
+                for attr in to_delete:
+                    self.log('debug', 'tasks.py ::: computer_refresh_policies - Remove from Chef: {0}'.format(attr))
+                    del node.normal[attr]
         
             save_node_and_free(node)
             
@@ -2069,26 +2097,28 @@ class ChefTask(Task):
 
     def computer_deleted(self, user, obj, computers=None, direct_deleted=True):
         # 1 - Delete computer from chef server
+        settings = get_current_registry().settings
         self.log_action('deleted BEGIN', 'Computer', obj)
         self.object_deleted(user, obj, computers=computers)
         node_chef_id = obj.get('node_chef_id', None)
         if node_chef_id:
-            api = get_chef_api(self.app.conf, user)
+            api = get_chef_api(settings, user)
             node = Node(node_chef_id, api)
             node.delete()
             client = Client(node_chef_id, api=api)
             client.delete()
         if direct_deleted is False:
             # 2 - Disassociate computer from its users
-            users = self.db.nodes.find({'type': 'user', 'computers': obj['_id']})
+            users = self.db.nodes.find({'type': 'user',
+                'computers': obj['_id']})
             for u in users:
-                self.db.nodes.update({
+                self.db.nodes.update_one({
                     '_id': u['_id']
                 }, {
                     '$pull': {
                         'computers': obj['_id']
                     }
-                }, multi=False)
+                })
             # 3 - Disassociate computers from its groups
             self.disassociate_object_from_group(obj)
         self.log_action('deleted END', 'Computer', obj)
@@ -2120,7 +2150,7 @@ class ChefTask(Task):
 
     def ou_deleted(self, user, obj, computers=None, direct_deleted=True):
         self.log_action('deleted BEGIN', 'OU', obj)
-        ou_path = '%s,%s' % (obj['path'], unicode(obj['_id']))
+        ou_path = '%s,%s' % (obj['path'], text_type(obj['_id']))
         types_to_remove = ('computer', 'user', 'group', 'printer', 'storage', 'repository', 'ou')
         for node_type in types_to_remove:
             nodes_by_type = self.db.nodes.find({'path': ou_path,
@@ -2128,7 +2158,10 @@ class ChefTask(Task):
             for node in nodes_by_type:
                 node_deleted_function = getattr(self, '%s_deleted' % node_type)
                 node_deleted_function(user, node, computers=computers, direct_deleted=False)
-        self.db.nodes.remove({'path': ou_path})
+            
+            nodes_by_type.close()
+            
+        self.db.nodes.delete_many({'path': ou_path})
         name = "%s deleted" % obj['type']
         name_es = self._("deleted") + " " + self._(obj['type'])
         macrojob_storage = JobStorage(self.db.jobs, user)
@@ -2246,7 +2279,7 @@ def init_jobid(sender, **kargs):
 @task(base=ChefTask)
 def task_test(value):
     self = task_test
-    self.log('debug', unicode(self.db.adminusers.count()))
+    self.log('debug', text_type(self.db.adminusers.count()))
     return Ignore()
 
 
@@ -2348,12 +2381,14 @@ def chef_status_sync(node_id, auth_user):
     # Previously, gcc_link attribute of chef node is updated by network policies
     gcc_link = node.attributes.get('gcc_link')
     self.log("info", "Saving gcc_link: {0}".format(gcc_link))
-    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'gcc_link':gcc_link}})
+    self.db.nodes.update_one({'node_chef_id':node_id},
+                             {'$set': {'gcc_link':gcc_link}})
 
     # Update IP address
     ipaddress = node.attributes.get('ipaddress')
     self.log("info", "ipaddress: {0}".format(ipaddress))
-    self.db.nodes.update({'node_chef_id':node_id},{'$set': {'ipaddress':ipaddress}})
+    self.db.nodes.update_one({'node_chef_id':node_id},
+                             {'$set': {'ipaddress':ipaddress}})
         
     reserve_node = False
     if job_status:
@@ -2368,14 +2403,14 @@ def chef_status_sync(node_id, auth_user):
             # Parent
             macrojob = self.db.jobs.find_one({'_id': ObjectId(job['parent'])}) if 'parent' in job else None
             if job_status['status'] == 0:
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'finished',
                                               'last_update': datetime.datetime.utcnow()}})
                 # Decrement number of children in parent
                 if macrojob and 'counter' in macrojob:
                     macrojob['counter'] -= 1
             elif job_status['status'] == 2:
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'warnings',
                                               'message': job_status.get('message', 'Warning'),
                                               'last_update': datetime.datetime.utcnow()}})
@@ -2383,7 +2418,7 @@ def chef_status_sync(node_id, auth_user):
                     macrojob['status'] = 'warnings'
             else:
                 chef_client_error = True
-                self.db.jobs.update({'_id': job['_id']},
+                self.db.jobs.update_one({'_id': job['_id']},
                                     {'$set': {'status': 'errors',
                                               'message': job_status.get('message', 'Error'),
                                               'last_update': datetime.datetime.utcnow()}})
@@ -2391,11 +2426,11 @@ def chef_status_sync(node_id, auth_user):
                     macrojob['status'] = 'errors'
             # Update parent                                 
             if macrojob:
-                self.db.jobs.update({'_id': macrojob['_id']},                                                                
+                self.db.jobs.update_one({'_id': macrojob['_id']},                                                                
                                     {'$set': {'counter': macrojob['counter'],
                                               'message': self._("Pending: %d") % macrojob['counter'],
                                               'status': 'finished' if macrojob['counter'] == 0 else macrojob['status']}})
-        self.db.nodes.update({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
+        self.db.nodes.update_one({'node_chef_id': node_id}, {'$set': {'error_last_chef_client': chef_client_error}})
         invalidate_jobs(self.request, auth_user)
         node.attributes.set_dotted('job_status', {})
 
@@ -2455,7 +2490,7 @@ def chef_status_sync(node_id, auth_user):
                 user = update_computers_of_user(self.db, user, api)
     
                 del user['_id']
-                user_id = self.db.nodes.insert(user)
+                user_id = self.db.nodes.insert_one(user).inserted_id
                 user = self.db.nodes.find_one({'_id': user_id})
                 reload_clients = True
 
@@ -2463,7 +2498,8 @@ def chef_status_sync(node_id, auth_user):
                 computers = user.get('computers', [])
                 if computer['_id'] not in computers:
                     computers.append(computer['_id'])
-                    self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                    self.db.nodes.update_one({'_id': user['_id']},
+                        {'$set': {'computers': computers}})
                     add_computer_to_user(computer['_id'], user['_id'])
                     invalidate_change(self.request, auth_user)
 
@@ -2502,7 +2538,8 @@ def chef_status_sync(node_id, auth_user):
             if computer['_id'] in computers:
                 users_remove_policies.append(deepcopy(user))
                 computers.remove(computer['_id'])
-                self.db.nodes.update({'_id': user['_id']}, {'$set': {'computers': computers}})
+                self.db.nodes.update_one({'_id': user['_id']},
+                    {'$set': {'computers': computers}})
                 invalidate_change(self.request, auth_user)
             
             username = get_username_chef_format(user)
@@ -2537,7 +2574,8 @@ def chef_status_sync(node_id, auth_user):
         self.log("debug", "tasks.py ::: chef_status_sync - sudo-to-normal - gcc_sudoers = {0}".format(gcc_sudoers))
 
     # Upgrade sudoers
-    self.db.nodes.update({'_id': computer['_id']}, {'$set': {'sudoers': list(gcc_sudoers)}})
+    self.db.nodes.update_one({'_id': computer['_id']},
+        {'$set': {'sudoers': list(gcc_sudoers)}})
     if reload_clients:
         update_tree(computer.get('path', ''))
 
@@ -2563,37 +2601,38 @@ def script_runner(user, sequence, rollback=False):
       rollback(boolean):    True if rollback action. Otherwise, False
     '''
     self = script_runner
+    settings = get_current_registry().settings
     self.log("info","tasks.py ::: script_runner - Starting ...")
     self.log("debug", "tasks.py ::: script_runner - user = {0}".format(user))
     self.log("debug", "tasks.py ::: script_runner - sequence = {0}".format(sequence))
 
-    scriptdir = self.app.conf.get('updates.scripts').format(sequence)
+    scriptdir = settings.get('updates.scripts').format(sequence)
     self.log("debug", "tasks.py ::: script_runner - scriptdir = {0}".format(scriptdir))
 
 
     if rollback:
         scripts = glob(scriptdir + "99-*")
-        logname = self.app.conf.get('updates.rollback').format(sequence)
+        logname = settings.get('updates.rollback').format(sequence)
     else:
         # Exclude 99-rollback from automatic execution
         scripts = glob(scriptdir + "[0-8][0-9]*") + glob(scriptdir + "9[0-8]*")
         scripts.sort()
-        logname = self.app.conf.get('updates.log').format(sequence)
-        controlfile = self.app.conf.get('updates.control').format(sequence)
+        logname = settings.get('updates.log').format(sequence)
+        controlfile = settings.get('updates.control').format(sequence)
         shutil.copyfile(controlfile, logname)
 
     self.log("debug", "tasks.py ::: script_runner - scripts = {0}".format(scripts))
     self.log("debug", "tasks.py ::: script_runner - logname = {0}".format(logname))
 
     bufsize =0 
-    logfile = open(logname,'a+', bufsize)
+    logfile = open(logname,'ab+', bufsize)
 
     env = os.environ.copy()
     env['CLI_REQUEST'] = 'True'
-    env['UPDATE_DIR']  = self.app.conf.get('updates.dir') + sequence
-    env['COOKBOOK_DIR']= self.app.conf.get('updates.cookbook').format(sequence)
-    env['BACKUP_DIR']  = self.app.conf.get('updates.backups').format(sequence)
-    env['CONFIG_URI']  = self.app.conf.get('config_uri')
+    env['UPDATE_DIR']  = settings.get('updates.dir') + sequence
+    env['COOKBOOK_DIR']= settings.get('updates.cookbook').format(sequence)
+    env['BACKUP_DIR']  = settings.get('updates.backups').format(sequence)
+    env['CONFIG_URI']  = settings.get('config_uri')
     env['GECOS_USER']  = user.get('username', None)
 
     returncode = 0
@@ -2601,9 +2640,9 @@ def script_runner(user, sequence, rollback=False):
          
         header = 'SCRIPT %s' % os.path.basename(script)
         header = header.center(150,'*')
-        logfile.write('\n\n ' + header + ' \n\n')
+        logfile.write(('\n\n ' + header + ' \n\n').encode('utf-8'))
         self.log("debug", "tasks.py ::: script_runner - script = {0}".format(script))
-        os.chmod(script, 0755)
+        os.chmod(script, 0o755)
 
         env['SCRIPT_CODE'] = re.match('.*(\d{2})-.*', script).group(1)
 
@@ -2614,7 +2653,7 @@ def script_runner(user, sequence, rollback=False):
             break
 
     if not rollback:
-        self.db.updates.update({'_id': sequence},{'$set':
+        self.db.updates.update_one({'_id': sequence},{'$set':
             {'state': returncode, 'timestamp_end': int(time.time()) }})
 
     logfile.close()

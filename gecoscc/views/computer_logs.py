@@ -10,6 +10,7 @@
 #
 
 
+from builtins import object
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest
 from pyramid.view import view_config
 from bson import ObjectId

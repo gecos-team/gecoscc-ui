@@ -16,7 +16,8 @@ from chef import Node as ChefNode
 from pymongo.errors import DuplicateKeyError
 
 from gecoscc.management import BaseCommand
-from gecoscc.utils import _get_chef_api, register_or_updated_node, update_node, SOURCE_DEFAULT, toChefUsername
+from gecoscc.utils import (_get_chef_api, register_or_updated_node,
+                           update_node, SOURCE_DEFAULT, toChefUsername)
 
 
 class Command(BaseCommand):
@@ -25,7 +26,8 @@ class Command(BaseCommand):
 
     """
 
-    usage = "usage: %prog config_uri create_chef_nodes --administrator user --key file.pem"
+    usage = "usage: %prog config_uri create_chef_nodes --administrator user "\
+            "--key file.pem"
 
     option_list = [
         make_option(
@@ -52,28 +54,31 @@ class Command(BaseCommand):
                 'type': 'ou'}
         ou = self.db.nodes.find_one(data)
         if ou:
-            print "OU with name 'ou_0' already exists in mongo"
+            print("OU with name 'ou_0' already exists in mongo")
         else:
             data.update({'extra': '',
                          'path': 'root',
                          'lock': False,
                          'policies': {},
                          'source': SOURCE_DEFAULT})
-            ou_id = self.db.nodes.insert(data)
-            print "OU with name 'ou_0' created in mongo"
+            ou_id = self.db.nodes.insert_one(data).inserted_id
+            print("OU with name 'ou_0' created in mongo")
             ou = self.db.nodes.find_one({'_id': ou_id})
         return ou
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.ssl.verify'), self.settings.get('chef.version'))
+                            self.options.chef_pem,
+                            self.settings.get('chef.ssl.verify'),
+                            self.settings.get('chef.version'))
         ou_name = 'ou_0'
         ou = self.create_root_ou(ou_name)
         for node_id in ChefNode.list():
             try:
-                node_mongo_id = register_or_updated_node(api, node_id, ou, self.db.nodes)
+                node_mongo_id = register_or_updated_node(api, node_id, ou,
+                    self.db.nodes)
             except DuplicateKeyError:
                 node_mongo_id = update_node(api, node_id, ou, self.db.nodes)
             if not node_mongo_id:
-                print "%s does not exists" % node_id
+                print("%s does not exists" % node_id)

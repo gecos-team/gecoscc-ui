@@ -179,10 +179,10 @@ def report_status(context, request, file_ext):
         orders.append(order)
         
                 
-    header = (_(u'Name').encode('utf-8'),
-              _(u'Id').encode('utf-8'),
-              _(u'Agent last runtime').encode('utf-8'),
-              _(u'Status').encode('utf-8'))
+    header = (_(u'Name'),
+              _(u'Id'),
+              _(u'Agent last runtime'),
+              _(u'Status'))
 
     # Column widths in percentage
     if file_ext == 'pdf':
@@ -204,7 +204,7 @@ def report_status(context, request, file_ext):
             'default_order': [[ 3, 'desc' ], [ 0, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -9,6 +10,13 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import map
+from builtins import str
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import logging
 from xhtml2pdf import pisa
 from pyramid_jinja2 import IJinja2Environment
@@ -19,12 +27,7 @@ import os
 import gecoscc
 import collections
 import re
-
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
-
+import io
 
 from pyramid.view import view_config
 
@@ -48,7 +51,7 @@ class CSVRenderer(object):
             if ct == response.default_content_type:
                 response.content_type = 'text/csv'
 
-        fout = StringIO()
+        fout = io.StringIO()
         writer = csv.writer(fout, delimiter=',', quotechar='"',
             quoting=csv.QUOTE_MINIMAL)
         writer.writerow(value.get('headers', []))
@@ -101,7 +104,8 @@ class PDFRenderer(object):
                 response.content_type = 'application/pdf'
 
 
-        jinja2_env = get_current_registry().queryUtility(IJinja2Environment)
+        jinja2_env = get_current_registry().queryUtility(IJinja2Environment,
+                                                         '.jinja2')
         jinja2_template = jinja2_env.get_template('report.jinja2')
         html = jinja2_template.render(headers=value.get('headers', []),
                                       rows = value.get('rows', []),
@@ -116,7 +120,7 @@ class PDFRenderer(object):
 
         #logger.info("HTML=%s"%(html))
         
-        fout = StringIO()
+        fout = io.BytesIO()
         pisa.CreatePDF(html, dest=fout, link_callback=link_callback)          
 
         return fout.getvalue()
@@ -134,8 +138,8 @@ def reports(context, request):
     is_superuser = request.user.get('is_superuser', False) 
 
     if not is_superuser:
-        oids = map(ObjectId, request.user.get('ou_managed', []) 
-            + request.user.get('ou_readonly', []))
+        oids = list(map(ObjectId, request.user.get('ou_managed', []) 
+            + request.user.get('ou_readonly', [])))
         ou_visibles = request.db.nodes.find( 
             {'_id': {'$in': oids }},
             {'_id':1, 'name':1, 'path':1})
@@ -149,7 +153,7 @@ def reports(context, request):
         ous.update({str(ou['_id']): get_complete_path(request.db, path)})
 
     sorted_ous = collections.OrderedDict(
-        sorted(ous.items(), key=lambda kv: kv[1].lower()))
+        sorted(list(ous.items()), key=lambda kv: kv[1].lower()))
     logger.debug("reports ::: ous = {}".format(ous))
 
     return {'ou_managed': sorted_ous, 'is_superuser': is_superuser}
@@ -222,7 +226,7 @@ def treatment_string_to_csv(item, key):
     if value is None:
         return none
     
-    return value.decode('utf-8') or none
+    return value
 
 def treatment_string_to_pdf(item, key, length):
     pdfstr = treatment_string_to_csv(item, key)
@@ -254,7 +258,7 @@ def ip_to_hex_addr(ipaddr):
 def truncate_string_at_char(string, new_line_at, new_line_char="<br/>"):
     start = 0
     data = []
-    times = int(round(len(string)/new_line_at))+1
+    times = int(round(old_div(len(string),new_line_at)))+1
 
     for _ in range(0, times):
         if(start >= len(string)):

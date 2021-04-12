@@ -11,104 +11,91 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
-import webhelpers.paginate as paginate
+import paginate as paginate
+from webhelpers2.html import HTML, literal
+import logging
 
-
-from webhelpers.html import HTML, literal
-
-from string import Template
-import re
-
+logger = logging.getLogger(__name__)
 
 class BootStrapPage(paginate.Page):
 
-    def pager(self, link_format='$link_previous ~2~ $link_next', page_param='page', partial_param='partial',
-              show_if_single_page=False, separator=' ', onclick=None,
-              symbol_first='<<', symbol_last='>>',
-              symbol_previous=u'«', symbol_next=u'»',
-              link_attr={'class': 'pager_link'}, curpage_attr={'class': 'pager_curpage'},
-              dotdot_attr={'class': 'pager_dotdot'}, **kwargs):
-        self.curpage_attr = curpage_attr
-        self.separator = separator
-        self.pager_kwargs = kwargs
-        self.page_param = page_param
-        self.partial_param = partial_param
-        self.onclick = onclick
-        self.link_attr = link_attr
-        self.dotdot_attr = dotdot_attr
+    def pager(self, format='$link_previous ~2~ $link_next', url=None,
+        show_if_single_page=False, separator=' ', symbol_first='&lt;&lt;',
+        symbol_last='&gt;&gt;', symbol_previous=u'«', symbol_next=u'»',
+        link_attr=dict(), curpage_attr=dict(), dotdot_attr=dict(),
+        link_tag=None):
+         
+        link_tag = link_tag or self.bootstrap_link_tag
+         
+        # Ensure that the previous page and next page buttons are displayed
+        if self.previous_page is None:
+            self.previous_page = self.first_page
 
-        # Don't show navigator if there is no more than one page
-        if self.page_count == 0 or (self.page_count == 1 and not show_if_single_page):
-            return ''
-
-        # Replace ~...~ in token format by range of pages
-        result = re.sub(r'~(\d+)~', self._range, link_format)
-
-        # Interpolate '%' variables
-        result = Template(result).safe_substitute({
-            'first_page': self.first_page,
-            'last_page': self.last_page,
-            'page': self.page,
-            'page_count': self.page_count,
-            'items_per_page': self.items_per_page,
-            'first_item': self.first_item,
-            'last_item': self.last_item,
-            'item_count': self.item_count,
-            'link_first': (self.page > self.first_page and
-                           self._pagerlink(self.first_page, symbol_first) or ''),
-            'link_last': (self.page < self.last_page and
-                          self._pagerlink(self.last_page, symbol_last) or ''),
-            'link_previous': self._pagerlink(self.previous_page, symbol_previous),
-            'link_next': self._pagerlink(self.next_page, symbol_next)
-        })
-
-        return literal(result)
-
-    def _range(self, regexp_match):
-        radius = int(regexp_match.group(1))
-
-        # Compute the first and last page number within the radius
-        # e.g. '1 .. 5 6 [7] 8 9 .. 12'
-        # -> leftmost_page  = 5
-        # -> rightmost_page = 9
-        leftmost_page = max(self.first_page, (self.page - radius))
-        rightmost_page = min(self.last_page, (self.page + radius))
-
-        nav_items = []
-
-        # Create a link to the first page (unless we are on the first page
-        # or there would be no need to insert '..' spacers)
-        if self.page != self.first_page and self.first_page < leftmost_page:
-            nav_items.append(self._pagerlink(self.first_page, self.first_page))
-
-        for thispage in xrange(leftmost_page, rightmost_page + 1):
-            # Hilight the current page number and do not use a link
-            if thispage == self.page:
-                text = '%s' % (thispage,)
-                # Wrap in a SPAN tag if nolink_attr is set
-                if self.curpage_attr:
-                    text = self._pagerlink(thispage, text, link_attr={'class': 'active'})
-                nav_items.append(text)
-            # Otherwise create just a link to that page
+        if self.next_page is None:
+            self.next_page = self.last_page         
+         
+        return literal(super(BootStrapPage, self).pager(format=format, url=url,
+            show_if_single_page=show_if_single_page, separator=separator,
+            symbol_first=symbol_first, symbol_last=symbol_last,
+            symbol_previous=symbol_previous, symbol_next=symbol_next,
+            link_attr=link_attr, curpage_attr=curpage_attr,
+            dotdot_attr=dotdot_attr, link_tag=link_tag))
+        
+    def link_map(self, format='~2~', url=None, show_if_single_page=False,
+        separator=' ', symbol_first='&lt;&lt;', symbol_last='&gt;&gt;',
+        symbol_previous='&lt;', symbol_next='&gt;', link_attr=dict(),
+        curpage_attr=dict(), dotdot_attr=dict()):
+        
+        nmap = super(BootStrapPage, self).link_map(format=format, url=url,
+            show_if_single_page=show_if_single_page, separator=separator,
+            symbol_first=symbol_first, symbol_last=symbol_last,
+            symbol_previous=symbol_previous, symbol_next=symbol_next,
+            link_attr=link_attr, curpage_attr=curpage_attr,
+            dotdot_attr=dotdot_attr)
+        
+        # Check if we are in the first or last page
+        if nmap['previous_page']['number'] <= nmap['first_page']['number']:
+            nmap['previous_page']['number'] = None
+            nmap['previous_page']['href'] = '#'
+        
+        if nmap['next_page']['number'] >= nmap['last_page']['number']:
+            nmap['next_page']['number'] = None
+            nmap['next_page']['href'] = '#'
+                    
+        # Remove the dots
+        navmap = {}
+        for key in nmap:
+            if key != 'range_pages':
+                navmap[key] = nmap[key]
             else:
-                text = '%s' % (thispage,)
-                nav_items.append(self._pagerlink(thispage, text))
-
-        # Create a link to the very last page (unless we are on the last
-        # page or there would be no need to insert '..' spacers)
-        if self.page != self.last_page and rightmost_page < self.last_page:
-            nav_items.append(self._pagerlink(self.last_page, self.last_page))
-
-        return self.separator.join(nav_items)
-
-    def _pagerlink(self, page, text, link_attr=None):
-        link_attr = link_attr or {}
-        if not page:
+                navmap['range_pages'] = []
+                for page in nmap['range_pages']:
+                    if page['value'] != '..':
+                        navmap['range_pages'].append(page)
+            
+        return navmap
+        
+    @staticmethod
+    def bootstrap_link_tag(item):
+        link_attr = {}
+        if item['number'] is None:
             link_attr = {'class': 'disabled'}
-        return HTML.li(super(BootStrapPage, self)._pagerlink(page, text), **link_attr)
+
+        if item['type'] == 'current_page':
+            link_attr = {'class': 'active'}
+
+        #logger.info("item: {}".format(item))
+
+        item['attrs'] = { 'class':'pager_link' }
+
+        return HTML.li(literal(paginate.Page.default_link_tag(item)),
+            **link_attr)
 
 
-def create_pagination_mongo_collection(request, collection, items_per_page=10):
+
+def create_pagination_mongo_collection(request, cursor, cursor_size,
+    items_per_page=10):
+    
     def page_url(page):
         if page is None:
             return '#'
@@ -117,13 +104,16 @@ def create_pagination_mongo_collection(request, collection, items_per_page=10):
                 indexOf = request.query_string.index('&page')
             except ValueError:
                 indexOf = len(request.query_string)
-            return '%s?%s&page=%s' % (request.path, request.query_string[:indexOf], page)
+            return '%s?%s&page=%s' % (request.path,
+                request.query_string[:indexOf], page)
         else:
             return '%s?page=%s' % (request.path, page)
+    
     current_page = int(request.GET.get('page', 1))
-    page = BootStrapPage(range(collection.count()),
+    page = BootStrapPage(range(cursor_size),
                          current_page,
-                         url=page_url,
+                         url_maker=page_url,
                          items_per_page=items_per_page)
-    collection[(current_page - 1) * items_per_page:current_page * items_per_page]
+    # Limits the records to the page
+    cursor[(current_page - 1) * items_per_page:current_page * items_per_page]
     return page

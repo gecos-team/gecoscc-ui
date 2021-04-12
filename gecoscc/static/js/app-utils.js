@@ -663,6 +663,9 @@
     App.getDomainModel = function (id) {
         var model, path, domain;
         model = App.instances.tree.findNodeById(id);
+        if (typeof model == 'undefined') {
+            console.log("Error (getDomainModel): Can't find "+id+" instance!")
+        }
         path = model.path || model.get("path");
         domain = path.split(',').length === 2 ? id : path.split(',')[2];
         domain = new App.OU.Models.OUModel({ id: domain });

@@ -1,3 +1,4 @@
+from __future__ import division
 #
 # Copyright 2013, Junta de Andalucia
 # http://www.juntadeandalucia.es/
@@ -10,13 +11,15 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
+from past.utils import old_div
+from builtins import object
 import cgi
 import os
 
 from bson import ObjectId
 from copy import deepcopy
 
-from cornice.schemas import CorniceSchema
 from pymongo.errors import DuplicateKeyError
 from pyramid.httpexceptions import HTTPNotFound, HTTPBadRequest, HTTPForbidden
 from webob.multidict import MultiDict
@@ -31,7 +34,8 @@ from gecoscc.tasks import (object_created, object_changed, object_deleted,
 from gecoscc.utils import (get_computer_of_user, get_filter_nodes_parents_ou,
                            oids_filter, check_unique_node_name_by_type_at_domain,
                            visibility_object_related, visibility_group,
-                           RESOURCES_EMITTERS_TYPES, get_object_related_list,
+                           RESOURCES_EMITTERS_TYPES, 
+                           get_object_related_list_count,
                            is_domain, get_domain, is_root)
 
 import gettext
@@ -47,7 +51,7 @@ class BaseAPI(object):
 
     order_field = '_id'
 
-    def __init__(self, request):
+    def __init__(self, request, context=None):
         self.request = request
         self.collection = self.get_collection()
         localedir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'locale')
@@ -85,8 +89,9 @@ class ResourcePaginatedReadOnly(BaseAPI):
     objtype = None
     key = '_id'
 
-    def __init__(self, request):
-        super(ResourcePaginatedReadOnly, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(ResourcePaginatedReadOnly, self).__init__(request,
+            context=context)
         self.default_pagesize = request.registry.settings.get(
             'default_pagesize', 30)
         if self.objtype is None:
@@ -194,14 +199,11 @@ class ResourcePaginatedReadOnly(BaseAPI):
         else:
             mongo_query = {}
 
-        nodes_count = self.collection.find(
-            mongo_query,
-            {'type': 1}
-        ).count()
+        nodes_count = self.collection.count_documents(mongo_query)
 
         objects = self.collection.find(mongo_query, **extraargs).sort(self.order_field)
         objects = self.get_distinct_filter(objects)
-        pages = int(nodes_count / pagesize)
+        pages = int(old_div(nodes_count, pagesize))
         if nodes_count % pagesize > 0:
             pages += 1
         parsed_objects = self.parse_collection(list(objects))
@@ -234,21 +236,22 @@ class ResourcePaginatedReadOnly(BaseAPI):
         return node
         
     def is_assigned(self, related_object):
-        node_with_related_object = get_object_related_list(self.request.db, related_object)
-        return bool(node_with_related_object.count())
+        node_with_related_object_count = get_object_related_list_count(
+            self.request.db, related_object)
+        return bool(node_with_related_object_count)
 
 
 class ResourcePaginated(ResourcePaginatedReadOnly):
 
-    def __init__(self, request):
-        super(ResourcePaginated, self).__init__(request)
+    def __init__(self, request, context=None):
+        super(ResourcePaginated, self).__init__(request, context=context)
         if request.method == 'POST':
             schema = self.schema_detail()
             del schema['_id']
-            self.schema = CorniceSchema(schema)
+            self.schema = schema
 
         elif request.method == 'PUT':
-            self.schema = CorniceSchema(self.schema_detail)
+            self.schema = self.schema_detail
             # Implement write permissions
 
     def integrity_validation(self, obj, real_obj=None):
@@ -278,7 +281,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                     elif policyobj['slug'] == 'local_users_res':
                         ro_collection = None
                     else:
-                        logger.warning("Unrecognized slug: %s" % (str(policyobj['slug'])))
+                        logger.info("Policy without related objects: %s" % (str(policyobj['slug'])))
 
                     # Check the related objects
                     if ro_collection is not None:
@@ -326,8 +329,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
 
         try:
-            obj_id = self.collection.insert(obj)
-        except DuplicateKeyError, e:
+            obj_id = self.collection.insert_one(obj).inserted_id
+        except DuplicateKeyError as e:
             raise HTTPBadRequest('The Object already exists: '
                                  '{0}'.format(e.message))
 
@@ -381,6 +384,11 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         if not self.integrity_validation(obj, real_obj=real_obj):
             if len(self.request.errors) < 1:
                 self.request.errors.add('body', 'object', 'Integrity error')
+                logger.error("Integrity error in object: {0}".format(obj))
+            else:
+                logger.error("Integrity error {0} in object: {1}".format(
+                    self.request.errors, obj))
+                
             return
 
         obj = self.pre_save(obj, old_obj=old_obj)
@@ -396,8 +404,8 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
         real_obj.update(obj)
         
         try:
-            self.collection.update(obj_filter, real_obj)
-        except DuplicateKeyError, e:
+            self.collection.replace_one(obj_filter, real_obj)
+        except DuplicateKeyError as e:
             raise HTTPBadRequest('Duplicated object {0}'.format(
                 e.message))
 
@@ -462,7 +470,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
             return
         obj = self.pre_delete(obj)
 
-        status = self.collection.remove(filters)
+        status = self.collection.delete_one(filters).raw_result
 
         if status['ok']:
             obj = self.post_save(obj, old_obj)
@@ -474,7 +482,7 @@ class ResourcePaginated(ResourcePaginatedReadOnly):
                 'ok': 1
             }
         else:
-            self.request.errors.add(unicode(obj[self.key]), 'db status',
+            self.request.errors.add('body', '%s: db status'%(obj[self.key]),
                                     status)
             return
 
@@ -513,16 +521,16 @@ class TreeResourcePaginated(ResourcePaginated):
 
         parent = self.collection.find_one({self.key: ObjectId(parent_id)})
         if not parent:
-            self.request.errors.add(unicode(obj[self.key]), 'path', "parent"
-                                    " doesn't exist {0}".format(parent_id))
+            self.request.errors.add('body', '%s: path'%(str(obj[self.key])),
+                "parent doesn't exist {0}".format(parent_id))
             return False
 
         candidate_path_parent = ','.join(parents[:-1])
 
         if parent['path'] != candidate_path_parent:
-            self.request.errors.add(
-                unicode(obj[self.key]), 'path', "the parent object "
-                "{0} has a different path".format(parent_id))
+            self.request.errors.add('body',
+                '%s: path'%(str(obj[self.key])),
+                "the parent object {0} has a different path".format(parent_id))
             return False
 
         return self.check_unique_node_name_by_type_at_domain(obj)
@@ -540,27 +548,28 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
             return True
         obj_validated = visibility_group(self.request.db, obj)
         if obj != obj_validated:
-            self.request.errors.add(unicode(obj[self.key]), 'memberof',
+            self.request.errors.add('body', '%s: memberof'%(str(obj[self.key])),
                                     "There is a group out of scope.")
             return False
         for group_id in obj['memberof']:
             group = self.request.db.nodes.find_one({'_id': group_id})
             if not group:
                 self.request.errors.add(
-                    unicode(obj[self.key]), 'memberof',
-                    "The group {0} doesn't exist".format(unicode(group_id)))
+                    'body', '%s: memberof'%(str(obj[self.key])),
+                    "The group {0} doesn't exist".format(str(group_id)))
                 return False
         return True
 
     def check_policies_integrity(self, obj, is_moved=False):
         """
-        Check if the policie is out of scope
+        Check if the policy is out of scope
         """
         obj_original = deepcopy(obj)
         visibility_object_related(self.request.db, obj)
         if not is_moved:
             if obj != obj_original:
-                self.request.errors.add(unicode(obj[self.key]), 'policies',
+                self.request.errors.add('body',
+                                        '%s - policies'%(str(obj[self.key])),
                                         "The related object is out of scope")
                 return False
         return True
@@ -598,13 +607,13 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
 
         for group_id in removes:
             group = self.request.db.nodes.find_one({'_id': group_id})
-            self.request.db.nodes.update({
+            self.request.db.nodes.update_one({
                 '_id': group_id
             }, {
                 '$pull': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
             group_without_policies = self.request.db.nodes.find_one({'_id': group_id})
             group_without_policies['policies'] = {}
             computers = self.computers_to_group(obj)
@@ -613,13 +622,13 @@ class TreeLeafResourcePaginated(TreeResourcePaginated):
         for group_id in adds:
 
             # Add newmember to new group
-            self.request.db.nodes.update({
+            self.request.db.nodes.update_one({
                 '_id': group_id
             }, {
                 '$push': {
                     'members': obj['_id']
                 }
-            }, multi=False)
+            })
             group = self.request.db.nodes.find_one({'_id': group_id})
             computers = self.computers_to_group(obj)
             object_changed.delay(self.request.user, 'group', group, {}, 'changed', computers)
@@ -655,11 +664,12 @@ class PassiveResourcePaginated(TreeLeafResourcePaginated):
                     return True
                 return False
 
-            policy_id = self.request.db.policies.find_one({'slug': slug}).get('_id')
-            nodes_related_with_obj = self.request.db.nodes.find({"policies.%s.object_related_list"
-                                                                % unicode(policy_id): {'$in': [unicode(obj['_id'])]}})
-
-            if nodes_related_with_obj.count() == 0:
+            policy_id = self.request.db.policies.find_one({'slug': slug}).get(
+                '_id')
+            nodes_related_with_obj = self.request.db.nodes.count_documents(
+                {"policies.%s.object_related_list" % str(policy_id): {
+                    '$in': [str(obj['_id'])]}})
+            if nodes_related_with_obj == 0:
                 return True
 
             return False

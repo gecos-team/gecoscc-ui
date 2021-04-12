@@ -18,7 +18,9 @@ from optparse import make_option
 
 from gecoscc.management import BaseCommand
 from gecoscc.rules import EXCLUDE_GENERIC_ATTRS, is_user_policy
-from gecoscc.utils import _get_chef_api, get_cookbook, RESOURCES_EMITTERS_TYPES, emiter_police_slug, toChefUsername
+from gecoscc.utils import (_get_chef_api, get_cookbook,
+                           RESOURCES_EMITTERS_TYPES, emiter_police_slug,
+                           toChefUsername)
 
 
 DEFAULT_TARGETS = ['ou', 'computer', 'group']
@@ -55,10 +57,15 @@ EMITTER_LOCALIZED = {
     }
 }
 
+
+
 POLICY_EMITTER_PATH = {
-    'printer_can_view': 'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list',
-    'repository_can_view': 'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list',
-    'storage_can_view': 'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users',
+    'printer_can_view': 
+        'gecos_ws_mgmt.printers_mgmt.printers_res.printers_list',
+    'repository_can_view':
+        'gecos_ws_mgmt.software_mgmt.software_sources_res.repo_list',
+    'storage_can_view':
+        'gecos_ws_mgmt.users_mgmt.user_shared_folders_res.users',
 }
 
 POLICY_EMITTER_URL = {
@@ -85,7 +92,8 @@ SCHEMA_EMITTER = {
     }
 }
 
-EXCLUDE_POLICIES = ('printers_res', 'software_sources_res', 'user_shared_folders_res')
+EXCLUDE_POLICIES = ('printers_res', 'software_sources_res',
+                    'user_shared_folders_res')
 
 PACKAGE_POLICY = 'package_res'
 PACKAGE_POLICY_URL = '/api/packages/'
@@ -103,7 +111,9 @@ class Command(BaseCommand):
        If you dont add any -p option then all the policies will be imported.
     """
 
-    usage = "usage: %prog config_uri import_policies --administrator user --key file.pem -p policy_key1 -p policy_key2 --ignore-emitter-policies"
+    usage = ("usage: %prog config_uri import_policies --administrator user "
+             "--key file.pem -p policy_key1 -p policy_key2 "
+             "--ignore-emitter-policies")
 
     option_list = [
         make_option(
@@ -111,7 +121,8 @@ class Command(BaseCommand):
             dest='policies',
             action='append',
             default=[],
-            help='Key of the policy to import. Use multiple times to import multiple policies'
+            help='Key of the policy to import. Use multiple times to import'\
+            ' multiple policies'
         ),
         make_option(
             '-i', '--ignore-emitter-policies',
@@ -150,16 +161,18 @@ class Command(BaseCommand):
         policy_slug = new_policy['slug']
         db_policy = self.db.policies.find_one({'slug': policy_slug})
         if not db_policy:
-            self.db.policies.insert(new_policy)
-            print "Imported policy: %s" % policy_slug
+            self.db.policies.insert_one(new_policy)
+            print("Imported policy: %s" % policy_slug)
         else:
-            self.db.policies.update({'slug': policy_slug}, new_policy)
-            print "Updated policy: %s" % policy_slug
+            self.db.policies.replace_one({'slug': policy_slug}, new_policy)
+            print("Updated policy: %s" % policy_slug)
 
     def command(self):
         api = _get_chef_api(self.settings.get('chef.url'),
                             toChefUsername(self.options.chef_username),
-                            self.options.chef_pem, self.settings.get('chef.ssl.verify'), self.settings.get('chef.version'))
+                            self.options.chef_pem,
+                            self.settings.get('chef.ssl.verify'),
+                            self.settings.get('chef.version'))
         cookbook_name = self.settings['chef.cookbook_name']
 
         cookbook = get_cookbook(api, cookbook_name)
@@ -169,12 +182,14 @@ class Command(BaseCommand):
 
         policies = {}
         try:
-            for key, value in cookbook['metadata']['attributes']['json_schema']['object']['properties']['gecos_ws_mgmt']['properties'].items():
-                for k, policy in value['properties'].items():
+            for key, value in list(cookbook['metadata']['attributes'][
+                'json_schema']['object']['properties']['gecos_ws_mgmt'][
+                    'properties'].items()):
+                for k, policy in list(value['properties'].items()):
                     policy['path'] = '%s.%s.%s' % (cookbook_name, key, k)
                     policies[k] = policy
         except KeyError:
-            print "Can not found policies in cookbook %s" % cookbook_name
+            print("Can not found policies in cookbook %s" % cookbook_name)
             sys.exit(1)
 
         policies_to_import = self.options.policies
@@ -182,13 +197,14 @@ class Command(BaseCommand):
             found = set(policies_to_import).intersection(set(policies.keys()))
             not_found = set(policies_to_import).difference(set(policies.keys()))
             if not_found:
-                print "%s policies to import. Policies NOT FOUND: %s" % (len(found), list(not_found))
+                print("%s policies to import. Policies NOT FOUND: %s" % (
+                    len(found), list(not_found)))
             else:
-                print "%s policies to import" % len(found)
+                print("%s policies to import" % len(found))
         else:
-            print "%s policies to import" % len(policies.keys())
+            print("%s policies to import" % len(list(policies.keys())))
 
-        for key, value in policies.items():
+        for key, value in list(policies.items()):
             if policies_to_import and key not in policies_to_import:
                 continue
             elif key in EXCLUDE_POLICIES:
@@ -255,10 +271,14 @@ class Command(BaseCommand):
             for emiter in RESOURCES_EMITTERS_TYPES:
                 slug = emiter_police_slug(emiter)
                 schema = deepcopy(SCHEMA_EMITTER)
-                schema['properties']['object_related_list']['title'] = '%s list' % emiter.capitalize()
+                schema['properties']['object_related_list']['title'] = (
+                    '%s list' % emiter.capitalize())
                 for lan in languages:
-                    schema['properties']['object_related_list']['title_' + lan] = EMITTER_LIST_LOCALIZED[lan] % EMITTER_LOCALIZED[lan][emiter]
-                schema['properties']['object_related_list']['autocomplete_url'] = POLICY_EMITTER_URL[slug]
+                    schema['properties']['object_related_list'][
+                        'title_' + lan] = (EMITTER_LIST_LOCALIZED[lan] % 
+                                           EMITTER_LOCALIZED[lan][emiter])
+                schema['properties']['object_related_list'][
+                    'autocomplete_url'] = POLICY_EMITTER_URL[slug]
                 policy = {
                     'name': POLICY_EMITTER_NAMES[slug],
                     'slug': slug,
@@ -266,50 +286,69 @@ class Command(BaseCommand):
                     'targets': POLICY_EMITTER_TARGETS[slug],
                     'is_emitter_policy': True,
                     'schema': schema,
-                    'support_os': policies[POLICY_EMITTER_PATH[slug].split('.')[2]]['properties']['support_os']['default'],
+                    'support_os': policies[
+                        POLICY_EMITTER_PATH[slug].split('.')[2]]['properties'][
+                            'support_os']['default'],
                     'is_mergeable': True,
-                    'autoreverse': policies[POLICY_EMITTER_PATH[slug].split('.')[-2]].get('autoreverse', False)
+                    'autoreverse': policies[
+                        POLICY_EMITTER_PATH[slug].split('.')[-2]].get(
+                            'autoreverse', False)
                 }
                 for lan in languages:
-                    policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[lan][slug]
+                    policy['name_' + lan] = POLICY_EMITTER_NAMES_LOCALIZED[
+                        lan][slug]
                 self.treatment_policy(policy)
                 
         # Check non imported policies
-        print "Check non imported policies..."
+        print("Check non imported policies...")
         dbpolicies = self.db.policies.find({})
         found = False
         for policy in dbpolicies:
             if (policy['slug'] not in policies and 
                 not policy['slug'].endswith('_can_view')):
-                print "Policy '%s' wasn't imported. Probably is deprecated." % (policy['slug'])
+                print("Policy '%s' wasn't imported. Probably is deprecated." % (
+                    policy['slug']))
                 found = True
                 if self.options.delete:
                     # Delete deprecated policy
-                    self.db.policies.remove({'slug': policy['slug']})
-                    print "Policy '%s' deleted!" % (policy['slug'])
+                    self.db.policies.delete_one({'slug': policy['slug']})
+                    print("Policy '%s' deleted!" % (policy['slug']))
                     if policy['slug'] == 'package_profile_res':
                         # Also delete software_profiles collection
-                        print "Drop software profiles collection!"
+                        print("Drop software profiles collection!")
                         self.db.software_profiles.drop()
-                        self.db.settings.remove({'key' : 'software_profiles'})
+                        self.db.settings.delete_one(
+                            {'key' : 'software_profiles'})
                         
         if not found:
-            print "There are no deprecated policies"
+            print("There are no deprecated policies")
         
 
     def set_packages_url(self, value):
-        value['properties']['package_list']['items']['properties']['name']['autocomplete_url'] = PACKAGE_POLICY_URL
-        value['properties']['package_list']['items']['properties']['name']['enum'] = []
-        value['properties']['package_list']['items']['properties']['version']['autocomplete_url'] = 'javascript:calculateVersions'
-        value['properties']['package_list']['items']['properties']['version']['enum'] = []
+        value['properties']['package_list']['items']['properties']['name'][
+            'autocomplete_url'] = PACKAGE_POLICY_URL
+        value['properties']['package_list']['items']['properties']['name'][
+            'enum'] = []
+        value['properties']['package_list']['items']['properties']['version'][
+            'autocomplete_url'] = 'javascript:calculateVersions'
+        value['properties']['package_list']['items']['properties']['version'][
+            'enum'] = []
     
     def set_mimetypes_url(self, value):
-        value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['autocomplete_url'] = MIMETYPES_POLICY_URL
-        value['properties']['users']['patternProperties']['.*']['properties']['mimetyperelationship']['items']['properties']['mimetypes']['items']['enum'] = []
+        value['properties']['users']['patternProperties']['.*']['properties'][
+            'mimetyperelationship']['items']['properties']['mimetypes'][
+                'autocomplete_url'] = MIMETYPES_POLICY_URL
+        value['properties']['users']['patternProperties']['.*']['properties'][
+            'mimetyperelationship']['items']['properties']['mimetypes'][
+                'items']['enum'] = []
 
     def set_serviceproviders_url(self, value):
-        value['properties']['connections']['items']['properties']['country']['autocomplete_url'] = MOBILE_BROADBAND_POLICY_URL
-        value['properties']['connections']['items']['properties']['country']['enum'] = []
-        value['properties']['connections']['items']['properties']['provider']['autocomplete_url'] = 'javascript:calculateProviders'
-        value['properties']['connections']['items']['properties']['provider']['enum'] = []
+        value['properties']['connections']['items']['properties']['country'][
+            'autocomplete_url'] = MOBILE_BROADBAND_POLICY_URL
+        value['properties']['connections']['items']['properties']['country'][
+            'enum'] = []
+        value['properties']['connections']['items']['properties']['provider'][
+            'autocomplete_url'] = 'javascript:calculateProviders'
+        value['properties']['connections']['items']['properties']['provider'][
+            'enum'] = []
         

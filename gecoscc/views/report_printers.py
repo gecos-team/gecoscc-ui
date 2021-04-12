@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 import logging
 import datetime
 
@@ -169,13 +170,13 @@ def report_printers(context, request, file_ext):
                     rows.append(computer_row)
         
     
-    header = (_(u'Path').encode('utf-8'),
-              _(u'Name').encode('utf-8'),
-              _(u'Manufacturer').encode('utf-8'),
-              _(u'Model').encode('utf-8'),
-              _(u'Serial number').encode('utf-8'),
-              _(u'Registry number').encode('utf-8'),
-              _(u'Computer').encode('utf-8'))
+    header = (_(u'Path'),
+              _(u'Name'),
+              _(u'Manufacturer'),
+              _(u'Model'),
+              _(u'Serial number'),
+              _(u'Registry number'),
+              _(u'Computer'))
     
     # Column widths in percentage
     if file_ext == 'pdf':
@@ -194,7 +195,7 @@ def report_printers(context, request, file_ext):
             'default_order': [[ 0, 'asc' ], [ 1, 'asc' ], [ 6, 'asc' ]],
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

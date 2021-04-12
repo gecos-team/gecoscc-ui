@@ -43,7 +43,7 @@ node_filters = {
 def get_filters(node_filters, request):
     filters = []
     params = request.GET
-    for (filter_name, filter_func) in node_filters.iteritems():
+    for (filter_name, filter_func) in list(node_filters.items()):
         if filter_name in params:
             filter_dict = filter_func(request)
             if filter_dict:

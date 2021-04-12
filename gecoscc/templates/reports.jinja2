@@ -28,7 +28,7 @@ window.external.comeback = function() {
         <h1>{{ gettext('Reports') }}</h1>
     </div>
     <form method="get" action="{{ request.route_url('report_file') }}" name="report_form" id="report_form" target="_blank">
-        <fieldset class="form-group">
+        <fieldset class="form-group" style="clear: left;">
         <input type="hidden" name="type" id="report_type" value="" />
         <input type="hidden" name="format" id="report_format" value="" />
         {% if ou_managed|length == 1 %}
@@ -116,30 +116,30 @@ window.external.comeback = function() {
                     <li class="list-group-item">{{ gettext('No-user computers') }}
 
                       <button title="csv" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-user_computers', 'csv')"
+                        onclick="generateReport('no_user_computers', 'csv')"
                         ><i class="fa fa-file-excel-o"></i></button>
 
                       <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-user_computers', 'pdf')"
+                        onclick="generateReport('no_user_computers', 'pdf')"
                         ><i class="fa fa-file-pdf-o"></i></button>
 
                       <button title="www" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-user_computers', 'html')"
+                        onclick="generateReport('no_user_computers', 'html')"
                         ><i class="fa fa-globe"></i></button>
 
                     </li>
                     <li class="list-group-item">{{ gettext('No-computer users') }}
 
                       <button title="csv" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-computer_users', 'csv')"
+                        onclick="generateReport('no_computer_users', 'csv')"
                         ><i class="fa fa-file-excel-o"></i></button>
 
                       <button title="pdf" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-computer_users', 'pdf')"
+                        onclick="generateReport('no_computer_users', 'pdf')"
                         ><i class="fa fa-file-pdf-o"></i></button>
 
                       <button title="www" type="button" class="btn btn-default pull-right btn-export"
-                        onclick="generateReport('no-computer_users', 'html')"
+                        onclick="generateReport('no_computer_users', 'html')"
                         ><i class="fa fa-globe"></i></button>
 
                     </li>

@@ -11,7 +11,10 @@
 
 import logging
 import socket
+import base64
 from bson import ObjectId
+
+from cornice.validators import colander_body_validator
 
 from pyramid.httpexceptions import HTTPForbidden
 from pyramid.security import (Allow, Deny, Authenticated, Everyone, ALL_PERMISSIONS,
@@ -27,19 +30,38 @@ def is_logged(request):
     return authenticated_userid(request) is not None
 
 
-def api_login_required(request):
+def colander_validator(request, **kwargs):
+    if 'klass' in kwargs:
+        # Instantiate the class
+        params = dict(request=request)
+        params['context'] = request.context
+        ob = kwargs['klass'](**params)
+        
+        if getattr(ob, 'schema', None) is not None:
+            # Get the schema from the object
+            kwargs['schema'] = ob.schema
+            return colander_body_validator(request, **kwargs)
+    
+    return True
+
+def api_login_required(request, **kwargs):
     if not is_logged(request):
         raise HTTPForbidden('Login required')
+    
+    return colander_validator(request, **kwargs)
 
 
-def http_basic_login_required(request):
+def http_basic_login_required(request, **kwargs):
     try:
         api_login_required(request)
-    except HTTPForbidden, e:
+    except HTTPForbidden as e:
         authorization = request.headers.get('Authorization')
         if not authorization:
             raise e
-        username, password = authorization.replace('Basic ', '').decode('base64').split(':')
+        b64_string = authorization.replace('Basic ', '')
+        b64_string += '=' * ((4 - len(b64_string) % 4) % 4)
+        decoded_data = base64.b64decode(b64_string)
+        username, password = decoded_data.decode('utf-8').split(':')
         try:
             user = request.userdb.login(username, password)
             if not user:
@@ -47,6 +69,8 @@ def http_basic_login_required(request):
         except UserDoesNotExist:
             raise e
         remember(request, username)
+        
+    return colander_validator(request, **kwargs)
 
 
 def is_path_right(request, path, ou_type='ou_managed'):

@@ -115,7 +115,7 @@ class JobStorage(object):
                 job['policyname_%s' % lang] = policy.get('name_%s' % lang)
         if message:
             job['message'] = message
-        return self.collection.insert(job)
+        return self.collection.insert_one(job).inserted_id
 
     def update_status(self, jobid, status):
 
@@ -130,7 +130,7 @@ class JobStorage(object):
         if not job:
             raise self.JobDoesNotExist()
 
-        self.collection.update({
+        self.collection.update_one({
             '_id': jobid,
         }, {
             '$set': {

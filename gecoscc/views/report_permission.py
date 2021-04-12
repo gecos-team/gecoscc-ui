@@ -9,6 +9,7 @@
 # https://joinup.ec.europa.eu/software/page/eupl/licence-eupl
 #
 
+from builtins import str
 import logging
 import datetime
 
@@ -105,7 +106,7 @@ def report_permission(context, request, file_ext):
     logger.debug("report_permission: items = {}".format(items))
             
     # Get all OU names
-    ids = map(lambda x: ObjectId(x), total_ous)
+    ids = [ObjectId(x) for x in total_ous]
     result = request.db.nodes.find({'_id': {'$in': ids}},{'_id':1, 'path':1})
     ou_paths = {}
 
@@ -141,21 +142,21 @@ def report_permission(context, request, file_ext):
         rows.append(row)
                 
     if file_ext == 'pdf':
-        header = (_(u'Username and Email').encode('utf-8'),
-                  _(u'Organizational Unit').encode('utf-8'),
-                  _(u'Read Only').encode('utf-8'),
-                  _(u'Link').encode('utf-8'),
-                  _(u'Remote').encode('utf-8'),
-                  _(u'Manage').encode('utf-8'))
+        header = (_(u'Username and Email'),
+                  _(u'Organizational Unit'),
+                  _(u'Read Only'),
+                  _(u'Link'),
+                  _(u'Remote'),
+                  _(u'Manage'))
     else:
-        header = (_(u'Username').encode('utf-8'),
-                  _(u'Email').encode('utf-8'),
-                  _(u'Name').encode('utf-8'),
-                  _(u'Organizational Unit').encode('utf-8'),
-                  _(u'Read Only').encode('utf-8'),
-                  _(u'Link').encode('utf-8'),
-                  _(u'Remote').encode('utf-8'),
-                  _(u'Manage').encode('utf-8'))
+        header = (_(u'Username'),
+                  _(u'Email'),
+                  _(u'Name'),
+                  _(u'Organizational Unit'),
+                  _(u'Read Only'),
+                  _(u'Link'),
+                  _(u'Remote'),
+                  _(u'Manage'))
 
     # Column widths in percentage
     if file_ext == 'pdf':
@@ -177,7 +178,7 @@ def report_permission(context, request, file_ext):
             'default_order': [[ 0, 'asc' ]],            
             'widths': widths,
             'report_title': title,
-            'page': _(u'Page').encode('utf-8'),
-            'of': _(u'of').encode('utf-8'),
+            'page': _(u'Page'),
+            'of': _(u'of'),
             'report_type': file_ext,
             'now': now}

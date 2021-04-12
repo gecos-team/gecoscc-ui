@@ -20,10 +20,15 @@
         }
 
         html * {
+{% if report_type == 'html' %}
             font-size: 11pt;
+{% endif %}
+{% if report_type == 'pdf' %}
+            font-size: 10px;
+{% endif %}
             font-family: Arial;
         }
-        
+
         #header_content {
             font-size: 14pt;
             font-weight: bold;

@@ -24,7 +24,7 @@ from gecoscc.utils import get_pem_for_username
 
 @resource(path='/auth/config/',
           description='Auth config',
-          validators=http_basic_login_required)
+          validators=(http_basic_login_required,))
 class AdminUserResource(BaseAPI):
 
     schema_detail = AdminUserVariables
@@ -36,9 +36,8 @@ class AdminUserResource(BaseAPI):
         settings = get_current_registry().settings
 
         chef = {}
-        chef['chef_server_uri'] = settings.get('chef.url')
+        chef['chef_server_uri'] = settings.get('chef.externalUrl')
         chef['chef_link'] = True
-        chef['chef_validation'] = get_pem_for_username(settings, user['username'], 'chef_client.pem')
 
         gcc = {}
         gcc['gcc_link'] = True
