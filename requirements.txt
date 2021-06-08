@@ -37,7 +37,7 @@ python-dateutil==2.8.1
 zipp==1.2.0 
 # Configparser >= 5.0.0 is not compatible with for python 2.7
 configparser==4.0.2
-Pillow==8.1.1
+Pillow==8.2.0
 # Venusian >=3.0.0 is not compatible with for python 2.7
 venusian==2.1.0
 # Force versions to not to use alpha pre-releases
