@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG GECOSCC_VERSION=3.0.0 
+ARG GECOSCC_VERSION=3.0.1 
 ARG GECOSCC_LANG=es_ES.UTF-8
 ARG REPOSITORY_URL=http://deb.debian.org/debian/
 ARG DISTRIBUTION=buster
@@ -77,6 +77,10 @@ RUN mkdir -p /opt/gecosccui/ && chown gecoscc /opt/gecosccui \
 	&& mkdir -p /opt/gecoscc/ && chown gecoscc /opt/gecoscc \
 	&& mkdir -p /logs/gecoscc/ && chown gecoscc /logs/gecoscc \
 	&& mkdir -p /opt/gecosccui/.chef/ && chown gecoscc /opt/gecosccui/.chef 
+
+# Patch pyramid_celery == 4.0.0
+RUN sed -i "/'max_retries': int,/a \    'master_name': str" \
+    /usr/local/lib/python3.7/dist-packages/pyramid_celery/loaders.py 
 
 USER gecoscc
 WORKDIR /opt/gecosccui/
