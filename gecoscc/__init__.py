@@ -114,13 +114,16 @@ def route_config(config):
 def sockjs_config(config, global_config):
     settings = config.registry.settings
 
-    settings['sockjs_url'] = settings['sockjs_url']
+    sockjs_options = {}
+    if 'sockjs_options' in settings:
+        sockjs_options = json.loads(settings['sockjs_options'])
 
     parser = ConfigParser({'here': global_config['here']})
     parser.read(global_config['__file__'])
     settings['server:main:worker_class'] = parser.get('server:main', 'worker_class')
 
-    mgr = socketio.RedisManager(settings['sockjs_url'])
+    mgr = socketio.KombuManager(settings['sockjs_url'],
+        connection_options=sockjs_options)
     sio = socketio.Server(client_manager=mgr, async_mode='gevent')
     config.registry.settings['sio'] = sio
 
