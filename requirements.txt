@@ -15,7 +15,7 @@ gunicorn==19.9.0
 gevent==21.1.2
 greenlet==1.0
 gevent-websocket==0.10.1
-celery==4.4.7
+celery==5.2.2
 pyramid_celery==4.0.0
 cornice==4.0.1
 jsonschema==3.2.0
